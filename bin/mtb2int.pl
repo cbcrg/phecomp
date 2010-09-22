@@ -8,10 +8,136 @@ use FileHandle;
 my $index;
 my $SHIFT=4;
 
+###################################
+#Modification 02/09/2010
+#Adding the possibility of giving the channel info by a file and not by headings inside mtb files
+my $A={};
+my $cl=join(" ", @ARGV);
+my @commands=split (/\-+/,$cl);
+my @files = split (" ", shift @commands); 
+my $H={};
+my $switch_f;
 
-&mtb2intervals ("Intake 1;Intake 2;Intake 3;Intake 4", @ARGV);
+#&mtb2intervals ("Intake 1;Intake 2;Intake 3;Intake 4", @ARGV);
 	      
 #process_mbt (@ARGV);
+
+foreach my $c (@commands)
+  {
+    &run_instruction (\@files, $A, $c);
+  }
+die;
+
+sub run_instruction
+  {
+    my $ary_files=shift;
+    my $A=shift;#now is empty
+    my $c=shift;    
+    
+    $A=string2hash ($c,$A);
+    
+    if ($c=~/info/)
+      {
+	($H, $switch_f) = &file2channel ($A,$H);
+      }
+        
+    elsif ($c=~/out/)
+      {	
+	&mtb2intervals ("Intake 1;Intake 2;Intake 3;Intake 4", $H, $switch_f,  @files);
+      }
+  }
+
+sub file2channel 
+    {
+      my $A=shift;
+      my $H=shift;
+      my $file=$A->{file};
+      my $switch_f=0;
+      my $F=new FileHandle;
+      my $c;
+      my $seq;
+      my $ch;
+            
+      if (defined ($A->{file})) {$switch_f=1} 
+      	  
+      open ($F, "$file") or die "Can't open file: $file";
+      
+      while (<$F>)
+	{
+	  chomp;
+	  my $line=$_;
+	  ($c, $seq) = split ("\t",$line);    
+	  #print STDERR "c $c => seq $seq \n";
+	  #print STDERR "la sequencia es $seq\n";
+	  if ($seq!~/C/i) 
+	    {
+	      $H->{$c}{Name}="SC";
+	    } 
+	  else {
+	    $seq=~m/C/ig;
+	    $ch=pos($seq);
+	    #esborrar print "$seq el cd a $ch";
+	    
+	  SWITCH: 
+	    {
+	      ($ch == 1) && do 
+		{
+		  $H->{$c}{Name}="CD in A"; #esborrar print "\t es A\n";
+		  last SWITCH;
+		};
+		
+	      ($ch == 2) && do 
+		{
+		  $H->{$c}{Name}="CD in B"; #esborrar print "\t es B\n";
+		  last SWITCH;
+		};
+		
+	      ($ch == 3) && do 
+		{
+		  $H->{$c}{Name}="CD in C"; #print "\t es C\n";
+		  last SWITCH;
+		};
+		
+	      ($ch == 4) && do 
+		{
+		  $H->{$c}{Name}="CD in D"; #print "\t es D\n";
+		  last SWITCH;
+		};	     	    
+	    }      
+	  }
+	}
+      close ($F);
+      return ($H, $switch_f);
+    }
+
+sub string2hash 
+  {
+    my $s=shift;
+    my $h=shift;
+    my @l=split (/\s+/, $s);
+    shift @l;
+    return array2hash (\@l, $h);
+  }
+
+sub array2hash
+
+  {
+    my $arrayR=shift;
+    my $A=shift;
+    my ($v, $k);
+    my @array=@$arrayR;
+    #print "com es $array[1]\n";
+    while (($k=shift(@array)))
+      {
+	#borrar print "que llevo en k $k\n";
+	my $v=shift (@array);
+	$k=~s/-//g;#not needed I guess!
+	$A->{$k}=$v;
+      }
+    return $A;
+  }
+
+#######end modification - 02/09/2010##############
 
 sub process_mbt
   {
@@ -24,9 +150,7 @@ sub process_mbt
     %data=&mtb2parse ($infile);
     %data=&merge_fields (\%data, "Food", "Intake 3", "Intake 4");
     %data=&intake2intervals (\%data, "Food");
-    
-    
-    
+        
     print "START: $data{$infile}{'HEADER'}{'EHEADER'}{'StartTime'} END: $data{'HEADER'}{'EndTime'}";
     die;
   }
@@ -34,12 +158,15 @@ sub process_mbt
 sub mtb2intervals
     {
       my $channels=shift;
+      #modification 02/09/2010
+      my $H=shift;
+      my $switch_f=shift;      
+      #end modification - 02/09/2010
       my @files=@_;
       my @sorted_files;
       my %data;
       my @ch;
       my $ncages;
-
 
       foreach my $f (@files)
 	{
@@ -98,30 +225,40 @@ sub mtb2intervals
 			      $data{'INTERVALS'}{$c}{$ch}{$ci}{Index}=$ci;
 			      $data{'INTERVALS'}{$c}{$ch}{$ci}{Caption}=$data{$f}{"[Intake Channels]"}{$ch}{Caption};
 			      
-			      ########################
-			      #Modification 31/08/2010
-			      #Files where type of food is not in name but in code (Name2=2/Group2=Obese/Code=Choc in D)			      
-			      #$data{'INTERVALS'}{$c}{$ch}{$ci}{Name}=$data{$f}{"[ANIMALS DATA]"}{$c}{Name};
-			      if ($data{$f}{"[ANIMALS DATA]"}{$c}{Name}	=~ /\d+/) 
-				{ 
-				  if ($data{$f}{"[ANIMALS DATA]"}{$c}{Group} =~ /Lean/) 
-				    {
-				      $data{'INTERVALS'}{$c}{$ch}{$ci}{Name}="SC"
+			      ###################################
+			      #Modification 02/09/2010
+			      #Adding the possibility of giving the channel info by a file and not by headings inside mtb files
+			      if (!$switch_f)
+				{
+				  ########################
+				  #Modification 31/08/2010
+				  #Files where type of food is not in name but in code (Name2=2/Group2=Obese/Code=Choc in D)			      
+				  #$data{'INTERVALS'}{$c}{$ch}{$ci}{Name}=$data{$f}{"[ANIMALS DATA]"}{$c}{Name};
+				  if ($data{$f}{"[ANIMALS DATA]"}{$c}{Name}	=~ /\d+/) 
+				    { 
+				      if ($data{$f}{"[ANIMALS DATA]"}{$c}{Group} =~ /Lean/) 
+					{
+					  $data{'INTERVALS'}{$c}{$ch}{$ci}{Name}="SC"
+					}
+				      else 
+					{
+					  $data{'INTERVALS'}{$c}{$ch}{$ci}{Name}=$data{$f}{"[ANIMALS DATA]"}{$c}{Code};
+					}				  
 				    }
 				  else 
 				    {
-				      $data{'INTERVALS'}{$c}{$ch}{$ci}{Name}=$data{$f}{"[ANIMALS DATA]"}{$c}{Code};
-				    }				  
+				      $data{'INTERVALS'}{$c}{$ch}{$ci}{Name}=$data{$f}{"[ANIMALS DATA]"}{$c}{Name}; 
+				    }
+				  ###########end modificiation 31/08/2010##############
 				}
-			      else 
-				{
-				  $data{'INTERVALS'}{$c}{$ch}{$ci}{Name}=$data{$f}{"[ANIMALS DATA]"}{$c}{Name}; 
+			      else
+				{				  
+				  $data{'INTERVALS'}{$c}{$ch}{$ci}{Name}=$H->{$c}{Name};
 				}
-			      ###########end modificiation 31/08/2010##############
+			      ###end modification-02/09/2010###############
 			      
 			      $data{'INTERVALS'}{$c}{$ch}{$ci}{File}=$f;
 			      
-
 			    }
 			  $data{'INTERVALS'}{$c}{$ch}{$ci}{EndT}=$dataline{$c}{$ch}{Time};
 			  $data{'INTERVALS'}{$c}{$ch}{$ci}{EndL}=$LineN;
@@ -227,6 +364,7 @@ sub mtb2parse_line
       
       return %dataline;
     }
+
 sub mtb2header 
     {
     my $file=shift;
