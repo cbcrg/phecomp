@@ -1,7 +1,5 @@
 #!/usr/bin/env perl
 
-#Just testing svn commit and revert
-
 use HTTP::Date;
 use strict;
 use FileHandle;
@@ -76,31 +74,30 @@ sub file2channel
 	  else {
 	    $seq=~m/C/ig;
 	    $ch=pos($seq);
-	    #esborrar print "$seq el cd a $ch";
-	    
+	        
 	  SWITCH: 
 	    {
 	      ($ch == 1) && do 
 		{
-		  $H->{$c}{Name}="CD in A"; #esborrar print "\t es A\n";
+		  $H->{$c}{Name}="CD in A"; 
 		  last SWITCH;
 		};
 		
 	      ($ch == 2) && do 
 		{
-		  $H->{$c}{Name}="CD in B"; #esborrar print "\t es B\n";
+		  $H->{$c}{Name}="CD in B";
 		  last SWITCH;
 		};
 		
 	      ($ch == 3) && do 
 		{
-		  $H->{$c}{Name}="CD in C"; #print "\t es C\n";
+		  $H->{$c}{Name}="CD in C"; 
 		  last SWITCH;
 		};
 		
 	      ($ch == 4) && do 
 		{
-		  $H->{$c}{Name}="CD in D"; #print "\t es D\n";
+		  $H->{$c}{Name}="CD in D";  
 		  last SWITCH;
 		};	     	    
 	    }      
@@ -126,10 +123,9 @@ sub array2hash
     my $A=shift;
     my ($v, $k);
     my @array=@$arrayR;
-    #print "com es $array[1]\n";
+    
     while (($k=shift(@array)))
       {
-	#borrar print "que llevo en k $k\n";
 	my $v=shift (@array);
 	$k=~s/-//g;#not needed I guess!
 	$A->{$k}=$v;

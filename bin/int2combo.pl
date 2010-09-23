@@ -29,6 +29,7 @@ foreach my $c (@commands)
     run_instruction ($d, $A, $c);
   }
 die;
+
 sub run_instruction
   {
     my $d=shift;
@@ -65,6 +66,10 @@ sub run_instruction
       {
 	$d=data2period ($d,$A);
       }
+
+    #elsif ($c=~/output/)
+    #  {	 }
+
     elsif ($c=~/logodd/)
       {
 	data2log_odd ($d, $A);
@@ -83,7 +88,10 @@ sub run_instruction
       }
     elsif ($c=~/out/)
       {
-	display_data ($d, $A->{outdata});
+	
+	print STDERR "he passat per aqui\n";#my $prova=$A->{out}; print "a display_data li passem $prova\n";die;#esborrarq
+	#display_data ($d, $A->{outdata}); 
+	display_data ($d, $A->{outdata}, );
       }
     elsif ($c=~/outmodel/)
       {
@@ -312,9 +320,10 @@ sub channel2Nature
 		    # print "--$Name--\n";
 		    if ($Name eq "sc"){$Nature.="_sc";}
 		    
-		    #####################
-		    #Modification 31/08/2010
-		    #Female file different codification of CD slots
+		#####################
+		#Modification 31/08/2010
+		#Female file different codification of CD slots
+		    
 		    #elsif ($Name =~/cd/ && $Nature eq "food")
 		    elsif (($Name =~/cd/||$Name=~/choc/) && $Nature eq "food")
 		      {
@@ -332,7 +341,8 @@ sub channel2Nature
 		if    ($Name =~/sc/){$Nature="sc_".$Nature;}		
 		#elsif ($Name =~/cd/){$Nature="cd_".$Nature;}
 		elsif ($Name =~/cd/ || $Name =~ /choc/){$Nature="cd_".$Nature;}
-		#########end modification 31/08/2010		
+		#########end modification 31/08/2010
+		
 		$d->{$c}{$t}{Nature}=$Nature;
 		
 	      }
@@ -392,7 +402,7 @@ sub tag
 	    elsif (defined ($A->{equals}) && $v eq $equals){$mark=1;}
 	    elsif (defined ($A->{min}) && defined ($A->{max})   && $v>$min && $v<$max){$mark=1;}
 	    elsif (defined ($A->{min}) && $v>$min){$mark=1;}
-	     elsif (defined ($A->{max}) && $v<$max){$mark=1;}
+	    elsif (defined ($A->{max}) && $v<$max){$mark=1;}
 	     
 	     if (!$TAG){$d->{$c}{$t}{tag}=$mark;}
 	     elsif ($TAG)
@@ -401,7 +411,6 @@ sub tag
 	       }
 	   }
        }
-    
     
     delete ($A->{field});
     delete ($A->{min});
@@ -825,6 +834,7 @@ sub data2stat
       }
     die;
   }
+
 sub data2display_period_stat
   {
      my $d=shift;
@@ -875,21 +885,36 @@ sub data2display_period_stat
        }
      return;
    }
+
 sub data2log_odd 
   {
     my $d=shift;
     my $A=shift;
     my $period=data2period_list ($d);
     
+    #modification logodd R output 23/09/10
+    if ($A->{output}=~/R/) 
+      {
+	print "period\tcage\todd_ratio\todd_ratio_value\tdelta_w\n";
+      }
+    #end modification-23/09/10
+
     foreach my $p (sort ({$a<=>$b}keys (%$period)))
       {
-	print "-- $p--\n";
+	#modification logodd R output 23/09/10
+	if ($A->{output}!~/R/) 
+	  {
+	    print "-- $p--\n";
+	  }   	     
+	#end modification 23/09/10
+
 	$A->{period}=$p;
 	$A->{name}="$p";
 	data2log_odd_period ($d, $A);
       }
     die;
   }
+
 sub data2log_odd_period
   {
     my $d=shift;
@@ -952,20 +977,31 @@ sub data2log_odd_period
 	      }
 	  }
       }
-    
-    print "Period:$A->{period}\n"; 
+    #modification logodd R output 23/09/10
+    if ($A->{output}!~/R/) 
+      {
+	print "Period:$A->{period}\n";
+      } 
+    #end modification-23/09/10
+
     display_log_odd($M);
     
     return $M;
   }
+
 sub display_log_odd
   {
     my $M=shift;
     
     foreach my $c (sort ({$a<=>$b}keys (%$M)))
       {
-	print "Cage: $c Delta: $WEIGHT{$c}{delta}\n";
-	
+	#modification logodd R output 23/09/10
+	if ($A->{output}!~/R/) 
+	  {
+	    print "Cage: $c Delta: $WEIGHT{$c}{delta}\n";
+	  }
+	#end modification-23/09/10
+
 	foreach my $b1 (keys (%{$M->{$c}}))
 	  {
 	    #printf "\t%10s: %d\n", $b1, $M->{$c}{$b1}{$b1}{count}{tot};
@@ -976,8 +1012,17 @@ sub display_log_odd
 	    foreach my $b2 (keys (%{$M->{$c}{$b1}}))
 	      {
 		my $b2C=$M->{$c}{$b2}{$b2}{count}{tot};
-			  
-		printf "\tCAGE: %2d Delta: %6.2f %10s -- %10s : %6.3f (Count: %5d)(FC: %5d)($b1: $b1C, $b2: $b2C)\n",$c,$WEIGHT{$c}{delta}, $b1,$b2,$M->{$c}{$b1}{$b2}{logodd}{value},$M->{$c}{$b1}{$b2}{count}{transition},$M->{$c}{$b1}{$b2}{count}{fulltot};
+		
+		#modification logodd R output 23/09/10
+		if ($A->{output}!~/R/) 
+		  {
+		    printf "\tCAGE: %2d Delta: %6.2f %10s -- %10s : %6.3f (Count: %5d)(FC: %5d)($b1: $b1C, $b2: $b2C)\n",$c,$WEIGHT{$c}{delta}, $b1,$b2,$M->{$c}{$b1}{$b2}{logodd}{value},$M->{$c}{$b1}{$b2}{count}{transition},$M->{$c}{$b1}{$b2}{count}{fulltot};
+		  }
+		else 
+		  {
+		    printf "%2d \t %2d \t %10s -- %10s \t %6.3f \t %6.2f \n", $A->{period}, $c, $b1, $b2, $M->{$c}{$b1}{$b2}{logodd}{value}, $WEIGHT{$c}{delta};
+		  }
+		#end modification - 23/09/10
 	      }
 	  }
       }
