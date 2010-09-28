@@ -68,7 +68,7 @@ sub run_instruction
       }
 
     #elsif ($c=~/output/)
-    #  {	 }
+    #  {	 } #esborrar
 
     elsif ($c=~/logodd/)
       {
@@ -89,7 +89,7 @@ sub run_instruction
     elsif ($c=~/out/)
       {
 	
-	print STDERR "he passat per aqui\n";#my $prova=$A->{out}; print "a display_data li passem $prova\n";die;#esborrarq
+	print STDERR "he passat per aqui\n";#my $prova=$A->{out}; print "a display_data li passem $prova\n";die;#esborrar
 	#display_data ($d, $A->{outdata}); 
 	display_data ($d, $A->{outdata}, );
       }
@@ -804,6 +804,7 @@ sub data2overlap
       print STDERR "\nOverlap: $tot values out of $n\n";
       return $d;
     }
+
 sub data2string 
     {
       my $d=shift;
@@ -819,15 +820,28 @@ sub data2string
 	    }
 	}
     }
+
 sub data2stat 
   {
     my $d=shift;
     my $A=shift;
     my $period=data2period_list ($d);
+
+    #modification stat R output 23/09/10
+    if ($A->{output}=~/R/)
+      {
+	print "period\tcage\tchannel\tduration_period\trec_period\tcount\tduration_T\tmean_duration\tvalue_T\tmean_value\n";
+      }
     
     foreach my $p (sort ({$a<=>$b}keys (%$period)))
       {
-	print "-- $p--\n";
+	
+	if ($A->{output}!~/R/) 
+	  {
+	    print "-- $p--\n";
+	  }
+    #end modification - 23/09/10
+
 	$A->{period}=$p;
 	$A->{name}="$p";
 	data2display_period_stat ($d, $A);
@@ -844,6 +858,7 @@ sub data2display_period_stat
      my $maxtime=-1;
      my $duration;
      my $tot=0;
+    
     foreach my $c (sort(keys (%$d)))
       {
 	my ($ch, $pendt);
@@ -865,24 +880,65 @@ sub data2display_period_stat
       }
      $duration=$maxtime-$mintime;
      my $tt=sec2time($duration);
-     print "--- Period -- $A->{period} : "; 
-     print "Duration: $duration sec. ($tt). N Records: $tot\n";
-     foreach my $c (sort ({$a<=>$b}keys (%$S)))
+     
+     #modification stat R output 23/09/10
+     if ($A->{output}!~/R/) 
        {
-	 printf "Cage: $c\n";
-	 foreach my $ch (sort (keys(%{$S->{$c}})))
+	 print "--- Period -- $A->{period} : "; 
+	 print "Duration: $duration sec. ($tt). N Records: $tot\n";
+	 
+
+	 foreach my $c (sort ({$a<=>$b}keys (%$S)))
 	   {
-	     my $count=$S->{$c}{$ch}{count};
-	     printf "\tChannel: %8s", $ch;
-	     foreach my $f (sort (keys(%{$S->{$c}{$ch}})))
+	     printf "Cage: $c\n";
+	     foreach my $ch (sort (keys(%{$S->{$c}})))
 	       {
-		 if ($f ne "count"){printf "- tot %8s: %6.2f ",$f,$S->{$c}{$ch}{$f};}
-		 if ($f ne "count"){$S->{$c}{$ch}{$f}/=$count;}
-		 printf "- %8s: %6.2f ",$f,$S->{$c}{$ch}{$f};
+		 my $count=$S->{$c}{$ch}{count};
+		 printf "\tChannel: %8s", $ch;
+		 foreach my $f (sort ({$a cmp $b}keys(%{$S->{$c}{$ch}})))
+		   {		     
+		     if ($f ne "count")
+		       { 		     
+			 printf "- %8s: %6.2f ",$f."T",$S->{$c}{$ch}{$f};
+			 $S->{$c}{$ch}{$f}/=$count;
+		       }
+		     printf "- %8s: %6.2f ",$f,$S->{$c}{$ch}{$f};
+		   }
+		 print "\n";
 	       }
-	     print "\n";
+	   }
+	 
+       }
+     else
+       {	  	 	 
+	 foreach my $c (sort ({$a<=>$b}keys (%$S)))
+	   {	     	    
+	     foreach my $ch (sort (keys(%{$S->{$c}})))
+	       {
+		 my $count=$S->{$c}{$ch}{count};		 
+		 print "$A->{period}\t$c\t$ch\t$duration\t$tot\t";
+		 
+		 foreach my $f (sort ({$a cmp $b} keys(%{$S->{$c}{$ch}})))
+		   { 
+		     if ($f ne "count")		       
+		       { 		     
+			 printf "%6.2f\t",$S->{$c}{$ch}{$f};
+			 $S->{$c}{$ch}{$f}/=$count;
+		       }
+		     if ($f ne "value")
+		       {
+			 printf "%6.2f\t",$S->{$c}{$ch}{$f};
+		       }
+		     else 
+		       {
+			 printf "%6.2f\n",$S->{$c}{$ch}{$f};
+		       }
+		   }		 
+	       }
 	   }
        }
+     #end modification - 23/09/10
+
      return;
    }
 
@@ -1028,6 +1084,7 @@ sub display_log_odd
       }
     return $M;
   }
+
 sub data2log_odd_old
     {
       my $d=shift;
