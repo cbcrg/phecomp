@@ -335,7 +335,7 @@ sub mtb2parse_line
 	  @list=split ( /\s+/, $line);
 	  $time=$lineN=shift (@list);
 	  $time=$lineN+$stime;
-	  for (my $a=0; $a<$SHIFT; $a++){shift(@list);}
+	  for (my $a=0; $a<$SHIFT; $a++){shift(@list);} #NODATA out
 	  
 	  foreach my $ch (@channels)
 	    {
@@ -346,6 +346,7 @@ sub mtb2parse_line
 		  my $event;
 		  my $i=$chi*$Ncages+($cage-1);
 		  my $v=$list[$i];
+		  
 		  #if (($v=~/\*/)){$event=1;$v=~s/\*//;}
 		  #else {$event=0;}
 		  

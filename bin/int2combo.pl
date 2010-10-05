@@ -66,10 +66,6 @@ sub run_instruction
       {
 	$d=data2period ($d,$A);
       }
-
-    #elsif ($c=~/output/)
-    #  {	 } #esborrar
-
     elsif ($c=~/logodd/)
       {
 	data2log_odd ($d, $A);
@@ -270,7 +266,7 @@ sub channel2correct_channel
 	      $Channel=~/.*(\d)/;
 	      my $i=$1;
 	      
-	      #This is meant to correct the wrong labelling of the intakes: 1 and 2 are always frink, 3 and 4 are always food
+	      #This is meant to correct the wrong labelling of the intakes: 1 and 2 are always drink, 3 and 4 are always food
 	      if ($i==1){$d->{$c}{$t}{Caption}="Drink 1";}
 	      elsif ($i==2){$d->{$c}{$t}{Caption}="Drink 2";}
 	      elsif ($i==3){$d->{$c}{$t}{Caption}="Food 1";}
@@ -684,6 +680,13 @@ sub data2field_list
        }
     return $list;
   }
+
+####################
+#filter_overlap
+####################
+#All records with collisions bigger than a threshold are taken out by default 1 ($T) (i.e.
+#the interval it is all inside the previous interval)
+
 sub filter_overlap
     {
       
@@ -694,18 +697,18 @@ sub filter_overlap
       if ($T eq "no"){return $d;}
       foreach my $c (sort(keys (%$d)))
 	{
+	  #print STDERR "$c\n"; #esborrar
 	  foreach my $t (sort(keys (%{$d->{$c}})))
 	    {
+	      #print STDERR "$t\n"; #esborrar
 	      $n++;
 	      if ( $d->{$c}{$t}{Collision} && $d->{$c}{$t}{Collision}>$T){delete ($d->{$c}{$t});$tot++;}
 	    }
 	}
-      print STDERR "\nCollisions: Removed $tot values out of $n (T: $T)\n";
+      print STDERR "\nCollisions: Removed $tot values out of $n (T: $T)\n";#die;
       return $d;
     }
-    
-
-    
+        
 sub parse_header
   {
     my $file=shift;
@@ -732,13 +735,19 @@ sub parse_header
     close ($F);
     return $data;
   }
+
 sub data2overlap
     {
       my $d=shift;
       my $print=shift;
       my  $nc;
       my ($n,$tot);
-      
+
+      if ($print)
+	{
+	  print "cage\tdelta\tpStartT\tpEndT\tStartT\tEndT\tpStartL\tpEndL\tStartL\tEndL\tpPerc\tPerc\tpChannel\tChannel\tpValue\tValue\tfile\n";
+	}
+
       foreach my $c (sort(keys (%$d)))
 	{
 	  my $pStartT=-1;
@@ -753,7 +762,7 @@ sub data2overlap
 	  
 	  if ($print)
 	    {
-	      print "\nCHECK CAGE $c\n";
+	      #print "\nCHECK CAGE $c\n";
 	    }
 	  foreach my $t (sort(keys (%{$d->{$c}})))
 	    {
@@ -782,9 +791,14 @@ sub data2overlap
 		      
 		      if ($print)
 			{
-			  print "***** ERROR: OVERLAP: CAGE $c --- $delta :\n";
-			  print "\t\tC: $pChannel [$pStartT -- $pEndT] [$pStartL -- $pEndL] VALUE: $pValue File: $pFile\n";
-			  print "\t\tC: $Channel [$StartT -- $EndT] [$StartL -- $EndL] File: VALUE: $Value$File\n";
+			  #print "***** ERROR: OVERLAP: CAGE $c --- $delta :\n";
+			  #print "\t\tC: $pChannel [$pStartT -- $pEndT] [$pStartL -- $pEndL] VALUE: $pValue File: $pFile\n";
+			  #print "\t\tC: $Channel [$StartT -- $EndT] [$StartL -- $EndL] File: VALUE: $Value $File\n";
+			  #print "\t\tperc prev:$v2 -- perc after:$v1\n";
+			  #print "\t\tvalue prev:$pValue -- value after:$Value\n";
+			  #ORDER=>cage delta pStartT    pEndT StartT    EndT    pStartL   pEndL   StartL EndL  pPerc Perc pChannel Channel pValue Value file
+			  print "$c\t$delta\t$pStartT\t$pEndT\t$StartT\t$EndT\t$pStartL\t$pEndL\t$StartL\t$EndL\t$v2\t$v1\t$pChannel\t$Channel\t$pValue\t$Value\t$File\n";
+			  
 			  }
 		      $tot++;
 		    }
@@ -948,6 +962,7 @@ sub data2log_odd
     my $A=shift;
     my $period=data2period_list ($d);
     
+
     #modification logodd R output 23/09/10
     if ($A->{output}=~/R/) 
       {
