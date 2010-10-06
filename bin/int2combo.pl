@@ -185,7 +185,7 @@ sub parse_data
 	    my $L={};
 	    chomp $line;
 	    my @v=split (/;/,$line);
-	    shift @v; #get rid of the line header
+	    shift @v; #get rid of the line header(i.e.#d) 
 	    while (@v)
 	      {
 		my $key=shift @v;
@@ -195,15 +195,25 @@ sub parse_data
 	      }
 	    $L->{linen}=$linen;
 	    $L->{period}="1";
+	    	    
+	    if ($L->{Duration}!=0)
+	      {
+	    	$L->{Velocity}=$L->{Value}/$L->{Duration};
+	      }
+	    else
+	      {
+	    	$L->{Velocity}=0; 
+	      }
+	    #print "Value = $L->{Value}\t Duration = $L->{Duration}\t Velocity => $L->{Velocity}\n";#esborrar  
+	    
 	    if ($L->{Type})
 	      {
 		my $c=$L->{CAGE};
 		my $ch=$L->{Channel};
 		my $t=$L->{StartT};
-	
+		
 		foreach my $k (keys(%$L))
 		  {
-
 		    $data->{$c}{$t}{$k}=$L->{$k};
 		  }
 	      }
