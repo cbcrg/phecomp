@@ -854,7 +854,7 @@ sub data2stat
     #modification stat R output 23/09/10
     if ($A->{output}=~/R/)
       {
-	print "period\tcage\tchannel\tduration_period\trec_period\tcount\tduration_T\tmean_duration\tvalue_T\tmean_value\n";
+	print "period\tcage\tchannel\tduration_period\trec_period\tcount\tduration_T\tmean_duration\tvalue_T\tmean_value\tvelocity\n";
       }
     
     foreach my $p (sort ({$a<=>$b}keys (%$period)))
@@ -902,8 +902,17 @@ sub data2display_period_stat
 	    #printf "%10s --> %6.2f  %6.2f\n", $ch,$d->{$c}{$t}{Duration},$d->{$c}{$t}{Value}; 
 	  }
       }
+
      $duration=$maxtime-$mintime;
      my $tt=sec2time($duration);
+     
+     foreach my $c (keys (%$S))
+       {
+	 foreach my $ch (keys(%{$S->{$c}}))
+	   {
+	     $S->{$c}{$ch}{velocity}=$S->{$c}{$ch}{value}/$S->{$c}{$ch}{duration};
+	   }
+       }
      
      #modification stat R output 23/09/10
      if ($A->{output}!~/R/) 
@@ -911,7 +920,6 @@ sub data2display_period_stat
 	 print "--- Period -- $A->{period} : "; 
 	 print "Duration: $duration sec. ($tt). N Records: $tot\n";
 	 
-
 	 foreach my $c (sort ({$a<=>$b}keys (%$S)))
 	   {
 	     printf "Cage: $c\n";
@@ -919,13 +927,25 @@ sub data2display_period_stat
 	       {
 		 my $count=$S->{$c}{$ch}{count};
 		 printf "\tChannel: %8s", $ch;
+       
 		 foreach my $f (sort ({$a cmp $b}keys(%{$S->{$c}{$ch}})))
 		   {		     
-		     if ($f ne "count")
+		     if ($f ne "count" & $f ne "velocity")
 		       { 		     
 			 printf "- %8s: %6.2f ",$f."T",$S->{$c}{$ch}{$f};
 			 $S->{$c}{$ch}{$f}/=$count;
 		       }
+		     elsif ($f eq "count")
+		       {
+			 printf "- %8s: %6d ",$f,$S->{$c}{$ch}{$f};
+			 next;
+		       }
+		     elsif ($f eq "velocity")
+		       {
+			 printf "- %8s: %6.5f ",$f,$S->{$c}{$ch}{$f};
+			 next;
+		       }
+
 		     printf "- %8s: %6.2f ",$f,$S->{$c}{$ch}{$f};
 		   }
 		 print "\n";
@@ -944,18 +964,18 @@ sub data2display_period_stat
 		 
 		 foreach my $f (sort ({$a cmp $b} keys(%{$S->{$c}{$ch}})))
 		   { 
-		     if ($f ne "count")		       
+		     if ($f ne "count" & $f ne "velocity")		       
 		       { 		     
 			 printf "%6.2f\t",$S->{$c}{$ch}{$f};
 			 $S->{$c}{$ch}{$f}/=$count;
 		       }
-		     if ($f ne "value")
+		     if ($f ne "velocity")
 		       {
 			 printf "%6.2f\t",$S->{$c}{$ch}{$f};
 		       }
 		     else 
 		       {
-			 printf "%6.2f\n",$S->{$c}{$ch}{$f};
+			 printf "%6.5f\n",$S->{$c}{$ch}{$f};
 		       }
 		   }		 
 	       }
