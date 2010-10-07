@@ -20,7 +20,7 @@ my %WEIGHT;
 my $file=shift (@ARGV);
 my $cl=join(" ", @ARGV);
 my @commands=split (/\-+/,$cl);
-
+test_bw_trainning();die;
 $d=parse_data ($file);
 
 foreach my $c (@commands)
@@ -83,9 +83,7 @@ sub run_instruction
 	($d,$A)=decode ($d,$A);
       }
     elsif ($c=~/out/)
-      {
-	
-	print STDERR "he passat per aqui\n";#my $prova=$A->{out}; print "a display_data li passem $prova\n";die;#esborrar
+      {	     
 	#display_data ($d, $A->{outdata}); 
 	display_data ($d, $A->{outdata}, );
       }
@@ -203,8 +201,7 @@ sub parse_data
 	    else
 	      {
 	    	$L->{Velocity}=0; 
-	      }
-	    #print "Value = $L->{Value}\t Duration = $L->{Duration}\t Velocity => $L->{Velocity}\n";#esborrar  
+	      }	   
 	    
 	    if ($L->{Type})
 	      {
@@ -706,16 +703,14 @@ sub filter_overlap
       my $n=0;
       if ($T eq "no"){return $d;}
       foreach my $c (sort(keys (%$d)))
-	{
-	  #print STDERR "$c\n"; #esborrar
+	{	  
 	  foreach my $t (sort(keys (%{$d->{$c}})))
 	    {
-	      #print STDERR "$t\n"; #esborrar
 	      $n++;
 	      if ( $d->{$c}{$t}{Collision} && $d->{$c}{$t}{Collision}>$T){delete ($d->{$c}{$t});$tot++;}
 	    }
 	}
-      print STDERR "\nCollisions: Removed $tot values out of $n (T: $T)\n";#die;
+      print STDERR "\nCollisions: Removed $tot values out of $n (T: $T)\n";
       return $d;
     }
         
@@ -787,8 +782,7 @@ sub data2overlap
 	      if ($pStartT!=-1)
 		{
 		  if (($StartT<$pEndT))
-		    {
-		      
+		    {		      
 		      my $delta=$pEndT-$StartT;
 		      my $v1=$delta/($EndT-$StartT);
 		      my $v2=$delta/($pEndT-$pStartT);
@@ -812,7 +806,16 @@ sub data2overlap
 			  }
 		      $tot++;
 		    }
+		  else
+		    {
+		      $d->{$c}{$t}{Collision} = 0;		      
+		    }		    
 		}
+	      else 
+		{
+		  $d->{$c}{$t}{Collision} = 0;
+		}
+
 	      $pc=$c;
 	      $pt=$t;
 	      $pStartT=$StartT;
