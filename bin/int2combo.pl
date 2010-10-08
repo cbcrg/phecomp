@@ -20,7 +20,7 @@ my %WEIGHT;
 my $file=shift (@ARGV);
 my $cl=join(" ", @ARGV);
 my @commands=split (/\-+/,$cl);
-test_bw_trainning();die;
+#test_bw_trainning();die;
 $d=parse_data ($file);
 
 foreach my $c (@commands)
@@ -85,7 +85,8 @@ sub run_instruction
     elsif ($c=~/out/)
       {	     
 	#display_data ($d, $A->{outdata}); 
-	display_data ($d, $A->{outdata}, );
+	#display_data ($d, $A->{outdata}, );
+	display_data ($d, $A);
       }
     elsif ($c=~/outmodel/)
       {
@@ -142,26 +143,37 @@ print "\n\n\n";
 sub display_data
   {
     my $d=shift;
-    my $file=shift;
+    #my $file=shift;
+    my $file=$A->{outdata};
     my $F= new FileHandle;
-    
+
     if (!$file){open ($F, ">-");}
     else {open ($F, ">$file");}
-   
-    print $F "$HEADER";
-    foreach my $c (sort ({$a<=>$b}keys(%$d)))
-      {
-	foreach my $i (sort {$a<=>$b}keys (%{$d->{$c}}))
+
+    if ($A->{output}!~/R/)
+      {	
+	print $F "$HEADER";
+	foreach my $c (sort ({$a<=>$b}keys(%$d)))
 	  {
-	    print $F "#d;";
-	    foreach my $k (sort (keys (%{$d->{$c}{$i}})))
+	    foreach my $i (sort {$a<=>$b}keys (%{$d->{$c}}))
 	      {
-		print $F "$k;$d->{$c}{$i}{$k};";
+		print $F "#d;";
+		foreach my $k (sort (keys (%{$d->{$c}{$i}})))
+		  {
+		    print $F "$k;$d->{$c}{$i}{$k};";
+		  }
+		print $F "\n";
 	      }
-	    print $F "\n";
 	  }
+	close ($F);
       }
-    close ($F);
+    else
+      {
+	&data2R_header($d);
+	&data2R_records($d);
+	
+	close ($F);
+      }
   }
 
 sub parse_data
@@ -1350,7 +1362,12 @@ sub decode
     $d=posteriorL($M, $d);
   }
   
-  
+###########################################################
+#TEST_BW_TRAINNING
+###########################################################
+#This function test the correct operation of the Baum-Welch 
+#algorithm with the Occasionally Dishonest Casino Model (ODHC)   
+
 sub test_bw_trainning()
   {
     my ($RP,$P);
@@ -2346,3 +2363,49 @@ sub sec2time
       if ($t){$date.="$t second(s)";}
       return $date;
     }
+
+
+sub data2R_header
+      {
+	my $d = shift;
+	foreach my $c (sort ({$a<=>$b}keys(%$d)))
+	  { 
+	    foreach my $i (sort {$a<=>$b}keys (%{$d->{$c}}))
+	      {
+		my $first=0;
+		
+		foreach my $k (sort (keys (%{$d->{$c}{$i}})))
+		  {
+		    if ($first == 0) {print "$k"; $first=1;}
+		    else {print "\t$k";}		     
+		  }		
+		print "\n";
+		last;
+	      }last;	    
+	  }	
+      }
+
+sub data2R_records
+	{
+	  my $d = shift;
+	  foreach my $c (sort ({$a<=>$b}keys(%$d)))
+	  { 
+	    foreach my $i (sort {$a<=>$b}keys (%{$d->{$c}}))
+	      {
+		my $first=0;
+				foreach my $k (sort (keys (%{$d->{$c}{$i}})))
+		  {
+		    if ($first == 0) 
+		      {
+			print "$d->{$c}{$i}{$k};"; 
+			$first=1;
+		      }
+		    else 
+		      {
+			print "\t$d->{$c}{$i}{$k}";
+		      }		     
+		  }		
+		print "\n";
+	      }	    
+	  }
+	}
