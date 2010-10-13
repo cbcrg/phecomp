@@ -1298,7 +1298,7 @@ sub datafield2minmax
 	
 
 				  
-#####################################################3
+#####################################################
 #emits the model for the occasionally dishonnest casino
 sub get_file 
   {
@@ -1362,11 +1362,14 @@ sub decode
     $d=posteriorL($M, $d);
   }
   
-###########################################################
+#####################################################################
 #TEST_BW_TRAINNING
-###########################################################
-#This function test the correct operation of the Baum-Welch 
-#algorithm with the Occasionally Dishonest Casino Model (ODHC)   
+#####################################################################
+#Usage: &test_bw_trainning()
+#Function: This function test the correct operation of the Baum-Welch 
+#algorithm with the Occasionally Dishonest Casino Model (ODHC)
+#Returns: returns nothing, display 
+#Args: No
 
 sub test_bw_trainning()
   {
@@ -1381,18 +1384,15 @@ sub test_bw_trainning()
     my $len=200;
     
     my $S=model2sequence ($RM,1,1000);
-   
-    
+       
     $RM=model2modelL($RM);
     $RM2=sequence2model ($S);
     my $RP=seq2probaL($RM, $S);
     
-    ($P,$M)=multi_baum_welch ($S,5,100, 6, 6);
-    
-    
-    
+    ($P,$M)=multi_baum_welch ($S,5,10, 6, 6);
+        
     ($S,$score)=viterbiL ($M, $S);
-    $S=posteriorL($M, $S);
+    $S=posteriorL($M, $S); #more probable state using the posterior probability 
     
     display_decode ($S);
     $M  =modelL2model($M);
@@ -1408,6 +1408,14 @@ sub test_bw_trainning()
     display_model ($M);
     die;
   }
+
+#####################################################################
+#ODHC2MODEL
+#####################################################################
+#Usage: $ODHC = &ODHC2model()
+#Function: Creates a Hash with the probabilities of the ODHC model 
+#Returns: returns a ref Hash with transition and emission probabilities
+#Args: No
 
 sub ODHC2model
   {
@@ -1442,11 +1450,28 @@ sub ODHC2model
     return $M;
   }
 
+#####################################################################
+#MODEL2SEQUENCE
+#####################################################################
+#Usage: $Seqs = model2sequence ($hash_model, n, l)
+#Function: Creates n sequences of length l given a probalistic model 
+#$hash_model, for each step in the sequence it calls &model2emit to 
+#set following state and symbol emited given the probabilistic Model  
+#Args: $M => A referenced hash with probabilistic model of state 
+#            transitions and emissions in format
+#             $M -> {'ST::A'} {'ST::B'} = prob (for state transitions)
+#             $M -> {'ST::A'} {'SYMBOL X'} = prob (for emission probability of a symbol given a state)   
+#      $n => Number of sequences to be created
+#      $l => Length of each sequence    
+#Returns:returns a ref Hash $H->{$j}{$l}{bin} (symbol)
+#                           $H->{$j}{$l}{RST} (state)
+#where each position has the state and the symbol emited in this state
+
 sub model2sequence
   {
     my $M=shift;
-    my $n=shift; #number of strings
-    my $l=shift; #string length
+    my $n=shift; #number of sequences
+    my $l=shift; #sequence length
     my $S={};
         
     my $state="ST::START";
@@ -1465,6 +1490,24 @@ sub model2sequence
     return $S;
   }
   
+#####################################################################
+#MODEL2EMIT
+#####################################################################
+#USAGE: ($state, $symbol) = &model2emit ($hash_model, $pState)
+#FUNCTION: return a state and a symbol given a probabilistic model and
+#the previous state ($start)
+#For setting new state and symbol it generates a random number, if this
+#number has a lower value than probability for state/symbol X it returns X
+#if not it continues until reaching a value, probabilities are added.
+#First it generates state as symbol prob will depend on it
+#ARGS: $M => A referenced hash with probabilistic model of state 
+#            transitions and emissions in format
+#             $M->{'ST::A'}{'ST::B'}=prob (for state transitions)
+#             $M->{'ST::A'}{'SYMBOL X'}=prob (for emission probability of a symbol given a state)   
+#      $pStaten => Previous state in the sequence of states
+#RETURNS:returns two strings $state new stateX given the model an previous state
+#                            $bin symbol emited on stateX
+
 sub model2emit
   {
     my $M=shift;
@@ -1474,16 +1517,21 @@ sub model2emit
     my $r_bin=rand(1);
     my $p=0;
     
+    #Getting state
     foreach my $k (keys(%$M))
       {
 	$p+=$M->{$start}{$k};
 	if ( $r_state<=$p){$state=$k;last;}
       }
+    
+    #If state is END or eventually START we return to restart the function as &model2seq has the sequence length control
     if ($state eq "ST::END" || $state eq "ST::START"){return model2emit ($M, $start);}
     $p=0;
+    
+    #Getting symbol
     foreach my $bin (keys (%{$M->{$state}}))
       {
-	if ( $bin =~/ST::/){;}
+	if ( $bin =~/ST::/){;}#If second element is a state we avoid it as Emission and Transitions aren't separated, we just skip Transition prob
 	else
 	  {
 	    $p+=$M->{$state}{$bin};
@@ -1496,6 +1544,7 @@ sub model2emit
     
     return ($state, $bin);
   }
+
 sub modelL2model
   {
      my $M=shift;
@@ -1522,32 +1571,50 @@ sub modelL2model
 	}
       return $M;
     }
+
+##################################################################
+#MODEL2MODELL   #Model to model log  
+##################################################################
+#USAGE: $M_LOG = &model2modelL ($M) 
+#FUNCTION: Converts probabilities into natural log ln(prob), going
+#through all values of the Hash. If transition/emission doesn't exist
+#or has value 0 it returns a global constant $LOG_ZEROm, 
+#else call &mylog () 
+#ARGS: $M => A referenced hash with probabilistic model of state 
+#            transitions and emissions in format 
+#             $M->{'ST::A'}{'ST::B'}=prob (for state transitions)
+#             $M->{'ST::A'}{'SYMBOL X'}=prob (for emission probability of a symbol given a state)  
+#RETURNS: Same referenced hash but with ln(prob)
+
 sub model2modelL
   {
      my $M=shift;
      my $tag=shift;
      
+     #For states transitions state A -> state B
      foreach my $k(keys(%$M))
        {
 	 foreach my $l (keys(%$M))
 	   {
-	     $M->{$k}{$l}=(!$M->{$k}{$l} ||$M->{$k}{$l}<0.00000001)?$LOG_ZERO:mylog($M->{$k}{$l});
+	     $M->{$k}{$l}=(!$M->{$k}{$l} || $M->{$k}{$l}<0.00000001)? $LOG_ZERO:mylog($M->{$k}{$l});
 	   }
 	}
-      
-      foreach my $k(keys(%$M))
-	{
-	  foreach my $l (keys(%{$M->{$k}}))
-	    {
-	      
-	      if (!($l=~/ST::/))
-		{
-		  $M->{$k}{$l}=(!$M->{$k}{$l} ||$M->{$k}{$l}<0.00000001)?$LOG_ZERO:mylog($M->{$k}{$l});
-		}
-	    }
-	}
+     
+     #For symbol emission state A -> simbol X
+     foreach my $k(keys(%$M))
+       {
+	 foreach my $l (keys(%{$M->{$k}}))
+	   {
+	     
+	     if (!($l=~/ST::/))
+	       {
+		 $M->{$k}{$l}=(!$M->{$k}{$l} ||$M->{$k}{$l}<0.00000001)?$LOG_ZERO:mylog($M->{$k}{$l});
+	       }
+	   }
+       }
      return $M;
-    }
+   }
+
 sub display_hash
     {
       my $dp=shift;
@@ -1573,6 +1640,7 @@ sub display_hash
 	    }
 	}
     }
+
 sub display_decode 
     {
       my $S=shift;
@@ -1607,6 +1675,7 @@ sub display_decode
 	    }
 	}
     }
+
 #################################################
 sub viterbi_trainningL
   {
@@ -1669,6 +1738,38 @@ sub viterbi_trainningL
     return model2modelL($M);
   }
 
+#################################################################
+#multi_baum_welch
+#################################################################
+#USAGE: multi_baum_welch ($S, $multi, $nit, $n, $m)   
+#FUNCTION: Performs Baum-Welch algorithm with set of sequences $S,  
+# m times ($multi), with number maximum of iterations ($nit), in each
+#iteration it checks if the probability of the sequences with the new
+#set model it is better to keep going, if the probability it is not
+#improving the loop breaks. This probability is calculateld by 
+#&baum_welchL()->seq2probaL() and its the overall probability for all
+#sequences given the model and the set of sequences. As this will be
+#done multiple times to compare the different executions of baum-welch
+#we also compare the probabilities using seq2probaL() and only keeping
+#the model if the probability it is greater. 
+#ARGS: $S => A referenced hash with the serie of sequences of symbols
+#            and its corresponding state. Sequences are indexed by $j
+#            and each position of a sequence by $i 
+#             $S -> {$j} {$i} {bin} = symbol
+#             $S -> {$j} {$i} {RST} = state
+#     $multi => number of times the Baum-Welch alg is executed
+#     $nit => number maximum of iterations of Baum-Welch if we don't 
+#             converge to a stable point 
+#     $n, $m = @topology => Topology of the model to generate random
+#                           probabilities (transition, emission), for
+#                           starting Baum-Welch, (n symbols state 1,
+#                           m symbols state 2...)
+#   
+#RETURNS:     $M => A referenced hash with probabilistic model (best score) 
+#                   of state transitions and emissions in format   
+#             $M->{'ST::A'}{'ST::B'}=prob (for state transitions)
+#             $M->{'ST::A'}{'SYMBOL X'}=prob (for emission probability of a symbol given a state) 
+#             $best_score => Best score of different executions of Baum-Welch
 
 sub multi_baum_welch
   {
@@ -1676,7 +1777,6 @@ sub multi_baum_welch
     my $multi=shift;
     my $nit=shift;
    
-
     my @topology=@_;
     
     my $best_score;
@@ -1684,13 +1784,13 @@ sub multi_baum_welch
     my $maxidle=5;
     my $score;
     
-    for (my $i=0;$i<$multi; $i++)
+    for (my $i=0; $i<$multi; $i++)
       {
 	my ($idle, $PP);
 	print "---- $i -----\n";
 	my $P;
 	my $M=topology2modelL ("rand",@topology);
-	my $cont=1;
+ 	my $cont=1;
 	for (my $it=0; $it<$nit && $idle<$maxidle && $cont; $it++)
 	  {
 	    ($P,$M)=baum_welchL ($S,$M);
@@ -1706,20 +1806,43 @@ sub multi_baum_welch
 	    print "\t$it ==> $P [$best_score --] [$idle]\n";
 	    $PP=$P;
 	  }
-	my $score=seq2probaL($M, $S);
+
+	my $score=seq2probaL($M, $S);#applies forward algorithm for each sequence and add the overall probability(score)
 	if (!$BM || $score>$best_score)
 	  {
 	    $BM=$M;
 	    $best_score=$score;
 	  }
       }
-    
-    
+        
     ($S, $score)=viterbiL($BM, $S);
     $S=posteriorL($BM, $S);
     
     return ($best_score, $BM);
   }
+
+#####################################################################################
+#POSTERIORL
+#####################################################################################
+#USAGE: posteriorL ($M, $S)
+#FUNCTION: Calculates posterior probabilities of states for each position of sequence
+#          using the forward and backward calculation. It does it for each sequence  
+#          of referenced hash $S.
+#ARGS: $M => A referenced hash with probabilistic model of state transitions and 
+#            emissions in format   
+#             $M->{'ST::A'}{'ST::B'}=prob (for state transitions)
+#             $M->{'ST::A'}{'SYMBOL X'}=prob (for emission probability of a symbol given a state)
+#      $S => A referenced hash with the serie of sequences of symbols
+#            and its corresponding state. Sequences are indexed by $j
+#            and each position of a sequence by $i 
+#             $S -> {$j} {$i} {bin} = symbol
+#             $S -> {$j} {$i} {RST} = state 
+#RETURNS: Same referenced hash $S updated for each position with the posterior probability
+#         for each state, the most probable state and its probability          
+#             $M->{$j}{$i}{post}{$k} 
+#             $M->{$j}{$i}{bpost}{k}
+#             $M->{$j}{$i}{bpost}{score}
+
 sub posteriorL
     {
       my $M=shift;
@@ -1769,17 +1892,14 @@ sub baum_welchL
 
     
     foreach my $j (keys (%$S))
-      {
-	
+      {	
 	my $L=keys (%{$S->{$j}});
 	my $F={};
 	my $B={};
 	
 	my ($P,$B)=backwardL($M, $S->{$j});#log_space
 	my ($P,$F)=forwardL ($M, $S->{$j});
-	
-	
-	
+	       	
 	#Update A
 	foreach my $k (keys (%$M))
 	  {
@@ -1888,6 +2008,7 @@ sub seq2probaL
       }
     return $TP;
   }
+
 sub forwardL 
     {
       my $M=shift;
@@ -1970,6 +2091,7 @@ sub backwardL
 	}
       return (0,$B);
     }
+
 sub viterbiL 
   {
     my $M=shift;
@@ -1983,9 +2105,11 @@ sub viterbiL
 	my $V={};
 	my ($path, $ppath);
 	
+	#Initialisation
 	foreach my $k (keys(%$M)){$V->{0}{$k}=$LOG_ZERO;}
 	$V->{0}{'ST::START'}=0;
 	
+	#Recursion
 	for (my $i=1; $i<=$L; $i++)
 	  {
 	    my $symbol=$S->{$j}{$i}{bin};
@@ -2021,6 +2145,7 @@ sub viterbiL
 	      }
 	  }
 	
+	#Termination
 	$max_k=$LOG_ZERO;
 	$ptr_k="";
 	foreach my $k (keys (%$M))
@@ -2033,6 +2158,8 @@ sub viterbiL
 		$ptr_k=$k;
 	      }
 	  }
+	
+	#Traceback
 	for (my $i=$L; $i>=1; $i--)
 	  {
 	    $S->{$j}{$i}{viterbi}=$ptr_k;
@@ -2091,6 +2218,7 @@ sub topology2model
     display_model ($M);
     return $M;
   }
+
 sub display_path 
     {
       my $M=shift;
@@ -2153,6 +2281,24 @@ sub display_model
     
     return;
   }
+
+###################################################################
+#SEQUENCE2MODEL
+###################################################################
+#USAGE: $M = &sequence2model ($S) 
+#FUNCTION: Calculates the model given the set of sequences, it is 
+#used as sequences are generated by a probabilistic model, so 
+#at the end the fact that the sequences correspond to the model is
+#a matter of luck. NO pseudo-accounts used
+#ARGS: $S => A referenced hash with the serie of sequences of symbols
+#            and its corresponding state. Sequences are indexed by $j
+#            and each position of a sequence by $i 
+#             $S -> {$j} {$i} {bin} = symbol
+#             $S -> {$j} {$i} {RST} = state
+#RETURNS: => A referenced hash with transition and emission probabilities
+#             $M -> {'ST::A'} {'ST::B'} = prob (for state transitions)
+#             $M -> {'ST::A'} {'SYMBOL X'} = prob (for emission probability of a symbol given a state)
+
 sub sequence2model
       {
 	my $S=shift;
@@ -2160,50 +2306,64 @@ sub sequence2model
 	my $E={};
 	my $M={};
 	
+	#Counts number of transition between states $A -> {state A} {state B}
+	#       times a symbol is emited in a given state $E -> {state A} {symbol X}
 	foreach my $j (keys(%$S))
 	  {
 	    my $L=keys (%{$S->{$j}});
 	    for (my $i=2; $i<=$L; $i++)
 	      {
 		my $s=$S->{$j}{$i}{bin};
-		my $cstate=$S->{$j}{$i}{viterbi};
-		my $pstate=$S->{$j}{$i-1}{viterbi};
+		my $cstate=0; 
+		my $pstate=0;
+		my $cstate=$S->{$j}{$i}{viterbi};   
+		my $pstate=$S->{$j}{$i-1}{viterbi};  
 		$A->{$pstate}{$cstate}++;
 		$E->{$cstate}{$s}++;
 	      }
 	  }
+
 	foreach my $k (keys (%$A))
 	  {
 	    my $tot;
-
+	    	  
 	    $tot=0;
+	    
+	    #Total number of transitions (by adding counts of each transition)
 	    foreach my $l (keys(%{$A->{$k}}))
 	      {
 		$tot+=$A->{$k}{$l};
 	      }
+	    
+	    #Calculating transition probabilities
 	    foreach my $l  (keys(%{$A->{$k}}))
 	      {
 		$M->{$k}{$l}=$A->{$k}{$l}/$tot;
 	      }
 	    
 	    $tot=0;
+
+	    #Total number of symbols emited (by adding counts of each symbol in each state)
 	    foreach my $l (keys(%{$E->{$k}}))
 	      {
 		$tot+=$E->{$k}{$l};
 	      }
+	    
+	    #Calculating emission probabilities
 	    foreach my $l (keys(%{$E->{$k}}))
 	      {
 		$M->{$k}{$l}=$E->{$k}{$l}/$tot;
 	      }
 	  }
 
-
+	#CORRECT THIS
 	foreach my $k (keys(%$M))
 	  {
 	    $M->{$k}{"ST::END"}=1;
 	    $M->{"ST::START"}{$k}=1;
 	  }
 	
+	display_model($M);
 	return model2modelL($M);
       }
 	
