@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 
-use HTTP::Date;
+use HTTP::Date; #CPAN str2time()=> time conversion function different time format --> machine time
 use strict;
 use FileHandle;
 my $index;

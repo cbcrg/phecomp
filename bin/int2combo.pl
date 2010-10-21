@@ -22,7 +22,7 @@ my $A={};
 my %WEIGHT;
 my $file=shift (@ARGV);
 my $cl=join(" ", @ARGV);
-my @commands=split (/\-+/,$cl);
+my @commands=split (/\-+/,$cl); 
 #test_bw_trainning();die;
 $d=parse_data ($file);
 
@@ -43,7 +43,7 @@ sub run_instruction
     $A=string2hash ($c, $A, $sep);
 
     if ($c=~/tag/)
-      {
+      {	
 	$d=tag($d, $A);
       }
     elsif ($c=~/untag/)
@@ -58,7 +58,12 @@ sub run_instruction
       {
 	$d=filter_data ($d,$A);
       }
-
+    
+    elsif ($c=~/coll/)
+      {
+	$d = coll ($d,$A);
+      }
+    
     elsif ($c=~/unbin/)
       {
 	$d=unbin ($d,$A);
@@ -77,6 +82,7 @@ sub run_instruction
       }
     elsif ($c=~/stat/)
       {
+	print "d is $d\n";
 	data2stat($d, $A);
       }
     elsif ($c=~/seq2model/)
@@ -255,11 +261,9 @@ sub parse_data
     
     #reformat/annotate fields fields
     $data=&channel2correct_channel ($data);
-    $data=&data2overlap($data);
+           
     $data=&channel2Nature($data);
-   
-    $data=&filter_overlap ($data,1);
-    
+         
     return $data;
   }
 
@@ -402,7 +406,7 @@ sub tag
     my $A=shift;
     
     my $field=$A->{field};
-    my $min=$A->{min};
+    my $min=$A->{min}; 
     my $max=$A->{max};
     my $contains=$A->{contains};
     my $equals=$A->{equals};
@@ -570,6 +574,7 @@ sub data2period_list
       }
     return $pl;
   }
+
 sub data2period
   {
     my $d=shift;
@@ -763,7 +768,7 @@ sub data2overlap
       my $d=shift;
       my $print=shift;
       my  $nc;
-      my ($n,$tot);
+      my ($n,$tot,$double_coll);
 
       if ($print)
 	{
@@ -804,6 +809,8 @@ sub data2overlap
 		      my $v1=$delta/($EndT-$StartT);
 		      my $v2=$delta/($pEndT-$pStartT);
 		      my $v=($v1<$v2)?$v2:$v1;
+		      
+		      #if ($d->{$pc}{$pt}{Collision} != 0 && $Value > 0 ) {$double_coll++;} #delete (here we only take into account Value)
 		      
 		      $d->{$c}{$t}{Collision}=$v1;
 		      $d->{$pc}{$pt}{Collision}=$v2;
@@ -846,6 +853,7 @@ sub data2overlap
 	    }
 	}
       print STDERR "\nOverlap: $tot values out of $n\n";
+      #print STDERR "\nDouble overlap: $double_coll values out of $tot\n"; #delete
       return $d;
     }
 
@@ -2655,5 +2663,46 @@ sub read_model
 	   
 	    return($M);	    
 	  }
-	  
-	    
+
+#################################################################
+#COLL
+#################################################################
+#USAGE: coll ($d, $A)
+#FUNCTION: This function deals with collisions (ie time intervals
+#of same cage that overlaps). Before data2overlap() which tags
+#collisions and &filter_overlap() which filters given a threshold
+#where always called
+#ARGS: $d => Ref hash with intervals data
+#RETURNS: $d => Same hash modified  	  
+
+sub coll
+	    {
+	      my $d = shift;
+	      my $A = shift;	     
+	      my ($out, $T);	      
+
+	      if (exists($A->{out}))
+		{
+		  $out = 1;
+		}
+	      	      	      	       					       	       
+	      $d = &data2overlap($d, $out);
+	      
+	      if (exists($A->{filter}))
+		{	
+	
+		  if ($A->{filter} !=0)  
+		    {
+		      $T = $A->{filter};
+	    }
+
+		  else
+		    {
+		      $T = 1; #default value		    
+		    }
+
+		  $d = &filter_overlap ($d, $T);
+		}
+	      
+	      return ($d);
+	    }
