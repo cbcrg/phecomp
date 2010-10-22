@@ -42,68 +42,67 @@ sub run_instruction
 
     $A=string2hash ($c, $A, $sep);
 
-    if ($c=~/tag/)
+    if ($c=~/^tag/) 
       {	
 	$d=tag($d, $A);
       }
-    elsif ($c=~/untag/)
+    elsif ($c=~/^untag/)
       {
 	$d=untag ($d,$A);
       }
-     elsif ($c=~/zfilter/)
+     elsif ($c=~/^zfilter/)
       {
 	$d=zfilter_data ($d,$A);
       }
-    elsif ($c=~/filter/)
+    elsif ($c=~/^filter/)
       {
 	$d=filter_data ($d,$A);
       }
     
-    elsif ($c=~/coll/)
+    elsif ($c=~/^coll/)
       {
 	$d = coll ($d,$A);
       }
     
-    elsif ($c=~/unbin/)
+    elsif ($c=~/^unbin/)
       {
 	$d=unbin ($d,$A);
       }
-    elsif ($c=~/bin/)
+    elsif ($c=~/^bin/)
       {
 	$d=data2bin ($d,$A);
       }
-    elsif ($c=~/period/)
+    elsif ($c=~/^period/)
       {
 	$d=data2period ($d,$A);
       }
-    elsif ($c=~/logodd/)
+    elsif ($c=~/^logodd/)
       {
 	data2log_odd ($d, $A);
       }
-    elsif ($c=~/stat/)
+    elsif ($c=~/^stat/)
       {
-	print "d is $d\n";
 	data2stat($d, $A);
       }
-    elsif ($c=~/seq2model/)
+    elsif ($c=~/^seq2model/)
       {
 	($d,$A)=seq2model ($d,$A);
       }
-    elsif ($c=~/decode/)
+    elsif ($c=~/^decode/)
       {
 	($d,$A)=decode ($d,$A);
       }
-    elsif ($c=~/out/)
+    elsif ($c=~/^out/)
       {	     
 	#display_data ($d, $A->{outdata}); 
 	#display_data ($d, $A->{outdata}, );
 	display_data ($d, $A);
       }
-    elsif ($c=~/outmodel/)
+    elsif ($c=~/^outmodel/)
       {
 	display_model ($A->{dataR}, $A->{outmodel});
       }
-    elsif ($c=~/test/)
+    elsif ($c=~/^test/)
       {
 	test_bw_trainning($A);
       }
