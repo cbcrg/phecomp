@@ -539,7 +539,7 @@ sub set_handle
       my $f=shift;
       my $exp= shift;
       my $F=new FileHandle;
-      my $LineN
+      my $LineN;
       open($F, $f);
       while (<$F>)
 	{

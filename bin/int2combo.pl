@@ -348,7 +348,7 @@ sub channel2Nature
 		#Female file different codification of CD slots
 		    
 		    #elsif ($Name =~/cd/ && $Nature eq "food")
-		    elsif (($Name =~/cd/||$Name=~/choc/) && $Nature eq "food")
+		    elsif (($Name =~/cd/ || $Name=~/choc/) && $Nature eq "food")
 		      {
 			if    ($i==1 && (($Name =~/slota/) ||($Name =~/ina/) )){$Nature.="_cd";}
 			elsif ($i==2 && (($Name =~/slotb/) ||($Name =~/inb/) )){$Nature.="_cd";}
@@ -358,12 +358,13 @@ sub channel2Nature
 		    }
 		    else
 		      {
-			print "ERROR: $Name\n";
+			#print "ERROR: $Name\n";
 		      }
 		  }
-		if    ($Name =~/sc/){$Nature="sc_".$Nature;}		
+		
+		if    ($Name =~/sc/ && $Nature eq "food"){$Nature="sc_".$Nature;}		
 		#elsif ($Name =~/cd/){$Nature="cd_".$Nature;}
-		elsif ($Name =~/cd/ || $Name =~ /choc/){$Nature="cd_".$Nature;}
+		elsif (($Name =~/cd/ || $Name =~ /choc/) && $Nature eq "food"){$Nature="cd_".$Nature;}
 		#########end modification 31/08/2010
 		
 		$d->{$c}{$t}{Nature}=$Nature;
@@ -520,7 +521,7 @@ sub filter_data
      my $d=shift;
      my $A=shift;
      my $action=$A->{action};
-     
+    
      my $tot=0;
      my $n=0;
      my $defined;
@@ -539,6 +540,7 @@ sub filter_data
      print STDERR "\nFiltering: Removed $tot values out of $n\n";
      return untag ($d);
    }
+
 sub data2nature_list
   {
     my $d=shift;
@@ -556,6 +558,7 @@ sub data2nature_list
       }
     return $pl;
   }
+
 sub data2period_list
   {
     my $d=shift;
@@ -569,6 +572,7 @@ sub data2period_list
 	      {
 		$pl->{$d->{$c}{$t}{period}}=1;
 	      }
+	    #print Dumper($pl); #delete 
 	  }
       }
     return $pl;
@@ -607,7 +611,8 @@ sub data2period
     elsif ($n eq "full"){$delta=$end-$start;}
     else {$delta=($end-$start)/$n;}
     
-    
+    #while second has not reach delta we are in the same period then it goes out of nested for and change period->$b
+    #$time will have annotated all seconds between start and end
     for ($b=1,$a=$start; $a<$end; $b++)
       {
 	for (my $c=0; $c<$delta; $c++, $a++)
@@ -616,6 +621,8 @@ sub data2period
 	    $time->{$a}=$b;
 	  }
       }
+    
+    #Then it looks where the interval time corresponds
     foreach my $c (sort(keys (%$d)))
       {
 	foreach my $t (sort(keys (%{$d->{$c}})))
@@ -771,7 +778,7 @@ sub data2overlap
 
       if ($print)
 	{
-	  print "cage\tdelta\tpStartT\tpEndT\tStartT\tEndT\tpStartL\tpEndL\tStartL\tEndL\tpPerc\tPerc\tpChannel\tChannel\tpValue\tValue\tfile\n";
+	  print "cage\tdelta\tperiod\tpStartT\tpEndT\tStartT\tEndT\tpStartL\tpEndL\tStartL\tEndL\tpPerc\tPerc\tpChannel\tChannel\tpValue\tValue\tfile\n";
 	}
 
       foreach my $c (sort(keys (%$d)))
@@ -785,6 +792,7 @@ sub data2overlap
 	  my $pValue;
 	  my $pc;
 	  my $pt;
+	  my $pPeriod;
 	  
 	  if ($print)
 	    {
@@ -800,9 +808,11 @@ sub data2overlap
 	      my $EndL=$d->{$c}{$t}{EndL};
 	      my $File=$d->{$c}{$t}{File};
 	      my $Value=$d->{$c}{$t}{Value};
+	      my $Period=$d->{$c}{$t}{period};	      	     	      
+	      
 	      if ($pStartT!=-1)
 		{
-		  if (($StartT<$pEndT))
+		  if (($StartT<$pEndT) && ($EndT >= $pEndT))
 		    {		      
 		      my $delta=$pEndT-$StartT;
 		      my $v1=$delta/($EndT-$StartT);
@@ -813,8 +823,34 @@ sub data2overlap
 		      
 		      $d->{$c}{$t}{Collision}=$v1;
 		      $d->{$pc}{$pt}{Collision}=$v2;
-		      
-		      
+		      $d->{$c}{$t}{Delta}=$delta;			      
+                      $d->{$pc}{$pt}{Delta}=$delta;
+
+		      if ($print)
+			{
+			  #print "***** ERROR: OVERLAP: CAGE $c --- $delta :\n";
+			  #print "\t\tC: $pChannel [$pStartT -- $pEndT] [$pStartL -- $pEndL] VALUE: $pValue File: $pFile\n";
+			  #print "\t\tC: $Channel [$StartT -- $EndT] [$StartL -- $EndL] File: VALUE: $Value $File\n";
+			  #print "\t\tperc prev:$v2 -- perc after:$v1\n";
+			  #print "\t\tvalue prev:$pValue -- value after:$Value\n";
+			  #ORDER=>cage delta period pStartT    pEndT StartT    EndT    pStartL   pEndL   StartL EndL  pPerc Perc pChannel Channel pValue          Value file
+			  print "$c\t$delta\t$Period\t$pStartT\t$pEndT\t$StartT\t$EndT\t$pStartL\t$pEndL\t$StartL\t$EndL\t$v2\t$v1\t$pChannel\t$Channel\t$pValue\t$Value\t$File\n";
+			  
+			  }
+		      $tot++;
+		    }
+		  
+		  elsif (($StartT < $pEndT) && ($EndT < $pEndT))
+		    {
+                      my $delta=$EndT-$StartT;
+		      my $v1=$delta/($EndT-$StartT);
+		      my $v2=$delta/($pEndT-$pStartT);
+		      my $v=($v1<$v2)?$v2:$v1;
+
+		      $d->{$c}{$t}{Collision}=$v1;
+		      $d->{$pc}{$pt}{Collision}=$v2;
+		      $d->{$c}{$t}{Delta}=$delta;			      
+                      $d->{$pc}{$pt}{Delta}=$delta;
 		      
 		      if ($print)
 			{
@@ -823,20 +859,24 @@ sub data2overlap
 			  #print "\t\tC: $Channel [$StartT -- $EndT] [$StartL -- $EndL] File: VALUE: $Value $File\n";
 			  #print "\t\tperc prev:$v2 -- perc after:$v1\n";
 			  #print "\t\tvalue prev:$pValue -- value after:$Value\n";
-			  #ORDER=>cage delta pStartT    pEndT StartT    EndT    pStartL   pEndL   StartL EndL  pPerc Perc pChannel Channel pValue Value file
-			  print "$c\t$delta\t$pStartT\t$pEndT\t$StartT\t$EndT\t$pStartL\t$pEndL\t$StartL\t$EndL\t$v2\t$v1\t$pChannel\t$Channel\t$pValue\t$Value\t$File\n";
+			  #ORDER=>cage delta period pStartT    pEndT StartT    EndT    pStartL   pEndL   StartL EndL  pPerc Perc pChannel Channel pValue          Value file
+			  print "$c\t$delta\t$Period\t$pStartT\t$pEndT\t$StartT\t$EndT\t$pStartL\t$pEndL\t$StartL\t$EndL\t$v2\t$v1\t$pChannel\t$Channel\t$pValue\t$Value\t$File\n";
 			  
 			  }
 		      $tot++;
+
 		    }
+
 		  else
 		    {
-		      $d->{$c}{$t}{Collision} = 0;		      
+		      $d->{$c}{$t}{Collision} = 0;
+		      $d->{$c}{$t}{Delta} = 0;		      
 		    }		    
 		}
 	      else 
 		{
 		  $d->{$c}{$t}{Collision} = 0;
+	          $d->{$c}{$t}{Delta} = 0;
 		}
 
 	      $pc=$c;
@@ -847,8 +887,7 @@ sub data2overlap
 	      $pEndL=$EndL;
 	      $pFile=$File;
 	      $pChannel=$Channel;
-	      $pValue=$Value;
-	      
+	      $pValue=$Value;	      
 	    }
 	}
       print STDERR "\nOverlap: $tot values out of $n\n";
@@ -2587,7 +2626,7 @@ sub data2R_records
 		  {
 		    if ($first == 0) 
 		      {
-			print "$d->{$c}{$i}{$k};"; 
+			print "$d->{$c}{$i}{$k}"; 
 			$first=1;
 		      }
 		    else 
@@ -2677,7 +2716,8 @@ sub read_model
 sub coll
 	    {
 	      my $d = shift;
-	      my $A = shift;	     
+	      my $A = shift;
+	      #my $period = &data2period_list($d);
 	      my ($out, $T);	      
 
 	      if (exists($A->{out}))
@@ -2693,7 +2733,7 @@ sub coll
 		  if ($A->{filter} !=0)  
 		    {
 		      $T = $A->{filter};
-	    }
+		    }
 
 		  else
 		    {

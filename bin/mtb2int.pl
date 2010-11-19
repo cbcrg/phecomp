@@ -238,7 +238,8 @@ sub mtb2intervals
 					}
 				      else 
 					{
-					  $data{'INTERVALS'}{$c}{$ch}{$ci}{Name}=$data{$f}{"[ANIMALS DATA]"}{$c}{Code};
+					  #$data{'INTERVALS'}{$c}{$ch}{$ci}{Name}=$data{$f}{"[ANIMALS DATA]"}{$c}{Code};
+					  $data{'INTERVALS'}{$c}{$ch}{$ci}{Name}="CD";
 					}				  
 				    }
 				  else 
