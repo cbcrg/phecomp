@@ -769,7 +769,7 @@ sub parse_header
     return $data;
   }
 
-sub data2overlap
+  sub data2overlap
     {
       my $d=shift;
       my $print=shift;

@@ -1,10 +1,14 @@
 #!/usr/bin/env perl
 
 use HTTP::Date; #CPAN str2time()=> time conversion function different time format --> machine time
+use File::Compare; #File comparison
+use Data::Dumper;
 use strict;
 use FileHandle;
+
 my $index;
 my $SHIFT=4;
+my $ary_files = "";
 
 ###################################
 #Modification 02/09/2010
@@ -12,7 +16,14 @@ my $SHIFT=4;
 my $A={};
 my $cl=join(" ", @ARGV);
 my @commands=split (/\-+/,$cl);
-my @files = split (" ", shift @commands); 
+my @files = split (" ", shift @commands);
+
+#ary_files will containg only files we have pass the checking in order to see incosinstencies in files
+print STDERR "\n\n---- FILE CHECKING STARTS ----\n\n";
+$ary_files = &files2check (\@files);
+print STDERR "\n\n---- FILE CHECKING ENDS ----\n\n";
+print STDERR "--- FILES REMAINING AFTER THE CHECKING ARE: @$ary_files ---\n\n";
+
 my $H={};
 my $switch_f;
 
@@ -22,7 +33,8 @@ my $switch_f;
 
 foreach my $c (@commands)
   {
-    &run_instruction (\@files, $A, $c);
+    #&run_instruction (\@files, $A, $c);
+    &run_instruction ($ary_files, $A, $c); #now first we have checked files
   }
 die;
 
@@ -41,7 +53,8 @@ sub run_instruction
         
     elsif ($c=~/out/)
       {	
-	&mtb2intervals ("Intake 1;Intake 2;Intake 3;Intake 4", $H, $switch_f,  @files);
+	#&mtb2intervals ("Intake 1;Intake 2;Intake 3;Intake 4", $H, $switch_f,  @files);
+	&mtb2intervals ("Intake 1;Intake 2;Intake 3;Intake 4", $H, $switch_f,  @$ary_files);
       }
   }
 
@@ -723,3 +736,167 @@ sub set_handle
       close ($F);
       return 0;
     }
+
+#Check input mtb files:
+#have date and time
+#have date
+#have time
+#2 files not having the same date
+#    2 files having the sama data inside whereas the are named different 
+#Concordance between date inside file and name of file
+
+sub files2check 
+  {    
+    my $ary_files = shift;
+    my ($f, $rem_f);
+    my ($v, $d, $t);
+    my $ary_filter_files;
+    my $H = {};
+
+    foreach $f (@$ary_files) 
+      {			
+	($d, $t) = &timestamp_in_file ($f);
+		
+	##Date and time presents?
+	if (!defined ($d) && !defined ($t)) 
+	  {
+	    print STDERR "\n\nWARNING FILE $f HAS NO DATE AND TIME!!!\n";
+	    print STDERR  "THUS IT WON'T BE USED!!\n\n";	     
+	  }
+	
+	elsif (!defined ($d))
+	  {
+	    print STDERR "\n\nWARNING FILE $f HAS NO DATE!!!\n\n";
+	    print STDERR  "THUS IT WON'T BE USED!!\n\n";
+	  }
+
+	elsif (!defined ($t))
+	  {
+	    print STDERR "\n\nWARNING FILE $f HAS NO TIME!!!\n\n";
+	    print STDERR  "THUS IT WON'T BE USED!!\n\n";
+	  }
+	
+	else 
+	  {	    
+	    $H->{$f}{date} = $d;
+	    $H->{$f}{time} = $t; 
+	  }
+      }
+        
+    #Checks if the are different files with duplicated dates and removes those where date does not match file name
+    $H = &timestamp2repetion ($H);
+    
+    #We check that remaining files have the same date inside file and in filename 
+    foreach $rem_f (keys (%$H)) 
+      {
+	$H = &date2filename ($rem_f, $H);
+      }
+    
+    $ary_files = &hashkeys2array ($H);
+    return ($ary_files);
+    
+  }
+
+#Gets time and date from file mtb time stamp
+sub timestamp_in_file 
+    {
+      my $f = shift;
+      my $F = new FileHandle;
+      my $i;
+      my ($k, $v, $date, $time);
+           
+      open ($F, "$f") or die "Can't open file: $f";
+      
+      while (<$F>)
+	{
+	  ($i == 3000) && last; #Headers are in the first part of the file, with 12 cages last header line ~1200, to be sure 3000 lines are considered
+	  chomp;
+	  my $line = $_;
+	  
+	  if ($line =~ /Date and time=/)
+	    {	      
+	      ($k, $v) = split ("=", $line);
+	      ($date, $time) = split (/\s+/, $v);	      
+	    }
+	  
+	  $i++;
+	}
+      
+      return ($date, $time)
+    }
+
+#Check if two files have the same time stamp
+#If that happens pass the files to date2filename, that checks which of the files has
+#a time stamp different to the file name 
+sub timestamp2repetion 
+	{
+	  my $H = shift;
+	  my ($f, $f2) = "";
+	  
+	  foreach $f (keys (%{$H}))
+	    {
+	      #print STDERR "file is $f\n";
+	      foreach $f2 (keys (%$H))
+		{
+		  if ($f ne $f2 && $f < $f2 ) 
+		    {
+		      if ($H->{$f}{time} eq $H->{$f2}{time} && $H->{$f}{date} eq $H->{$f2}{date})
+			{
+			  if (compare($f, $f2) == 0)
+			    {
+			      print STDERR "\n\nWARNING: $f and $f2 have the same information (are the same file)!!!\n";
+			      $H = &date2filename ($f, $H);
+			      $H = &date2filename ($f2, $H);
+			    }
+			  else
+			    {
+			      print STDERR "\n\nWARNING: $f and $f2 have the same time stamp!!!\n\n";
+
+			      #If they have thes same time stamp but are not the same file we take file which date matches file name
+			      $H = &date2filename ($f, $H);
+			      $H = &date2filename ($f2, $H);
+			    }	     
+			}
+		    }
+		}
+	    }
+	  return ($H);
+	}
+
+#Check the date inside the file vs the date in file name
+sub date2filename 
+	  {
+	    my $f = shift;
+	    my $H = shift;
+	    my ($year, $month, $day, $date) = "";
+	      
+	    		 	       
+	    $year = substr ($f, 0, 4);
+	    $month = substr ($f, 4, 2);
+	    $day = substr ($f, 6, 2);
+	    $date = $day."/".$month."/".$year;
+		
+	    if ($date ne $H->{$f}{date})
+	      {
+		print STDERR "\n\nWARNING: File $f timestamp --$H->{$f}{date}-- does not match file name!!!\n";
+		delete ($H->{$f});
+		print STDERR "THUS IT WON'T BE USED!!!\n\n";		    
+	      }
+ 				
+	    return ($H);
+	  }
+
+#Creates an ordered array with hash keys 
+sub hashkeys2array      
+	    {
+	      my $H = shift;
+	      my $k = "";
+	      my @a = "";
+	      	      
+	      foreach $k  (sort ({$a cmp $b} keys (%$H)))
+		{
+		  push (@a, $k);
+		}
+
+	      return (\@a);
+	    }
