@@ -373,6 +373,7 @@ sub channel2Nature
 	  }
 	return $d;
       }
+
 sub unbin
   {
     my $d=shift;
@@ -605,6 +606,7 @@ sub data2period
     if ($n eq "hour"){$delta=3600;}
     elsif ($n eq "day"){$delta=3600*24;}
     elsif ($n eq "week"){$delta=3600*24*7;}
+    elsif ($n eq "eleven"){$delta=3600*24*11;}
     elsif ($n eq "twoweek"){$delta=3600*24*7*2;}
     elsif ($n eq "month"){$delta=3600*24*31;}
     elsif ($n eq "year"){$delta=3600*24*365;}
@@ -1077,28 +1079,38 @@ sub data2log_odd
 
 	$A->{period}=$p;
 	$A->{name}="$p";
-	data2log_odd_period ($d, $A);
+	data2log_odd_period ($d, $A);#the function is called for each period
       }
     die;
   }
 
 sub data2log_odd_period
-  {
+  {    
     my $d=shift;
     my $A=shift;
     my $tot={};
     my $chc={};
     my $M={};
 
-    
+    #c-> cage
+    #ch -> previous channel
+    #cch -> current channel
+    #t -> time    
     foreach my $c (sort(keys (%$d)))
       {
-	my ($ch, $pendt);
+	#my ($ch,$pendt);
+	my ($ch) ;
+	my $pendt = 0;
+
 	foreach my $t (sort(keys (%{$d->{$c}})))
 	  {
 	    my $period=$d->{$c}{$t}{period};
 	    if ($period ne $A->{period}){next;}
+	    #print "he passat per aqui --> $pendt\n";
+	    #if ($d->{$c}{$t}{StartT} > $pendt)  {$pendt=$d->{$c}{$t}{EndT}; next;} else {}
+	    #I take the bin (e.g. sc_food_sc) 
 	    my $cch=$d->{$c}{$t}{bin};
+	    
 	    $M->{$c}{$cch}{$cch }{count}{tot}++;
 	    if ($ch)
 	      {
@@ -1110,7 +1122,7 @@ sub data2log_odd_period
 	    
 	    $tot->{$c}++;
 	    $ch=$cch;
-	    $pendt=$d->{$c}{$t}{EndT};
+	    $pendt=$d->{$c}{$t}{EndT};#print "aqui que es $pendt";
 	  }
       }
     
@@ -2710,6 +2722,11 @@ sub read_model
 #of same cage that overlaps). Before data2overlap() which tags
 #collisions and &filter_overlap() which filters given a threshold
 #where always called
+#POSSIBLE PARAMETERS:
+# -coll out ->  data2overlap prints collisions
+# -coll filter -> filter_overlap filter collisions (deprecated) they
+#                 were filtered if the whole second interval its inside
+#                 the first one
 #ARGS: $d => Ref hash with intervals data
 #RETURNS: $d => Same hash modified  	  
 

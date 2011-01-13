@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 
-use HTTP::Date; #CPAN str2time()=> time conversion function different time format --> machine time
+use HTTP::Date; #CPAN str2time()=> time conversion function different time format --> machine time (seconds since EPOCH)
 use File::Compare; #File comparison
 use Data::Dumper;
 use strict;
@@ -19,22 +19,22 @@ my @commands=split (/\-+/,$cl);
 my @files = split (" ", shift @commands);
 
 #ary_files will containg only files we have pass the checking in order to see incosinstencies in files
-print STDERR "\n\n---- FILE CHECKING STARTS ----\n\n";
+# print STDERR "\n\n---- FILE CHECKING STARTS ----\n\n";
 $ary_files = &files2check (\@files);
-print STDERR "\n\n---- FILE CHECKING ENDS ----\n\n";
-print STDERR "--- FILES REMAINING AFTER THE CHECKING ARE: @$ary_files ---\n\n";
+# print STDERR "\n\n---- FILE CHECKING ENDS ----\n\n";
+# print STDERR "--- FILES REMAINING AFTER THE CHECKING ARE: @$ary_files ---\n\n";
 
 my $H={};
 my $switch_f;
 
 #&mtb2intervals ("Intake 1;Intake 2;Intake 3;Intake 4", @ARGV);
-	      
+	       
 #process_mbt (@ARGV);
 
 foreach my $c (@commands)
   {
     #&run_instruction (\@files, $A, $c);
-    &run_instruction ($ary_files, $A, $c); #now first we have checked files
+    &run_instruction ($ary_files, $A, $c); #now we first check files
   }
 die;
 
@@ -169,7 +169,7 @@ sub mtb2intervals
       my $channels=shift;
       #modification 02/09/2010
       my $H=shift;
-      my $switch_f=shift;      
+      my $switch_f=shift;#Switch controlling whether channel info comes from a file or not      
       #end modification - 02/09/2010
       my @files=@_;
       my @sorted_files;
@@ -180,6 +180,7 @@ sub mtb2intervals
       foreach my $f (@files)
 	{
 	  %data=&mtb2header($f, \%data);
+	 
 	  &display_header  (\%data, $f);
 	}
 	 
@@ -270,6 +271,7 @@ sub mtb2intervals
 			      $data{'INTERVALS'}{$c}{$ch}{$ci}{File}=$f;
 			      
 			    }
+
 			  $data{'INTERVALS'}{$c}{$ch}{$ci}{EndT}=$dataline{$c}{$ch}{Time};
 			  $data{'INTERVALS'}{$c}{$ch}{$ci}{EndL}=$LineN;
 			  $data{'INTERVALS'}{$c}{$ch}{$ci}{Value}=$v;
@@ -502,7 +504,7 @@ sub intake2intervals (\%data, "Food")
  
 sub merge_fields
   {
-    #merge the channels in CH list and creat a new channel
+    #merge the channels in CH list and create a new channel
 
     my $dataR=shift;
     my $new_ch=shift;
