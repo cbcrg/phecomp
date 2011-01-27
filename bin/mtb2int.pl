@@ -791,7 +791,7 @@ sub files2check
     #We check that remaining files have the same date inside file and in filename 
     foreach $rem_f (keys (%$H)) 
       {
-	$H = &date2filename ($rem_f, $H);
+	#$H = &date2filename ($rem_f, $H);###ATENTION!!! Comment to work with obese data from Aurelijus
       }
     
     $ary_files = &hashkeys2array ($H);

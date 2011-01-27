@@ -123,17 +123,18 @@ sub act2position
 		  my $time = $data{'POSITION'}{$c}{$i}{Time};
 		  my $x = $data{'POSITION'}{$c}{$i}{X};
 		  my $y = $data{'POSITION'}{$c}{$i}{Y};
-		  my $line = $data{'POSITION'}{$c}{$i}{Line};
+		  my $type = $data{'POSITION'}{$c}{$i}{Type};
+		  my $line = $data{'POSITION'}{$c}{$i}{Line};		  
 		  my $file = $data{'POSITION'}{$c}{$i}{File};
 		  my $f_print = $file;
 		  
-		  if ($file =~ /^*.\//)
+		  if ($file =~ /^*.\//) #avoiding names as us/cn/file.act -> file.act
   			{  		
   				my @a = split ("/",$file);
   				$f_print = pop( @a);   		
   			} 	
   				  
-		  print "#d;CAGE;$c;Index;$i;Time;$time;XPos;$x;YPos;$y;Line;$line;File;$f_print\n";
+		  print "#d;CAGE;$c;Index;$i;Time;$time;XPos;$x;YPos;$y;Type;$type;Line;$line;File;$f_print\n";
 		}
 	    }
 	}           
@@ -238,7 +239,7 @@ sub act2header
 	$time=$header{$file}{"HEADER"}{'EHEADER'}{'StartStamp'}=str2time(&check_all_dates ("Track Date & Time", \%header, $file)); 
 	#$time=$header{$file}{"HEADER"}{'EHEADER'}{'StartStamp'}=str2time(&header2value("File Date & Time ", \%header, $file));
 	
-	print STDERR "time -> $time\n";#del
+	#print STDERR "time -> $time\n";#del
 	
 	return (%header);
       }
@@ -258,7 +259,7 @@ sub display_header#modify respect mtb2int to order keys
  
   foreach my $k1 (keys (%{$h{$f}}))
     {
-      if ($k1 eq "INTERVALS"){next;}
+      if ($k1 eq "POSITION"){next;}
       foreach my $k2 (keys (%{$h{$f}{$k1}} ))
 	{
 	  foreach my $k3 (keys (%{$h{$f}{$k1}{$k2}}))
@@ -310,7 +311,7 @@ sub dates_format2change
     
     foreach $k1 (keys (%{$h{$f}}))
       {
-	if ($k1 eq "INTERVALS"){next;} 
+	if ($k1 eq "POSITION"){next;} 
 	foreach $k2 (keys (%{$h{$f}{$k1}} ))
 	  {
 	    foreach $k3 (keys (%{$h{$f}{$k1}{$k2}}))
@@ -455,19 +456,20 @@ sub read_track
 				      	     	     	     	      
 	      if ($line =~ /^\d+/)
 		{		
-		  print STDERR "where you are file -> $f       line -> $line    startime -> $stime\n";# -> $f;     line -> $line;      startime -> $stime\n";#del
+		  #print STDERR "where you are file -> $f       line -> $line    startime -> $stime\n";# -> $f;     line -> $line;      startime -> $stime\n";#del
 		  my $H_data_line = &act2parse_line ($f, $line, $stime);
-		  print Dumper ($H_data_line);#del		  
+		  #print Dumper ($H_data_line);#del		  
 		  if (exists ($H_data_line->{'Time'})) #inside act2parse_line we only keep sec no tenth of sec (1.00, 2.00...)
 		    {
 		      $ci++;
 		      
-		      $H_dataR -> {'POSITION'}->{$c}->{$ci}->{File} = $f;
-		      $H_dataR -> {'POSITION'}->{$c}->{$ci}->{Time} = $H_data_line->{'Time'};
-		      $H_dataR -> {'POSITION'}->{$c}->{$ci}->{X} = $H_data_line->{'X'};
-		      $H_dataR -> {'POSITION'}->{$c}->{$ci}->{Y} = $H_data_line->{'Y'};
-		      $H_dataR -> {'POSITION'}->{$c}->{$ci}->{Sample} = $H_data_line->{'Sample'};
-		      $H_dataR -> {'POSITION'}->{$c}->{$ci}->{Line} = $LineN;
+		      $H_dataR -> {'POSITION'}{$c}{$ci}{File} = $f;
+		      $H_dataR -> {'POSITION'}{$c}{$ci}{Time} = $H_data_line->{'Time'};
+		      $H_dataR -> {'POSITION'}{$c}{$ci}{X} = $H_data_line->{'X'};
+		      $H_dataR -> {'POSITION'}{$c}{$ci}{Y} = $H_data_line->{'Y'};
+		      $H_dataR -> {'POSITION'}{$c}{$ci}{Sample} = $H_data_line->{'Sample'};
+		      $H_dataR -> {'POSITION'}{$c}{$ci}{Type} = 1;
+		      $H_dataR -> {'POSITION'}{$c}{$ci}{Line} = $LineN;
 		      $H_dataR -> {'POSITION'}{$c}{0} = $ci; 
 		      
 		    }
@@ -508,9 +510,9 @@ sub read_track
 
 sub act2parse_line
 	  {
-	    my $file = shift;print STDERR "file inside function  $file\n";
-	    my $line = shift;print STDERR "line inside function  $line\n";	    
-	    my $sTime = shift;print STDERR "time inside function  $sTime\n";  
+	    my $file = shift;#print STDERR "file inside function  $file\n";#del
+	    my $line = shift;#print STDERR "line inside function  $line\n";#del	    
+	    my $sTime = shift;#print STDERR "time inside function  $sTime\n";#del  
 
 	    my @ary_line;
 	    my ($time, $lineN);
@@ -518,15 +520,18 @@ sub act2parse_line
 	    
 	    if ($line)
 	      {
-		#print STDERR "Definetely"; #del
-		$line =~ s/,/./g;
-
+		#Annotation in act file is 1.000,32, first point changed for nothing, then comma by a point
+		#print STDERR "line is $line\n";#del
+		$line =~ s/\.//g; 
+		#print STDERR "line2 is $line\n";#del
+		$line =~ s/\,/./g;
+		#print STDERR "line3 is $line\n";#del
+			
 		@ary_line = split (/\s+/, $line);
 		$time = $ary_line[1];
 		
 		if ($time =~ /(\d+)\.00/) 
-		  { 
-		    print STDERR "Definetely";
+		  { 		    
 		    $time = $1;
 		    $dataline{'Sample'} = $ary_line[0];
 		    $dataline{'Time'} = $sTime + $time;

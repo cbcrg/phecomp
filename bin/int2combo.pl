@@ -422,7 +422,9 @@ sub tag
 	  {
 	    my $mark=0;
 	    my $v=$d->{$c}{$t}{$field};
+	    
 	    if (defined ($d->{$c}{$t}{$field})){$defined++;}
+	    
 	    if (defined ($A->{contains}) && $v=~$contains){$mark=1;}
 	    elsif (defined ($A->{equals}) && $v eq $equals){$mark=1;}
 	    elsif (defined ($A->{min}) && defined ($A->{max})   && $v>$min && $v<$max){$mark=1;}
@@ -2723,6 +2725,9 @@ sub read_model
 #collisions and &filter_overlap() which filters given a threshold
 #where always called
 #POSSIBLE PARAMETERS:
+# -coll -> it will add to hash with data 2 news keys collision and 
+#          delta, this way when we print the interval both of them 
+#          will be printed.
 # -coll out ->  data2overlap prints collisions
 # -coll filter -> filter_overlap filter collisions (deprecated) they
 #                 were filtered if the whole second interval its inside
