@@ -26,6 +26,7 @@ $ary_files = &files2check (\@files);
 
 my $H={};
 my $switch_f;
+my $actStamp = {};
 
 #&mtb2intervals ("Intake 1;Intake 2;Intake 3;Intake 4", @ARGV);
 	       
@@ -39,24 +40,30 @@ foreach my $c (@commands)
 die;
 
 sub run_instruction
-  {
-    my $ary_files=shift;
-    my $A=shift;#now is empty
-    my $c=shift;    
-    
-    $A=string2hash ($c,$A);
-    
-    if ($c=~/info/)
-      {
-	($H, $switch_f) = &file2channel ($A,$H);
-      }
-        
-    elsif ($c=~/out/)
-      {	
-	#&mtb2intervals ("Intake 1;Intake 2;Intake 3;Intake 4", $H, $switch_f,  @files);
-	&mtb2intervals ("Intake 1;Intake 2;Intake 3;Intake 4", $H, $switch_f,  @$ary_files);
-      }
-  }
+	{
+    	my $ary_files=shift;
+	    my $A=shift;#now is empty
+	    my $c=shift;    
+	    
+	    $A=string2hash ($c,$A);
+	    
+	    if ($c=~/info/)
+	      	{
+				($H, $switch_f) = &file2channel ($A,$H);
+	      	}
+	      
+	    elsif ($c =~ /actstamp/)
+			{	
+	    		#Each file have its corresponding act file, thus, this function should return the epoch date of each act file a hash 	    			    			    	
+	    		$actStamp = &actStamp2hash ($ary_files); 	    
+	    	}
+	        
+	    elsif ($c=~/out/)
+	      	{	
+				#&mtb2intervals ("Intake 1;Intake 2;Intake 3;Intake 4", $H, $switch_f,  @files);				
+				&mtb2intervals ("Intake 1;Intake 2;Intake 3;Intake 4", $H, $switch_f, $actStamp,  @$ary_files);
+	      	}
+	}
 
 sub file2channel 
     {
@@ -78,8 +85,7 @@ sub file2channel
 	  chomp;
 	  my $line=$_;
 	  ($c, $seq) = split ("\t",$line);    
-	  #print STDERR "c $c => seq $seq \n";
-	  #print STDERR "la sequencia es $seq\n";
+	 
 	  if ($seq!~/C/i) 
 	    {
 	      $H->{$c}{Name}="SC";
@@ -169,17 +175,20 @@ sub mtb2intervals
       my $channels=shift;
       #modification 02/09/2010
       my $H=shift;
-      my $switch_f=shift;#Switch controlling whether channel info comes from a file or not      
+      my $switch_f=shift;#Switch controlling whether channel info comes from a file or not          
       #end modification - 02/09/2010
-      my @files=@_;
+      my $actStamp = shift;      
+      my @files=@_;      
       my @sorted_files;
       my %data;
       my @ch;
       my $ncages;
-
+	  
+	  #print Dumper ($actStamp);#del
+	  	
       foreach my $f (@files)
 	{
-	  %data=&mtb2header($f, \%data);
+	  %data=&mtb2header($f, \%data, $actStamp);
 	 
 	  &display_header  (\%data, $f);
 	}
@@ -229,7 +238,7 @@ sub mtb2intervals
 			      $rv{$c}{$ch}=$v;
 			      $in{$c}{$ch}=1;
 			      $ci=++$data{'INTERVALS'}{$c}{$ch}{0};
-			      $data{'INTERVALS'}{$c}{$ch}{$ci}{StartT}=$dataline{$c}{$ch}{Time};
+			      $data{'INTERVALS'}{$c}{$ch}{$ci}{StartT}=$dataline{$c}{$ch}{Time}; #print STDERR "$dataline{$c}{$ch}{Time}\n"; 
 			      $data{'INTERVALS'}{$c}{$ch}{$ci}{StartL}=$LineN;
 			      $data{'INTERVALS'}{$c}{$ch}{$ci}{Type}=1;
 			      $data{'INTERVALS'}{$c}{$ch}{$ci}{Index}=$ci;
@@ -349,8 +358,9 @@ sub mtb2parse_line
 	  $line =~ s/,/\./g;
 	  
 	  @list=split ( /\s+/, $line);
-	  $time=$lineN=shift (@list);
+	  $time=$lineN=shift (@list);	  
 	  $time=$lineN+$stime;
+	  #print STDERR "startTime -> $stime,\t linea $lineN,\t time->$time\n";#del
 	  for (my $a=0; $a<$SHIFT; $a++){shift(@list);} #NODATA out
 	  
 	  foreach my $ch (@channels)
@@ -382,13 +392,13 @@ sub mtb2header
     {
     my $file=shift;
     my $dataR=shift;
+    my $actStamp = shift;
     my $F = new FileHandle;
     my %header=%$dataR;
     
     my ($id,@id_list,$index, $v, $time);
     my ($Nintake, $Ncages);
      
-    
     #hard code activity as channel 1
     $index=&set_channel (\%header,$file,"[Intake Channels]",$index,"activity",("Type=output", "Captions=activity", "unit=undef"));
     #hard code rearing as channel 2
@@ -443,9 +453,19 @@ sub mtb2header
 	  }
       }
     close ($F);
+    
     $header{$file}{'HEADER'}{'EHEADER'}{'Ncages'}=$Ncages=&header2value("Number of cages", \%header, $file);
-    $time=$header{$file}{"HEADER"}{'EHEADER'}{'StartStamp'}=str2time(&header2value("Date and time", \%header, $file));
-   
+          
+    #Time was always taken from mtb file, modified in order to get timestamp from act file in case option -actstamp is provided   
+    if (exists $actStamp->{$file})
+    	{
+    		$time=$header{$file}{"HEADER"}{'EHEADER'}{'StartStamp'} =  $actStamp->{$file};   		
+    	}
+    else
+    	{
+   			$time=$header{$file}{"HEADER"}{'EHEADER'}{'StartStamp'}=str2time(&header2value("Date and time", \%header, $file));   			
+    	}
+    	
     return %header;
   }
     
@@ -902,3 +922,87 @@ sub hashkeys2array
 
 	      return (\@a);
 	    }
+
+sub actStamp2hash
+	{
+		#my $A = shift;
+		my $ary_files = shift;
+		#print Dumper ($ary_files);
+		my $H_actStamp = {};
+		my $time = "";
+		
+		foreach my $file (@$ary_files)
+			{
+		
+				if ($file)
+					{
+						my $actFile = $file;					
+						$actFile =~ s/mtb/act/;						
+						$time = &str2time (actStamp2string ($actFile));								
+						$H_actStamp->{$file} = $time;
+					}
+			}
+		
+		return ($H_actStamp);			
+	}
+	
+#sub actStamp2string 
+#	{
+#		###!!!!!!!!! I should check that all mtb files have its own act file  
+#		my $A = shift;      	      	      
+#      	my $F = new FileHandle;
+#      	my $date = "";
+#      	my $line;
+#      	
+#      	if (defined ($A->{file}))
+#      		{
+#      			my $file = $A->{file};
+#      			print STDERR "CCBC $file\n";#del
+#     			
+#     			open ($F, "$file") or die "Can't open file: $file";
+#      
+#      			while (<$F>)
+#					{
+#	  					chomp;
+#	  					$line = $_;
+#	  					
+#	  					if ($line =~ /(Track Date & Time\s*):(.*)/)
+#	  						{
+#	  							$date = $2;
+#	  							print STDERR "agafa la $date\n";
+#	  							return ($date);				
+#	  						}	  					
+#					}
+#					 			
+#      			
+#      		}
+#      		
+#      	else 
+#      		{
+#      			print STDERR "No act file provided!! If you run option -actstamp you should provide a act file for each mtb file\n";
+#      			die; #say something as no file provided;
+#      		}
+#      		
+#	}
+
+sub actStamp2string 
+	{
+		my $file = shift;    
+		my $F = new FileHandle;
+      	my $date = "";
+      	my $line;      	
+     			
+     	open ($F, "$file") or die "Can't open file: $file\n\nactstamp option needs that all mtb files have their corresponding act file with same name!!!\n";
+      
+      	while (<$F>)
+			{
+	  			chomp;
+	  			$line = $_;
+	  					
+	  			if ($line =~ /(Track Date & Time\s*):(.*)/)
+	  				{
+	  					$date = $2;	  					
+	  					return ($date);				
+	  				}	  					
+			}
+	}
