@@ -10,14 +10,24 @@
 ### each interval the mean X and Y position                                                ###
 ###                                                                                        ###
 ###OPTIONS                                                                                 ###
+### -int file.int -> flag for input intervals file (*.int)                                 ###
+### -shift add integer -> shift time of position file, by the integer specified (+ or -)   ### 
+###					      trying to fit both time stamps      							   ###
+### -shift mult decimal ->trying to fit both time stamps      							   ###
+### -pos file.pos -> flag for input position file (*.pos)                                  ###
 ### -add pos mean -> add to each interval from int file the mean position X and Y          ###
-###      pos all -> add to data coming from pos file the position given the (X,Y)          ###  
-###	     channel pos -> Using mean position to set the channel                             ###
+###      pos vector -> add to each interval from int file the vector with the position     ###
+###                    counts positions for each second of this interval                   ###
+###      pos all -> add to data coming from pos file the position given the (X,Y)          ###
+###                 this way it is possible to visualize each zone for pos file            ###	  
+###	     channel pos -> Using mean position to set the channel inside int file             ###
+### -set ##channel pos (I have to make this option here and not inside add)                ###    
+###      channel vector -> set the channel using the information carried in vector         ###
 ### -filter                                                                                ### 
 ### -out outdata filename-> print intervals, if outdata is used results will be given in   ###
 ###                         a file called "filename", if only -out is used results will    ###
 ###                         be shown in standard output                                    ###   		
-###      data pos -> print only pos resulting file (by default int file is printed)        ###
+###      print pos -> print only pos resulting file (by default int file is printed)       ###
 ### 			                                                                           ### 
 ##############################################################################################
 
@@ -32,6 +42,7 @@ use File::stat; #Dealing with file metadata
 
 my $A={};
 my ($d_int, $d_pos) = {};
+my $shift_time = {};
 my %WEIGHT;
 my $HEADER;
 my $cl=join(" ", @ARGV);
@@ -67,22 +78,34 @@ sub run_instruction
 	              
 	    #reading int file
 	    if ($c =~ /^int/)
-	      	{	
-	      		#print STDERR "$A->{int}\n";#del
+	      	{		      	
 				$d_int = &int2data ($A->{int});
 	      	}
-	     
-	     #reading pos file
-	     elsif ($c =~ /^pos/)
+	    
+	   	#shifting timestamp
+	   	elsif ($c =~ /^shift/)
+	    	{	
+				$shift_time = &shiftTimestamp ($A); 
+	    	}
+	    	 
+	    #reading pos file
+	    elsif ($c =~ /^pos/)
 	     	{
 	     		#print STDERR "$A->{pos}\n";#del
-	     		$d_pos = &pos2data ($A->{pos});
+	     		$d_pos = &pos2data ($A->{pos}, $shift_time);
+	     		
+	     		#print Dumper ($d_pos);#del
 	     	}	     		   
-	    
+	    	    
 	    #adding positions
 	    elsif ($c =~ /^add/)
 	    	{	
 	    		($d_int, $d_pos) = &add ($d_int, $d_pos, $A);	    		
+	    	}
+	    	
+	    elsif ($c =~ /^set/)
+	    	{
+	    		$d_int = &set ($d_int, $d_pos, $A);
 	    	}
 	    
 	    elsif ($c =~ /^filter/)
@@ -92,10 +115,15 @@ sub run_instruction
 	   	
 	   	elsif ($c =~ /^out/)
 	   		{
-	   			#&display_data ($d_int, $A);
-	   			&display_data ($d_pos, $A);
-	   			#print Dumper ($d_int);#del
-	    		#print Dumper ($d_pos);#del
+	   			if ($A->{print} eq "pos")
+	   				{ 
+	   					&display_data ($d_pos, $A);
+	   				}
+	   			
+	   			else
+	   				{	   			
+	   					&display_data ($d_int, $A);	   					
+	   				}
 			}
     
 	}
@@ -155,15 +183,17 @@ sub int2data
 sub pos2data
 	{
 		my $f = shift;
+ 		my $shift_time = shift; 
  		my $data = {};
+ 		my $switch = 0;
+ 		my $start_time = 0; 		
+ 		#geting last modification time
+ 		#@y $file_mod_date = time2str(stat($f)->mtime); #test to see if I get modification time file del
+ 		#print STDERR "file: $f last modification time is $file_mod_date\n"; die;#test file del
  		
- 		my $file_mod_date = time2str(stat($f)->mtime); #test file del
- 		
- 		
- 		print STDERR "file: $f last modification time is $file_mod_date\n"; die;#test file del
  		my $F=new FileHandle;
-    	my $linen;
-    	
+    	my $linen;    	  
+    	    	
     	open($F, $f);
     
     	while (<$F>)
@@ -183,7 +213,20 @@ sub pos2data
 								my $value= shift @v;
 								$L->{$key}=$value;
 							}
-							
+						
+						if (!$switch) 
+							{
+								$start_time = $L->{Time};
+								
+#								foreach my $key (sort { $H{$a} <=> $H{$b} } keys %H) 
+#									{
+#   										print "ccdb $key}\n";
+#   									}
+								#print "ccdb $start_time\n"; #del
+   								$switch=1; 
+							}
+						
+						#$L->{Time};$grades{$a} <=> $grades{$b};
 #					    $L->{linen}=$linen;
 #					    $L->{period}="1";
 #			    	    
@@ -194,22 +237,57 @@ sub pos2data
 #			    		else
 #			      			{
 #			    				$L->{Velocity}=0; 
-#			      			}	   
+#			      			}							  
 
 	    				if ($L->{Type})
 	      					{
 								my $c=$L->{CAGE};
 #								my $ch=$L->{Channel};#This info is not present
 								my $t=$L->{Time};#Review if it doesn't work #del
-		
-								foreach my $k (keys(%$L))
+								my $new_t = 0;
+								
+								if (exists($shift_time->{"add"}))								  		 
 								  	{
-								    	$data->{$c}{$t}{$k}=$L->{$k};
+								  		#print STDERR "$t\t";
+								  		$new_t = $t + $shift_time->{"add"};
+								  		#print STDERR "$t\n"; 		
+								  	}	
+								
+								elsif (exists($shift_time->{"mult"}))
+								  	{	
+								  		my $value = $shift_time->{"mult"};
+								  		my $delta = $t-$start_time;
+								  		print STDERR "$value----$delta\n";
+								  		$new_t = int ($t + ($t-$start_time) * $shift_time->{"mult"});
+								  		print STDERR "time --> $t\tnew_time --> $new_t\n";		  									  		
+								  	}
+								
+								else 
+									{
+										$new_t = $t; 
+									} 
+																			
+								foreach my $k (keys(%$L))
+								  	{	
+#								  		print "#t;$t--->$new_t\n";#del							  										    
+								    	
+								    	#Time in k is changed in index ($data->{$c}{$new_t}), but if we print the pos file it will retrieve time from 
+								    	#$data->{$c}{$new_t}{$k} = $L->{$k}, so we have to change this time too.
+								    	if ($k eq "Time") 
+								    		{
+								    			$data->{$c}{$new_t}{$k} = $new_t;
+								    		}
+								    		
+								    	else
+								    		{	
+								    			#print STDERR "IWH\n";#del
+								    			$data->{$c}{$new_t}{$k} = $L->{$k};
+								    		}								    	
 								  	}
 	      					}
 	  				}
 				else
-	  		    	{
+	  		    	{ 
 #	    				if ( $line=~/Weight/ && $line=~/ANIMALS DATA/)
 #							{
 #								$line=~/.*;(\d+);Weight;([.\d]+)/;
@@ -242,8 +320,9 @@ sub pos2data
 #    $data=&channel2correct_channel ($data);
 #           
 #    $data=&channel2Nature($data);
-         
-    return $data;
+    
+    #print dumper ($data);     
+    return ($data);
  		
 	}
 	
@@ -445,6 +524,7 @@ sub channel2Nature
 
 	     
 sub add 
+
 	{
 		my $d_int = shift;
      	my $d_pos = shift;
@@ -456,20 +536,48 @@ sub add
      		{
      			$d_int = &mean_pos2int ($d_int, $d_pos);     			
      		}
+     	
+     	elsif ($pos eq "vector")
+     		{
+     			$d_int = &vector_pos2int ($d_int, $d_pos);
+     		}
      		
      	elsif ($pos eq "all")
      		{
-     			print STDERR "IWH -- pos eq all";
+     			#print STDERR "IWH -- pos eq all";del
      			$d_pos = &all_pos2pos ($d_pos);
      		}
      	
-     	if (!$channel || $channel eq "pos")
-     		{
-     			print STDERR "IWH2 -- channel eq pos";
-     			$d_int = &ChannelFromPos2int ($d_int, $d_pos);     			
-     		}
+#     	if (!$channel || $channel eq "pos")
+#     		{
+#     			print STDERR "IWH2 -- channel eq pos";#del
+#     			$d_int = &ChannelFromPos2int ($d_int, $d_pos);     			
+#     		}
      		
      	return ($d_int, $d_pos);
+	}
+
+sub set 
+	
+	{
+		my $d_int = shift;
+		my $d_pos = shift;
+		
+		my $A = shift;
+		my $ch = $A->{channel};
+		
+		if (!$ch || $ch eq "pos")
+     		{
+     			$d_int = &setChannelFromPos ($d_int, $d_pos);     			
+     		}
+     	
+     	elsif ($ch eq "vector")
+     		{     			
+     			$d_int = &setChannelFromVector ($d_int);
+     		}
+     	
+     	return ($d_int);
+     		
 	}
 	
 sub mean_pos2int
@@ -477,7 +585,159 @@ sub mean_pos2int
 	{
 		my $d_int = shift;
      	my $d_pos = shift;
-     	my ($t, $j, $x, $y) = "";     	
+     	my ($t, $j, $x, $y, $x_std, $y_std,  $p_zone, $i1, $i2, $i3, $i4, $pEndT, $pCage, $inter_zone, $interTime) = ""; 
+     	my ($Match, $missMatch, $ratio) = 0;    	
+     	my $z = {};
+     	
+     	$z = &setCageBoundaries ($d_pos);  
+     	
+     	foreach my $cage (sort(keys (%$d_int)))
+       		{
+	 			foreach my $time (sort(keys (%{$d_int->{$cage}})))
+	   				{
+	   					my $StartT = $d_int->{$cage}{$time}{'StartT'};
+	   					my $EndT = $d_int->{$cage}{$time}{'EndT'};
+												
+#	   					my $StartL = $d_int->{$cage}{$time}{'StartL'}-48;#ojo solo para archivos con una sola jaula
+#	   					my $EndL = $d_int->{$cage}{$time}{'EndL'}-48;#ojo solo para archivos con una sola jaula
+	   					###############136 for 12 cages
+	   					
+	   					#Printing inter-interval positions	   					   				
+	   					if ($pCage eq $cage)
+	   						{	
+	   							#print STDERR "Inter-Internal POSITIONS:\n";	   							
+	   							#&printInterPos ($d_int, $pEndT, $StartT, $cage);	   																							   										   							  
+								#print STDERR "Inter-Interval ends at :\n\n";		   				
+	   						}
+	   					
+	   					
+			   							   					
+	   					($j, $x, $y, $p_zone, $x_std, $y_std, $i1, $i2, $i3, $i4) = 0;
+	   					
+	   					my (@X_values, @Y_values);
+	   					
+	   					if ($EndT-$StartT > 10) {$EndT = $EndT-10}###time minus ten, maybe the average then is better, the condition is set to avoid n/0)
+	   					
+	   					#SHIFT_faster_version commented
+#	   					my $start_min = int($StartL/60);
+#	   					my $start_sec = $StartL%60;	
+#	   					print STDERR "Interval starting at $StartT\tline;$StartL\tnumber;$index\ttime;$start_min:$start_sec\n";	
+			   			#SHIFT_faster_version commented-end				   					
+	   						   					
+	   					for ($t = $StartT; $t <= $EndT  ;$t++)
+	   						{
+	   							$x += $d_pos->{$cage}{$t}{'XPos'};
+	   							$y += $d_pos->{$cage}{$t}{'YPos'};
+	   							
+	   							#$p_zone =  &ChannelFromPos_modified($d_pos->{$cage}{$t}{'XPos'}, $d_pos->{$cage}{$t}{'YPos'});	   	
+	   							$p_zone =  &ChannelFromPos ($d_pos->{$cage}{$t}{'XPos'}, $d_pos->{$cage}{$t}{'YPos'}, $cage, $z);
+	   							
+	   							SWITCH: 
+	    							{
+	      								($p_zone eq "Intake 1") && do 
+											{ 
+												$i1++;
+		  										last SWITCH;
+											};
+										
+										($p_zone eq "Intake 2") && do 
+											{ 
+												$i2++;		  										
+		 	 									last SWITCH;
+											};
+											
+										($p_zone eq "Intake 3") && do 
+											{ 
+												$i3++;		  										
+		 	 									last SWITCH;
+											};
+										
+										($p_zone eq "Intake 4") && do 
+											{ 
+												$i4++;		  										
+		 	 									last SWITCH;
+											};	
+	    							}
+												   						   								
+	   							push (@X_values, $d_pos->{$cage}{$t}{'XPos'});
+	   							push (@Y_values, $d_pos->{$cage}{$t}{'YPos'});
+	   							
+	   							#SHIFT_faster_version commented							   							
+	   							#print STDERR "$d_pos->{$cage}{$t}{'XPos'}\t$d_pos->{$cage}{$t}{'YPos'}\t$p_zone\n"; #del
+	   							$j++;
+	   						}
+	   					#SHIFT_faster_version commented
+	   					#print STDERR "Interval ending at $EndT\n\n";
+	   					#SHIFT_faster_version commented end
+	   					
+	   					#print STDERR "============= TOTALS =====================\n"; #IMPORTANT SHOW RESULTS TO CEDRIC
+	   					#print STDERR "$cage\t$StartT\t$EndT\t";#del
+	   					#print STDERR "$x\t"; #del
+	   					
+	   					$d_int->{$cage}{$time}{'MeanX'} = $x / $j;
+	   					$d_int->{$cage}{$time}{'MeanY'} =  $y / $j;
+	   					
+	   					#printf "$c:   %12s => %5.2f\n",$d->{$c}{$t}{Nature}, $d->{$c}{$t}{Value};
+	   					#print STDERR "$j\t$d_int->{$cage}{$time}{'MeanX'}\t$d_int->{$cage}{$time}{'MeanY'}, ($i1, $i2, $i3, $i4)\n";#del
+	   					
+	   					
+	   					#St Deviation X
+	   					#print STDERR Dumper ($d_int->{$cage}{$time}{'MeanX'}, @X_values, $j); 
+	   					$x_std = &data2std ($d_int->{$cage}{$time}{'MeanX'}, \@X_values);
+	   					$y_std = &data2std ($d_int->{$cage}{$time}{'MeanY'}, \@Y_values);
+	   						   						   			
+	   					#my $zone = &ChannelFromPos_modified($d_int->{$cage}{$time}{'MeanX'}, $d_int->{$cage}{$time}{'MeanY'});
+	   					my $zone = &ChannelFromPos ($d_int->{$cage}{$time}{'MeanX'}, $d_int->{$cage}{$time}{'MeanY'}, $cage, $z);
+	   					
+	   					
+	   					#SHIFT_faster_version commented
+	   					#print STDERR "CAGE;$cage;MTB_assigned_zone;$d_int->{$cage}{$time}{'Channel'};";
+	   					#printf STDERR "n;$j;x;%2.2f;y;%2.2f;std_x;%2.2f;std_y;%2.2f;",
+	   					#SHIFT_faster_version commented-end
+	   					
+	   					#vector;%2d;%2d;%2d;%2d;",
+	   					$d_int->{$cage}{$time}{'MeanX'},$d_int->{$cage}{$time}{'MeanY'},$x_std,$y_std;#$i1,$i2,$i3,$i4;	   						   					   					
+	   					
+	   					if ($i1 eq "") {$i1 = 0;}
+	   					if ($i2 eq "") {$i2 = 0;}
+	   					if ($i3 eq "") {$i3 = 0;}
+	   					if ($i4 eq "") {$i4 = 0;}
+	   					
+	   					#SHIFT_faster_version commented
+	   					#print STDERR "VECTOR;$i1;$i2;$i3;$i4;resulting_zone;$zone;File;$d_int->{$cage}{$time}{'File'}\n";	   						   				
+	   					
+	   					if ($d_int->{$cage}{$time}{'Channel'} eq $zone){print STDERR "Match: Y\n\n";}
+	   					else {print STDERR "Match: N\n\n";}
+	   					#SHIFT_faster_version commented-end
+	   					
+	   					#if ($d_int->{$cage}{$time}{'Channel'} eq $zone){$Match++;}
+	   					#else {$missMatch++;}
+	   					 
+	   					#my $mean = get_mean ($d_pos, $StartT, $EndT);#del	   						   						   				
+	   					
+	   					$pEndT = $EndT;
+	   					$pCage = $cage;
+	   				}
+	   				
+       		}
+     	
+     	#$ratio = $Match/$missMatch;
+    	
+       	print "$A->{'int'}\t$Match\t$missMatch\t$ratio\n";  #t$ratio\n";
+     	
+     	return ($d_int);    
+	}
+	
+sub vector_pos2int
+	{
+		my $d_int = shift;
+     	my $d_pos = shift;
+     	
+     	my ($t, $p_zone, $i1, $i2, $i3, $i4) = "";
+     	my $z = {};
+     	
+     	$z = &setCageBoundaries ($d_pos);
+     	print STDERR "IWH\n\n";
      	
      	foreach my $cage (sort(keys (%$d_int)))
        		{
@@ -486,32 +746,60 @@ sub mean_pos2int
 	   					my $StartT = $d_int->{$cage}{$time}{'StartT'};
 	   					my $EndT = $d_int->{$cage}{$time}{'EndT'};
 	   					
-	   					$j= 0;
-	   					($x, $y) = 0;
+	   					($i1, $i2, $i3, $i4) = 0;
 	   					
 	   					for ($t = $StartT; $t <= $EndT  ;$t++)
 	   						{
-	   							$x += $d_pos->{$cage}{$t}{'XPos'};
-	   							$y += $d_pos->{$cage}{$t}{'YPos'};
-	   								   								   							
-	   							#print STDERR "$d_pos->{$cage}{$t}{'XPos'}\n"; #del
-	   							$j++;
+	   							#$x += $d_pos->{$cage}{$t}{'XPos'};
+	   							#$y += $d_pos->{$cage}{$t}{'YPos'};	   							
+	   							
+	   							#$p_zone =  &ChannelFromPos_modified($d_pos->{$cage}{$t}{'XPos'}, $d_pos->{$cage}{$t}{'YPos'});	   	
+	   							$p_zone =  &ChannelFromPos ($d_pos->{$cage}{$t}{'XPos'}, $d_pos->{$cage}{$t}{'YPos'}, $cage, $z);
+	   							
+	   							SWITCH: 
+	    							{
+	      								($p_zone eq "Intake 1") && do 
+											{ 
+												$i1++;
+		  										last SWITCH;
+											};
+										
+										($p_zone eq "Intake 2") && do 
+											{ 
+												$i2++;		  										
+		 	 									last SWITCH;
+											};
+											
+										($p_zone eq "Intake 3") && do 
+											{ 
+												$i3++;		  										
+		 	 									last SWITCH;
+											};
+										
+										($p_zone eq "Intake 4") && do 
+											{ 
+												$i4++;		  										
+		 	 									last SWITCH;
+											};	
+	    							}
 	   						}
-	   					#print STDERR "============= TOTALS =====================\n"; #IMPORTANT SHOW RESULTS TO CEDRIC
-	   					#print STDERR "$cage\t$StartT\t$EndT\t";#del
-	   					#print STDERR "$x\t"; #del
 	   					
-	   					$d_int->{$cage}{$time}{'MeanX'} = $x / $j;
-	   					$d_int->{$cage}{$time}{'MeanY'} =  $y / $j;
-	   					
-	   					#print STDERR "$j\t$d_int->{$cage}{$time}{'MeanX'}$j\n";#del
-	   					
-	   					#my $mean = get_mean ($d_pos, $StartT, $EndT);#del
-	   					
-	   				}
+	   					if ($i1 eq "") {$i1 = 0;}
+	   					if ($i2 eq "") {$i2 = 0;}
+	   					if ($i3 eq "") {$i3 = 0;}
+	   					if ($i4 eq "") {$i4 = 0;}
+	    				
+	    				$d_int->{$cage}{$time}{'Ctr_1'} = $i1;
+	    				$d_int->{$cage}{$time}{'Ctr_2'} = $i2;
+	    				$d_int->{$cage}{$time}{'Ctr_3'} = $i3;
+	    				$d_int->{$cage}{$time}{'Ctr_4'} = $i4;
+						#$d_int->{$cage}{$time}{'Vector'} = ($i1, $i2, $i3, $i4);
+						
+	   				}			
        		}
+       	
+       	return ($d_int);		
      	
-     	return ($d_int);    
 	}
 
 #sub get_mean  #del
@@ -571,7 +859,7 @@ sub display_data #As in int2combo!!!
       		}
 	}
 	
-sub ChannelFromPos2int
+sub setChannelFromPos
 
 	{
 		my $d_int = shift;
@@ -584,7 +872,7 @@ sub ChannelFromPos2int
 		$zones = &setCageBoundaries ($d_pos);
 					
 		#&setCageBoundaries ($zones);#del
-		print STDERR Dumper ($zones);#del
+		#print STDERR Dumper ($zones);#del
 						
 		foreach my $cage (sort(keys (%$d_int)))
        		{	       			
@@ -603,6 +891,77 @@ sub ChannelFromPos2int
        		}
 		
 		return ($d_int);
+	}
+	
+sub setChannelFromVector
+
+	{
+		my $d_int = shift;
+		#my $d_pos = shift;
+		my ($int_1, $int_2, $int_3, $int_4) = 0;
+		my @ary = "";
+		my $max = 0;		
+		my $z = "";
+		
+		foreach my $cage (sort(keys (%$d_int)))
+       		{	       			
+       			 			
+	 			foreach my $time (sort(keys (%{$d_int->{$cage}})))
+	   				{
+	   					$int_1 = $d_int->{$cage}{$time}{'Ctr_1'}; 
+	    				$int_2 = $d_int->{$cage}{$time}{'Ctr_2'};
+	    				$int_3 = $d_int->{$cage}{$time}{'Ctr_3'};
+	    				$int_4 = $d_int->{$cage}{$time}{'Ctr_4'};
+	    				
+	    				$max = 0;	    				
+	    				$z = "";
+	    				
+	    				foreach my $ch ($int_1, $int_2, $int_3, $int_4)
+	    					{	    						
+	    						print STDERR "$ch\n";#del
+	    						$max = &max ($ch, $max);
+	    							    						 
+	    					}
+	    				
+	    				SWITCH: 
+	    					{
+	      						($max == $int_1) && do 
+									{
+		  								$z = "Intake 1"; 
+		 	 							last SWITCH;
+									};
+									
+								($max == $int_2) && do 
+									{
+		  								$z = "Intake 2"; 
+		 	 							last SWITCH;
+									};
+									
+								($max == $int_3) && do 
+									{
+		  								$z = "Intake 3"; 
+		 	 							last SWITCH;
+									};
+								
+								($max == $int_4) && do 
+									{
+		  								$z = "Intake 4"; 
+		 	 							last SWITCH;
+									};
+	    					}
+	    				
+	    				 
+	    				print STDERR "max is $max zone is $z\n\n";
+	    				print STDERR "Interval channel is $d_int->{$cage}{$time}{'Channel'}\n\n";
+	    				$d_int->{$cage}{$time}{'Zone'} = $z;
+	    					    			
+	    				if ($d_int->{$cage}{$time}{'Channel'} eq $z){print STDERR "Match: Y\n\n";}
+	   					else {print STDERR "Match: N\n\n";} 	    							
+	   				}
+       		}
+		
+		return ($d_int);
+		
 	} 
 
 sub ChannelFromPos
@@ -613,17 +972,17 @@ sub ChannelFromPos
 		my $z = shift;		
  		my ($channel, $xm, $x1, $x2, $x3, $ym, $y1) = "";
 		
-		print STDERR "CAGE ----> $c \n";
-		
-		$xm = $z->{$c}{'Xm'}; print STDERR "xm $xm\n"; 
-		$x1 = $z->{$c}{'X1'}; print STDERR "x1 $x1\n";				
-		$x2 = $z->{$c}{'X2'}; print STDERR "x2 $x2\n";		
-		$ym = $z->{$c}{'Ym'}; print STDERR "ym $ym\n";
-		$y1 = $z->{$c}{'Y1'}; print STDERR "y1 $y1\n";
+		#print STDERR "CAGE ----> $c \n";
+		##OJO PONER UN EXISTS PORQUE SINO CUANDO NO TENGO VALORES PARA UNA CAGE LOS CONSIDERA 0 O PONER <= 0!!!!!!!!!!!!!!!!
+		$xm = $z->{$c}{'Xm'}; #print STDERR "xm $xm\n"; 
+		#$x1 = $z->{$c}{'X1'}; print STDERR "x1 $x1\n";				
+		$x2 = $z->{$c}{'X2'}; #print STDERR "x2 $x2\n";		
+		$ym = $z->{$c}{'Ym'}; #print STDERR "ym $ym\n";
+		$y1 = $z->{$c}{'Y1'}; #print STDERR "y1 $y1\n";
 		
 		SWITCH: 
 	    	{
-	      		($x<0 || $y<0  ) && do 
+	      		($x<=0 || $y<=0  ) && do 
 					{
 		  				$channel = "Negative"; 
 		 	 			last SWITCH;
@@ -635,25 +994,96 @@ sub ChannelFromPos
 		 	 			last SWITCH;
 					};
 				 
-				($x<=$x1 && $y>$y1) && do 
+				($x<=$x2 && $y>$y1) && do 
 					{
 		  				#$channel = "Zone 1";
 		  				$channel = "Intake 1"; 
 		 	 			last SWITCH;
 					};
 					
-				($x<=$x1 && $y<=$y1) && do 
+				($x<=$x2 && $y<=$y1) && do 
 					{
 		  				#$channel = "Zone 2";
 		  				$channel = "Intake 2"; 
 		 	 			last SWITCH;
 					};
 								
-				(($x>$x1 && $x<$x2))  && do 
+#				(($x>$x1 && $x<$x2))  && do 
+#					{
+#		  				$channel = "Center"; 
+#		 	 			last SWITCH;
+#					};
+					
+				($x >$x2 && $y>$y1) && do 
 					{
-		  				$channel = "Center"; 
+		  				#$channel = "Zone 3";
+		  				$channel = "Intake 3"; 
 		 	 			last SWITCH;
 					};
+				
+				($x >$x2 && $y<=$y1) && do 
+					{
+		  				#$channel = "Zone 4";
+		  				$channel = "Intake 4"; 
+		 	 			last SWITCH;
+					};
+	    	}
+	    	
+	    return ($channel);
+	}	   
+	
+
+#Same function as ChannelFromPos but here xm, x2, ym and y1 are hard coded according with the values observed empirically
+	
+sub ChannelFromPos_modified
+	{
+		my $x = shift;#print STDERR "-----$x-----\n\n ";
+		my $y = shift;#print STDERR "-----$y-----\n\n ";
+		#my $c = shift;
+		#my $z = shift;		
+ 		my ($channel, $xm, $x1, $x2, $x3, $ym, $y1) = "";
+		
+		#print STDERR "CAGE ----> $c \n";
+		
+		$xm = "24.803"; #print STDERR "xm $xm\n"; 
+		#$x1 = $z->{$c}{'X1'}; print STDERR "x1 $x1\n";				
+		$x2 = "12.4015"; #print STDERR "x2 $x2\n";		
+		$ym = "13.602"; #print STDERR "ym $ym\n";
+		$y1 = "6.801"; #print STDERR "y1 $y1\n";
+		
+		SWITCH: 
+	    	{
+	      		($x<=0 || $y<=0  ) && do 
+					{
+		  				$channel = "Negative"; 
+		 	 			last SWITCH;
+					};
+					
+				($x>$xm || $y>$ym) && do
+					{
+		  				$channel = "Out"; 
+		 	 			last SWITCH;
+					};
+				 
+				($x<=$x2 && $y>$y1) && do 
+					{
+		  				#$channel = "Zone 1";
+		  				$channel = "Intake 1"; 
+		 	 			last SWITCH;
+					};
+					
+				($x<=$x2 && $y<=$y1) && do 
+					{
+		  				#$channel = "Zone 2";
+		  				$channel = "Intake 2"; 
+		 	 			last SWITCH;
+					};
+								
+#				(($x>$x1 && $x<$x2))  && do 
+#					{
+#		  				$channel = "Center"; 
+#		 	 			last SWITCH;
+#					};
 					
 				($x =>$x2 && $y>$y1) && do 
 					{
@@ -671,7 +1101,7 @@ sub ChannelFromPos
 	    	}
 	    	
 	    return ($channel);
-	}	    	
+	}	    	 	
 
 #		if ($x <0 || $y <0)
 #			{
@@ -769,14 +1199,15 @@ sub setCageBoundaries
 						$y_max = &max($d_pos->{$cage}{$time}{'YPos'}, $y_max);
 	   				}
 	   				   				   			
-	   			#print STDERR "In cage $cage\t";
-	   			#print STDERR "maxim x is $x_max\t";
-	   			#print STDERR "maxim y is $y_max\n";
+	   			print STDERR "In cage ---------------- $cage\t";
+	   			print STDERR "maxim x is $x_max\t";
+	   			print STDERR "maxim y is $y_max\n";
 	   			
 	   			$z->{$cage}{'Xm'} = $x_max;
 	   			$z->{$cage}{'Ym'} = $y_max;
-	   			$z->{$cage}{'X1'} = 0.25 * $x_max;
-				$z->{$cage}{'X2'} = 0.75 * $x_max;				
+	   			#$z->{$cage}{'X1'} = 0.25 * $x_max;
+				#$z->{$cage}{'X2'} = 0.75 * $x_max;
+				$z->{$cage}{'X2'} = 0.5 * $x_max;				
 				$z->{$cage}{'Y1'} = 0.5 * $y_max;
 	   				   				   				   				
        		}
@@ -835,4 +1266,103 @@ sub all_pos2pos
 		
 		return ($d_pos);
 		
+	}
+	
+sub data2std
+	#$x_std = &data2std ($d_int->{$cage}{$time}{'MeanX'}, $j, \@X_values);
+	{
+		my $mean = shift;		
+		my $ary_values = shift;
+		my $N = scalar @$ary_values;
+		my ($std, $sqtotal) = "";
+			
+		foreach my $v (@$ary_values) 
+			{
+    			$sqtotal += ($mean-$v) ** 2;
+			}
+		
+		$std = ($sqtotal / $N) ** 0.5;
+		
+		
+	}
+	
+sub printInterPos
+	{
+		my $d_int = shift;
+		my $pEndT = shift;
+		my $StartT = shift;
+		my $cage = shift;
+		
+		my ($t, $zone) = "";
+		
+		$pEndT++;
+		
+		print STDERR "$StartT  $pEndT\n";
+		
+		if ($StartT < $pEndT) {print STDERR "COLLISION --- NO Inter-Interval\n\n";}
+		
+		else 
+			{ 
+				print STDERR "Inter-Interval starting at ---$pEndT ---\n"; 
+							
+				for ($t= $pEndT; $t < $StartT ; $t++)
+					{	
+						#$zone =  &ChannelFromPos_modified($d_pos->{$cage}{$t}{'XPos'},$d_pos->{$cage}{$t}{'YPos'});
+						$zone =  &ChannelFromPos($d_pos->{$cage}{$t}{'XPos'},$d_pos->{$cage}{$t}{'YPos'});			   							
+					   	#print STDERR "$d_pos->{$cage}{$ttt}{'XPos'}\t$d_pos->{$cage}{$ttt}{'YPos'}\t$inter_zone\n\n";
+					   	print STDERR "$d_pos->{$cage}{$t}{'XPos'}\t$d_pos->{$cage}{$t}{'YPos'}\t$zone\n";	
+					}
+				
+				$StartT--;
+			
+				print STDERR "Inter-Interval ends at ---$StartT ---\n\n";
+			}
+	}
+	
+sub shiftTimestamp 
+	{
+		$A = shift;
+		my $H = {};
+		
+		if (exists ($A->{add})) 
+			{
+				my $shift_time = $A->{add};
+				my $operation = "add";	
+				
+				if ($shift_time =~ /m(\d+)/)
+					{
+						$shift_time = -$1;						
+					}
+				
+				#$shift_time =~ s/m/-/;
+				
+				$H->{$operation} = $shift_time;
+								
+			}
+		
+		elsif (exists ($A->{mult}))
+			{
+				my $shift_time = $A->{mult};
+				my $operation = "mult";
+				print STDERR "I was in multiplication $shift_time\n";
+				
+				if ($shift_time =~ /m(\d+\.\d+)/)
+					{
+						$shift_time = -$1;						
+					}
+				
+				#$shift_time =~ s/m/-/;
+					
+				$H->{$operation} = $shift_time;
+				print STDERR "I was in multiplication $shift_time\n";							
+			}
+		
+		else
+			{
+				#print Dumper ($A);die;
+				print STDERR "\n\nOperation set by shift option is not correct!!!\n\n";
+				die;
+			}
+					
+		return ($H);				 	
 	}
