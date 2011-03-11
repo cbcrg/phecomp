@@ -97,7 +97,8 @@ sub act2position
 	{	  
 	  my ($ci);
 	  my $F = new FileHandle;
-	  my $stime = $data{$f}{"HEADER"}{'EHEADER'}{"StartStamp"}; 
+	  my $stime = $data{$f}{"HEADER"}{'EHEADER'}{"StartStamp"};
+	  print STDERR "Starting time is $stime\n"; 
 	  
 	  $ncages = $data{$f}{'HEADER'}{'EHEADER'}{'Ncages'};
 	  
@@ -131,7 +132,7 @@ sub act2position
 		  if ($file =~ /^*.\//) #avoiding names as us/cn/file.act -> file.act
   			{  		
   				my @a = split ("/",$file);
-  				$f_print = pop( @a);   		
+  				$f_print = pop (@a);   		
   			} 	
   				  
 		  print "#d;CAGE;$c;Index;$i;Time;$time;XPos;$x;YPos;$y;Type;$type;Line;$line;File;$f_print\n";
@@ -236,6 +237,10 @@ sub act2header
 	#Each cage (track) has a "Track Date & Time"
 	#It should be the same for all tracks in the same file
 	#Checked just in case!	
+	###########del
+	my $del = &check_all_dates ("Track Date & Time", \%header, $file);
+	print STDERR "IWH date $del \n";
+	#######del
 	$time=$header{$file}{"HEADER"}{'EHEADER'}{'StartStamp'}=str2time(&check_all_dates ("Track Date & Time", \%header, $file)); 
 	#$time=$header{$file}{"HEADER"}{'EHEADER'}{'StartStamp'}=str2time(&header2value("File Date & Time ", \%header, $file));
 	
@@ -270,7 +275,7 @@ sub display_header#modify respect mtb2int to order keys
     }
 }
 
-sub header2value #no modified (modified in comment line)
+sub header2value #no modified (modified I have comment a line)
 {
   my ($name,$hr, $file)=@_;
   my %h = %$hr;
@@ -334,11 +339,13 @@ sub dates_format2change
 		      }
 		    #15/12/2010	11:10:11
 		    elsif($old_date =~ /^([0-9]{2})\/([0-9]{2})\/([0-9]{4})\s+([0-9]{2}):([0-9]{2}):([0-9]{2})/)
-		      {      #Depending on the computer the act files are processed the format of the date is different, that is the good one, no changes
+		      	{      
+		      		#Depending on the computer the act files are processed the format of the date is different, that is the good one, no changes
+		      		#print STDERR "oldate --> $old_date\n";#del		      		
  				}
 		    else 
 		      {			
-			print STDERR "\n\nWARNING: Date and time format in file: $f; field: $k3 NOT RECOGNIZED\n\n";
+					print STDERR "\n\nWARNING: Date and time format in file: $f; field: $k3 NOT RECOGNIZED\n\n";
 		      }
 		  }
 	      }
@@ -390,10 +397,13 @@ sub check_all_dates
 			{
 			  $pDate = $Date;			  
 			}		      		      		      		      		      
+		      print STDERR "index -> $i Number of cages ->$h{$f}{'HEADER'}{'EHEADER'}{'Ncages'}\n";#del
+		      #Attention if the number of cages in the headers is 12 and then inside the file you have less number of tracks the program is not able
+		      #to read the date 
 		      if ($i == $h{$f}{'HEADER'}{'EHEADER'}{'Ncages'} ) #when it arrive to the last cage goes out
-			{			  
-			  return ($h{$f}{$k1}{$k2}{$k3});
-			}
+				{			  
+			  		print STDERR "IWH32\n";return ($h{$f}{$k1}{$k2}{$k3});
+				}
 		    }
 		  
 		}
