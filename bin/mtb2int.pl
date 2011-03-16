@@ -26,6 +26,7 @@ $ary_files = &files2check (\@files);
 
 my $H={};
 my $switch_f;
+my $switch_rename;
 my $actStamp = {};
 
 #&mtb2intervals ("Intake 1;Intake 2;Intake 3;Intake 4", @ARGV);
@@ -49,8 +50,13 @@ sub run_instruction
 	    
 	    if ($c=~/info/)
 	      	{
-				($H, $switch_f) = &file2channel ($A,$H);
+				($H, $switch_f) = &file2channel ($A,$H);				
 	      	}
+	      	
+	    elsif ($c =~ /rename/)
+	    	{	    		
+	    		$switch_rename = ((exists ($A->{cages}) && $A->{cages} ne 0 && $A->{cages} ne "N" )? 1:0);	    		 
+	    	}
 	      
 	    elsif ($c =~ /actstamp/)
 			{	
@@ -61,71 +67,117 @@ sub run_instruction
 	    elsif ($c=~/out/)
 	      	{	
 				#&mtb2intervals ("Intake 1;Intake 2;Intake 3;Intake 4", $H, $switch_f,  @files);				
-				&mtb2intervals ("Intake 1;Intake 2;Intake 3;Intake 4", $H, $switch_f, $actStamp,  @$ary_files);
+				&mtb2intervals ("Intake 1;Intake 2;Intake 3;Intake 4", $H, $switch_f, $switch_rename, $actStamp,  @$ary_files);
 	      	}
 	}
 
 sub file2channel 
-    {
-      my $A=shift;
-      my $H=shift;
-      my $file=$A->{file};
-      my $switch_f=0;
-      my $F=new FileHandle;
-      my $c;
-      my $seq;
-      my $ch;
-            
-      if (defined ($A->{file})) {$switch_f=1} 
-      	  
-      open ($F, "$file") or die "Can't open file: $file";
-      
-      while (<$F>)
 	{
-	  chomp;
-	  my $line=$_;
-	  ($c, $seq) = split ("\t",$line);    
-	 
-	  if ($seq!~/C/i) 
-	    {
-	      $H->{$c}{Name}="SC";
-	    } 
-	  else {
-	    $seq=~m/C/ig;
-	    $ch=pos($seq);
-	        
-	  SWITCH: 
-	    {
-	      ($ch == 1) && do 
-		{
-		  $H->{$c}{Name}="CD in A"; 
-		  last SWITCH;
-		};
-		
-	      ($ch == 2) && do 
-		{
-		  $H->{$c}{Name}="CD in B";
-		  last SWITCH;
-		};
-		
-	      ($ch == 3) && do 
-		{
-		  $H->{$c}{Name}="CD in C"; 
-		  last SWITCH;
-		};
-		
-	      ($ch == 4) && do 
-		{
-		  $H->{$c}{Name}="CD in D";  
-		  last SWITCH;
-		};	     	    
-	    }      
-	  }
+    	my $A = shift;
+      	my $H = shift;      	
+      	my ($file6, $file12) = "";
+      	my $switch_f = 0;
+                   
+      	foreach my $file (keys (%$A)) 
+      		{   
+      			#print "$file\n";#del   			
+      			if ($file eq "file12")
+      				{
+      					$switch_f=1;
+      					$file12 = $A->{file12};
+      					$H-> {'file12'} = &readFileChannels ($file12);
+      				}
+      			
+      			elsif ($file eq "file6")
+      				{
+      					$switch_f=1;
+      					$file6 = $A->{file6};
+      					$H-> {'file6'} = &readFileChannels ($file6);
+      				}
+      			      			
+      	  		else 
+      	  			{
+      	  				print STDERR "Channels files should be tagged by \"file6\" or \"file12\" for 6 and 12 channels files respectively\n";
+      	  				print STDERR "mtb2int.pl file.mtb -info file6 file6.csv file12 file12.csv\n"; 
+      	  				die;
+      	  			}
+      		}
+#      	if (defined ($A->{file1})) 
+#      		{
+#      			$switch_f=1;
+#      			$file1 = $A->{file1};
+#      			$H-> {'file1'} = &readFileChannels ($file1);
+#      		} 
+#      	
+#      	if (defined ($A->{file2})) 
+#      		{      			
+#      			$switch_f=1;
+#      			$file2 = $A->{file2};      			
+#      			$H-> {'file2'} = &readFileChannels ($file2);
+#      		}
+      	      	      	 
+      	return ($H, $switch_f);
 	}
-      close ($F);
-      return ($H, $switch_f);
-    }
 
+sub readFileChannels
+	{			
+		my $file = shift;
+		my $H = {};
+		my $c;
+      	my $seq;
+      	my $ch;
+		my $F = new FileHandle;
+		
+		open ($F, "$file") or die "Can't open file: $file";
+      
+      	while (<$F>)
+			{
+	  			chomp;
+	  			my $line=$_;
+	  			($c, $seq) = split ("\t",$line);    
+	 
+	  			if ($seq!~/C/i) 
+	    			{
+	      				$H->{$c}{Name}="SC";
+	    			} 
+	  	else 
+	  		{
+	    		$seq=~m/C/ig;
+	    		$ch=pos ($seq);
+	        
+	  			SWITCH: 
+	    			{
+	      				($ch == 1) && do 
+							{
+		  						$H->{$c}{Name}="CD in A"; 
+		  						last SWITCH;
+							};
+		
+	      				($ch == 2) && do 
+							{
+							  	$H->{$c}{Name}="CD in B";
+							  	last SWITCH;
+							};
+							
+						($ch == 3) && do 
+							{
+							  	$H->{$c}{Name}="CD in C"; 
+							  	last SWITCH;
+							};
+							
+						($ch == 4) && do 
+							{
+							  	$H->{$c}{Name}="CD in D";  
+							  	last SWITCH;
+							};	     	    
+					}      
+			}
+		}
+			
+		close ($F);
+		return ($H)	
+	}
+	
 sub string2hash 
   {
     my $s=shift;
@@ -174,17 +226,18 @@ sub mtb2intervals
     {
       my $channels=shift;
       #modification 02/09/2010
-      my $H=shift;
+      my $h=shift;
       my $switch_f=shift;#Switch controlling whether channel info comes from a file or not          
       #end modification - 02/09/2010
+      my $switch_rename = shift;
       my $actStamp = shift;      
       my @files=@_;      
       my @sorted_files;
       my %data;
       my @ch;
       my $ncages;
-	  
-	  #print Dumper ($actStamp);#del
+	  my $shift_cage = {};
+	  my $c_mod="";		
 	  	
       foreach my $f (@files)
 	{
@@ -203,8 +256,17 @@ sub mtb2intervals
 	  my (@ci,%pv,%pe,%pt, $count, $count2);
 	  my $F = new FileHandle;
 	  my @chL=keys (%{$data{$f}{"[Intake Channels]"}});
-	  my $stime=$data{$f}{"HEADER"}{'EHEADER'}{"StartStamp"};
+	  my $stime=$data{$f}{"HEADER"}{'EHEADER'}{"StartStamp"};	  	  	
+	  
 	  $ncages=$data{$f}{'HEADER'}{'EHEADER'}{'Ncages'};
+	  	  
+	  if ($switch_f)
+	  	{
+	  		$H = ($ncages == 6 ? $h->{file6} : $h->{file12});
+	  	}		 
+	  
+	  $shift_cage->{$f} = (($switch_rename) && $ncages == 6 ? 12 : 0); 
+	  
 	  my $LineN;
 	  my %rv;
 	  my %in;
@@ -224,6 +286,7 @@ sub mtb2intervals
 	      $count++; $count2++;
 	      for (my $c=1; $c<=$ncages; $c++)
 		{
+		  		  
 		  foreach my $ch (@ch)
 		    {
 		      my $v=$dataline{$c}{$ch}{Value};
@@ -272,7 +335,7 @@ sub mtb2intervals
 				  ###########end modificiation 31/08/2010##############
 				}
 			      else
-				{				  
+				{					  			 				  
 				  $data{'INTERVALS'}{$c}{$ch}{$ci}{Name}=$H->{$c}{Name};
 				}
 			      ###end modification-02/09/2010###############
@@ -298,7 +361,8 @@ sub mtb2intervals
 	    }
 	}
       for (my $c=1; $c<=$ncages; $c++)
-	{
+	{	
+	  	  	  	  
 	  foreach my $ch (@ch)
 	    {
 	      
@@ -321,9 +385,10 @@ sub mtb2intervals
 		  my $Name=$data{'INTERVALS'}{$c}{$ch}{$i}{Name};
 		  
 		  my $Duration=$EndT -$StartT;
-		 
 		  
-		  print "#d;CAGE;$c;Channel;$ch;Caption;$Caption;Name;$Name;Index;$i;StartT;$StartT;EndT;$EndT;Duration;$Duration;Value;$Value;Type;$Type;File;$File;StartL;$StartL;EndL;$EndL\n";
+		  $c_mod = $c + $shift_cage->{$File};
+		  		  
+		  print "#d;CAGE;$c_mod;Channel;$ch;Caption;$Caption;Name;$Name;Index;$i;StartT;$StartT;EndT;$EndT;Duration;$Duration;Value;$Value;Type;$Type;File;$File;StartL;$StartL;EndL;$EndL\n";
 		}
 	    }
 	}
@@ -335,9 +400,7 @@ sub mtb2parse_line
       my $file=shift;
       my $line=shift;
       my $dataR=shift;
-      my $channelsR=shift;
-     
-      
+      my $channelsR=shift;                
       my %data=%$dataR;
       my @channels=@$channelsR;
       my @list;
@@ -347,10 +410,7 @@ sub mtb2parse_line
       $stime=$data{$file}{"HEADER"}{'EHEADER'}{"StartStamp"};
       
       $Ncages=$data{$file}{"HEADER"}{'EHEADER'}{"Ncages"};
-      
-
-     
-      
+      	            
       if ($line)
 	{
 	  my ( $i, $cage, $t, $lineN);
@@ -360,7 +420,7 @@ sub mtb2parse_line
 	  @list=split ( /\s+/, $line);
 	  $time=$lineN=shift (@list);	  
 	  $time=$lineN+$stime;
-	  #print STDERR "startTime -> $stime,\t linea $lineN,\t time->$time\n";#del
+	  
 	  for (my $a=0; $a<$SHIFT; $a++){shift(@list);} #NODATA out
 	  
 	  foreach my $ch (@channels)
@@ -454,7 +514,7 @@ sub mtb2header
       }
     close ($F);
     
-    $header{$file}{'HEADER'}{'EHEADER'}{'Ncages'}=$Ncages=&header2value("Number of cages", \%header, $file);
+    $header{$file}{'HEADER'}{'EHEADER'}{'Ncages'}=$Ncages=&header2value("Number of cages", \%header, $file);    
           
     #Time was always taken from mtb file, modified in order to get timestamp from act file in case option -actstamp is provided   
     if (exists $actStamp->{$file})
@@ -478,7 +538,7 @@ sub intake2intervals (\%data, "Food")
   my %data =%$dataR;
   my $start_t=$data{$file}{'HEADER'}{'EHEADER'}{'StartTime'};
   my $end_t  =$data{$file}{'HEADER'}{'EHEADER'}{'EndTime'};
-  my $ncages =$data{$file}{'HEADER'}{'EHEADER'}{'Ncages'};
+  my $ncages =$data{$file}{'HEADER'}{'EHEADER'}{'Ncages'}; 
   
   for (my $c=1; $c<=$ncages; $c++)
     {
@@ -773,7 +833,7 @@ sub files2check
     my ($f, $rem_f);
     my ($v, $d, $t);
     my $ary_filter_files;
-    my $H = {};
+    my $H = {}; 
 
     foreach $f (@$ary_files) 
       {			
@@ -815,6 +875,7 @@ sub files2check
       }
     
     $ary_files = &hashkeys2array ($H);
+   
     return ($ary_files);
     
   }
@@ -913,7 +974,7 @@ sub hashkeys2array
 	    {
 	      my $H = shift;
 	      my $k = "";
-	      my @a = "";
+	      my @a ;
 	      	      
 	      foreach $k  (sort ({$a cmp $b} keys (%$H)))
 		{
