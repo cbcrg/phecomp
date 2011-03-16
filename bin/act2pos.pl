@@ -24,6 +24,7 @@ my $A={};
 my $cl=join(" ", @ARGV);
 my @commands=split (/\-+/,$cl);
 my @files = split (" ", shift @commands);
+my $switch_rename;
 
 foreach my $c (@commands)
   {    
@@ -38,18 +39,23 @@ die;
 ##########
 
 sub run_instruction
-  {
-    my $ary_files=shift;
-    my $A=shift;#now is empty
-    my $c=shift;    
-    
-    $A=string2hash ($c,$A);
-              
-    if ($c=~/out/)
-      {	
-	&act2position ($ary_files);
-      }
-  }
+	{
+	    my $ary_files=shift;
+	    my $A=shift;#now is empty
+	    my $c=shift;    
+	    
+	    $A=string2hash ($c,$A);
+	    
+	    if ($c =~ /rename/)
+		    {	    		
+		    		$switch_rename = ((exists ($A->{cages}) && $A->{cages} ne 0 && $A->{cages} ne "N" )? 1:0);	    		 
+		    }
+		              
+	    elsif ($c =~ /out/)
+	      	{	
+				&act2position ($ary_files, $switch_rename);
+	      	}
+	}
 
 sub string2hash 
   {
@@ -79,10 +85,13 @@ sub array2hash
 sub act2position 
     {
       my $files = shift;
+      my $switch_rename = shift;
       my %data;
       #my @files=@_;
       my @sorted_files;
       my ($stime, $ncages); 
+      my $shift_cage = {};
+      my $c_mod="";
       
       foreach my $f (@$files)
 	{	  
@@ -101,6 +110,7 @@ sub act2position
 	  print STDERR "Starting time is $stime\n"; 
 	  
 	  $ncages = $data{$f}{'HEADER'}{'EHEADER'}{'Ncages'};
+	  $shift_cage->{$f} = (($switch_rename) && $ncages == 6 ? 12 : 0);
 	  
 	  my $LineN;
 	  
@@ -134,8 +144,10 @@ sub act2position
   				my @a = split ("/",$file);
   				$f_print = pop (@a);   		
   			} 	
-  				  
-		  print "#d;CAGE;$c;Index;$i;Time;$time;XPos;$x;YPos;$y;Type;$type;Line;$line;File;$f_print\n";
+  		  
+  		  $c_mod = $c + $shift_cage->{$file};
+  		  	  
+		  print "#d;CAGE;$c_mod;Index;$i;Time;$time;XPos;$x;YPos;$y;Type;$type;Line;$line;File;$f_print\n";
 		}
 	    }
 	}           

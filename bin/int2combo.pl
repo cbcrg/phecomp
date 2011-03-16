@@ -41,16 +41,20 @@ sub run_instruction
     my $sep = '\s+';
 
     $A=string2hash ($c, $A, $sep);
-
+	
     if ($c=~/^tag/) 
       {	
 	$d=tag($d, $A);
       }
+#    elsif ($c=~/^rename/)
+#      {
+#	$d=&rename ($d,$A); #print Dumper ($d);#del
+#      }                           
     elsif ($c=~/^untag/)
       {
 	$d=untag ($d,$A);
       }
-     elsif ($c=~/^zfilter/)
+    elsif ($c=~/^zfilter/)
       {
 	$d=zfilter_data ($d,$A);
       }
@@ -1201,7 +1205,8 @@ sub display_log_odd
 		  }
 		else 
 		  {
-		    printf "%2d \t %2d \t %10s -- %10s \t %6.3f \t %6.2f \n", $A->{period}, $c, $b1, $b2, $M->{$c}{$b1}{$b2}{logodd}{value}, $WEIGHT{$c}{delta};
+		    printf "%2d\t%2d\t%10s -- %10s\t%6.3f\t%6.2f\n", $A->{period}, $c, $b1, $b2, $M->{$c}{$b1}{$b2}{logodd}{value}, $WEIGHT{$c}{delta};
+		    
 		  }
 		#end modification - 23/09/10
 	      }
@@ -2767,3 +2772,36 @@ sub coll
 	      
 	      return ($d);
 	    }
+
+#I have to test for each interval the file to know if its comming from 6 cage file or 12 cage file, very time consuming
+#sub rename 
+#	
+#	{
+#			my $d=shift;
+#    		my $A=shift; 
+#			my $renamed_H = {};
+#			my $ncages;
+#			
+#			#$ncages= $d{$f}{'HEADER'}{'EHEADER'}{'Ncages'}; 
+#			print STDERR "$ncages\n";die;
+#			
+#			#print Dumper ($A); #del
+#	    	if ((exists ($A->{cages}) && $A->{cages} ne 0 && $A->{cages} ne "N" ))
+#	    		{
+#	    			#print STDERR "IWH\n";#del
+#	    			
+#	    			foreach my $c (sort(keys (%$d)))
+#       					{
+#	 						
+#	 						foreach my $t (sort(keys (%{$d->{$c}})))
+#	   							{
+#	   								($d{$f}{'HEADER'}{'EHEADER'}{'Ncages'} == 6) && next;
+#	   								$renamed_H->{$c+12}{$t} = $d->{$c}{$t};
+#	   								$renamed_H->{$c+12}{$t}{'CAGE'} = $c+12;	     							
+#	    						}
+#       					}	    				    		
+#	    		}
+#	    	
+#	    	return ($renamed_H);
+#	    	#print STDERR "$switch_rename\n";die; #del 
+#	}

@@ -91,10 +91,7 @@ sub run_instruction
 	    #reading pos file
 	    elsif ($c =~ /^pos/)
 	     	{
-	     		#print STDERR "$A->{pos}\n";#del
-	     		$d_pos = &pos2data ($A->{pos}, $shift_time);
-	     		
-	     		#print Dumper ($d_pos);#del
+	     		$d_pos = &pos2data ($A->{pos}, $shift_time);	     			     		
 	     	}	     		   
 	    	    
 	    #adding positions
