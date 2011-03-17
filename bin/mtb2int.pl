@@ -236,6 +236,7 @@ sub mtb2intervals
       my %data;
       my @ch;
       my $ncages;
+      my $max_ncages; #When we have files with different cage number if the last file read is of 6 cages, cages 7..12 are not printed in 2nd loop
 	  my $shift_cage = {};
 	  my $c_mod="";		
 	  	
@@ -259,14 +260,15 @@ sub mtb2intervals
 	  my $stime=$data{$f}{"HEADER"}{'EHEADER'}{"StartStamp"};	  	  	
 	  
 	  $ncages=$data{$f}{'HEADER'}{'EHEADER'}{'Ncages'};
+	  $max_ncages = ($ncages > $max_ncages)? $ncages : $max_ncages;
 	  	  
 	  if ($switch_f)
-	  	{
+	  	{	  		
 	  		$H = ($ncages == 6 ? $h->{file6} : $h->{file12});
 	  	}		 
 	  
 	  $shift_cage->{$f} = (($switch_rename) && $ncages == 6 ? 12 : 0); 
-	  
+	  	  
 	  my $LineN;
 	  my %rv;
 	  my %in;
@@ -360,7 +362,7 @@ sub mtb2intervals
 		}
 	    }
 	}
-      for (my $c=1; $c<=$ncages; $c++)
+      for (my $c=1; $c<=$max_ncages; $c++)
 	{	
 	  	  	  	  
 	  foreach my $ch (@ch)
@@ -387,7 +389,7 @@ sub mtb2intervals
 		  my $Duration=$EndT -$StartT;
 		  
 		  $c_mod = $c + $shift_cage->{$File};
-		  		  
+		  		   		 
 		  print "#d;CAGE;$c_mod;Channel;$ch;Caption;$Caption;Name;$Name;Index;$i;StartT;$StartT;EndT;$EndT;Duration;$Duration;Value;$Value;Type;$Type;File;$File;StartL;$StartL;EndL;$EndL\n";
 		}
 	    }

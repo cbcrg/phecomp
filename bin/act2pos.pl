@@ -414,7 +414,8 @@ sub check_all_dates
 		      #to read the date 
 		      if ($i == $h{$f}{'HEADER'}{'EHEADER'}{'Ncages'} ) #when it arrive to the last cage goes out
 				{			  
-			  		print STDERR "IWH32\n";return ($h{$f}{$k1}{$k2}{$k3});
+			  		print STDERR "IWH32\n";
+			  		return ($h{$f}{$k1}{$k2}{$k3});
 				}
 		    }
 		  
