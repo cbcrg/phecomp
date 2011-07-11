@@ -1040,6 +1040,7 @@ sub setChannelFromVector
     my @ary = "";
     my $max = 0;    
     my $z = "";
+    my ($ctrYes, $ctrNo) = (0,0);
     
     foreach my $cage (sort(keys (%$d_int)))
       {               
@@ -1102,10 +1103,22 @@ sub setChannelFromVector
             
             $d_int->{$cage}{$time}{'Zone'} = $z;
             
-            if ($d_int->{$cage}{$time}{'Channel'} eq $z){print STDERR "Match: Y\n\n";}
-            else {print STDERR "Match: N\n\n";}                     
+            if ($d_int->{$cage}{$time}{'Channel'} eq $z)
+              {
+                $ctrYes++;
+                print STDERR "Match: Y\n\n";
+              }
+            
+            else 
+              {
+                print STDERR "Match: N\n\n";
+                $ctrNo++;
+              }                     
           }
       }
+    
+    print STDERR "---------- Total matches: $ctrYes----------\n\n";
+    print STDERR "---------- Total missmatches: $ctrNo----------\n\n";
     
     return ($d_int);
     
