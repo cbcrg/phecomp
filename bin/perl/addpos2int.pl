@@ -879,8 +879,14 @@ sub vector_pos2int
               {
                 #$x += $d_pos->{$cage}{$t}{'XPos'};
                 #$y += $d_pos->{$cage}{$t}{'YPos'};                   
-                   
-                #$p_zone =  &ChannelFromPos_modified($d_pos->{$cage}{$t}{'XPos'}, $d_pos->{$cage}{$t}{'YPos'});       
+                $p_zone = ""; #it might not be information for some time points   
+                #$p_zone =  &ChannelFromPos_modified($d_pos->{$cage}{$t}{'XPos'}, $d_pos->{$cage}{$t}{'YPos'});
+                
+                if (!exists ($d_pos->{$cage}{$t}{'XPos'}) || (!exists($d_pos->{$cage}{$t}{'YPos'}))) 
+                  {
+                    print STDERR "WARNING: Positions at time point $t, cage $cage is not set inside position file $d_pos->{$cage}{$t}{'File'}  or if \"shift option\" used is not available after shifting\n";                    
+                  }
+                       
                 $p_zone =  &ChannelFromPos ($d_pos->{$cage}{$t}{'XPos'}, $d_pos->{$cage}{$t}{'YPos'}, $cage, $z);
                    
               SWITCH: 
@@ -907,7 +913,14 @@ sub vector_pos2int
                     { 
                       $i4++;                          
                       last SWITCH;
-                    };  
+                    };
+                  
+                  ($p_zone eq "Intake 4") && do 
+                    { 
+                      $i4++;                          
+                      last SWITCH;
+                    };
+                      
                 }
               }
             
@@ -1032,7 +1045,8 @@ sub setChannelFromVector
       {               
                     
         foreach my $time (sort(keys (%{$d_int->{$cage}})))
-          {
+          {            
+                        
             $int_1 = $d_int->{$cage}{$time}{'Ctr_1'}; 
             $int_2 = $d_int->{$cage}{$time}{'Ctr_2'};
             $int_3 = $d_int->{$cage}{$time}{'Ctr_3'};
@@ -1051,6 +1065,12 @@ sub setChannelFromVector
             
           SWITCH: 
             {
+              ($max == 0) && do
+                {
+                  $z = "No Pos Intake"; 
+                  last SWITCH;
+                };
+                
               ($max == $int_1) && do 
                 {
                   $z = "Intake 1"; 
@@ -1076,9 +1096,10 @@ sub setChannelFromVector
                 };
             }
               
-               
+            print STDERR "cage is $cage an interval is startTime --> $time\n\n";   
             print STDERR "max is $max zone is $z\n\n";
             print STDERR "Interval channel is $d_int->{$cage}{$time}{'Channel'}\n\n";
+            
             $d_int->{$cage}{$time}{'Zone'} = $z;
             
             if ($d_int->{$cage}{$time}{'Channel'} eq $z){print STDERR "Match: Y\n\n";}
@@ -1311,16 +1332,14 @@ sub max
 sub setCageBoundaries 
   {
     my $d_pos = shift;
-    #my ($max_x, $max_y) = "";
     my $z = {};
     
     foreach my $cage (sort(keys (%$d_pos)))
            {  
-             my($x_max, $y_max) = "";
+             my ($x_max, $y_max) = (-1000., -1000);
                    
              foreach my $time (sort(keys (%{$d_pos->{$cage}})))
-               {  
-                 #print STDERR "$d_pos->{$cage}{$time}{'XPos'}\n";
+               {                   
                  $x_max = &max($d_pos->{$cage}{$time}{'XPos'}, $x_max);
                  $y_max = &max($d_pos->{$cage}{$time}{'YPos'}, $y_max);
                }
