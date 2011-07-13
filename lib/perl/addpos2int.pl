@@ -867,7 +867,7 @@ sub vector_pos2int
     $z = &setCageBoundaries ($d_pos);
     print STDERR "IWH\n\n";
        
-    foreach my $cage (sort(keys (%$d_int)))
+    foreach my $cage (sort ({$a<=>$b} keys (%$d_int)))
       {
         foreach my $time (sort(keys (%{$d_int->{$cage}})))
           {
