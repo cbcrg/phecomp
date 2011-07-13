@@ -427,6 +427,8 @@ sub filterPos_by_Int
       {
         $startT = $H_int->{$t}{'StartT'};
         $endT = $H_int->{$t}{'EndT'};        
+        my $f = $H_int->{$t}{'File'};
+        $f =~ s/mtb/pos/;
         
         for ($i=$startT; $i<=$endT; $i++)
           {
@@ -438,8 +440,7 @@ sub filterPos_by_Int
               }
             
             else 
-              {                
-                my $f = $H_pos->{$i}{'File'};
+              {                                
                 print STDERR "WARNING: Position at time point $i, cage $c is not set inside position file $f or if \"shift option\" used is not available after shifting\n";
               }
           }        
@@ -872,6 +873,8 @@ sub vector_pos2int
           {
             my $StartT = $d_int->{$cage}{$time}{'StartT'};
             my $EndT = $d_int->{$cage}{$time}{'EndT'};
+            my $fName = $d_int->{$cage}{$time}{'File'};
+            $fName =~ s/mtb/pos/;
             
             ($i1, $i2, $i3, $i4) = 0;
                
@@ -883,9 +886,7 @@ sub vector_pos2int
                 #$p_zone =  &ChannelFromPos_modified($d_pos->{$cage}{$t}{'XPos'}, $d_pos->{$cage}{$t}{'YPos'});
                 
                 if (!exists ($d_pos->{$cage}{$t}{'XPos'}) || (!exists($d_pos->{$cage}{$t}{'YPos'}))) 
-                  {                     
-                    my $fName = $d_int->{$cage}{$t}{'File'};
-                    $fName =~ s/mtb/pos/;
+                  {                                         
                     print STDERR "WARNING: Positions at time point $t, cage $cage is not set inside position file $fName or if \"shift option\" used is not available after shifting\n";                    
                   }
                        
