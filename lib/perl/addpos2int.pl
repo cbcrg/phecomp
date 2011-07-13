@@ -883,8 +883,10 @@ sub vector_pos2int
                 #$p_zone =  &ChannelFromPos_modified($d_pos->{$cage}{$t}{'XPos'}, $d_pos->{$cage}{$t}{'YPos'});
                 
                 if (!exists ($d_pos->{$cage}{$t}{'XPos'}) || (!exists($d_pos->{$cage}{$t}{'YPos'}))) 
-                  {
-                    print STDERR "WARNING: Positions at time point $t, cage $cage is not set inside position file $d_pos->{$cage}{$t}{'File'}  or if \"shift option\" used is not available after shifting\n";                    
+                  {                     
+                    my $fName = $d_int->{$cage}{$t}{'File'};
+                    $fName =~ s/mtb/pos/;
+                    print STDERR "WARNING: Positions at time point $t, cage $cage is not set inside position file $fName or if \"shift option\" used is not available after shifting\n";                    
                   }
                        
                 $p_zone =  &ChannelFromPos ($d_pos->{$cage}{$t}{'XPos'}, $d_pos->{$cage}{$t}{'YPos'}, $cage, $z);
@@ -1118,12 +1120,12 @@ sub setChannelFromVector
       }
     
     print STDERR "---------- Total matches: $ctrYes----------\n\n";
-    print STDERR "---------- Total missmatches: $ctrNo----------\n\n";
+    print STDERR "---------- Total mismatches: $ctrNo----------\n\n";
     
     return ($d_int);
     
   } 
-
+  
 sub ChannelFromPos
   {
     my $x = shift;
@@ -1192,7 +1194,6 @@ sub ChannelFromPos
     return ($channel);
   }     
   
-
 #Same function as ChannelFromPos but here xm, x2, ym and y1 are hard coded according with the values observed empirically
   
 sub ChannelFromPos_modified
