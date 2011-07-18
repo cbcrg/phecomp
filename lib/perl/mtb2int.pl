@@ -1076,7 +1076,7 @@ sub tacStamp2string_C
       
     if (!-e "$file")
       {
-        print STDERR "Can't open file: $file\n\"-startTime file tac\" option needs that all mtb files have their corresponding tac file with same name!!!\n";
+        print STDERR "FATAL ERROR: Can't open file: $file\n\"-startTime file tac\" option needs that all mtb files have their corresponding tac file with same name!!!\n";
         die;
       }
     
@@ -1084,7 +1084,8 @@ sub tacStamp2string_C
     
     if (!-e "$dateFile")
       {
-        print "FATAL ERROR: tac2pos is Not properly installed use act option instead!\n";
+        print STDERR "FATAL ERROR: tac2pos is Not properly installed use act option instead!\n";
+        die;
       }
       
     open ($F, "$dateFile") or die "tac2pos has not correctly returned the file date of: $file\n";
