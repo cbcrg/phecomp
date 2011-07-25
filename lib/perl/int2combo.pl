@@ -45,11 +45,16 @@ sub run_instruction
     if ($c=~/^tag/) 
       {	
 	$d=tag($d, $A);
-      }
+      }    
 #    elsif ($c=~/^rename/)
 #      {
 #	$d=&rename ($d,$A); #print Dumper ($d);#del
-#      }                           
+#      }
+    #bit stands for between intervals time (i.e. the time transcurred after next event occurs)  
+    elsif ($c=~/^BIT/)
+      {
+	   $d = &data2BIT ($d,$A);
+      }                           
     elsif ($c=~/^untag/)
       {
 	$d=untag ($d,$A);
@@ -391,6 +396,7 @@ sub unbin
     $BIN=0;
     return $d;
   }
+  
 sub untag
   {
     my $d=shift;
@@ -2805,3 +2811,97 @@ sub coll
 #	    	return ($renamed_H);
 #	    	#print STDERR "$switch_rename\n";die; #del 
 #	}
+
+sub data2BIT 
+  {
+    my $d=shift;
+    my $A=shift;
+    my $action = $A->{'action'};
+    if (!$action) {$action="annotate";}
+    
+    my $period = data2period_list ($d);
+    
+
+    #Headers in R Format
+    if ($A->{output}=~/R/) 
+      {
+	   print "period\tcage\tchannel\tBIT\n";
+      }
+    
+    foreach my $p (sort ({$a<=>$b}keys (%$period)))
+      {	
+#	     if ($A->{output} !~ /R/) 
+#	       {
+#	         print "-- $p--\n";
+#	       }   	     
+	
+	     $A->{period}=$p;
+	     $A->{name}="$p";
+	     
+	     annotateBIT ($d, $A);#the function is called for each period
+      }
+    
+    if ($action eq "annotate" )
+      {
+        return ($d);
+      }
+      
+    elsif ($action eq "output")
+      {
+        die;
+      }
+      
+    else 
+      {
+        print STDERR "FATAL ERROR: BIT (Between Interval Time) action --> $action unknown!!!";
+        die; 
+      }
+  }
+  
+sub annotateBIT
+  {
+    my $d = shift;
+    my $A = shift;
+    my $action = $A->{'action'};
+    if (!$action) {$action="annotate";}
+    my $BIT = -1;
+              
+    foreach my $c (sort ({$a<=>$b} keys (%$d)))
+      {
+        my $pEndT = -1;
+	    
+	    foreach my $t (sort ({$a<=>$b} keys (%{$d->{$c}})))
+	     {
+    	    my $period = $d->{$c}{$t}{period};
+    	    
+    	    if ($period ne $A->{period}){next;}	    
+	         {
+    	       my $StartT = $d->{$c}{$t}{'StartT'};
+    	       my $EndT = $d->{$c}{$t}{'EndT'};
+    	       my $channel = $d->{$c}{$t}{'Channel'};
+    	       
+    	       if ($pEndT != -1)
+    		    {
+    		      $BIT = $StartT - $pEndT;
+    		      #print "Period $period \t Cage --> $c \t Channel --> $channel \t Current end time--> $EndT \t Previous end time --> $pEndT \t BIT --> $BIT\n";
+    		      if ($action eq "output" ) {print "$period\t$c\t$channel\t$BIT\n"};
+    		      $d->{$c}{$t}{'BIT'} = $BIT;          
+    		    }
+    		    
+    		   else 
+    		    {
+    		      $BIT = 0;
+    		      #print "Cage --> $c \t Channel --> $channel \t Current end time--> $EndT \t Previous end time --> $pEndT \t BIT --> $BIT\n";
+    		      if ($action eq "output" ) {print "$period\t$c\t$channel\t$BIT\n";}
+    		      
+    		      $d->{$c}{$t}{'BIT'} = $BIT;
+    		    }
+    		    
+    		   $pEndT = $EndT;		   		   
+    	     }
+	     }
+      }
+  
+    return ($d);  
+         
+  }
