@@ -342,29 +342,31 @@ sub mtb2intervals
                                 ########################
                                 #Modification 31/08/2010
                                 #Files where type of food is not in name but in code (Name2=2/Group2=Obese/Code=Choc in D)            
-                                #$data{'INTERVALS'}{$c}{$ch}{$ci}{Name}=$data{$f}{"[ANIMALS DATA]"}{$c}{Name};
+                                #$data{'INTERVALS'}{$c}{$ch}{$ci}{Name}=$data{$f}{"[ANIMALS DATA]"}{$c}{Name};                              
                                 if ($data{$f}{"[ANIMALS DATA]"}{$c}{Name}  =~ /\d+/) 
                                   { 
                                     if ($data{$f}{"[ANIMALS DATA]"}{$c}{Group} =~ /Lean/) 
                                       {
-                                         $data{'INTERVALS'}{$c}{$ch}{$ci}{Name}="SC"
+                                         $data{'INTERVALS'}{$c}{$ch}{$ci}{Name}="SC";
                                       }
                                     else 
                                       {
+                                         #OJO this part should be changed for different mtb files depending on annotation
                                          #$data{'INTERVALS'}{$c}{$ch}{$ci}{Name}=$data{$f}{"[ANIMALS DATA]"}{$c}{Code};
-                                         $data{'INTERVALS'}{$c}{$ch}{$ci}{Name}="CD";
+                                         #$data{'INTERVALS'}{$c}{$ch}{$ci}{Name}="CD";
+                                         $data{'INTERVALS'}{$c}{$ch}{$ci}{Name}=$data{$f}{"[ANIMALS DATA]"}{$c}{Group};#development annotation
                                       }          
                                   }  
                                 
                                 else 
                                   {
-                                    $data{'INTERVALS'}{$c}{$ch}{$ci}{Name}=$data{$f}{"[ANIMALS DATA]"}{$c}{Name}; 
+                                    $data{'INTERVALS'}{$c}{$ch}{$ci}{Name}=$data{$f}{"[ANIMALS DATA]"}{$c}{Name};                                    
                                   }
                                 ###########end modificiation 31/08/2010##############
                               }
                             else
                               {                             
-                                 $data{'INTERVALS'}{$c}{$ch}{$ci}{Name}=$H->{$c}{Name};
+                                 $data{'INTERVALS'}{$c}{$ch}{$ci}{Name}=$H->{$c}{Name};                                 
                               }
                           ###end modification-02/09/2010###############
                               
@@ -399,6 +401,7 @@ sub mtb2intervals
                
               for (my $i=1; $i<=$ci; $i++)
                 {
+                   
                    my $StartT=$data{'INTERVALS'}{$c}{$ch}{$i}{StartT};
                         
                    my $EndT=$data{'INTERVALS'}{$c}{$ch}{$i}{EndT};
