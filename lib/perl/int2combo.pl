@@ -2817,17 +2817,24 @@ sub data2BIT
     my $d=shift;
     my $A=shift;
     my $action = $A->{'action'};
-    if (!$action) {$action="annotate";}
+    my $format = $A->{'format'};
     
+    if (!$format) {$format="R";}
+    
+    if (!$action) {$action="annotate";}
+        
     my $period = data2period_list ($d);
     
-
     #Headers in R Format
-    if ($A->{output}=~/R/) 
+    if ($A->{format}=~/R/) 
       {
-	   print "period\tcage\tchannel\tBIT\n";
+	   print "period\tstartTime\tpEndTime\tcage\tchannel\tBIT\n";
       }
     
+    else
+      {
+        print STDERR "WARNING: Format \"$A->{format}\" is unknown, thus R table format used!\n";
+      }
     foreach my $p (sort ({$a<=>$b}keys (%$period)))
       {	
 #	     if ($A->{output} !~ /R/) 
@@ -2884,7 +2891,7 @@ sub annotateBIT
     		    {
     		      $BIT = $StartT - $pEndT;
     		      #print "Period $period \t Cage --> $c \t Channel --> $channel \t Current end time--> $EndT \t Previous end time --> $pEndT \t BIT --> $BIT\n";
-    		      if ($action eq "output" ) {print "$period\t$c\t$channel\t$BIT\n"};
+    		      if ($action eq "output" ) {print "$period\t$StartT\t$pEndT\t$c\t$channel\t$BIT\n"};
     		      $d->{$c}{$t}{'BIT'} = $BIT;          
     		    }
     		    
@@ -2892,7 +2899,7 @@ sub annotateBIT
     		    {
     		      $BIT = 0;
     		      #print "Cage --> $c \t Channel --> $channel \t Current end time--> $EndT \t Previous end time --> $pEndT \t BIT --> $BIT\n";
-    		      if ($action eq "output" ) {print "$period\t$c\t$channel\t$BIT\n";}
+    		      if ($action eq "output" ) {print "$period\t$StartT\t$pEndT\t$c\t$channel\t$BIT\n";}
     		      
     		      $d->{$c}{$t}{'BIT'} = $BIT;
     		    }
