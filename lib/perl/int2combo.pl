@@ -367,7 +367,7 @@ sub channel2Nature
 		    }
 		    else
 		      {
-			#print "ERROR: $Name\n";
+			     print "ERROR: $Name\n";
 		      }
 		  }
 		
@@ -2824,17 +2824,7 @@ sub data2BIT
     if (!$action) {$action="annotate";}
         
     my $period = data2period_list ($d);
-    
-    #Headers in R Format
-    if ($A->{format}=~/R/) 
-      {
-	   print "period\tstartTime\tpEndTime\tcage\tchannel\tBIT\n";
-      }
-    
-    else
-      {
-        print STDERR "WARNING: Format \"$A->{format}\" is unknown, thus R table format used!\n";
-      }
+             
     foreach my $p (sort ({$a<=>$b}keys (%$period)))
       {	
 #	     if ($A->{output} !~ /R/) 
@@ -2845,7 +2835,7 @@ sub data2BIT
 	     $A->{period}=$p;
 	     $A->{name}="$p";
 	     
-	     annotateBIT ($d, $A);#the function is called for each period
+	     $d = annotateBIT ($d, $A);#the function is called for each period
       }
     
     if ($action eq "annotate" )
@@ -2854,7 +2844,20 @@ sub data2BIT
       }
       
     elsif ($action eq "output")
-      {
+      { 
+        #Headers in R Format
+        if ($A->{format}=~/R/) 
+          {
+	         print "period\tstartTime\tpEndTime\tcage\tchannel\tBIT\ttransition\n";
+	         &BIT2print ($d);
+	         die;	         
+          }
+    
+        else
+          {
+            print STDERR "WARNING: Format \"$A->{format}\" is unknown, thus R table format used!\n";
+          }
+          
         die;
       }
       
@@ -2869,13 +2872,17 @@ sub annotateBIT
   {
     my $d = shift;
     my $A = shift;
-    my $action = $A->{'action'};
-    if (!$action) {$action="annotate";}
+    my $action = $A->{'action'};    
     my $BIT = -1;
+    my $transition = "empty"; #del after debug if it does not appear empty substitute by ""
               
+    if (!$action) {$action="annotate";}
+                  
     foreach my $c (sort ({$a<=>$b} keys (%$d)))
       {
         my $pEndT = -1;
+	    my $pKeyTime = -1;#We have to keep time to annotate the transition in the previous interval
+	    my $pNature = "";
 	    
 	    foreach my $t (sort ({$a<=>$b} keys (%{$d->{$c}})))
 	     {
@@ -2886,29 +2893,61 @@ sub annotateBIT
     	       my $StartT = $d->{$c}{$t}{'StartT'};
     	       my $EndT = $d->{$c}{$t}{'EndT'};
     	       my $channel = $d->{$c}{$t}{'Channel'};
+    	       my $nature = $d->{$c}{$t}{'Nature'};    	       
     	       
-    	       if ($pEndT != -1)
+    	       if ($pEndT != -1 || $pKeyTime != -1)
     		    {
     		      $BIT = $StartT - $pEndT;
-    		      #print "Period $period \t Cage --> $c \t Channel --> $channel \t Current end time--> $EndT \t Previous end time --> $pEndT \t BIT --> $BIT\n";
-    		      if ($action eq "output" ) {print "$period\t$StartT\t$pEndT\t$c\t$channel\t$BIT\n"};
-    		      $d->{$c}{$t}{'BIT'} = $BIT;          
+    		      $transition = $pNature."::".$nature;
+    		      #print "Period $period \t Cage --> $c \t Channel --> $channel \t Current end time--> $EndT \t Previous end time --> $pEndT \t BIT --> $BIT \t Transition --> $transition\n";    		      
+    		      $d->{$c}{$pKeyTime}{'BIT'} = $BIT;
+    		      $d->{$c}{$pKeyTime}{'Transition'} = $transition;            
     		    }
     		    
     		   else 
     		    {
     		      $BIT = 0;
-    		      #print "Cage --> $c \t Channel --> $channel \t Current end time--> $EndT \t Previous end time --> $pEndT \t BIT --> $BIT\n";
-    		      if ($action eq "output" ) {print "$period\t$StartT\t$pEndT\t$c\t$channel\t$BIT\n";}
     		      
-    		      $d->{$c}{$t}{'BIT'} = $BIT;
+    		      #print "Cage --> $c \t Channel --> $channel \t Current end time--> $EndT \t Previous end time --> $pEndT \t BIT --> $BIT\n";    		          		     
+    		      $d->{$c}{$t}{'BIT'} = $BIT;    		      
     		    }
     		    
-    		   $pEndT = $EndT;		   		   
+    		   $pEndT = $EndT;
+    		   $pKeyTime = $t;
+    		   $pNature = $nature;    		       		   		   		   
     	     }
 	     }
       }
-  
+   
     return ($d);  
          
+  }
+
+sub BIT2print
+  {
+   my $d = shift;
+    
+   foreach my $c (sort ({$a<=>$b} keys (%$d)))
+      {
+        my $pEndT = -1;
+        	    
+	    foreach my $t (sort ({$a<=>$b} keys (%{$d->{$c}})))
+	     {
+	       my $period = $d->{$c}{$t}{'period'};
+	       my $StartT = $d->{$c}{$t}{'StartT'};
+  	       my $EndT = $d->{$c}{$t}{'EndT'};
+  	       my $channel = $d->{$c}{$t}{'Channel'};
+  	       #my $nature = $d->{$c}{$t}{'Nature'};
+  	       my $BIT = $d->{$c}{$t}{'BIT'};
+  	       my $transition = $d->{$c}{$t}{'Transition'};
+  	       
+  	       if (!defined ($BIT)) {$BIT = "0"};
+  	       if (!defined ($transition)) {$transition = "LastRec"};
+  	       
+	       print "$period\t$StartT\t$pEndT\t$c\t$channel\t$BIT\t$transition\n";
+	       $pEndT = $EndT;
+	     }
+	     
+      }
+    
   }
