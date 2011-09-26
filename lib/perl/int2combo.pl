@@ -45,11 +45,14 @@ sub run_instruction
     if ($c=~/^tag/) 
       {	
 	$d=tag($d, $A);
-      }    
+      }
+      
+#    option to rename cage 6 from 13 to 18          
 #    elsif ($c=~/^rename/)
 #      {
 #	$d=&rename ($d,$A); #print Dumper ($d);#del
 #      }
+
     #bit stands for between intervals time (i.e. the time transcurred after next event occurs)  
     elsif ($c=~/^BIT/)
       {
@@ -551,6 +554,7 @@ sub filter_data
 	   }
        }
      print STDERR "\nFiltering: Removed $tot values out of $n\n";
+     delete ($A->{action});#it should always be specified, if not problems with action option of BIT 
      return untag ($d);
    }
 
