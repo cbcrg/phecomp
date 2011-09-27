@@ -2878,12 +2878,13 @@ sub annotateBIT
     my $A = shift;
     my $action = $A->{'action'};    
     my $BIT = -1;
-    my $transition = "empty"; #del after debug if it does not appear empty substitute by ""
-              
+    my $transition = ""; 
+             
     if (!$action) {$action="annotate";}
                   
     foreach my $c (sort ({$a<=>$b} keys (%$d)))
-      {
+      { 
+        
         my $pEndT = -1;
 	    my $pKeyTime = -1;#We have to keep time to annotate the transition in the previous interval
 	    my $pNature = "";
@@ -2893,33 +2894,35 @@ sub annotateBIT
     	    my $period = $d->{$c}{$t}{period};
     	    
     	    if ($period ne $A->{period}){next;}	    
-	         {
-    	       my $StartT = $d->{$c}{$t}{'StartT'};
-    	       my $EndT = $d->{$c}{$t}{'EndT'};
-    	       my $channel = $d->{$c}{$t}{'Channel'};
-    	       my $nature = $d->{$c}{$t}{'Nature'};    	       
-    	       
-    	       if ($pEndT != -1 || $pKeyTime != -1)
-    		    {
-    		      $BIT = $StartT - $pEndT;
-    		      $transition = $pNature."::".$nature;
-    		      #print "Period $period \t Cage --> $c \t Channel --> $channel \t Current end time--> $EndT \t Previous end time --> $pEndT \t BIT --> $BIT \t Transition --> $transition\n";    		      
-    		      $d->{$c}{$pKeyTime}{'BIT'} = $BIT;
-    		      $d->{$c}{$pKeyTime}{'Transition'} = $transition;            
-    		    }
-    		    
-    		   else 
-    		    {
-    		      $BIT = 0;
-    		      
-    		      #print "Cage --> $c \t Channel --> $channel \t Current end time--> $EndT \t Previous end time --> $pEndT \t BIT --> $BIT\n";    		          		     
-    		      $d->{$c}{$t}{'BIT'} = $BIT;    		      
-    		    }
-    		    
-    		   $pEndT = $EndT;
-    		   $pKeyTime = $t;
-    		   $pNature = $nature;    		       		   		   		   
-    	     }
+	         
+  	        my $StartT = $d->{$c}{$t}{'StartT'};
+  	        my $EndT = $d->{$c}{$t}{'EndT'};
+  	        my $channel = $d->{$c}{$t}{'Channel'};
+  	        my $nature = $d->{$c}{$t}{'Nature'};    	       
+  	        
+  	        $d->{$c}{$t}{'BIT'} = 0;#by default we put something, if not last record remains unannotated
+  	        $d->{$c}{$t}{'Transition'} = $nature."::lastRec";
+  	        
+  	        if ($pEndT != -1 || $pKeyTime != -1)
+  		      {
+  		        $BIT = $StartT - $pEndT;
+  		        $transition = $pNature."::".$nature;
+  		        #print "Period $period \t Cage --> $c \t Channel --> $channel \t Current end time--> $EndT \t Previous end time --> $pEndT \t BIT --> $BIT \t Transition --> $transition\n";    		      
+  		        $d->{$c}{$pKeyTime}{'BIT'} = $BIT;
+  		        $d->{$c}{$pKeyTime}{'Transition'} = $transition;            
+  		      }
+  		    
+  		    else 
+  		      {
+  		        $BIT = 0;
+  		      
+  		        #print "Cage --> $c \t Channel --> $channel \t Current end time--> $EndT \t Previous end time --> $pEndT \t BIT --> $BIT\n";    		          		     
+  		        $d->{$c}{$t}{'BIT'} = $BIT;    		      
+  		      }
+  		    
+  		   $pEndT = $EndT;
+  		   $pKeyTime = $t;
+  		   $pNature = $nature;    		       		   		   		    
 	     }
       }
    
