@@ -1088,12 +1088,16 @@ sub data2log_odd
     if (!$mode) {$mode = "logodd";}
 
     #modification logodd R output 23/09/10
-    if ($A->{output}=~/R/) 
+    if ($A->{output}=~/R/ && $A->{mode} eq "logodd") 
       {
-	     print "period\tcage\todd_ratio\todd_ratio_value\tdelta_w\n";
+        print "period\tcage\todd_ratio\todd_ratio_value\tdelta_w\n";
       }
     #end modification-23/09/10
-
+    elsif ($A->{output}=~/R/ && $A->{mode} eq "logoddBIT")
+      {
+        print "period\tcage\ttransition\tBIT\todd_ratio_value\tdelta_w\n";
+      }
+      
     foreach my $p (sort ({$a<=>$b}keys (%$period)))
       {
         #modification logodd R output 23/09/10
@@ -1379,7 +1383,7 @@ sub display_log_oddBIT
     	               else
     	                 {
     	                   #printf "%2d\t%2d\t%10s -- %10s\t%6.3f\t%6.2f\n", $A->{period}, $c, $b1, $b2, $M->{$c}{$b1}{$b2}{logodd}{value}, $WEIGHT{$c}{delta};#del
-    	                   printf "%2d\t%2d\t%10s -- %10s -- %10s\t%6.3f\t%6.2f\n", $A->{period}, $c, $b1, $bitKey, $b2, $T->{$c}{$b1}{$bitKey}{$b2}{logodd}{value}, $WEIGHT{$c}{delta};
+    	                   printf "%2d\t%2d\t%10s -- %10s\t%10s\t%6.3f\t%6.2f\n", $A->{period}, $c, $b1, $b2, $bitKey, $T->{$c}{$b1}{$bitKey}{$b2}{logodd}{value}, $WEIGHT{$c}{delta};
     	                 }
 	                 }
 	             }
