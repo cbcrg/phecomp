@@ -90,7 +90,7 @@ sub run_instruction
       }
     elsif ($c=~/^logodd/)
       {
-	data2log_odd ($d, $A);
+	   data2log_odd ($d, $A);
       }
     elsif ($c=~/^stat/)
       {
@@ -421,6 +421,12 @@ sub tag
     
     my $field=$A->{field};
     my $min=$A->{min}; 
+        
+    if ($min =~ /^m(\d+)/) 
+      {
+          $min = -$1;
+      }
+    
     my $max=$A->{max};
     my $contains=$A->{contains};
     my $equals=$A->{equals};
@@ -694,6 +700,7 @@ sub data2bin
 		else
 		  {
 		    my $bin=int($S->{$c}{$i}{$field}/$delta);
+		    		    
 		    if ( $bin<0){$bin=0;}
 		    else
 		      {
@@ -713,6 +720,7 @@ sub data2bin
     
     return untag($S);
   }
+
 sub data2field_list
   {
     my $d=shift;
@@ -1075,28 +1083,46 @@ sub data2log_odd
     my $d=shift;
     my $A=shift;
     my $period=data2period_list ($d);
+    my $mode = $A->{mode};
     
+    if (!$mode) {$mode = "logodd";}
 
     #modification logodd R output 23/09/10
     if ($A->{output}=~/R/) 
       {
-	print "period\tcage\todd_ratio\todd_ratio_value\tdelta_w\n";
+	     print "period\tcage\todd_ratio\todd_ratio_value\tdelta_w\n";
       }
     #end modification-23/09/10
 
     foreach my $p (sort ({$a<=>$b}keys (%$period)))
       {
-	#modification logodd R output 23/09/10
-	if ($A->{output}!~/R/) 
-	  {
-	    print "-- $p--\n";
-	  }   	     
-	#end modification 23/09/10
-
-	$A->{period}=$p;
-	$A->{name}="$p";
-	data2log_odd_period ($d, $A);#the function is called for each period
+        #modification logodd R output 23/09/10
+    	if ($A->{output}!~/R/) 
+          {
+            print "-- $p--\n";
+	      }   	     
+	    #end modification 23/09/10
+        
+        $A->{period}=$p;
+	    $A->{name}="$p";
+	    
+	    if ($mode eq "logodd")
+	     {
+	       &data2log_odd_period ($d, $A);#the function is called for each period
+	     }
+	     
+	    elsif ($mode eq "logoddBIT")
+	     {
+	       &data2log_odd_period_BIT ($d, $A);
+	     }
+	     
+	    else 
+	     {
+	       print "FATAL ERROR: Mode-->$mode not recognize in -logodd option\n"; 
+	       die; 
+	     }
       }
+    
     die;
   }
 
@@ -1107,39 +1133,42 @@ sub data2log_odd_period
     my $tot={};
     my $chc={};
     my $M={};
-
+    
+    ##INFO
     #c-> cage
     #ch -> previous channel
     #cch -> current channel
-    #t -> time    
+    #t -> time
+    #pendt -> previous end time    
+    
     foreach my $c (sort(keys (%$d)))
       {
-	#my ($ch,$pendt);
-	my ($ch) ;
-	my $pendt = 0;
+        #my ($ch,$pendt);
+        my ($ch) ;
+        my $pendt = 0;
 
-	foreach my $t (sort(keys (%{$d->{$c}})))
-	  {
-	    my $period=$d->{$c}{$t}{period};
-	    if ($period ne $A->{period}){next;}
-	    #print "he passat per aqui --> $pendt\n";
-	    #if ($d->{$c}{$t}{StartT} > $pendt)  {$pendt=$d->{$c}{$t}{EndT}; next;} else {}
-	    #I take the bin (e.g. sc_food_sc) 
-	    my $cch=$d->{$c}{$t}{bin};
-	    
-	    $M->{$c}{$cch}{$cch }{count}{tot}++;
-	    if ($ch)
-	      {
-		$M->{$c}{$ch}{$cch}{count}{transition}++;
-		$M->{$c}{$ch}{$cch}{count}{interval}+=$d->{$c}{$t}{StartT}-$pendt;
-		#$M->{"total"}{$ch}{$cch}{count}{transitions}++;
-		#$M->{"total"}{$ch}{$cch}{count}{interval}+=$d->{$c}{$t}{StartT}-$pendt;
-	      }
-	    
-	    $tot->{$c}++;
-	    $ch=$cch;
-	    $pendt=$d->{$c}{$t}{EndT};#print "aqui que es $pendt";
-	  }
+    	foreach my $t (sort(keys (%{$d->{$c}})))
+          {
+            my $period=$d->{$c}{$t}{period};
+    	    if ($period ne $A->{period}){next;}
+    	    #print "he passat per aqui --> $pendt\n";
+    	    #if ($d->{$c}{$t}{StartT} > $pendt)  {$pendt=$d->{$c}{$t}{EndT}; next;} else {}
+    	    #I take the bin (e.g. sc_food_sc) 
+    	    my $cch=$d->{$c}{$t}{bin};
+    	    
+    	    $M->{$c}{$cch}{$cch }{count}{tot}++;
+    	    if ($ch)
+              {
+                $M->{$c}{$ch}{$cch}{count}{transition}++;
+        		$M->{$c}{$ch}{$cch}{count}{interval}+=$d->{$c}{$t}{StartT}-$pendt;
+        		#$M->{"total"}{$ch}{$cch}{count}{transitions}++;
+        		#$M->{"total"}{$ch}{$cch}{count}{interval}+=$d->{$c}{$t}{StartT}-$pendt;
+    	      }
+    	    
+    	    $tot->{$c}++;
+    	    $ch=$cch;
+    	    $pendt=$d->{$c}{$t}{EndT};#print "aqui que es $pendt";
+    	  }
       }
     
    # foreach my $c ( sort({$a<=>$b}keys (%$chc)))
@@ -1154,28 +1183,28 @@ sub data2log_odd_period
 
     foreach my $c (keys (%$M))
       {
-	foreach my $b1 (keys (%{$M->{$c}}))
-	  {
-	    foreach my $b2 (keys (%{$M->{$c}{$b1}}))
-	      {
-		my ($count0,$count1, $count2);
-		if ( $tot->{$c}==0){next;}
-		$count0=$M->{$c}{$b1}{$b2}{count}{transition};
-		$count0/=$tot->{$c};
-		
-		$count1=$M->{$c}{$b1}{$b1}{count}{tot};
-		$count1/=$tot->{$c};
-		$count2=$M->{$c}{$b2}{$b2}{count}{tot};
-		$count2/=$tot->{$c};
-		$M->{$c}{$b1}{$b2}{logodd}{value}=(($count1*$count2)==0 || $count0==0)?0:log (($count0)/($count1*$count2));
-		$M->{$c}{$b1}{$b2}{count}{fulltot}=$tot->{$c};
+        foreach my $b1 (keys (%{$M->{$c}}))
+          {
+            foreach my $b2 (keys (%{$M->{$c}{$b1}}))
+              {
+                my ($count0,$count1, $count2);
+          		if ( $tot->{$c}==0){next;}
+          		$count0=$M->{$c}{$b1}{$b2}{count}{transition};
+          		$count0/=$tot->{$c};
+          		
+          		$count1=$M->{$c}{$b1}{$b1}{count}{tot};
+          		$count1/=$tot->{$c};
+          		$count2=$M->{$c}{$b2}{$b2}{count}{tot};
+          		$count2/=$tot->{$c};
+          		$M->{$c}{$b1}{$b2}{logodd}{value}=(($count1*$count2)==0 || $count0==0)?0:log (($count0)/($count1*$count2));
+          		$M->{$c}{$b1}{$b2}{count}{fulltot}=$tot->{$c};
+          	  }
 	      }
-	  }
       }
     #modification logodd R output 23/09/10
     if ($A->{output}!~/R/) 
       {
-	print "Period:$A->{period}\n";
+	     print "Period:$A->{period}\n";
       } 
     #end modification-23/09/10
 
@@ -1225,6 +1254,141 @@ sub display_log_odd
     return $M;
   }
 
+#log odd ratios with BIT information
+#f(a I b) / f(a) f(I) f(b)
+sub data2log_odd_period_BIT
+  {    
+    my $d=shift;
+    my $A=shift;
+    my $tot={};
+    my $chc={};
+    my $M={};
+    my $T={}; #hash only for transitions
+  
+    ##INFO
+    #c-> cage
+    #ch -> previous channel
+    #cch -> current channel
+    #t -> time    
+    
+    foreach my $c (sort(keys (%$d)))
+      {
+        my ($ch, $cch, $ch_BIT);
+        my $pendt = 0;
+
+    	foreach my $t (sort(keys (%{$d->{$c}})))
+          {
+            my $period=$d->{$c}{$t}{period};
+    	    
+    	    if ($period ne $A->{period}){next;}
+    	    
+    	    #Channel (e.g. sc_food) 
+    	    my $cch = $d->{$c}{$t}{Nature};
+    	    
+    	    #BIT (e.g. BIT_1)
+    	    my $BIT = $d->{$c}{$t}{bin};
+    	        	        	   
+    	    $M->{$c}{$cch}{$cch}{count}{tot}++;
+    	    $M->{$c}{$BIT}{$BIT}{count}{tot}++;
+    	    
+    	    if ($ch)
+              {                
+                $T->{$c}{$ch}{$BIT}{$cch}{count}{transition}++;                
+        		$M->{$c}{$ch}{$cch}{count}{interval}+=$d->{$c}{$t}{StartT}-$pendt;
+    	      }
+    	    
+    	    $tot->{$c}++;
+    	    $ch=$cch;    	   
+    	    
+    	    $pendt=$d->{$c}{$t}{EndT};
+    	  }
+      }
+    
+    foreach my $c (keys (%$M))
+      {
+        
+        foreach my $b1 (keys (%{$T->{$c}}))
+          {
+            foreach my $bitKey (keys (%{$T->{$c}{$b1}}))
+              {
+                foreach my $b2 (keys (%{$T->{$c}{$b1}{$bitKey}}))
+                  {                                       
+                    my ($count0,$count1, $count2, $count3);
+            		
+            		if ( $tot->{$c}==0){next;}
+            		            		
+            		$count0 = $T->{$c}{$b1}{$bitKey}{$b2}{count}{transition};
+            		$count0 /= $tot->{$c};
+            		
+            		$count1 = $M->{$c}{$b1}{$b1}{count}{tot};
+            		$count1/=$tot->{$c};
+            		$count2=$M->{$c}{$b2}{$b2}{count}{tot};
+            		$count2/= $tot->{$c};
+            		$count3 = $M->{$c}{$bitKey}{$bitKey}{count}{tot};
+            		$count3/=$tot->{$c};
+            		
+            		$T->{$c}{$b1}{$bitKey}{$b2}{logodd}{value}=(($count1*$count2*$count3)==0 || $count0==0)?0:log (($count0)/($count1*$count2*$count3));
+            		$T->{$c}{$b1}{$bitKey}{$b2}{count}{fulltot}=$tot->{$c};
+                  }
+          	  }
+	      }
+      }
+    
+    if ($A->{output}!~/R/) 
+      {
+	     print "Period:$A->{period}\n";
+      } 
+    
+
+    &display_log_oddBIT ($T, $M);
+    
+    return $M;
+  }
+
+sub display_log_oddBIT
+  {
+    my $T = shift;
+    my $M = shift;
+    
+    foreach my $c (sort ({$a<=>$b}keys (%$T)))
+      {
+        
+        if ($A->{output}!~/R/) 
+          {
+            print "Cage: $c Delta: $WEIGHT{$c}{delta}\n";
+          }
+	   
+	     foreach my $b1 (keys (%{$T->{$c}}))
+	       {
+	         my $b1C = $M->{$c}{$b1}{$b1}{count}{tot};
+	         
+	           foreach my $bitKey (keys (%{$T->{$c}{$b1}}))
+	             {
+	               
+	               my $bitC = $M->{$c}{$bitKey}{$bitKey}{count}{tot};
+	               
+	               foreach my $b2 (keys (%{$T->{$c}{$b1}{$bitKey}}))
+	                 {
+	                   my $b2C = $M->{$c}{$b2}{$b2}{count}{tot};
+	                   
+    	               if ($A->{output}!~/R/)
+    	                 {
+    	                   printf "\tCAGE: %2d Delta: %6.2f %10s::%5s -- %10s : %6.3f (Count: %5d)(FC: %5d)($b1: $b1C, $bitKey: $bitC, $b2: $b2C)\n",$c,$WEIGHT{$c}{delta}, $b1,$bitKey,$b2,$T->{$c}{$b1}{$bitKey}{$b2}{logodd}{value}, $T->{$c}{$b1}{$bitKey}{$b2}{count}{transition}, $T->{$c}{$b1}{$bitKey}{$b2}{count}{fulltot};
+    	                 }
+    	                 
+    	               else
+    	                 {
+    	                   #printf "%2d\t%2d\t%10s -- %10s\t%6.3f\t%6.2f\n", $A->{period}, $c, $b1, $b2, $M->{$c}{$b1}{$b2}{logodd}{value}, $WEIGHT{$c}{delta};#del
+    	                   printf "%2d\t%2d\t%10s -- %10s -- %10s\t%6.3f\t%6.2f\n", $A->{period}, $c, $b1, $bitKey, $b2, $T->{$c}{$b1}{$bitKey}{$b2}{logodd}{value}, $WEIGHT{$c}{delta};
+    	                 }
+	                 }
+	             }
+	       }
+      }
+    
+    return $M;
+  }
+    
 sub data2log_odd_old
     {
       my $d=shift;
