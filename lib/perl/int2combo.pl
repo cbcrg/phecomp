@@ -1084,9 +1084,12 @@ sub data2log_odd
     my $A=shift;
     my $period=data2period_list ($d);
     my $mode = $A->{mode};
+    my $bitThreshold = $A->{fieldT};
     
     if (!$mode) {$mode = "logodd";}
-
+    
+    if (!$bitThreshold) {$bitThreshold = "default";}    
+    
     #modification logodd R output 23/09/10
     if ($A->{output}=~/R/ && $A->{mode} eq "logodd") 
       {
@@ -1099,7 +1102,7 @@ sub data2log_odd
       }
       
     foreach my $p (sort ({$a<=>$b}keys (%$period)))
-      {
+      {        
         #modification logodd R output 23/09/10
     	if ($A->{output}!~/R/) 
           {
@@ -1109,10 +1112,22 @@ sub data2log_odd
         
         $A->{period}=$p;
 	    $A->{name}="$p";
-	    
+	      
 	    if ($mode eq "logodd")
 	     {
-	       &data2log_odd_period ($d, $A);#the function is called for each period
+	       #print "bit Threshold $bitThreshold\n\n"; die;#del
+	       #print "bit Threshold $bitThreshold\n\n";
+	       
+	       if ($bitThreshold eq "default")
+	         {
+	           &data2log_odd_period ($d, $A);#the function is called for each period	           
+	         }
+	       
+	       elsif ($bitThreshold =~ /\d+/)
+	         {
+	           #print "bit Threshold $bitThreshold inside\n\n"; die;#del
+	           &data2log_odd_period_bitThreshold ($d, $A);
+	         }
 	     }
 	     
 	    elsif ($mode eq "logoddBIT")
@@ -1392,7 +1407,89 @@ sub display_log_oddBIT
     
     return $M;
   }
+  
+sub data2log_odd_period_bitThreshold
+  {    
+    my $d=shift;
+    my $A=shift;
+    my $tot={};
+    my $chc={};
+    my $M={};
     
+    ##INFO
+    #c-> cage
+    #ch -> previous channel
+    #cch -> current channel
+    #t -> time
+    #pendt -> previous end time    
+    
+    foreach my $c (sort(keys (%$d)))
+      {
+        my ($ch) ;
+        my $pendt = 0;
+
+    	foreach my $t (sort(keys (%{$d->{$c}})))
+          {
+            my $period=$d->{$c}{$t}{period};
+    	    
+    	    if ($period ne $A->{period}){next;}
+    	    
+    	    #I take the bin (e.g. sc_food_sc) 
+    	    my $cch=$d->{$c}{$t}{bin};
+    	    my $BIT=$d->{$c}{$t}{BIT};
+    	    print "bit is $BIT\n";die;#del
+    	    
+    	    $M->{$c}{$cch}{$cch }{count}{tot}++;
+    	    
+    	    if ($ch)
+              {
+                
+                if ($BIT < $A->{fieldT})
+                  {  
+                    $M->{$c}{$ch}{$cch}{count}{transition}++;
+                  }
+        		
+        		$M->{$c}{$ch}{$cch}{count}{interval}+=$d->{$c}{$t}{StartT}-$pendt;
+    	      }
+    	    
+    	    $tot->{$c}++;
+    	    $ch=$cch;
+    	    $pendt=$d->{$c}{$t}{EndT};#print "aqui que es $pendt";
+    	  }
+      }
+
+    foreach my $c (keys (%$M))
+      {
+        foreach my $b1 (keys (%{$M->{$c}}))
+          {
+            foreach my $b2 (keys (%{$M->{$c}{$b1}}))
+              {
+                my ($count0,$count1, $count2);
+          		if ( $tot->{$c}==0){next;}
+          		$count0=$M->{$c}{$b1}{$b2}{count}{transition};
+          		$count0/=$tot->{$c};
+          		
+          		$count1=$M->{$c}{$b1}{$b1}{count}{tot};
+          		$count1/=$tot->{$c};
+          		$count2=$M->{$c}{$b2}{$b2}{count}{tot};
+          		$count2/=$tot->{$c};
+          		$M->{$c}{$b1}{$b2}{logodd}{value}=(($count1*$count2)==0 || $count0==0)?0:log (($count0)/($count1*$count2));
+          		$M->{$c}{$b1}{$b2}{count}{fulltot}=$tot->{$c};
+          	  }
+	      }
+      }
+    #modification logodd R output 23/09/10
+    if ($A->{output}!~/R/) 
+      {
+	     print "Period:$A->{period}\n";
+      } 
+    #end modification-23/09/10
+
+    display_log_odd($M);
+    
+    return $M;
+  }
+   
 sub data2log_odd_old
     {
       my $d=shift;
