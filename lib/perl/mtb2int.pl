@@ -1097,7 +1097,9 @@ sub tacStamp2string_C
         print STDERR "WARNING: Can't open file: $file\n";
         print STDERR "         \"-startTime file tac\" option needs that all mtb files have their corresponding tac file with same name!!!\n";
         print STDERR "         time inside mtb file will be use instead!!!\n";
-        next;
+        $date = "NoTacFile";
+        return ($date);
+        #next;
       }
     
     system ("tac2pos -file $file -action date");
