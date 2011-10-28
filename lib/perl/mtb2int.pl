@@ -171,46 +171,47 @@ sub readFileChannels
       
     while (<$F>)
       {
-  chomp;
-  my $line=$_;
-  ($c, $seq) = split ("\t",$line);    
+        chomp;
+        my $line=$_;
+        ($c, $seq) = split ("\t",$line);    
   
-  if ($seq!~/C/i) 
-    {
-      $H->{$c}{Name}="SC";
-    } 
-  else 
-    {
-      $seq=~m/C/ig;
-      $ch=pos ($seq);
+        if ($seq!~/C/i) 
+          {
+            $H->{$c}{Name}="SC";
+          } 
+       
+       else 
+        {
+          $seq=~m/C/ig;
+          $ch=pos ($seq);
       
-    SWITCH: 
-      {
-        ($ch == 1) && do 
-    {
-      $H->{$c}{Name}="CD in A"; 
-      last SWITCH;
-    };
+          SWITCH: 
+            {
+              ($ch == 1) && do 
+                {
+                  $H->{$c}{Name}="CD in A"; 
+                  last SWITCH;
+                };
         
-        ($ch == 2) && do 
-    {
-      $H->{$c}{Name}="CD in B";
-      last SWITCH;
-    };
+              ($ch == 2) && do 
+                {
+                  $H->{$c}{Name}="CD in B";
+                  last SWITCH;
+                };
         
-        ($ch == 3) && do 
-    {
-      $H->{$c}{Name}="CD in C"; 
-      last SWITCH;
-    };
+              ($ch == 3) && do 
+                {
+                  $H->{$c}{Name}="CD in C"; 
+                  last SWITCH;
+                };
         
-        ($ch == 4) && do 
-    {
-      $H->{$c}{Name}="CD in D";  
-      last SWITCH;
-    };             
-      }      
-    }
+              ($ch == 4) && do 
+                {
+                  $H->{$c}{Name}="CD in D";  
+                  last SWITCH;
+                };             
+            }      
+        }
       }
     
     close ($F);
