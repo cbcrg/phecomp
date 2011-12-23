@@ -1086,6 +1086,7 @@ sub data2log_odd
     my $mode = $A->{mode};
     my $bitThreshold = $A->{fieldT};
     
+    
     if (!$mode) {$mode = "logodd";}
     
     if (!$bitThreshold) {$bitThreshold = "default";}    
@@ -1113,11 +1114,9 @@ sub data2log_odd
         $A->{period}=$p;
 	    $A->{name}="$p";
 	      
-	    if ($mode eq "logodd")
+	    if ($mode eq "logodd" | $mode eq "logodd_CA_global" | $mode eq "logodd_CA_cage")
 	     {
-	       #print "bit Threshold $bitThreshold\n\n"; die;#del
-	       #print "bit Threshold $bitThreshold\n\n";
-	       
+	    
 	       if ($bitThreshold eq "default")
 	         {
 	           &data2log_odd_period ($d, $A);#the function is called for each period	           
@@ -1125,7 +1124,6 @@ sub data2log_odd
 	       
 	       elsif ($bitThreshold =~ /\d+/)
 	         {
-	           #print "bit Threshold $bitThreshold inside\n\n"; die;#del
 	           &data2log_odd_period_bitThreshold ($d, $A);
 	         }
 	     }
@@ -1226,12 +1224,106 @@ sub data2log_odd_period
 	     print "Period:$A->{period}\n";
       } 
     #end modification-23/09/10
-
-    display_log_odd($M);
     
+    if ($A->{mode} eq "logodd")
+      { 
+        display_log_odd($M);
+      }
+    
+    elsif ($A->{mode} eq "logodd_CA_cage")
+      { 
+        display_log_odd_CA_Cage($M);
+      }
+      
+    elsif ($A->{mode} eq "logodd_CA_global")
+      { 
+        display_log_odd_CA_global($M);
+      }
+        
     return $M;
   }
 
+#This function will show the transitions matrices by cage
+#in a way that Correspondance analysis could be performed
+#        CAGE 1
+#                 SC   CD   W
+#            SC
+#            CD
+#             W
+#        CAGE 2 ...
+
+sub display_log_odd_CA_Cage
+  {
+    my $M=shift;
+    
+    foreach my $c (sort ({$a<=>$b}keys (%$M)))
+      {
+        print "Cage: $c Delta: $WEIGHT{$c}{delta}\n";
+        
+        foreach my $b1 (sort ({$a cmp $b}keys (%{$M->{$c}}))) 
+	     {
+	       print "\t$b1";
+	     }
+	     
+	     print "\n";
+	     
+	    foreach my $b1 (sort ({$a cmp $b}keys (%{$M->{$c}})))   #(sort(keys (%{$d->{$c}})))
+	     {	       
+	       print "$b1";
+	       
+	       foreach my $b2 (sort ({$a cmp $b} keys (%{$M->{$c}{$b1}})))
+	         {
+              printf "\t%5d", $M->{$c}{$b1}{$b2}{count}{transition};		        
+		     }
+		      
+		      print "\n";
+	       }
+      }
+    return $M;
+  }
+ 
+#This function will show the global transition matrix
+#in a way that Correspondance analysis could be performed
+#          CAGE 1 CAGE2 CAGE3 CAGE4
+#        
+# SC-SC
+# SC-CD
+# SC-W
+# CD-SC
+# CD-CD
+# CD-W
+# W-SC
+# ....       
+
+sub display_log_odd_CA_global
+  {
+    my $M=shift;
+    
+    foreach my $c (sort ({$a<=>$b}keys (%$M)))
+      {
+        print "\t$c";
+      }
+    
+    print "\n";
+    
+    foreach my $b1 (sort ({$a cmp $b}keys (%{$M->{2}}))) 
+	     {	       
+	       
+	       foreach my $b2 (sort ({$a cmp $b} keys (%{$M->{2}{$b1}})))
+	         {
+              print  "$b1 -- $b2";
+                            
+              foreach my $c (sort ({$a<=>$b}keys (%$M)))
+                {
+                  printf "\t%5d", $M->{$c}{$b1}{$b2}{count}{transition};
+                }
+               print "\n";		        
+		     }
+	     }
+      
+    return $M;
+  }
+   
 sub display_log_odd
   {
     my $M=shift;
@@ -1437,7 +1529,7 @@ sub data2log_odd_period_bitThreshold
     	    #I take the bin (e.g. sc_food_sc) 
     	    my $cch=$d->{$c}{$t}{bin};
     	    my $BIT=$d->{$c}{$t}{BIT};
-    	    print "bit is $BIT\n";die;#del
+    	    #print "bit is $BIT\n";die;#del
     	    
     	    $M->{$c}{$cch}{$cch }{count}{tot}++;
     	    
@@ -3005,7 +3097,7 @@ sub read_model
 #collisions and &filter_overlap() which filters given a threshold
 #where always called
 #POSSIBLE PARAMETERS:
-# -coll -> it will add to hash with data 2 news keys collision and 
+# -coll -> it will add to hash with data 2 news keys: collision and 
 #          delta, this way when we print the interval both of them 
 #          will be printed.
 # -coll out ->  data2overlap prints collisions
