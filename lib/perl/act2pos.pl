@@ -253,11 +253,13 @@ sub act2header
 	my $del = &check_all_dates ("Track Date & Time", \%header, $file);
 	print STDERR "IWH date $del \n";
 	#######del
-	$time=$header{$file}{"HEADER"}{'EHEADER'}{'StartStamp'}=str2time(&check_all_dates ("Track Date & Time", \%header, $file)); 
+	#print Dumper (%header);#del
+	#die;#del
+	$time=$header{$file}{"HEADER"}{'EHEADER'}{'StartStamp'} = str2time(&check_all_dates ("Track Date & Time", \%header, $file)); 
 	#$time=$header{$file}{"HEADER"}{'EHEADER'}{'StartStamp'}=str2time(&header2value("File Date & Time ", \%header, $file));
 	
-	#print STDERR "time -> $time\n";#del
-	
+	print STDERR "time -> $time\n";#del
+	#die;#del
 	return (%header);
       }
 
@@ -348,6 +350,9 @@ sub dates_format2change
 			 			
 			my $new_date = $day."/".$month."/".$3." ".$hour.":".$5.":".$6;			
 			$h{$f}{$k1}{$k2}{$k3} = $new_date;
+			
+			#print STDERR "$new_date\n\n"; #del
+			#die;#del
 		      }
 		    #15/12/2010	11:10:11
 		    elsif($old_date =~ /^([0-9]{2})\/([0-9]{2})\/([0-9]{4})\s+([0-9]{2}):([0-9]{2}):([0-9]{2})/)
@@ -384,7 +389,9 @@ sub check_all_dates
 		{  		  
 		  if ($k3=~/$name/)
 		    {
+		      
 		      $Date = $h{$f}{$k1}{$k2}{$k3};
+		      #print STDERR "$Date\n";#del
 		      $i++;
 		      
 		      if ($pDate != -1) 
