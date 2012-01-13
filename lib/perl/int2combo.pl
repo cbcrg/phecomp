@@ -1092,7 +1092,7 @@ sub data2log_odd
     if (!$bitThreshold) {$bitThreshold = "default";}    
     
     #modification logodd R output 23/09/10
-    if ($A->{output}=~/R/ && $A->{mode} eq "logodd") 
+    if ($A->{output}=~/R/ && ($A->{mode} eq "logodd" || $A->{mode} eq "logoddCumulative")) 
       {
         print "period\tcage\todd_ratio\todd_ratio_value\tdelta_w\n";
       }
@@ -1132,7 +1132,12 @@ sub data2log_odd
 	     {
 	       &data2log_odd_period_BIT ($d, $A);
 	     }
-	     
+	    
+	    elsif ($mode eq "logoddCumulative")
+	     {
+	       &data2log_odd_period_cumulative ($d, $A);
+	     }
+	      
 	    else 
 	     {
 	       print "FATAL ERROR: Mode-->$mode not recognize in -logodd option\n"; 
@@ -1243,6 +1248,87 @@ sub data2log_odd_period
     return $M;
   }
 
+#This function calculates logodd ration but instead of considering
+#each period separated if will calculate in a cumulative way
+#this way for example logodd of period 2 will be calculated using data of period 1, and 2
+
+sub data2log_odd_period_cumulative
+  {    
+    my $d=shift;
+    my $A=shift;
+    my $tot={};
+    my $chc={};
+    my $M={};
+    
+    ##INFO
+    #c-> cage
+    #ch -> previous channel
+    #cch -> current channel
+    #t -> time
+    #pendt -> previous end time    
+    
+    foreach my $c (sort(keys (%$d)))
+      {
+        #my ($ch,$pendt);
+        my ($ch) ;
+        my $pendt = 0;
+
+    	foreach my $t (sort(keys (%{$d->{$c}})))
+          {
+            my $period=$d->{$c}{$t}{period};
+    	    if ($period > $A->{period}){next;}
+    	    #print "he passat per aqui --> $pendt\n";
+    	    #if ($d->{$c}{$t}{StartT} > $pendt)  {$pendt=$d->{$c}{$t}{EndT}; next;} else {}
+    	    #I take the bin (e.g. sc_food_sc) 
+    	    my $cch=$d->{$c}{$t}{bin};
+    	    
+    	    $M->{$c}{$cch}{$cch }{count}{tot}++;
+    	    if ($ch)
+              {
+                $M->{$c}{$ch}{$cch}{count}{transition}++;
+        		$M->{$c}{$ch}{$cch}{count}{interval}+=$d->{$c}{$t}{StartT}-$pendt;
+        		#$M->{"total"}{$ch}{$cch}{count}{transitions}++;
+        		#$M->{"total"}{$ch}{$cch}{count}{interval}+=$d->{$c}{$t}{StartT}-$pendt;
+    	      }
+    	    
+    	    $tot->{$c}++;
+    	    $ch=$cch;
+    	    $pendt=$d->{$c}{$t}{EndT};#print "aqui que es $pendt";
+    	  }
+      }
+   
+    foreach my $c (keys (%$M))
+      {
+        foreach my $b1 (keys (%{$M->{$c}}))
+          {
+            foreach my $b2 (keys (%{$M->{$c}{$b1}}))
+              {
+                my ($count0,$count1, $count2);
+          		if ( $tot->{$c}==0){next;}
+          		$count0=$M->{$c}{$b1}{$b2}{count}{transition};
+          		$count0/=$tot->{$c};
+          		
+          		$count1=$M->{$c}{$b1}{$b1}{count}{tot};
+          		$count1/=$tot->{$c};
+          		$count2=$M->{$c}{$b2}{$b2}{count}{tot};
+          		$count2/=$tot->{$c};
+          		$M->{$c}{$b1}{$b2}{logodd}{value}=(($count1*$count2)==0 || $count0==0)?0:log (($count0)/($count1*$count2));
+          		$M->{$c}{$b1}{$b2}{count}{fulltot}=$tot->{$c};
+          	  }
+	      }
+      }
+    #modification logodd R output 23/09/10
+    if ($A->{output}!~/R/) 
+      {
+	     print "Period:$A->{period}\n";
+      } 
+    #end modification-23/09/10
+
+    display_log_odd($M);
+                
+    return $M;
+  }
+  
 #This function will show the transitions matrices by cage
 #in a way that Correspondance analysis could be performed
 #        CAGE 1
