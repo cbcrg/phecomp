@@ -670,48 +670,59 @@ sub data2bin
     my $action=$A->{action};
     if ($delta eq "auto")
       {
-	my($min,$max)=datafield2minmax($S,$field);
-	my $delta=($max-$min)/$nbin;
-	print STDERR "$max - $min\n";
+    	my($min,$max)=datafield2minmax($S,$field);
+    	my $delta=($max-$min)/$nbin;
+    	print STDERR "$max - $min\n";
       }
+      
     if (!$field){$field="Value";}
     if (!$nbin){$nbin=1;}
     if (!$delta){$delta=0.02;}
     if (!$name) 
       {
-	$BIN++;
-	$name="BIN$BIN";
+    	$BIN++;
+    	$name="BIN$BIN";
       }
+      
     foreach my $c (keys(%$S))
       {
-	foreach my $i (keys (%{$S->{$c}}))
-	  {
-	    if (!defined ($S->{$c}{$i}{tag}) ||(defined ($S->{$c}{$i}{tag} && $S->{$c}{$i}{tag}==1)))
-	      {
-		if    ($action eq "food")
-		  {
-		    if ( $S->{$c}{$i}{Nature}=~/food/){$S->{$c}{$i}{bin}="food";}
-		    elsif ( $S->{$c}{$i}{Nature}=~/drink/){$S->{$c}{$i}{bin}="drink";}
-		  }
-		elsif ($nbin==1)
-		  {
-		    $S->{$c}{$i}{bin}=$S->{$c}{$i}{Nature};
-		  }
-		else
-		  {
-		    my $bin=int($S->{$c}{$i}{$field}/$delta);
-		    		    
-		    if ( $bin<0){$bin=0;}
-		    else
-		      {
-			$bin=($bin>=$nbin)?$nbin:$bin+1;
-		      }
-		    
-		    $S->{$c}{$i}{bin}="$name"."_"."$bin";
-		  }
-	      }
-	  }
+    	foreach my $i (keys (%{$S->{$c}}))
+    	  {
+    	    if (!defined ($S->{$c}{$i}{tag}) ||(defined ($S->{$c}{$i}{tag} && $S->{$c}{$i}{tag}==1)))
+    	      {
+    		    if    ($action eq "food")
+    		      {
+        		    if ( $S->{$c}{$i}{Nature}=~/food/){$S->{$c}{$i}{bin}="food";}
+        		    elsif ( $S->{$c}{$i}{Nature}=~/drink/){$S->{$c}{$i}{bin}="drink";}
+    		      }
+        		elsif ($nbin==1)
+        		  {
+        		    $S->{$c}{$i}{bin}=$S->{$c}{$i}{Nature};
+        		  }
+        		else
+        		  { 
+        		    if (($S->{$c}{$i}{$field}/$delta < 0) && ($S->{$c}{$i}{$field}/$delta))
+        		      {
+        		        my $bin = 0;
+        		        $S->{$c}{$i}{bin}="$name"."_"."$bin";
+        		      }
+        		    
+        		    else
+        		      {
+        		        my $bin=int($S->{$c}{$i}{$field}/$delta);
+        		        
+        		        if ( $bin<0){$bin=0;}
+        		        else
+        		          {
+        			       $bin=($bin>=$nbin)?$nbin:$bin+1;
+        		          }
+        		          $S->{$c}{$i}{bin}="$name"."_"."$bin";
+        		      }         
+        		  }
+    	      }
+    	  }
       }
+      
     delete ($A->{field});
     delete ($A->{nbin});
     delete ($A->{delta});
