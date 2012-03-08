@@ -27,7 +27,8 @@ my @commands=split (/\-+/,$cl);
 $d=parse_data ($file);
 
 foreach my $c (@commands)
-  { 
+  {
+    
     run_instruction ($d, $A, $c);
   }
 die;
@@ -699,8 +700,8 @@ sub data2bin
         		    $S->{$c}{$i}{bin}=$S->{$c}{$i}{Nature};
         		  }
         		else
-        		  {         		    
-        		    if ($S->{$c}{$i}{$field}/$delta < 0) 
+        		  { 
+        		    if (($S->{$c}{$i}{$field}/$delta < 0) && ($S->{$c}{$i}{$field}/$delta))
         		      {
         		        my $bin = 0;
         		        $S->{$c}{$i}{bin}="$name"."_"."$bin";
@@ -1109,7 +1110,7 @@ sub data2log_odd
     #end modification-23/09/10
     elsif ($A->{output}=~/R/ && $A->{mode} eq "logoddBIT")
       {
-        print "period\tcage\ttransition\tbin_BIT\todd_ratio_value\tdelta_w\n";
+        print "period\tcage\ttransition\tBIT\todd_ratio_value\tdelta_w\n";
       }
       
     foreach my $p (sort ({$a<=>$b}keys (%$period)))
