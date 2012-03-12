@@ -83,7 +83,7 @@ sub run_instruction
     elsif ($c=~/^bin/)
       {
 	$d=data2bin ($d,$A);
-      }
+      }  
     elsif ($c=~/^period/)
       {
 	$d=data2period ($d,$A);
@@ -658,6 +658,8 @@ sub data2period
     return $d;
   }
 
+#This function performs the binning of a given data field.
+#It is possible to do multiple binning like binX_1::binY_1, binX_1::binY_2 ...
 sub data2bin
   {
     my $S=shift;
@@ -696,8 +698,16 @@ sub data2bin
         		    elsif ( $S->{$c}{$i}{Nature}=~/drink/){$S->{$c}{$i}{bin}="drink";}
     		      }
         		elsif ($nbin==1)
-        		  {
-        		    $S->{$c}{$i}{bin}=$S->{$c}{$i}{Nature};
+        		  {        		    
+        		    if ($S->{$c}{$i}{bin}) 
+        		      {
+        		        $S->{$c}{$i}{bin}="$S->{$c}{$i}{bin}"."::"."$S->{$c}{$i}{Nature}";
+        		      }
+        		    else
+        		    {
+        		      $S->{$c}{$i}{bin}=$S->{$c}{$i}{Nature};
+        		    }
+        		    
         		  }
         		else
         		  { 
@@ -705,7 +715,15 @@ sub data2bin
         		    if ($S->{$c}{$i}{$field}/$delta < 0)
         		      {
         		        my $bin = 0;
-        		        $S->{$c}{$i}{bin}="$name"."_"."$bin";
+        		        
+        		        if ($S->{$c}{$i}{bin}) 
+        		          {
+        		            $S->{$c}{$i}{bin}="$S->{$c}{$i}{bin}"."::"."$name"."_"."$bin";
+        		          }
+        		        else
+        		          {
+        		            $S->{$c}{$i}{bin}="$name"."_"."$bin";
+        		          }
         		      }
         		    
         		    else
@@ -717,7 +735,115 @@ sub data2bin
         		          {
         			       $bin=($bin>=$nbin)?$nbin:$bin+1;
         		          }
-        		          $S->{$c}{$i}{bin}="$name"."_"."$bin";
+        		        
+        		        if ($S->{$c}{$i}{bin}) 
+        		          {
+        		            $S->{$c}{$i}{bin}="$S->{$c}{$i}{bin}"."::"."$name"."_"."$bin";
+        		          }
+        		        else
+        		          {
+        		            $S->{$c}{$i}{bin}="$name"."_"."$bin";
+        		          }
+        		      }         
+        		  }
+    	      }
+    	  }
+      }
+      
+    delete ($A->{field});
+    delete ($A->{nbin});
+    delete ($A->{delta});
+    delete ($A->{name});
+    delete ($A->{action});
+    
+    return untag($S);
+  }
+
+ 
+sub data2multipleBin
+  {
+    my $S=shift;
+    my $A=shift;
+    
+    my $field=$A->{field};
+    my $nbin=$A->{nbin};
+    my $delta=$A->{delta};
+    my $name=$A->{name};
+    my $action=$A->{action};
+    if ($delta eq "auto")
+      {
+    	my($min,$max)=datafield2minmax($S,$field);
+    	my $delta=($max-$min)/$nbin;
+    	print STDERR "$max - $min\n";
+      }
+      
+    if (!$field){$field="Value";}
+    if (!$nbin){$nbin=1;}
+    if (!$delta){$delta=0.02;}
+    if (!$name) 
+      {
+    	$BIN++;
+    	$name="BIN$BIN";
+      }
+      
+    foreach my $c (keys(%$S))
+      {
+    	foreach my $i (keys (%{$S->{$c}}))
+    	  {
+    	    if (!defined ($S->{$c}{$i}{tag}) ||(defined ($S->{$c}{$i}{tag} && $S->{$c}{$i}{tag}==1)))
+    	      {
+    		    if    ($action eq "food")
+    		      {
+        		    if ( $S->{$c}{$i}{Nature}=~/food/){$S->{$c}{$i}{bin}="food";}
+        		    elsif ( $S->{$c}{$i}{Nature}=~/drink/){$S->{$c}{$i}{bin}="drink";}
+    		      }
+        		elsif ($nbin==1)
+        		  {        		    
+        		    if ($S->{$c}{$i}{bin}) 
+        		      {
+        		        $S->{$c}{$i}{bin}="$S->{$c}{$i}{bin}"."::"."$S->{$c}{$i}{Nature}";
+        		      }
+        		    else
+        		    {
+        		      $S->{$c}{$i}{bin}=$S->{$c}{$i}{Nature};
+        		    }
+        		    
+        		  }
+        		else
+        		  { 
+        		    #if (($S->{$c}{$i}{$field}/$delta < 0) && ($S->{$c}{$i}{$field}/$delta))
+        		    if ($S->{$c}{$i}{$field}/$delta < 0)
+        		      {
+        		        my $bin = 0;
+        		        
+        		        if ($S->{$c}{$i}{bin}) 
+        		          {
+        		            $S->{$c}{$i}{bin}="$S->{$c}{$i}{bin}"."::"."$name"."_"."$bin";
+        		          }
+        		        else
+        		          {
+        		            $S->{$c}{$i}{bin}="$name"."_"."$bin";
+        		          }
+        		      }
+        		    
+        		    else
+        		      {
+        		        my $bin=int($S->{$c}{$i}{$field}/$delta);
+        		        
+        		        if ( $bin<0){$bin=0;}
+        		        else
+        		          {
+        			       $bin=($bin>=$nbin)?$nbin:$bin+1;
+        		          }
+        		        
+        		        if ($S->{$c}{$i}{bin}) 
+        		          {
+        		            $S->{$c}{$i}{bin}="$S->{$c}{$i}{bin}"."::"."$name"."_"."$bin";
+        		          }
+        		        else
+        		          {
+        		            $S->{$c}{$i}{bin}="$name"."_"."$bin";
+        		          }
         		      }         
         		  }
     	      }
