@@ -3479,8 +3479,16 @@ sub annotateBIT
   	        my $StartT = $d->{$c}{$t}{'StartT'};
   	        my $EndT = $d->{$c}{$t}{'EndT'};
   	        my $channel = $d->{$c}{$t}{'Channel'};
-  	        my $nature = $d->{$c}{$t}{'Nature'};    	       
+  	        #my $nature = $d->{$c}{$t}{'Nature'}; 
   	        
+  	        if (!exists ($d->{$c}{$t}{'bin'})) 
+  	         {
+  	           print STDERR "FATAL ERROR: bin not set transitions can not been annotated!!!\n";
+  	           die;
+  	         }   	       
+  	        
+  	        my $nature = $d->{$c}{$t}{'bin'};
+  	         
   	        $d->{$c}{$t}{'BIT'} = 0;#by default we put something, if not last record remains unannotated
   	        $d->{$c}{$t}{'Transition'} = $nature."::lastRec";
   	        
