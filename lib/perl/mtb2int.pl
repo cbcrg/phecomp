@@ -1093,29 +1093,43 @@ sub tacStamp2string_C
     my $dateFile = "$file.date";
     my $date = "";
       
-    if (!-e "$file")
+    if (!-e "$file") #exist
       {
         print STDERR "WARNING: Can't open file: $file\n";
         print STDERR "         \"-startTime file tac\" option needs that all mtb files have their corresponding tac file with same name!!!\n";
         print STDERR "         time inside mtb file will be use instead!!!\n";
         $date = "NoTacFile";
-        return ($date);
+        #return ($date);
         #next;
       }
     
-    system ("tac2pos -file $file -action date");
-    
-    if (!-e "$dateFile")
+    elsif (-z "$file") #empty
       {
-        print STDERR "FATAL ERROR: tac2pos is Not properly installed use act option instead!\n";
-        die;
+        print STDERR "WARNING: Empty file: $file\n";
+        print STDERR "         \"-startTime file tac\" option needs that all mtb files have their corresponding tac file with same name!!!\n";
+        print STDERR "         time inside mtb file will be use instead!!!\n";
+        $date = "NoTacFile";
+        #return ($date);
+        #next;
       }
       
-    open ($F, "$dateFile") or die "tac2pos has not correctly returned the file date of: $file\n";
+    else
+     {
+        system ("tac2pos -file $file -action date");
+      
+        if (!-e "$dateFile")
+          {
+            print STDERR "FATAL ERROR: tac2pos is Not properly installed use act option instead!\n";
+            die;
+          }
+        
+        open ($F, "$dateFile") or die "tac2pos has not correctly returned the file date of: $file\n";
+      
+        $date=<$F>;
+        close ($F);
+        unlink ($dateFile);
+      }
     
-    $date=<$F>;
-    close ($F);
-    unlink ($dateFile);
     return ($date);    
   }
   
