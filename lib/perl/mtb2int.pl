@@ -561,8 +561,8 @@ sub mtb2header
     
     $header{$file}{'HEADER'}{'EHEADER'}{'Ncages'}=$Ncages=&header2value("Number of cages", \%header, $file);    
           
-    #Time was always taken from mtb file, modified in order to get timestamp from act file in case option -actstamp is provided   
-    if (exists $actStamp->{$file})
+    #Time was always taken from mtb file, modified in order to get timestamp from act file or tac file in case option -startTime is provided   
+    if (exists ($actStamp->{$file}) && $actStamp->{$file} ne "NoTacFile")
       {
         $time=$header{$file}{"HEADER"}{'EHEADER'}{'StartStamp'} =  $actStamp->{$file};       
       }
