@@ -343,6 +343,7 @@ sub channel2Nature
 		$d->{$c}{$t}{SlotI}=$i;
 		
 		if ($Caption=~/Food/){$Nature="food";}
+		elsif ($Caption=~/Drink/){$Nature=$Caption;}
 		else {$Nature="drink";}
 		
 		$Name=lc ($Name);
@@ -370,7 +371,7 @@ sub channel2Nature
 		    }
 		    else
 		      {
-			     print "ERROR: $Name\n";
+			     #print "ERROR: $Name\n";
 		      }
 		  }
 		
