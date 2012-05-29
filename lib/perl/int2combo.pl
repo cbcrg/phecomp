@@ -331,61 +331,99 @@ sub channel2Nature
 	  {
 	    foreach my $t (sort(keys (%{$d->{$c}})))
 	      {
-		my $Name=$d->{$c}{$t}{Name};
-		my $Channel=$d->{$c}{$t}{Channel};
-		my $Caption=$d->{$c}{$t}{Caption};
+			my $Name=$d->{$c}{$t}{Name};
+			my $Channel=$d->{$c}{$t}{Channel};
+			my $Caption=$d->{$c}{$t}{Caption};
+			
+			$Channel=~/.*(\d)/;
+			my $i=$1;
+			my $Nature="";
 		
-		$Channel=~/.*(\d)/;
-		my $i=$1;
-		my $Nature="";
+			$d->{$c}{$t}{SlotI}=$i;
+			
+			$Name=lc ($Name);
+			$Name=~s/\s//g;
+			
+			if ((length ($Name)) == 4 && ($Name =~/(w)(w)(s)(s)/ || $Name =~/(w)(w)(s)(s)/ || $Name=~/(w)(w)(s)(c)/ || $Name=~/(w)(w)(f)(f)/))
+			  {
+			      	
+		      	if ($i==1) 
+		      		{
+		      			$Nature.=&anot2nature ($1);
+		      			$Nature.="_$i";#many times we have water in both channels, separate them into water_1 and water_2		      			
+		      		}
+		      		
+		      	elsif ($i==2) 
+		      		{
+		      			$Nature.=&anot2nature ($2);
+		      			$Nature.="_$i";#many times we have water in both channels, separate them into water_1 and water_2		      	
+		      		}
+		      		
+		      	elsif ($i==3) 
+		      		{
+		      			$Nature.=&anot2nature ($3);		      			
+		      		}
+		      		
+	      		elsif ($i==4) 
+	      			{
+	      				$Nature.=&anot2nature ($4);	      				
+	      			}		
+				
+				print STDERR "$Nature\n";
+			  }
+			      
+			elsif ($Caption=~/Food/){$Nature="food";}
+			
+			elsif ($Caption=~/Drink/)
+			  {
+			  	my $nat = lc($Caption);
+			  	
+			  	#separating old annotated files into drink_1 and drink_2
+			  	$nat =~ s/\s/_/g;
+			  	$Nature = $nat;
+			  }
+			  
+			else {$Nature="drink";}
 		
-		
-		$d->{$c}{$t}{SlotI}=$i;
-		
-		if ($Caption=~/Food/){$Nature="food";}
-		elsif ($Caption=~/Drink/){$Nature=$Caption;}
-		else {$Nature="drink";}
-		
-		$Name=lc ($Name);
-		$Name=~s/\s//g;
-		
-		
-		
-		if ($Nature eq "food")
-		  {
-		    # print "--$Name--\n";
-		    if ($Name eq "sc"){$Nature.="_sc";}
-		    
-		#####################
-		#Modification 31/08/2010
-		#Female file different codification of CD slots
-		    
-		    #elsif ($Name =~/cd/ && $Nature eq "food")
-		    elsif (($Name =~/cd/ || $Name=~/choc/) && $Nature eq "food")
-		      {
-			if    ($i==1 && (($Name =~/slota/) ||($Name =~/ina/) )){$Nature.="_cd";}
-			elsif ($i==2 && (($Name =~/slotb/) ||($Name =~/inb/) )){$Nature.="_cd";}
-			elsif ($i==3 && (($Name =~/slotc/) ||($Name =~/inc/) )){$Nature.="_cd";}
-			elsif ($i==4 && (($Name =~/slotd/) ||($Name =~/ind/) )){$Nature.="_cd";}
-			else  {$Nature.="_sc";}
-		    }
-		    else
-		      {
-			     #print "ERROR: $Name\n";
-		      }
-		  }
-		
-		if    ($Name =~/sc/ && $Nature eq "food"){$Nature="sc_".$Nature;}		
-		#elsif ($Name =~/cd/){$Nature="cd_".$Nature;}
-		elsif (($Name =~/cd/ || $Name =~ /choc/) && $Nature eq "food"){$Nature="cd_".$Nature;}
-		#########end modification 31/08/2010
-		
-		$d->{$c}{$t}{Nature}=$Nature;
+			if ($Nature eq "food")
+			  {
+			    print "--$Name--\n";
+			    			     
+				if ($Name eq "sc"){$Nature.="_sc";}
+			    
+			#####################
+			#Modification 31/08/2010
+			#Female file different codification of CD slots
+			    
+			    #elsif ($Name =~/cd/ && $Nature eq "food")
+		    	elsif (($Name =~/cd/ || $Name=~/choc/) && $Nature eq "food")
+			      {
+					if    ($i==1 && (($Name =~/slota/) ||($Name =~/ina/) )){$Nature.="_cd";}
+					elsif ($i==2 && (($Name =~/slotb/) ||($Name =~/inb/) )){$Nature.="_cd";}
+					elsif ($i==3 && (($Name =~/slotc/) ||($Name =~/inc/) )){$Nature.="_cd";}
+					elsif ($i==4 && (($Name =~/slotd/) ||($Name =~/ind/) )){$Nature.="_cd";}
+					else  {$Nature.="_sc";}
+			      }
+				          
+				    
+				else
+			      {
+				     #print "ERROR: $Name\n";
+			      }
+			  }
+			
+			if    ($Name =~/sc/ && $Nature eq "food"){$Nature="sc_".$Nature;}		
+			#elsif ($Name =~/cd/){$Nature="cd_".$Nature;}
+			elsif (($Name =~/cd/ || $Name =~ /choc/) && $Nature eq "food"){$Nature="cd_".$Nature;}
+			#########end modification 31/08/2010
+			
+			$d->{$c}{$t}{Nature}=$Nature;
 		
 	      }
 	  }
+	  
 	return $d;
-      }
+  }
 
 sub unbin
   {
@@ -3548,3 +3586,42 @@ sub BIT2print
       }
     
   }
+
+#anot2nature match the given symbol of annotation with the appropiated type of food or liquid, i.e. (s->standard chow, f->fat food)
+sub anot2nature
+	{
+		my $annot = shift;
+		
+		
+		SWITCH: 
+                {
+                  ($annot eq "w") && do 
+                    { 
+                      return ("water");
+                      last SWITCH;
+                    };
+                    
+                  ($annot eq "s") && do 
+                    { 
+                      return ("food_sc");                          
+                      last SWITCH;
+                    };
+                      
+                  ($annot eq "f") && do 
+                    { 
+                      return ("food_fat");                             
+                      last SWITCH;
+                    };
+                    
+                  ($annot eq "c") && do 
+                    { 
+                      return ("food_cd");                          
+                      last SWITCH;
+                    };  
+                }
+         
+         print STDERR "FATAL ERROR: ANNOTATION PROVIDED $annot DOES NOT CORRESPOND WITH ANY OF THE VALID ANNOTATIONS\n";
+         print STDERR "             ASK FOR THE INCLUSSION OF THIS ANNOTATION\n";
+         die;
+		
+	}
