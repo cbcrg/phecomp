@@ -1,4 +1,4 @@
-#!/usr/bin/env perl
+#!/usr/bin/perl
 
 ##############################################################################################
 ### Jose A Espinosa. CB-CRG Group.                                       Jan 2011          ###
@@ -50,8 +50,11 @@ my %WEIGHT;
 my $HEADER;
 my $cl=join(" ", @ARGV);
 my @commands=split (/\-+/,$cl);
-shift @commands;
+shift @commands;      ## Withdraws the first argument, equaling " " ?
 #my @files = split (" ", shift @commands);
+
+my $matchCount={};   ###
+
 
 ######IDEAS SCHEME
 #1-USE A SYSTEM AS T_COFFEE "addpos2int.pl -int file.int -pos file.pos"
@@ -140,8 +143,8 @@ sub run_instruction
   
   sub string2hash #modified respect to the generic one 
     {
-      my $s=shift;
-      my $h=shift;
+      my $s=shift; #c
+      my $h=shift; #A
       my @l=split (/\s+/, $s);
       
       if ($l[0] eq "int" | $l[0] eq "pos" | $l[0] eq "bigPos")
@@ -254,7 +257,8 @@ sub pos2data
                     my $value = $shift_time->{"mult"};
                     my $delta = $t-$start_time;
                     #print STDERR "$value----$delta\n";#del
-                    $new_t = int ($t + ($t-$start_time) * $shift_time->{"mult"});
+                    #$new_t = int ($t + ($t-$start_time) * $shift_time->{"mult"});
+                    $new_t = sprintf("%.0f", ($t + ($t-$start_time) * $shift_time->{"mult"}));
                     #print STDERR "time --> $t\tnew_time --> $new_t\n";#del                              
                   }
                 
@@ -719,6 +723,7 @@ sub mean_pos2int
     my ($Match, $missMatch, $ratio) = 0;      
     my $z = {};
     
+    
     $z = &setCageBoundaries ($d_pos);  
        
     foreach my $cage (sort(keys (%$d_int)))
@@ -824,7 +829,7 @@ sub mean_pos2int
             #SHIFT_faster_version commented-end
             
             #vector;%2d;%2d;%2d;%2d;",
-            $d_int->{$cage}{$time}{'MeanX'},$d_int->{$cage}{$time}{'MeanY'},$x_std,$y_std;#$i1,$i2,$i3,$i4;                                           
+            #$d_int->{$cage}{$time}{'MeanX'},$d_int->{$cage}{$time}{'MeanY'},$x_std,$y_std;#$i1,$i2,$i3,$i4;                                           
                
             if ($i1 eq "") {$i1 = 0;}
             if ($i2 eq "") {$i2 = 0;}
@@ -834,8 +839,17 @@ sub mean_pos2int
             #SHIFT_faster_version commented
             #print STDERR "VECTOR;$i1;$i2;$i3;$i4;resulting_zone;$zone;File;$d_int->{$cage}{$time}{'File'}\n";                            
                
-            if ($d_int->{$cage}{$time}{'Channel'} eq $zone){print STDERR "Match: Y\n\n";}
-            else {print STDERR "Match: N\n\n";}
+            if ($d_int->{$cage}{$time}{'Channel'} eq $zone)
+            {
+            	$matchCount->{$cage}{'yes'}++; ###
+            	print STDERR "Match: Y\n\n";
+            }
+            else 
+            {
+            	$matchCount->{$cage}{'no'}++; ###
+            	print STDERR "Match: N\n\n";
+            }
+            
             #SHIFT_faster_version commented-end
             
             #if ($d_int->{$cage}{$time}{'Channel'} eq $zone){$Match++;}
@@ -846,9 +860,24 @@ sub mean_pos2int
             $pEndT = $EndT;
             $pCage = $cage;
           }
-             
-      }
+         
+         $matchCount->{$cage}{'total'}=$matchCount->{$cage}{'yes'}+$matchCount->{$cage}{'no'}; ###
+      	 $matchCount->{$cage}{'ratio'}=$matchCount->{$cage}{'yes'}/$matchCount->{$cage}{'total'}*100; ###
        
+         print STDERR "total number of matches cage $cage: $matchCount->{$cage}{'total'}\n";  ###
+     	 print STDERR "total percentage matches cage $cage: $matchCount->{$cage}{'ratio'}\n";    ###
+     	 
+      }
+      
+      print STDERR "\ncage\tvalidation\ttotal\n"; ###
+      
+      foreach my $cage (sort(keys (%$matchCount)))   ###
+      {
+     	print STDERR "$cage\t$matchCount->{$cage}{'ratio'}\t$matchCount->{$cage}{'total'}\n"; ###
+      }
+      print STDERR "\n";
+      
+      
     #$ratio = $Match/$missMatch;
       
     print "$A->{'int'}\t$Match\t$missMatch\t$ratio\n";  #t$ratio\n";
@@ -1344,6 +1373,17 @@ sub max
 #    -       -        -        -
 #    --------------------------------   Ym
 
+sub min #
+  { #
+    my $n = shift; #
+    my $min = shift; #
+    #
+    return (($n<$min)? $n:$min); #  
+  } #
+
+
+
+
 sub setCageBoundaries 
   {
     my $d_pos = shift;
@@ -1351,24 +1391,39 @@ sub setCageBoundaries
     
     foreach my $cage (sort(keys (%$d_pos)))
            {  
-             my ($x_max, $y_max) = (-1000., -1000);
+             my ($x_max, $y_max, ) = (-1000., -1000);
+             my ($x_min, $y_min, ) = (1000., 1000); #
                    
              foreach my $time (sort(keys (%{$d_pos->{$cage}})))
                {                   
                  $x_max = &max($d_pos->{$cage}{$time}{'XPos'}, $x_max);
                  $y_max = &max($d_pos->{$cage}{$time}{'YPos'}, $y_max);
+                 $x_min = &min($d_pos->{$cage}{$time}{'XPos'}, $x_min);#
+                 $y_min = &min($d_pos->{$cage}{$time}{'YPos'}, $y_min);#
+
                }
                                  
              print STDERR "In cage ---------------- $cage\t";
              print STDERR "maxim x is $x_max\t";
-             print STDERR "maxim y is $y_max\n";
+             print STDERR "maxim y is $y_max\t";
+             print STDERR "minim x is $x_min\t";
+             print STDERR "minim y is $y_min\n";
+             
              
              $z->{$cage}{'Xm'} = $x_max;
              $z->{$cage}{'Ym'} = $y_max;
+             
+             $z->{$cage}{'Xmin'} = $x_min;       #
+             $z->{$cage}{'Ymin'} = $y_min;       #
              #$z->{$cage}{'X1'} = 0.25 * $x_max;
              #$z->{$cage}{'X2'} = 0.75 * $x_max;
-             $z->{$cage}{'X2'} = 0.5 * $x_max;        
-             $z->{$cage}{'Y1'} = 0.5 * $y_max;
+             #$z->{$cage}{'X2'} = 0.5 * $x_max;   #     
+             #$z->{$cage}{'Y1'} = 0.5 * $y_max;   #
+             $z->{$cage}{'X2'} = 0.5 * ($x_max + $x_min);   #     
+             $z->{$cage}{'Y1'} = 0.5 * ($y_max + $x_min);   #
+             
+             
+
              
            }
 #    foreach my $cage (sort(keys (%$z)))
@@ -1525,3 +1580,4 @@ sub shiftTimestamp
           
     return ($H);           
   }
+
