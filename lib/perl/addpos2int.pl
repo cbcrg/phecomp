@@ -32,6 +32,10 @@
 ###                         be shown in standard output                                    ###       
 ###      print pos -> print only pos resulting file (by default int file is printed)       ###
 ###                                                                                        ### 
+#############  #######  #######  #######  #######  #######  #######  ########  ###############
+### -trac <file> -> flag for input tracking file, in this version can be used ONLY with    ###
+### the int file						                           ###
+### Warning !! This option has to be used AFTER the -int <file> option                     ###
 ##############################################################################################
 
 #use warnings;
@@ -43,8 +47,11 @@ use HTTP::Date; #CPAN str2time()=> time conversion function different time forma
 use Data::Dumper;
 use File::stat; #Dealing with file metadata
 
+my $ncagefilmed=2; ## number of the cage to film
+
+my $count=0;
 my $A={};
-my ($d_int, $d_pos) = {};
+my ($d_int, $d_pos, $d_trac) = {};
 my $shift_time = {};
 my %WEIGHT;
 my $HEADER;
@@ -54,7 +61,7 @@ shift @commands;      ## Withdraws the first argument, equaling " " ?
 #my @files = split (" ", shift @commands);
 
 my $matchCount={};   ###
-
+my $startStamp;
 
 ######IDEAS SCHEME
 #1-USE A SYSTEM AS T_COFFEE "addpos2int.pl -int file.int -pos file.pos"
@@ -65,9 +72,9 @@ my $matchCount={};   ###
 foreach my $c (@commands)
   {    
     #&run_instruction (\@files, $A, $c);
-    &run_instruction ($A, $c);    
+    &run_instruction ($A, $c);  
   }
-
+print STDERR "startstampppp=$startStamp\n";
 die;
 
 ###################
@@ -84,7 +91,8 @@ sub run_instruction
                 
       #reading int file
       if ($c =~ /^int/)
-        {            
+        {  
+          $count+=1;          
           $d_int = &int2data ($A->{int});
           print STDERR "--------------- int file read! ---------------\n\n";
         }
@@ -99,27 +107,60 @@ sub run_instruction
       #This option remains in case we want to reprint the whole pos file
       elsif ($c =~ /^pos/)
         {
-          $d_pos = &pos2data ($A->{pos}, $shift_time, $d_int);
+          $count+=2;
+          $d_pos = &pos2data ($A->{pos}, $shift_time);
           print STDERR "--------------- pos file read! ---------------\n\n";                                   
         }              
       
       #reading big pos files, only keeping positions which are inside food intervals 
       elsif ($c =~ /^bigPos/)
-        {
+        { 
+          $count+=2;
           $d_pos = &bigPos2data ($A->{bigPos}, $shift_time, $d_int);
           print STDERR "--------------- pos file read! ---------------\n\n";                      
         }              
+        
+        
+      elsif ($c =~ /^trac/)  #
+        {
+         $count+=4;
+          $d_trac = &trac2data ($A->{trac});#
+          print STDERR "--------------- pos file read! ---------------\n\n";  #                                 
+        }    
             
       #adding positions to interval type record
-      elsif ($c =~ /^add/)
+     elsif ($c =~ /^add/)
         {  
-          ($d_int, $d_pos) = &add ($d_int, $d_pos, $A);               
+        print STDERR "test add ok\n";
+        if ($A->{int} && $A->{trac}) 
+          {
+          print STDERR "test addtracint ok. OK!\n\n";
+          ($d_int, $d_trac) = &addtracint ($d_int, $d_trac, $A);
+          }
+        elsif  ($A->{pos} && $A->{int})
+          {
+          print STDERR "test addposint ok, not ok\n";
+          ($d_int, $d_pos) = &addposint ($d_int, $d_pos, $A);
+          }
+         else {print STDERR "WARNING: problem in files options !!!\n";}
         }
-        
+               
       elsif ($c =~ /^set/)
         {
+        if ($count==3) 
+          {
           $d_int = &set ($d_int, $d_pos, $A);
+          }
+        elsif ($count==5) 
+          {
+          $d_int = &set ($d_int, $d_trac, $A);
+          }
+        elsif ($count==6) 
+          {
+          print STDERR "-set option not available with pos and trac files\n";
+          }
         }
+        
       
       elsif ($c =~ /^filter/)
         {
@@ -147,7 +188,7 @@ sub run_instruction
       my $h=shift; #A
       my @l=split (/\s+/, $s);
       
-      if ($l[0] eq "int" | $l[0] eq "pos" | $l[0] eq "bigPos")
+      if ($l[0] eq "int" | $l[0] eq "pos" | $l[0] eq "bigPos"| $l[0] eq "trac")
         {
           return array2hash (\@l, $h);
         }
@@ -172,6 +213,7 @@ sub array2hash
         my $v=shift (@array);
         $k=~s/-//g;
         $A->{$k}=$v;
+        print STDERR "clé et valeur : A : $k --> $v\n";
       }
 
     return $A;
@@ -418,6 +460,68 @@ sub bigPos2data
          
   } 
 
+#The current format of the trac file is the following: #d;Index;978;XPos;20.8026;YPos;4.0005
+sub trac2data
+  {
+    my $f = shift;    
+    my $data = {};
+    my $switch = 0;
+    my $start_time = 0;
+    my $intFile = "";     
+    #geting last modification time
+    #@y $file_mod_date = time2str(stat($f)->mtime); #test to see if I get modification time file del
+    #print STDERR "file: $f last modification time is $file_mod_date\n"; die;#test file del
+     
+    my $F=new FileHandle;
+    my $linen;        
+    
+    if (!-e "$f")
+      {
+        print STDERR "FATAL ERROR: Can't open file: $f! Make sure that file exists!\n\n";
+        die;
+      }
+              
+    open($F, $f);
+    
+    while (<$F>)
+      {
+        my $line=$_;
+        $linen++;
+        
+        if ( $line=~/#d/)
+          {
+            my $L={};
+            chomp $line;
+            my @v=split (/;/,$line);
+            shift @v;           #get rid of the line header(i.e.#d) 
+            while (@v) 
+              {
+                my $key=shift @v;
+                my $value= shift @v;
+                $L->{$key}=$value;
+               }
+            my $c=$ncagefilmed;               
+            my $t=($startStamp+$L->{Index});
+           $L->{Time}=$t;
+           
+            foreach my $k (keys(%$L))
+                {
+                  $data->{$c}{$t}{$k}=$L->{$k};
+                  #print STDERR "key2 and value2: $k and $data->{$c}{$t}{$k}\n\n";
+                }
+          }   
+        
+        else
+          {           
+            $HEADER.=$line;
+          }
+      }
+    
+     return ($data);
+         
+  }
+
+
 sub filterPos_by_Int
   {
     my $H_int = shift;
@@ -531,6 +635,12 @@ sub parse_data
             
             $WEIGHT{$c}{max}=($WEIGHT{$c}{max}<$w)? $w : $WEIGHT{$c}{max};
           }
+          elsif ($line=~/StartStamp/)
+            {
+            $line=~/.*;StartStamp;(\d+)/;
+            $startStamp=$1;
+            print STDERR "\\startstamp=$startStamp\\n";
+            }
         
         $HEADER.=$line;
       }
@@ -657,7 +767,7 @@ sub channel2Nature
       }
 
        
-sub add 
+sub addposint 
 
   {
     my $d_int = shift;
@@ -668,7 +778,7 @@ sub add
     
     if (!$pos || $pos eq "mean")
       {
-        $d_int = &mean_pos2int ($d_int, $d_pos);           
+        $d_int = &mean_postrac2int ($d_int, $d_pos);           
       }
     
     elsif ($pos eq "vector")
@@ -691,18 +801,58 @@ sub add
     return ($d_int, $d_pos);
   }
 
+
+# really similar to addposint
+sub addtracint 
+
+  {
+    my $d_int = shift;
+    my $d_trac = shift;
+    my $A = shift;
+    my $pos = $A->{pos};
+    my $channel = $A->{channel};
+    
+    if (!$pos || $pos eq "mean")
+      {
+      print STDERR "mean_postrac2int OK\n\n";
+        $d_int = &mean_postrac2int ($d_int, $d_trac);      
+      }
+    
+    elsif ($pos eq "vector")
+      {
+        print STDERR "warning, option not available with trac and int, use option mean \n";
+      }
+         
+    elsif ($pos eq "all")
+      {
+	print STDERR "warning, option not available with trac and int, use option mean \n";      
+        #print STDERR "IWH -- pos eq all";del
+       
+      }
+       
+#       if (!$channel || $channel eq "pos")
+#         {
+#           print STDERR "IWH2 -- channel eq pos";#del
+#           $d_int = &ChannelFromPos2int ($d_int, $d_pos);           
+#         }
+         
+    return ($d_int, $d_trac);
+  }
+
+
+
 sub set 
   
   {
     my $d_int = shift;
-    my $d_pos = shift;
+    my $d_postrac = shift;
     
     my $A = shift;
     my $ch = $A->{channel};
     
     if (!$ch || $ch eq "pos")
       {
-        $d_int = &setChannelFromPos ($d_int, $d_pos);           
+        $d_int = &setChannelFromPosTrac ($d_int, $d_postrac);           
       }
        
     elsif ($ch eq "vector")
@@ -714,17 +864,16 @@ sub set
          
   }
   
-sub mean_pos2int
+sub mean_postrac2int
   
   {
     my $d_int = shift;
-    my $d_pos = shift;
+    my $d_postrac = shift;
     my ($t, $j, $x, $y, $x_std, $y_std,  $p_zone, $i1, $i2, $i3, $i4, $pEndT, $pCage, $inter_zone, $interTime) = ""; 
     my ($Match, $missMatch, $ratio) = 0;      
     my $z = {};
     
-    
-    $z = &setCageBoundaries ($d_pos);  
+    $z = &setCageBoundaries ($d_postrac);  
        
     foreach my $cage (sort(keys (%$d_int)))
       {
@@ -759,11 +908,11 @@ sub mean_pos2int
                               
             for ($t = $StartT; $t <= $EndT  ;$t++)
               {
-                $x += $d_pos->{$cage}{$t}{'XPos'};
-                $y += $d_pos->{$cage}{$t}{'YPos'};
-                
+                $x += $d_postrac->{$cage}{$t}{'XPos'};
+                $y += $d_postrac->{$cage}{$t}{'YPos'};
+                #print STDERR "valeur x: $x";
                 #$p_zone =  &ChannelFromPos_modified($d_pos->{$cage}{$t}{'XPos'}, $d_pos->{$cage}{$t}{'YPos'});       
-                $p_zone =  &ChannelFromPos ($d_pos->{$cage}{$t}{'XPos'}, $d_pos->{$cage}{$t}{'YPos'}, $cage, $z);
+                $p_zone =  &ChannelFromPosTrac ($d_postrac->{$cage}{$t}{'XPos'}, $d_postrac->{$cage}{$t}{'YPos'}, $cage, $z);
                 
               SWITCH: 
                 {
@@ -792,8 +941,8 @@ sub mean_pos2int
                     };  
                 }
                                                           
-                push (@X_values, $d_pos->{$cage}{$t}{'XPos'});
-                push (@Y_values, $d_pos->{$cage}{$t}{'YPos'});
+                push (@X_values, $d_postrac->{$cage}{$t}{'XPos'});
+                push (@Y_values, $d_postrac->{$cage}{$t}{'YPos'});
                 
                 #SHIFT_faster_version commented                               
                 #print STDERR "$d_pos->{$cage}{$t}{'XPos'}\t$d_pos->{$cage}{$t}{'YPos'}\t$p_zone\n"; #del
@@ -820,7 +969,7 @@ sub mean_pos2int
             $y_std = &data2std ($d_int->{$cage}{$time}{'MeanY'}, \@Y_values);
                                          
             #my $zone = &ChannelFromPos_modified($d_int->{$cage}{$time}{'MeanX'}, $d_int->{$cage}{$time}{'MeanY'});
-            my $zone = &ChannelFromPos ($d_int->{$cage}{$time}{'MeanX'}, $d_int->{$cage}{$time}{'MeanY'}, $cage, $z);
+            my $zone = &ChannelFromPosTrac ($d_int->{$cage}{$time}{'MeanX'}, $d_int->{$cage}{$time}{'MeanY'}, $cage, $z);
                
                
             #SHIFT_faster_version commented
@@ -839,7 +988,7 @@ sub mean_pos2int
             #SHIFT_faster_version commented
             #print STDERR "VECTOR;$i1;$i2;$i3;$i4;resulting_zone;$zone;File;$d_int->{$cage}{$time}{'File'}\n";                            
                
-            if ($d_int->{$cage}{$time}{'Channel'} eq $zone)
+           if ($d_int->{$cage}{$time}{'Channel'} eq $zone)
             {
             	$matchCount->{$cage}{'yes'}++; ###
             	print STDERR "Match: Y\n\n";
@@ -849,7 +998,6 @@ sub mean_pos2int
             	$matchCount->{$cage}{'no'}++; ###
             	print STDERR "Match: N\n\n";
             }
-            
             #SHIFT_faster_version commented-end
             
             #if ($d_int->{$cage}{$time}{'Channel'} eq $zone){$Match++;}
@@ -860,7 +1008,7 @@ sub mean_pos2int
             $pEndT = $EndT;
             $pCage = $cage;
           }
-         
+             
          $matchCount->{$cage}{'total'}=$matchCount->{$cage}{'yes'}+$matchCount->{$cage}{'no'}; ###
       	 $matchCount->{$cage}{'ratio'}=$matchCount->{$cage}{'yes'}/$matchCount->{$cage}{'total'}*100; ###
        
@@ -877,14 +1025,18 @@ sub mean_pos2int
      	print STDERR "#$cage\t$matchCount->{$cage}{'ratio'}\t$matchCount->{$cage}{'total'}\n"; ###
       }
       print STDERR "\n";
-      
-      
+       
+       
     #$ratio = $Match/$missMatch;
       
     print "$A->{'int'}\t$Match\t$missMatch\t$ratio\n";  #t$ratio\n";
     
     return ($d_int);    
   }
+  
+  
+  
+  
   
 sub vector_pos2int
   {
@@ -920,7 +1072,7 @@ sub vector_pos2int
                     print STDERR "WARNING: Positions at time point $t, cage $cage is not set inside position file $fName or if \"shift option\" used is not available after shifting\n";                    
                   }
                        
-                $p_zone =  &ChannelFromPos ($d_pos->{$cage}{$t}{'XPos'}, $d_pos->{$cage}{$t}{'YPos'}, $cage, $z);
+                $p_zone =  &ChannelFromPosTrac ($d_pos->{$cage}{$t}{'XPos'}, $d_pos->{$cage}{$t}{'YPos'}, $cage, $z);
                    
               SWITCH: 
                 {
@@ -1030,17 +1182,17 @@ sub display_data #As in int2combo!!!
       }
   }
   
-sub setChannelFromPos
+sub setChannelFromPosTrac
 
   {
     my $d_int = shift;
-    my $d_pos = shift;
+    my $d_postrac = shift;
     my ($x, $y, $x_max, $y_max, $z) = "";
     my $zones = {};    
     #die;
     
                
-    $zones = &setCageBoundaries ($d_pos);
+    $zones = &setCageBoundaries ($d_postrac);
           
     #&setCageBoundaries ($zones);#del
     #print STDERR Dumper ($zones);#del
@@ -1055,7 +1207,7 @@ sub setChannelFromPos
             $y = $d_int->{$cage}{$time}{'MeanY'};
             ###if exist the time important correction !!!!!!!!!!!!
             
-            $z = &ChannelFromPos ($x, $y, $cage, $zones);
+            $z = &ChannelFromPosTrac ($x, $y, $cage, $zones);
                               
             $d_int->{$cage}{$time}{'Zone'} = $z; 
           }
@@ -1157,7 +1309,7 @@ sub setChannelFromVector
     
   } 
   
-sub ChannelFromPos
+sub ChannelFromPosTrac
   {
     my $x = shift;
     my $y = shift;
@@ -1390,20 +1542,20 @@ sub min #
 
 sub setCageBoundaries 
   {
-    my $d_pos = shift;
+    my $d = shift;
     my $z = {};
     
-    foreach my $cage (sort(keys (%$d_pos)))
+    foreach my $cage (sort(keys (%$d)))
            {  
              my ($x_max, $y_max, ) = (-1000., -1000);
              my ($x_min, $y_min, ) = (1000., 1000); #
                    
-             foreach my $time (sort(keys (%{$d_pos->{$cage}})))
+             foreach my $time (sort(keys (%{$d->{$cage}})))
                {                   
-                 $x_max = &max($d_pos->{$cage}{$time}{'XPos'}, $x_max);
-                 $y_max = &max($d_pos->{$cage}{$time}{'YPos'}, $y_max);
-                 $x_min = &min($d_pos->{$cage}{$time}{'XPos'}, $x_min);#
-                 $y_min = &min($d_pos->{$cage}{$time}{'YPos'}, $y_min);#
+                 $x_max = &max($d->{$cage}{$time}{'XPos'}, $x_max);
+                 $y_max = &max($d->{$cage}{$time}{'YPos'}, $y_max);
+                 $x_min = &min($d->{$cage}{$time}{'XPos'}, $x_min);#
+                 $y_min = &min($d->{$cage}{$time}{'YPos'}, $y_min);#
 
                }
                                  
@@ -1478,7 +1630,7 @@ sub all_pos2pos
         
         foreach my $t (sort(keys (%{$d_pos->{$cage}})))
           {
-            $zone = &ChannelFromPos ($d_pos->{$cage}{$t}{'XPos'}, $d_pos->{$cage}{$t}{'YPos'}, $cage, $z);
+            $zone = &ChannelFromPosTrac ($d_pos->{$cage}{$t}{'XPos'}, $d_pos->{$cage}{$t}{'YPos'}, $cage, $z);
             $d_pos->{$cage}{$t}{'Zone'} = $zone;               
           }
       }
@@ -1526,7 +1678,7 @@ sub printInterPos
         for ($t= $pEndT; $t < $StartT ; $t++)
           {  
             #$zone =  &ChannelFromPos_modified($d_pos->{$cage}{$t}{'XPos'},$d_pos->{$cage}{$t}{'YPos'});
-            $zone =  &ChannelFromPos($d_pos->{$cage}{$t}{'XPos'},$d_pos->{$cage}{$t}{'YPos'});                       
+            $zone =  &ChannelFromPosTrac($d_pos->{$cage}{$t}{'XPos'},$d_pos->{$cage}{$t}{'YPos'});                       
             #print STDERR "$d_pos->{$cage}{$ttt}{'XPos'}\t$d_pos->{$cage}{$ttt}{'YPos'}\t$inter_zone\n\n";
             print STDERR "$d_pos->{$cage}{$t}{'XPos'}\t$d_pos->{$cage}{$t}{'YPos'}\t$zone\n";  
           }
