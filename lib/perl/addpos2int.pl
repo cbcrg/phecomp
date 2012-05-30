@@ -1361,17 +1361,20 @@ sub max
     return (($n>$max)? $n:$max);  
   }
 
-#Description of cage coordinates
+#Description of cage coordinates, taking into account Xmin and Ymin
 #
-#                           Y
-# X     0        X1           X2       Xm   0   
-#       --------------------------------
-#    - zone2   -   center    - zone4  -    
-#    -       -        -        -
+#                                       Y
+# X  Xmin            X2               Xm    
+#    --------------------------------  Ymin
+#    - zone2   -     | 	   - zone4  -    
+#    -       -       |       -
 #    --------------------------------   Y1
-#    - zone1  -   center    - zone3  -
-#    -       -        -        -
+#    - zone1  -      |	   - zone3  -
+#    -       -       |        -
 #    --------------------------------   Ym
+
+
+#opposite of function "max"
 
 sub min #
   { #
@@ -1382,7 +1385,7 @@ sub min #
   } #
 
 
-
+##function modified in order to take into account Xmin and Ymin (instead of only Xmax and Ymax) for the boundaries of the cage
 
 sub setCageBoundaries 
   {
@@ -1419,7 +1422,7 @@ sub setCageBoundaries
              #$z->{$cage}{'X2'} = 0.75 * $x_max;
              #$z->{$cage}{'X2'} = 0.5 * $x_max;   #     
              #$z->{$cage}{'Y1'} = 0.5 * $y_max;   #
-             $z->{$cage}{'X2'} = 0.5 * ($x_max + $x_min);   #     
+             $z->{$cage}{'X2'} = 0.5 * ($x_max + $x_min);   # measure of the coordinates (X2,Y1) of the new center of the cage with the new boundaries (Xmin, Xm, Ymin, Ym)
              $z->{$cage}{'Y1'} = 0.5 * ($y_max + $x_min);   #
              
              
