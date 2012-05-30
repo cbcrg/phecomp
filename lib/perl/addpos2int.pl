@@ -870,7 +870,7 @@ sub mean_pos2int
       }
       
       #Symbol "#" has been added just to grep 
-      print STDERR "\n#cage\tvalidation\ttotal\n"; ###
+      print STDERR "\ncage\tvalidation\ttotal\n"; ###
       
       foreach my $cage (sort(keys (%$matchCount)))   ###
       {
