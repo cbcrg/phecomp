@@ -33,9 +33,9 @@
 ###      print pos -> print only pos resulting file (by default int file is printed)       ###
 ###                                                                                        ### 
 #############  #######  #######  #######  #######  #######  #######  ########  ###############
-### -trac <file> -> flag for input tracking file, in this version can be used ONLY with    ###
-### the int file						                           ###
-### Warning !! This option has to be used AFTER the -int <file> option                     ###
+### -trac <file> -> flag for input tracking file, in this version can be used with int or  ###
+### pos files							                           ###
+### Warning !! This option has to be used AFTER the -int or the pos <file> option          ###
 ##############################################################################################
 
 #use warnings;
@@ -48,6 +48,7 @@ use Data::Dumper;
 use File::stat; #Dealing with file metadata
 
 my $ncagefilmed=2; ## number of the cage to film
+my $lengthwindow=0;
 
 my $count=0;
 my $A={};
@@ -137,12 +138,16 @@ sub run_instruction
           print STDERR "test addtracint ok. OK!\n\n";
           ($d_int, $d_trac) = &addtracint ($d_int, $d_trac, $A);
           }
+        elsif ($A->{pos} && $A->{trac}) 
+          {print STDERR "test addpostrac ok, not ok\n";
+          ($d_pos, $d_trac) = &addpostrac ($d_pos, $d_trac, $A);
+          }
         elsif  ($A->{pos} && $A->{int})
           {
           print STDERR "test addposint ok, not ok\n";
           ($d_int, $d_pos) = &addposint ($d_int, $d_pos, $A);
           }
-         else {print STDERR "WARNING: problem in files options !!!\n";}
+        else {print STDERR "WARNING: problem in files options !!!\n";}
         }
                
       elsif ($c =~ /^set/)
@@ -330,6 +335,12 @@ sub pos2data
         else
           {           
             $HEADER.=$line;
+            if ($line=~/StartStamp/)
+            {
+            $line=~/.*;StartStamp;(\d+)/;
+            $startStamp=$1;
+            print STDERR "\\startstamp=$startStamp\\n";
+            }
           }
       }
     
@@ -460,7 +471,7 @@ sub bigPos2data
          
   } 
 
-#The current format of the trac file is the following: #d;Index;978;XPos;20.8026;YPos;4.0005
+##The current format of the trac file is the following: #d;Index;978;XPos;20.8026;YPos;4.0005
 sub trac2data
   {
     my $f = shift;    
@@ -499,11 +510,14 @@ sub trac2data
                 my $key=shift @v;
                 my $value= shift @v;
                 $L->{$key}=$value;
+                
                }
+              # print STDERR "time in L->index: $L->{Index}\n";
             my $c=$ncagefilmed;               
             my $t=($startStamp+$L->{Index});
+            #print STDERR "time in next: $t\n";
            $L->{Time}=$t;
-           
+           #print STDERR "time in L->Time: $L->{Time}\n";
             foreach my $k (keys(%$L))
                 {
                   $data->{$c}{$t}{$k}=$L->{$k};
@@ -637,6 +651,7 @@ sub parse_data
           }
           elsif ($line=~/StartStamp/)
             {
+            print STDERR "test2\n";
             $line=~/.*;StartStamp;(\d+)/;
             $startStamp=$1;
             print STDERR "\\startstamp=$startStamp\\n";
@@ -820,12 +835,12 @@ sub addtracint
     
     elsif ($pos eq "vector")
       {
-        print STDERR "warning, option not available with trac and int, use option mean \n";
+        print STDERR "warning, option not available with trac and int, use option mean ";
       }
          
     elsif ($pos eq "all")
       {
-	print STDERR "warning, option not available with trac and int, use option mean \n";      
+	print STDERR "warning, option not available with trac and int, use option mean ";      
         #print STDERR "IWH -- pos eq all";del
        
       }
@@ -837,6 +852,45 @@ sub addtracint
 #         }
          
     return ($d_int, $d_trac);
+  }
+
+
+sub addpostrac
+ 
+  {
+   
+    my $totdistance;  
+    my $d_pos = shift;
+    my $d_trac = shift;
+    my $A = shift;
+    my $pos = $A->{pos};
+    my $channel = $A->{channel};
+    
+    if (!$pos || $pos eq "mean")
+      {
+      print STDERR "mean_postandtrac OK\n\n";
+        $totdistance = &mean_posandtrac($d_pos, $d_trac);       
+      }
+    
+    elsif ($pos eq "vector")
+      {
+        print STDERR "warning, option not available with trac and int, use option mean \n";
+      }
+         
+    elsif ($pos eq "all")
+      {
+        #print STDERR "IWH -- pos eq all";del
+        print STDERR "warning, option not available with trac and int, use option mean \n";
+      }
+       
+#       if (!$channel || $channel eq "pos")
+#         {
+#           print STDERR "IWH2 -- channel eq pos";#del
+#           $d_int = &ChannelFromPos2int ($d_int, $d_pos);           
+#         }
+         
+    return ($d_pos, $d_trac);
+  
   }
 
 
@@ -875,7 +929,7 @@ sub mean_postrac2int
     
     $z = &setCageBoundaries ($d_postrac);  
        
-    foreach my $cage (sort(keys (%$d_int)))
+    foreach my $cage (sort(keys (%$d_int))) #isn't it more in d_trac ??
       {
         foreach my $time (sort(keys (%{$d_int->{$cage}})))
           {
@@ -988,7 +1042,7 @@ sub mean_postrac2int
             #SHIFT_faster_version commented
             #print STDERR "VECTOR;$i1;$i2;$i3;$i4;resulting_zone;$zone;File;$d_int->{$cage}{$time}{'File'}\n";                            
                
-           if ($d_int->{$cage}{$time}{'Channel'} eq $zone)
+            if ($d_int->{$cage}{$time}{'Channel'} eq $zone)
             {
             	$matchCount->{$cage}{'yes'}++; ###
             	print STDERR "Match: Y\n\n";
@@ -1008,13 +1062,12 @@ sub mean_postrac2int
             $pEndT = $EndT;
             $pCage = $cage;
           }
-             
          $matchCount->{$cage}{'total'}=$matchCount->{$cage}{'yes'}+$matchCount->{$cage}{'no'}; ###
       	 $matchCount->{$cage}{'ratio'}=$matchCount->{$cage}{'yes'}/$matchCount->{$cage}{'total'}*100; ###
        
          print STDERR "total number of matches cage $cage: $matchCount->{$cage}{'total'}\n";  ###
      	 print STDERR "total percentage matches cage $cage: $matchCount->{$cage}{'ratio'}\n";    ###
-     	 
+             
       }
       
       #Symbol "#" has been added just to grep 
@@ -1035,7 +1088,110 @@ sub mean_postrac2int
   }
   
   
+  #compares "time per time" the relative values coming from the trac file and from the pos file. Calculates a distance between both files
+  sub mean_posandtrac
   
+  {
+    print STDERR "in mean_posandtrac\n\n";
+    my $d_pos = shift;
+    my $d_trac = shift;
+    my ($t, $j, $x, $y, $x_std, $y_std,  $p_zone, $i1, $i2, $i3, $i4, $pEndT, $pCage, $inter_zone, $interTime) = ""; 
+    my ($Match, $missMatch, $ratio) = 0;      
+    my $zpos = {};
+    my $ztrac = {};
+    my ($xtrac,$ytrac,$xpos,$ypos)="";
+    my (@matpos,@mattrac);
+    my ($tracXdim,$tracYdim, $posXdim, $posYdim)="";   ##something is missing about the number of the cage !!!
+    my $cage=$ncagefilmed;
+    my $totdistance;
+    my $j;
+    
+    $zpos = &setCageBoundaries ($d_pos);  
+    $ztrac = &setCageBoundaries ($d_trac); 
+
+    
+    $tracXdim=$ztrac->{$cage}{'Xm'}-$ztrac->{$cage}{'Xmin'}; 
+    $tracYdim=$ztrac->{$cage}{'Ym'}-$ztrac->{$cage}{'Ymin'};    
+    $posXdim=$zpos->{$cage}{'Xm'}-$zpos->{$cage}{'Xmin'};
+    $posYdim=$zpos->{$cage}{'Ym'}-$zpos->{$cage}{'Ymin'};    
+    print STDERR "Xm: $ztrac->{$cage}{'Xm'}\n";
+    print STDERR "posXdim: $posXdim posYdim: $posYdim\n";
+    print STDERR "tracXdim: $tracXdim tracYdim: $tracYdim\n";
+    
+    foreach my $cage (sort(keys (%$d_trac)))
+      {
+        foreach my $t (sort(keys (%{$d_trac->{$cage}})))
+          {
+                                           
+            ($x, $y, $p_zone, $x_std, $y_std, $i1, $i2, $i3, $i4) = 0;
+               
+            my (@Xp_values, @Yp_values);
+            my (@Xt_values, @Yt_values);
+            
+            
+                $xtrac += $d_trac->{$cage}{$t}{'XPos'};
+                $ytrac += $d_trac->{$cage}{$t}{'YPos'};
+                #print STDERR "valeur x: $x";
+                #$p_zone =  &ChannelFromPos_modified($d_pos->{$cage}{$t}{'XPos'}, $d_pos->{$cage}{$t}{'YPos'});       
+                
+                $xpos += $d_pos->{$cage}{$t}{'XPos'};
+                $ypos += $d_pos->{$cage}{$t}{'YPos'};  #test if exists ?
+               
+                                                          
+                push (@Xp_values, ($d_pos->{$cage}{$t}{'XPos'}-$zpos->{$cage}{'Xmin'})/$posXdim);  ##relative distance
+                push (@Yp_values, ($d_pos->{$cage}{$t}{'YPos'} - $zpos->{$cage}{'Ymin'})/$posYdim);
+                
+                push (@Xt_values, ($d_trac->{$cage}{$t}{'XPos'}-$ztrac->{$cage}{'Xmin'})/$tracXdim);
+                push (@Yt_values, ($d_trac->{$cage}{$t}{'YPos'}- $ztrac->{$cage}{'Ymin'})/$tracYdim);
+                
+                @matpos = (\@Xp_values, \@Yp_values);
+           	@mattrac = (\@Xt_values, \@Yt_values);
+                #print  STDERR "Xp value: @Xp_values[0]\n";
+                
+                #print STDERR "time: $t\n";
+                #print STDERR "Xpos and Ypos for pos :$d_pos->{$cage}{$t}{'XPos'} and $d_pos->{$cage}{$t}{'YPos'}\n";
+                #print STDERR "Xpos and Ypos for trac :$d_trac->{$cage}{$t}{'XPos'} and $d_trac->{$cage}{$t}{'YPos'}\n";
+                #SHIFT_faster_version commented                               
+                #print STDERR "$d_pos->{$cage}{$t}{'XPos'}\t$d_pos->{$cage}{$t}{'YPos'}\t$p_zone\n"; #del
+                $j++;
+                 $totdistance += &cdistanceEucl(\@matpos,\@mattrac);
+                 #print STDERR "j: $j\n";
+            
+         
+          }
+          #$totdistance = &cdistanceEucl(\@matpos,\@mattrac);
+      }
+       
+    #$ratio = $Match/$missMatch;
+    print STDERR "distance printed now\n";  
+    print "distance squared of the difference: $totdistance\n";  #t$ratio\n";
+    
+    return ($totdistance);    ##Actually the sum of the distance squared...
+  }
+  
+  #Euclidian distance, it may be interested to use another one
+sub cdistanceEucl 
+  {
+  my $Apos = shift;
+  my $Btrac = shift;
+  my $X = $$Apos[0];
+  my $size = scalar(@$X);
+  #print STDERR "size: $size\n";
+  
+  #my $size = scalar(@$$A[1]);
+  my @cdistance; 
+  my $totalcdistance=0;
+  for( my $i=0; $i<$size; $i++) 
+  	{
+  	$cdistance[$i]=(($Apos->[1]->[$i] - $Btrac->[1]->[$i]) + ($Apos->[0]->[$i] - $Btrac->[0]->[$i])); ## rajouter carrés !!
+  	$totalcdistance+=$cdistance[$i];
+  	#print STDERR "distance[i]: $cdistance[$i]\n";
+  	#print STDERR "A1: $Apos->[1]->[$i]\n";
+  	#print STDERR "B0: $Btrac->[0]->[$i]\n";
+  	}
+
+  return ($totalcdistance);
+  }  
   
   
 sub vector_pos2int
@@ -1575,9 +1731,9 @@ sub setCageBoundaries
              #$z->{$cage}{'X2'} = 0.75 * $x_max;
              #$z->{$cage}{'X2'} = 0.5 * $x_max;   #     
              #$z->{$cage}{'Y1'} = 0.5 * $y_max;   #
-             $z->{$cage}{'X2'} = 0.5 * ($x_max + $x_min);   # measure of the coordinates (X2,Y1) of the new center of the cage with the new boundaries (Xmin, Xm, Ymin, Ym)
+             $z->{$cage}{'X2'} = 0.5 * ($x_max + $x_min);   # measure of the coordinates (X2,Y1) of the new center of the cage with the new boundaries (Xmin, Xm, Ymin, Ym)     
              $z->{$cage}{'Y1'} = 0.5 * ($y_max + $x_min);   #
-             
+             print STDERR "Xm in setCagesBoundaries: $z->{$cage}{'Xm'}\n";
              
 
              
