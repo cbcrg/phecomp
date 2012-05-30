@@ -869,11 +869,12 @@ sub mean_pos2int
      	 
       }
       
-      print STDERR "\ncage\tvalidation\ttotal\n"; ###
+      #Symbol "#" has been added just to grep 
+      print STDERR "\n#cage\tvalidation\ttotal\n"; ###
       
       foreach my $cage (sort(keys (%$matchCount)))   ###
       {
-     	print STDERR "$cage\t$matchCount->{$cage}{'ratio'}\t$matchCount->{$cage}{'total'}\n"; ###
+     	print STDERR "#$cage\t$matchCount->{$cage}{'ratio'}\t$matchCount->{$cage}{'total'}\n"; ###
       }
       print STDERR "\n";
       
