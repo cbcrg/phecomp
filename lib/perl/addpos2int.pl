@@ -48,7 +48,6 @@ use Data::Dumper;
 use File::stat; #Dealing with file metadata
 
 my $ncagefilmed=2; ## number of the cage to film
-my $lengthwindow=0;
 
 my $count=0;
 my $A={};
@@ -135,16 +134,16 @@ sub run_instruction
         print STDERR "test add ok\n";
         if ($A->{int} && $A->{trac}) 
           {
-          print STDERR "test addtracint ok. OK!\n\n";
+          print STDERR "test addtracint ok\n\n";
           ($d_int, $d_trac) = &addtracint ($d_int, $d_trac, $A);
           }
         elsif ($A->{pos} && $A->{trac}) 
-          {print STDERR "test addpostrac ok, not ok\n";
+          {print STDERR "test addpostrac ok\n";
           ($d_pos, $d_trac) = &addpostrac ($d_pos, $d_trac, $A);
           }
         elsif  ($A->{pos} && $A->{int})
           {
-          print STDERR "test addposint ok, not ok\n";
+          print STDERR "test addposint ok\n";
           ($d_int, $d_pos) = &addposint ($d_int, $d_pos, $A);
           }
         else {print STDERR "WARNING: problem in files options !!!\n";}
@@ -218,7 +217,6 @@ sub array2hash
         my $v=shift (@array);
         $k=~s/-//g;
         $A->{$k}=$v;
-        print STDERR "clé et valeur : A : $k --> $v\n";
       }
 
     return $A;
@@ -651,7 +649,6 @@ sub parse_data
           }
           elsif ($line=~/StartStamp/)
             {
-            print STDERR "test2\n";
             $line=~/.*;StartStamp;(\d+)/;
             $startStamp=$1;
             print STDERR "\\startstamp=$startStamp\\n";
@@ -835,12 +832,12 @@ sub addtracint
     
     elsif ($pos eq "vector")
       {
-        print STDERR "warning, option not available with trac and int, use option mean ";
+        print STDERR "warning, option not available with trac and int, use option mean \n";
       }
          
     elsif ($pos eq "all")
       {
-	print STDERR "warning, option not available with trac and int, use option mean ";      
+	print STDERR "warning, option not available with trac and int, use option mean \n";      
         #print STDERR "IWH -- pos eq all";del
        
       }
@@ -929,7 +926,7 @@ sub mean_postrac2int
     
     $z = &setCageBoundaries ($d_postrac);  
        
-    foreach my $cage (sort(keys (%$d_int))) #isn't it more in d_trac ??
+    foreach my $cage (sort(keys (%$d_int))) 
       {
         foreach my $time (sort(keys (%{$d_int->{$cage}})))
           {
@@ -1733,7 +1730,6 @@ sub setCageBoundaries
              #$z->{$cage}{'Y1'} = 0.5 * $y_max;   #
              $z->{$cage}{'X2'} = 0.5 * ($x_max + $x_min);   # measure of the coordinates (X2,Y1) of the new center of the cage with the new boundaries (Xmin, Xm, Ymin, Ym)     
              $z->{$cage}{'Y1'} = 0.5 * ($y_max + $x_min);   #
-             print STDERR "Xm in setCagesBoundaries: $z->{$cage}{'Xm'}\n";
              
 
              
