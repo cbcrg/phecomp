@@ -34,8 +34,13 @@
 ###                                                                                        ### 
 #############  #######  #######  #######  #######  #######  #######  ########  ###############
 ### -trac <file> -> flag for input tracking file, in this version can be used with int or  ###
-### pos files							                           ###
-### Warning !! This option has to be used AFTER the -int or the pos <file> option          ###
+###      pos files							                   ###
+###      Warning !! This option has to be used AFTER the -int or the -pos <file> option    ###
+### -action <value> ->  has to be after option shift if exists, but BEFORE options -pos    ###
+###   	 and -trac. value:                                                                 ###
+###			value=3 comparison int and pos                                     ###
+###			value=5 	" int and trac                                     ###
+###			value=6 	" pos and trac                                     ###
 ##############################################################################################
 
 #use warnings;
@@ -49,7 +54,8 @@ use File::stat; #Dealing with file metadata
 
 my $ncagefilmed=2; ## number of the cage to film
 
-my $count=0;
+#my $count=0;
+my $action;
 my $A={};
 my ($d_int, $d_pos, $d_trac) = {};
 my $shift_time = {};
@@ -62,6 +68,8 @@ shift @commands;      ## Withdraws the first argument, equaling " " ?
 
 my $matchCount={};   ###
 my $startStamp;
+my $shift_time_trac = {};
+my $shift_time_pos = {};
 
 ######IDEAS SCHEME
 #1-USE A SYSTEM AS T_COFFEE "addpos2int.pl -int file.int -pos file.pos"
@@ -92,7 +100,7 @@ sub run_instruction
       #reading int file
       if ($c =~ /^int/)
         {  
-          $count+=1;          
+          #$count+=1;          
           $d_int = &int2data ($A->{int});
           print STDERR "--------------- int file read! ---------------\n\n";
         }
@@ -102,29 +110,42 @@ sub run_instruction
         {  
           $shift_time = &shiftTimestamp ($A); 
         }      
+        
+      elsif ($c =~ /^action/)
+        {
+          $action=$A->{action};
+          if ($action==5)
+            {
+              $shift_time_trac=$shift_time
+            }
+          else ##elsif ($action==3 || $action==6)
+            {
+              $shift_time_pos=$shift_time;
+            }
+        }
           
       #reading pos file
       #This option remains in case we want to reprint the whole pos file
       elsif ($c =~ /^pos/)
         {
-          $count+=2;
-          $d_pos = &pos2data ($A->{pos}, $shift_time);
+          #$count+=2;
+          $d_pos = &pos2data ($A->{pos}, $shift_time_pos);
           print STDERR "--------------- pos file read! ---------------\n\n";                                   
         }              
       
       #reading big pos files, only keeping positions which are inside food intervals 
       elsif ($c =~ /^bigPos/)
         { 
-          $count+=2;
-          $d_pos = &bigPos2data ($A->{bigPos}, $shift_time, $d_int);
+          #$count+=2;
+          $d_pos = &bigPos2data ($A->{bigPos}, $shift_time_pos, $d_int);
           print STDERR "--------------- pos file read! ---------------\n\n";                      
         }              
         
         
       elsif ($c =~ /^trac/)  #
         {
-         $count+=4;
-          $d_trac = &trac2data ($A->{trac});#
+         #$count+=4;
+          $d_trac = &trac2data ($A->{trac}, $shift_time_trac);#
           print STDERR "--------------- pos file read! ---------------\n\n";  #                                 
         }    
             
@@ -132,36 +153,36 @@ sub run_instruction
      elsif ($c =~ /^add/)
         {  
         print STDERR "test add ok\n";
-        if ($A->{int} && $A->{trac}) 
+        if ($action==5) 
           {
           print STDERR "test addtracint ok\n\n";
           ($d_int, $d_trac) = &addtracint ($d_int, $d_trac, $A);
           }
-        elsif ($A->{pos} && $A->{trac}) 
+        elsif ($action==6) 
           {print STDERR "test addpostrac ok\n";
           ($d_pos, $d_trac) = &addpostrac ($d_pos, $d_trac, $A);
           }
-        elsif  ($A->{pos} && $A->{int})
+        else #just else?
           {
           print STDERR "test addposint ok\n";
           ($d_int, $d_pos) = &addposint ($d_int, $d_pos, $A);
           }
-        else {print STDERR "WARNING: problem in files options !!!\n";}
+        #else {print STDERR "WARNING: problem in files options !!!\n";}
         }
                
       elsif ($c =~ /^set/)
         {
-        if ($count==3) 
-          {
-          $d_int = &set ($d_int, $d_pos, $A);
-          }
-        elsif ($count==5) 
+        if ($action==5) 
           {
           $d_int = &set ($d_int, $d_trac, $A);
           }
-        elsif ($count==6) 
+        elsif ($action==6) 
           {
           print STDERR "-set option not available with pos and trac files\n";
+          }
+        else 
+          {
+            $d_int = &set ($d_int, $d_pos, $A);
           }
         }
         
@@ -192,7 +213,7 @@ sub run_instruction
       my $h=shift; #A
       my @l=split (/\s+/, $s);
       
-      if ($l[0] eq "int" | $l[0] eq "pos" | $l[0] eq "bigPos"| $l[0] eq "trac")
+      if ($l[0] eq "int" | $l[0] eq "pos" | $l[0] eq "bigPos"| $l[0] eq "trac"| $l[0] eq "action" )
         {
           return array2hash (\@l, $h);
         }
@@ -473,6 +494,7 @@ sub bigPos2data
 sub trac2data
   {
     my $f = shift;    
+    my $shift_time = shift;
     my $data = {};
     my $switch = 0;
     my $start_time = 0;
@@ -510,17 +532,55 @@ sub trac2data
                 $L->{$key}=$value;
                 
                }
+               
               # print STDERR "time in L->index: $L->{Index}\n";
             my $c=$ncagefilmed;               
             my $t=($startStamp+$L->{Index});
-            #print STDERR "time in next: $t\n";
-           $L->{Time}=$t;
-           #print STDERR "time in L->Time: $L->{Time}\n";
+             ######################3
+            my $new_t = 0;
+                
+            if (exists ($shift_time->{"add"}))                       
+              {                    
+                $new_t = $t + $shift_time->{"add"};                       
+              }  
+                
+            elsif (exists($shift_time->{"mult"}))
+              {  
+                my $value = $shift_time->{"mult"};
+                my $delta = $t-$start_time;
+                #print STDERR "$value----$delta\n";#del
+                #$new_t = int ($t + ($t-$start_time) * $shift_time->{"mult"});
+                $new_t = sprintf("%.0f", ($t + ($t-$start_time) * $shift_time->{"mult"})); # to round it instead of truncate
+                #print STDERR "time --> $t\tnew_time --> $new_t\n";#del                              
+              }
+                
+            else 
+              {
+                $new_t = $t; 
+              } 
+                  
+            $L->{Time}=$new_t;
+                                    
             foreach my $k (keys(%$L))
-                {
-                  $data->{$c}{$t}{$k}=$L->{$k};
-                  #print STDERR "key2 and value2: $k and $data->{$c}{$t}{$k}\n\n";
-                }
+              {                                                         
+                    #Time in k is changed in index ($data->{$c}{$new_t}), but if we print the pos file it will retrieve time from 
+                    #$data->{$c}{$new_t}{$k} = $L->{$k}, meaning that the time use as key and the time keep as value will not be
+                    #the same, so we have to change this time too.
+                if ($k eq "Time") 
+                  {
+                    $data->{$c}{$new_t}{$k} = $new_t;
+                  }
+                        
+                else
+                  {                          
+                    $data->{$c}{$new_t}{$k} = $L->{$k};
+                  }                      
+              }
+           ##########################
+            
+            
+            #print STDERR "time in next: $t\n";
+           #print STDERR "time in L->Time: $L->{Time}\n";
           }   
         
         else
@@ -1161,6 +1221,7 @@ sub mean_postrac2int
        
     #$ratio = $Match/$missMatch;
     print STDERR "distance printed now\n";  
+    print STDERR "distance squared of the difference: $totdistance\n";
     print "distance squared of the difference: $totdistance\n";  #t$ratio\n";
     
     return ($totdistance);    ##Actually the sum of the distance squared...
@@ -1180,7 +1241,7 @@ sub cdistanceEucl
   my $totalcdistance=0;
   for( my $i=0; $i<$size; $i++) 
   	{
-  	$cdistance[$i]=(($Apos->[1]->[$i] - $Btrac->[1]->[$i]) + ($Apos->[0]->[$i] - $Btrac->[0]->[$i])); ## rajouter carrés !!
+  	$cdistance[$i]=(($Apos->[1]->[$i] - $Btrac->[1]->[$i])**2 + ($Apos->[0]->[$i] - $Btrac->[0]->[$i])**2); 
   	$totalcdistance+=$cdistance[$i];
   	#print STDERR "distance[i]: $cdistance[$i]\n";
   	#print STDERR "A1: $Apos->[1]->[$i]\n";
