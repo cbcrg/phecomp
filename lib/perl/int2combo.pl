@@ -344,7 +344,7 @@ sub channel2Nature
 			$Name=lc ($Name);
 			$Name=~s/\s//g;
 			
-			if ((length ($Name)) == 4 && ($Name =~/(w)(w)(s)(s)/ || $Name =~/(w)(w)(s)(s)/ || $Name=~/(w)(w)(s)(c)/ || $Name=~/(w)(w)(f)(f)/))
+			if ((length ($Name)) == 4 && ($Name =~/(w)(w)(s)(s)/ || $Name =~/(w)(w)(c)(s)/ || $Name=~/(w)(w)(s)(c)/ || $Name=~/(w)(w)(c)(s)/ || $Name=~/(w)(w)(f)(f)/))
 			  {
 			      	
 		      	if ($i==1) 
@@ -369,7 +369,7 @@ sub channel2Nature
 	      				$Nature.=&anot2nature ($4);	      				
 	      			}		
 				
-				print STDERR "$Nature\n";
+				#print STDERR "$Nature\n";
 			  }
 			      
 			elsif ($Caption=~/Food/){$Nature="food";}
