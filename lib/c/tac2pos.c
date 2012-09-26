@@ -998,7 +998,12 @@ int excelTime2EPOCH (double timeTrack)
     timeEPOCH = (timeExcel- 25569) * 86400;
     timeExcelDec *= daySecs;
     timeEPOCH += timeExcelDec;
-    timeEPOCH -= 3600; //Conversion to GTM value, perl functions implemented convert to EPOCH time GTM.
+
+    //Winter time is 1 hour (3600s) more than GMT
+    //timeEPOCH -= 3600; //Conversion to GTM value, perl functions implemented convert to EPOCH time GTM.
+
+    //Daylight saving time is 2 hours (7200s) more than GMT
+    timeEPOCH -= 7200;
 
     return timeEPOCH;
 }
