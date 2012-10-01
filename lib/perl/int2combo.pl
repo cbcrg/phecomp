@@ -2,6 +2,17 @@
 # -filter field <field name> contains|equals|min|max value
 # -bin
 
+##############################################################################################
+###OPTIONS                                                                                 ###
+### -period period <mode> -> Mode: day/ week/ eleven/ month                                ###
+###         phase  <mode> -> Mode: phase / phasePeriod                                     ###
+###                                Annotation of phase only light and dark or phase and    ###
+###                                period (day 1, day 2, ...)                              ###
+###         iniLight <n>  -> A single digit for the starting time of the light phase, on   ###
+###                          GMT TIME!!! By default is 6 which corresponds to 8:00 AM in   ###
+###                          Spanish summer time                                           ###
+##############################################################################################
+
 use HTTP::Date;
 use Data::Dumper;
 
@@ -84,10 +95,13 @@ sub run_instruction
       {
 	$d=data2bin ($d,$A);
       }  
+    
     elsif ($c=~/^period/)
       {
-	$d=data2period ($d,$A);
+         $d = data2tempDiv ($d,$A);
+	     #$d=data2period ($d,$A);
       }
+      
     elsif ($c=~/^logodd/)
       {
 	   data2log_odd ($d, $A);
@@ -346,7 +360,7 @@ sub channel2Nature
 			
 			if ((length ($Name)) == 4 && ($Name =~/(w)(w)(s)(s)/ || $Name =~/(w)(w)(c)(s)/ || $Name=~/(w)(w)(s)(c)/ || $Name=~/(w)(w)(c)(s)/ || $Name=~/(w)(w)(f)(f)/))
 			  {
-			      	
+			    
 		      	if ($i==1) 
 		      		{
 		      			$Nature.=&anot2nature ($1);
@@ -628,18 +642,228 @@ sub data2period_list
     
     foreach my $c (sort(keys (%$d)))
       {
-	foreach my $t (sort(keys (%{$d->{$c}})))
-	  {
-	    if( exists ( $d->{$c}{$t}{period}))
-	      {
-		$pl->{$d->{$c}{$t}{period}}=1;
-	      }
-	    #print Dumper($pl); #delete 
-	  }
+	     foreach my $t (sort(keys (%{$d->{$c}})))
+	       {
+    	     if( exists ( $d->{$c}{$t}{period}))
+    	       {
+    		    $pl->{$d->{$c}{$t}{period}}=1;
+    	       }	    
+	       }
       }
+    
     return $pl;
   }
 
+#This function will consider both possible modes of -period option:
+# mode period divides the data from the initial period until into the given amount of time 1 day, 1 week, 11 days.
+# mode phase divides the data between dark and light phase, from 8:00 to 20:00 by default if any other info no provided
+# or by natural days 00:00 to 24:00
+sub data2tempDiv
+  {
+    my $d = shift;
+    my $A = shift;
+    
+    if (exists ($A->{period}))
+      {        
+        $d = data2period ($d,$A);       
+      }    
+    
+    elsif (exists ($A->{phase}) && ($A->{phase} eq "phase" || $A->{phase} eq "phasePeriod"))
+      {
+        $d = data2phase ($d,$A);
+      }
+    
+#    elsif (exists ($A->{'join'}))
+#      {
+#        $d = joinPeriodPhase ($d,$A);
+#      }
+      
+    else
+      {
+        print "FATAL ERROR: Mode-->$A->{period} not recognize in -period option\n"; 
+	    die; 
+      }
+      
+    return ($d);   
+  }
+
+sub joinPeriodPhase
+  {
+    my $d = shift;
+    my $A = shift;
+    my ($period, $phase);
+    
+    foreach my $c (sort(keys (%$d)))
+      {
+    	foreach my $t (sort(keys (%{$d->{$c}})))
+    	  {
+    	    exists ($d->{$c}{$t}{period}) && exists ($d->{$c}{$t}{phase})? last : die print STDERR "FATAL ERROR \"join\" option needs period and phase to be defined\n";
+    	  }
+      }
+
+    #The periods given in such way where separated into periods from the beginnig of the file and not taking into account natural days     
+    foreach my $c (sort(keys (%$d)))
+      {
+    	foreach my $t (sort(keys (%{$d->{$c}})))
+    	  {     	    
+    	    $period = $d->{$c}{$t}{period};
+    	    $phase = $d->{$c}{$t}{phase};
+    	    $d->{$c}{$t}{period} = $period.$phase;
+    	  }
+      }
+     
+    return ($d);      
+    
+  }
+
+sub data2phase
+  {
+    my $d = shift;
+    my $A = shift;
+    
+    my $ph = $A->{phase};
+    my $iniLightPh = $A->{iniLight};
+    
+    #By the moment I set the delta phase to 12 in case the phases are not symetric then I should see how to further implement the code
+    my $deltaPh = 12; # = $A->{deltaPh}; my deltaPhTwo = 24 - $deltaPh;  
+    
+    my ($a,$b, $start, $end, $delta, $secAfterLastMidnight, $firstPhLightChange, $day); 
+    
+    my $time={};
+    
+    $start=$end=-1;
+    
+    #Traversing all intervals to set initial and end time
+    foreach my $c (sort(keys (%$d)))
+      {
+    	foreach my $t (sort(keys (%{$d->{$c}})))
+    	  {
+    	    
+    	    my $cstart = $d->{$c}{$t}{StartT};
+    	    my $cend = $d->{$c}{$t}{EndT};
+    	    
+    	    if ($start==-1 || $start>$cstart){$start=$cstart;}
+    	    if ($end==-1    || $end<$cend){$end=$cend;}
+    	  }
+      }
+      
+    if (!$ph){$ph="lightDark"; $delta = 3600*12;}    
+    elsif ($ph eq "lightDark") {$delta = 3600*12;}
+    elsif ($ph eq "day") {$delta = 3600*24;}
+    
+    if (!$iniLightPh)
+      {
+        $iniLightPh = 6;
+        print STDERR "WARNING: Beginning of the light phase has been set to 8:00 AM as you didn't provide any info (iniLight)\n\n";
+      }
+    elsif ($iniLightPh !~ /^\d+$/) 
+      {
+        $iniLightPh = 6;
+        print STDERR "WARNING: Beginning of the light phase has been set to 6:00 AM GMT (8:00 spanish summer time) as the value provided by iniLight: $iniLightPh is not a number\n\n";
+      }
+    elsif ($iniLightPh < 1 || $iniLightPh > 24)
+      {
+        $iniLightPh = 6;
+        print STDERR "WARNING: Beginning of the light phase has been set to 6:00 AM GMT (8:00 spanish summer time) as the value provided by iniLight: $iniLightPh is not in the correct range\n\n";
+      }
+    
+    $secAfterLastMidnight = $start % (3600 * 24);                
+    
+    if ($secAfterLastMidnight > (3600 * $iniLightPh))
+      {
+        $firstPhLightChange =  $start - $secAfterLastMidnight  + ($iniLightPh * 3600) + (24 * 3600);    
+      }
+    else 
+      {
+        $firstPhLightChange =  $start - $secAfterLastMidnight  + ($iniLightPh * 3600);
+      }
+    
+    #print STDERR "start: $start first phase change is $firstPhLightChange\n";  
+    
+    #Both the days and the phases are annotated    
+    if ($A->{'phase'} eq "phasePeriod") 
+      {                
+        #Time points before first light phase change are annotated here    
+        for ($a=$firstPhLightChange -($deltaPh * 3600); $a < $firstPhLightChange; $a++)
+          {
+            $time->{$a}="1_Light";         
+          }
+        
+        for ($a=$firstPhLightChange -(24 * 3600); $a < $firstPhLightChange -($deltaPh * 3600); $a++)
+          {
+            $time->{$a}="1_dark";         
+          }
+                
+        $day =2;
+    
+        for ($b=1, $a=$firstPhLightChange; $a<$end; $b++)
+          {
+            for (my $c=0; $c<24*3600; $c++, $a++)
+              {
+                
+                if ($c < $deltaPh*3600 )
+                  {                                      
+                    $time->{$a}=$day."_Light";
+                  }
+                else
+                  {                    
+                    $time->{$a}=$day."_dark";                    
+                  }                  
+              }
+            $day++;
+          }
+      }
+    
+    #only phase (Light/dark) annotation  
+    else 
+      {
+        #Time points before first light phase change are annotated here    
+        for ($a=$firstPhLightChange -($deltaPh * 3600); $a < $firstPhLightChange; $a++)
+          {
+            $time->{$a}="dark";         
+          }
+        
+        for ($a=$firstPhLightChange -(24 * 3600); $a < $firstPhLightChange -($deltaPh * 3600); $a++)
+          {
+            $time->{$a}="Light";         
+          }
+                            
+        for ($b=1, $a=$firstPhLightChange; $a<$end; $b++)
+          {
+            for (my $c=0; $c<24*3600; $c++, $a++)
+              {
+                
+                if ($c < $deltaPh*3600 )
+                  {                                   
+                    $time->{$a}="Light";
+                  }
+                else
+                  {                    
+                    $time->{$a}="dark";                    
+                  }                   
+              }
+          }
+      }  
+          
+    #Now real time points are annotated
+    #If an interval belongs to both phases it will be annotated with the phase in which it starts
+    
+    foreach my $c (sort(keys (%$d)))
+      {
+	   foreach my $t (sort(keys (%{$d->{$c}})))
+	     {
+	       my $phase=$time->{$t};
+	       $d->{$c}{$t}{period}=$time->{$t};
+	     }
+      }
+    
+    delete($A->{period});
+    delete($A->{phase});
+    
+    return $d;
+      
+  } 
+  
 sub data2period
   {
     my $d=shift;
@@ -685,7 +909,7 @@ sub data2period
 	  }
       }
     
-    #Then it looks where the interval time corresponds
+    #Then it looks where does the interval time correspond
     foreach my $c (sort(keys (%$d)))
       {
 	foreach my $t (sort(keys (%{$d->{$c}})))
@@ -1126,7 +1350,9 @@ sub data2stat
 	print "period\tcage\tchannel\tduration_period\trec_period\tcount\tduration_T\tmean_duration\tvalue_T\tmean_value\tvelocity\n";
       }
     
-    foreach my $p (sort ({$a<=>$b}keys (%$period)))
+    #print Dumper ($period); die;
+    foreach my $p (sort (keys (%$period)))
+    #foreach my $p (sort ({$a<=>$b}keys (%$period)))
       {
 	
 	if ($A->{output}!~/R/) 
@@ -1171,7 +1397,8 @@ sub data2display_period_stat
 	    #printf "%10s --> %6.2f  %6.2f\n", $ch,$d->{$c}{$t}{Duration},$d->{$c}{$t}{Value}; 
 	  }
       }
-
+      
+     #print STDERR "maxtime: $maxtime\tmintime:$mintime\n"; #del
      $duration=$maxtime-$mintime;
      my $tt=sec2time($duration);
      
