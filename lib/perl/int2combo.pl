@@ -33,8 +33,21 @@ my $A={};
 my %WEIGHT;
 my $file=shift (@ARGV);
 my $cl=join(" ", @ARGV);
+
+#Reanotate command should be read before &run_instruction() that is why
+#although not elegant I read this option here.
+#This is meant to separate channels with the same type of food or liquid
+#with 2 different labels, eg. water_1, water_1
+my $diffCh = 0;
+
+if ($cl =~ s/-diffChannel//) 
+  {    
+    $diffCh = 1;    
+  }
+
 my @commands=split (/\-+/,$cl); 
 #test_bw_trainning();die;
+
 $d=parse_data ($file);
 
 foreach my $c (@commands)
@@ -363,24 +376,27 @@ sub channel2Nature
 			    
 		      	if ($i==1) 
 		      		{
-		      			$Nature.=&anot2nature ($1);
-		      			$Nature.="_$i";#many times we have water in both channels, separate them into water_1 and water_2		      			
+		      			$Nature.=&anot2nature ($1);		      			
+		      			($diffCh)? $Nature.="_$i" : $Nature=$Nature;#many times we have water in both channels, separate them into water_1 and water_2		      			
 		      		}
 		      		
 		      	elsif ($i==2) 
 		      		{
 		      			$Nature.=&anot2nature ($2);
-		      			$Nature.="_$i";#many times we have water in both channels, separate them into water_1 and water_2		      	
+#		      			$Nature.="_$i";#many times we have water in both channels, separate them into water_1 and water_2		      
+                        ($diffCh)? $Nature.="_$i" : $Nature=$Nature;#many times we have water in both channels, separate them into water_1 and water_2	
 		      		}
 		      		
 		      	elsif ($i==3) 
 		      		{
-		      			$Nature.=&anot2nature ($3);		      			
+		      			$Nature.=&anot2nature ($3);
+                        ($3 == $4 && $diffCh)? $Nature.="_$i" : $Nature=$Nature;		      			
 		      		}
 		      		
 	      		elsif ($i==4) 
 	      			{
-	      				$Nature.=&anot2nature ($4);	      				
+	      				$Nature.=&anot2nature ($4);
+                        ($4 == $3)? $Nature.="_$i" : $Nature=$Nature;	      				
 	      			}		
 				
 				#print STDERR "$Nature\n";
@@ -401,7 +417,7 @@ sub channel2Nature
 		
 			if ($Nature eq "food")
 			  {
-			    print "--$Name--\n";
+			    #print STDERR "--$Name--\n";
 			    			     
 				if ($Name eq "sc"){$Nature.="_sc";}
 			    
@@ -662,7 +678,7 @@ sub data2tempDiv
   {
     my $d = shift;
     my $A = shift;
-    
+       
     if (exists ($A->{period}))
       {        
         $d = data2period ($d,$A);       
@@ -680,7 +696,7 @@ sub data2tempDiv
       
     else
       {
-        print "FATAL ERROR: Mode-->$A->{period} not recognize in -period option\n"; 
+        print STDERR "FATAL ERROR: Mode-->$A->{period} not recognize in -period option\n"; 
 	    die; 
       }
       
