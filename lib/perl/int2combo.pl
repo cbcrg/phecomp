@@ -11,6 +11,7 @@
 ###         iniLight <n>  -> A single digit for the starting time of the light phase, on   ###
 ###                          GMT TIME!!! By default is 6 which corresponds to 8:00 AM in   ###
 ###                          Spanish summer time                                           ###
+### -winLogodd win <n> ->
 ##############################################################################################
 
 use HTTP::Date;
@@ -110,7 +111,9 @@ sub run_instruction
       }  
     
     elsif ($c=~/^period/)
-      {
+      {	
+      	 #with this function it is possible to separate in dark and light phases
+      	 #or in periods since the beginnig of the recording	
          $d = data2tempDiv ($d,$A);
 	     #$d=data2period ($d,$A);
       }
@@ -119,6 +122,12 @@ sub run_instruction
       {
 	   data2log_odd ($d, $A);
       }
+      
+    elsif ($c=~/^winLogodd/)
+      {
+	   data2log_oddWindow ($d, $A);
+      }
+      
     elsif ($c=~/^stat/)
       {
 	data2stat($d, $A);
@@ -906,6 +915,7 @@ sub data2period
     if (!$n){$n="week";}
     if ($n eq "hour"){$delta=3600;}
     elsif ($n eq "day"){$delta=3600*24;}
+    elsif ($n eq "five"){$delta=3600*24*5;}
     elsif ($n eq "week"){$delta=3600*24*7;}
     elsif ($n eq "eleven"){$delta=3600*24*11;}
     elsif ($n eq "twoweek"){$delta=3600*24*7*2;}
@@ -1581,8 +1591,7 @@ sub data2log_odd_period
     #ch -> previous channel
     #cch -> current channel
     #t -> time
-    #pendt -> previous end time    
-    
+    #pendt -> previous end time        
     foreach my $c (sort(keys (%$d)))
       {
         #my ($ch,$pendt);
@@ -1593,7 +1602,7 @@ sub data2log_odd_period
           {
             my $period=$d->{$c}{$t}{period};
     	    if ($period ne $A->{period}){next;}
-    	    #print "he passat per aqui --> $pendt\n";
+    	    
     	    #if ($d->{$c}{$t}{StartT} > $pendt)  {$pendt=$d->{$c}{$t}{EndT}; next;} else {}
     	    #I take the bin (e.g. sc_food_sc) 
     	    my $cch=$d->{$c}{$t}{bin};
@@ -1666,6 +1675,94 @@ sub data2log_odd_period
       }
         
     return $M;
+  }
+
+#The function perform calculates the logodd ratio of a dataset using a sliding window provided in win
+#To this end the execution goes in the following way:
+# The data is divided in periods of the given window size
+# The first logodd ratio is calculated using the above temporal division and ploting just the first period of length window
+# The a loop is started where the data is divided into day periods
+# In each round the first day is eliminated
+# Then remaining data is divided into periods of window size
+# The logodd the new first period of length window is calculated
+sub data2log_oddWindow
+  {    
+    my $d=shift;
+    my $A=shift;
+    
+    if ($A->{win} =~ m/\d+/)
+    	{
+    		print STDERR "window should not be a numeric value";
+    		die;
+    	}
+   	
+    my $window = $A->{win};
+    my $p;
+        
+    my $tot={};
+    my $chc={};
+    my $M={};
+    my $lengthDays = 0;        
+    
+    print STDERR "MSG: Window used for log odd sliding window is: $window\n";
+    
+    #Using the input window the data is divided into periods of window size
+    $A->{period} = $window;#period used to divide data in periods of same size
+    $d = data2tempDiv ($d,$A);
+    
+    my $period = data2period_list ($d);
+     
+    
+    $A->{period} = $p = 1;#Which of the periods of size window will be printed on screen
+    
+    #If I want to use more modes probably is better to pass them through command line and not like here with a hardcode
+    $A->{mode}="logodd";
+    $A->{output}="R";
+    $A->{periodWin} = 0; #This will be used to see to which window iteration belongs the printed table
+     
+    print "period\tcage\todd_ratio\todd_ratio_value\tdelta_w\n";
+    &data2log_odd_period ($d, $A);
+        
+    #Number of days --> iterations ($lengthDays)
+    $A->{period} = "day";
+   	$d = data2tempDiv ($d,$A);#tagging by day
+   	$period = data2period_list ($d);#getting the periods by day
+   	$lengthDays = scalar (keys (%$period));
+    
+    #print STDERR "Length days-------------->$lengthDays\n";#del
+  		
+    for (my $i=1; $i < $lengthDays; $i++)
+      {
+        #Spliting the data in day periods for the elimination of first day (period)
+        $A->{period} = "day";
+   	    $d = data2tempDiv ($d,$A);
+        
+        #deleting all records corresponding to day 1
+        foreach my $c (sort(keys (%$d)))
+          {
+    	     foreach my $t (sort(keys (%{$d->{$c}})))
+              {
+                my $period = $d->{$c}{$t}{period};
+                
+                $d->{$c}{$t}{period} += -1;
+                my $newPeriod = $d->{$c}{$t}{period};
+                
+                if ($newPeriod == 0) 
+                  {
+                    delete ($d-> {$c}{$t}); 
+                  }                                
+              }
+          }
+        
+        #The data is divided again into periods of window length
+        $A->{period} = $window;
+        $d = data2tempDiv ($d,$A);        
+        
+        $A->{period} = $p;#we just plot first period of window length        
+        $A->{mode}="logodd";
+        $A->{periodWin} = $i;#this parameter is passed to data2log_odd_period to tag the position of the sliding window 
+        &data2log_odd_period ($d, $A);         
+      }
   }
 
 #This function calculates logodd ration but instead of considering
@@ -1861,8 +1958,16 @@ sub display_log_odd
 		  }
 		else 
 		  {
-		    printf "%2d\t%2d\t%10s -- %10s\t%6.3f\t%6.2f\n", $A->{period}, $c, $b1, $b2, $M->{$c}{$b1}{$b2}{logodd}{value}, $WEIGHT{$c}{delta};
+		    printf "%2d\t%2d\t%10s -- %10s\t%6.3f\t%6.2f", $A->{period}, $c, $b1, $b2, $M->{$c}{$b1}{$b2}{logodd}{value}, $WEIGHT{$c}{delta};
 		    
+		    if (exists ($A->{periodWin}))
+              {
+                print "\t$A->{periodWin}\n";                 
+              }		       
+            else
+              {
+                print "\n";
+              }
 		  }
 		#end modification - 23/09/10
 	      }
