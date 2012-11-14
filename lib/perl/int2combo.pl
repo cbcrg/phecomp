@@ -4,6 +4,8 @@
 
 ##############################################################################################
 ###OPTIONS                                                                                 ###
+### -diffChannel          -> When this option is set channels with the same type of food   ###
+###                          but in different dispensers are differentiated (eg w1, w2)    ###  
 ### -period period <mode> -> Mode: day/ week/ eleven/ month                                ###
 ###         phase  <mode> -> Mode: phase / phasePeriod                                     ###
 ###                                Annotation of phase only light and dark or phase and    ###
@@ -11,7 +13,7 @@
 ###         iniLight <n>  -> A single digit for the starting time of the light phase, on   ###
 ###                          GMT TIME!!! By default is 6 which corresponds to 8:00 AM in   ###
 ###                          Spanish summer time                                           ###
-### -winLogodd win <n> ->
+### -winLogodd win <n>    -> Sliding window of logodd using length of period n             ###
 ##############################################################################################
 
 use HTTP::Date;
@@ -405,7 +407,7 @@ sub channel2Nature
 	      		elsif ($i==4) 
 	      			{
 	      				$Nature.=&anot2nature ($4);
-                        ($4 == $3)? $Nature.="_$i" : $Nature=$Nature;	      				
+                        ($4 == $3 && $diffCh)? $Nature.="_$i" : $Nature=$Nature;	      				
 	      			}		
 				
 				#print STDERR "$Nature\n";
@@ -1692,7 +1694,7 @@ sub data2log_oddWindow
     
     if ($A->{win} =~ m/\d+/)
     	{
-    		print STDERR "window should not be a numeric value";
+    		print STDERR "FATAL ERROR: Window should not be a numeric value";
     		die;
     	}
    	
