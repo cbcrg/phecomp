@@ -1531,7 +1531,7 @@ sub data2log_odd
     #end modification-23/09/10
     elsif ($A->{output}=~/R/ && $A->{mode} eq "logoddBIT")
       {
-        print "period\tcage\ttransition\tbin_BIT\todd_ratio_value\tdelta_w\n";
+        print "period\tcage\ttransition\tbin_BIT\todd_ratio_value\tdelta_w\n";                	
       }
       
     foreach my $p (sort ({$a<=>$b}keys (%$period)))
@@ -1722,7 +1722,7 @@ sub data2log_oddWindow
     $A->{output}="R";
     $A->{periodWin} = 0; #This will be used to see to which window iteration belongs the printed table
      
-    print "period\tcage\todd_ratio\todd_ratio_value\tdelta_w\n";
+    print "period\tcage\todd_ratio\todd_ratio_value\tdelta_w\titeration\n";
     &data2log_odd_period ($d, $A);
         
     #Number of days --> iterations ($lengthDays)
