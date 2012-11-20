@@ -415,7 +415,7 @@ sub channel2Nature
 			      
 			elsif ($Caption=~/Food/){$Nature="food";}
 			
-			elsif ($Caption=~/Drink/)
+			elsif ($Caption=~/Drink/ && $diffCh)
 			  {
 			  	my $nat = lc($Caption);
 			  	
