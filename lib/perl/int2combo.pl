@@ -813,12 +813,12 @@ sub data2phase
         #Time points before first light phase change are annotated here    
         for ($a=$firstPhLightChange -($deltaPh * 3600); $a < $firstPhLightChange; $a++)
           {
-            $time->{$a}="1_Light";         
+            $time->{$a}="1_dark";  print "$a\t 1 light\n";       
           }
         
         for ($a=$firstPhLightChange -(24 * 3600); $a < $firstPhLightChange -($deltaPh * 3600); $a++)
           {
-            $time->{$a}="1_dark";         
+            $time->{$a}="1_light";         
           }
                 
         $day =2;
