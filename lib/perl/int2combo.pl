@@ -917,8 +917,9 @@ sub data2period
     if (!$n){$n="week";}
     if ($n eq "hour"){$delta=3600;}
     elsif ($n eq "day"){$delta=3600*24;}
-    elsif ($n eq "five"){$delta=3600*24*5;}
+    elsif ($n eq "five"){$delta=3600*24*5;}   
     elsif ($n eq "week"){$delta=3600*24*7;}
+    elsif ($n eq "ten"){$delta=3600*24*10;}
     elsif ($n eq "eleven"){$delta=3600*24*11;}
     elsif ($n eq "twoweek"){$delta=3600*24*7*2;}
     elsif ($n eq "month"){$delta=3600*24*31;}
