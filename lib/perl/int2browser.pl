@@ -22,6 +22,11 @@ if ($param->{convert} eq "cytobandFile")
     &changeDayPhases2cytobandLikeFile ($d);
   }  
 
+if ($param->{create} eq "chr")
+  {
+    &fromInt2chromosome ($d, $param);
+  }  
+  
 if ($d && $param->{outdata} ne "no")
   {  
     &display_data ($d, $param); 
@@ -108,8 +113,7 @@ sub parse_data
 	else
 	  {
 	    if ( $line=~/Weight/ && $line=~/ANIMALS DATA/)
-	      {
-	        print "$line\n\n";
+	      {	   
 		    $line=~/.*;(\d+);Weight;([.\d]+)/;
 		    my $c=$1;
 		    my $w=$2;
@@ -400,6 +404,7 @@ sub check_parameters
     $rp->{data} = 1;
     $rp->{out} = 1;
     $rp->{convert} = 1;
+    $rp->{create} = 1;
 #    $rp->{action} = 1;
 #    $rp->{output} = 1;
     $rp->{outdata} = 1;
@@ -427,11 +432,12 @@ sub check_parameters
     return $p;
   }
   
-changeDayPhases2cytobandLikeFile
+sub changeDayPhases2cytobandLikeFile
   {
     my $d = shift;
     my $param = shift;
     
+    #print Dumper ($param);	
     my $ph = $param->{phase};
     my $iniLightPh = $param->{iniLight};
     
@@ -439,23 +445,6 @@ changeDayPhases2cytobandLikeFile
     my $deltaPh = 12; # = $A->{deltaPh}; my deltaPhTwo = 24 - $deltaPh;  
     
     my ($a,$b, $start, $end, $delta, $secAfterLastMidnight, $firstPhLightChange, $day); 
-    
-    return (0);
-  }
-  
-sub data2phase
-  {
-    my $d = shift;
-    my $A = shift;
-    
-    my $ph = $A->{phase};
-    my $iniLightPh = $A->{iniLight};
-    
-    #By the moment I set the delta phase to 12 in case the phases are not symetric then I should see how to further implement the code
-    my $deltaPh = 12; # = $A->{deltaPh}; my deltaPhTwo = 24 - $deltaPh;  
-    
-    my ($a,$b, $start, $end, $delta, $secAfterLastMidnight, $firstPhLightChange, $day); 
-    
     my $time={};
     
     $start=$end=-1;
@@ -469,6 +458,7 @@ sub data2phase
     	    my $cstart = $d->{$c}{$t}{StartT};
     	    my $cend = $d->{$c}{$t}{EndT};
     	    
+    	    #print $start, "\t", $cstart,"\n"; 
     	    if ($start==-1 || $start>$cstart){$start=$cstart;}
     	    if ($end==-1    || $end<$cend){$end=$cend;}
     	  }
@@ -494,6 +484,7 @@ sub data2phase
         print STDERR "WARNING: Beginning of the light phase has been set to 6:00 AM GMT (8:00 spanish summer time) as the value provided by iniLight: $iniLightPh is not in the correct range\n\n";
       }
     
+    #Searching from the first change to light phase taking place in the data
     $secAfterLastMidnight = $start % (3600 * 24);                
     
     if ($secAfterLastMidnight > (3600 * $iniLightPh))
@@ -505,88 +496,90 @@ sub data2phase
         $firstPhLightChange =  $start - $secAfterLastMidnight  + ($iniLightPh * 3600);
       }
     
-    #print STDERR "start: $start first phase change is $firstPhLightChange\n";  
+    #Printing the first interval
+    if ($start < $firstPhLightChange)
+    	{
+    		print "chr1", "\t", $start-$start, "\t", $firstPhLightChange-$start, "\t", "dark", "\t", "gpos25\n";
+    		print "chr1", "\t", $firstPhLightChange-$start, "\t", $firstPhLightChange- $start + (3600*12), "\t", "light", "\t", "gneg\n";    		
+    	}
+    #si es m‡s grande puedo imprimir el start y luego ya el siguiente cambio de fase 		
+    else
+    	{
+    		print "chr1", "\t", $start-$start, "\t", $firstPhLightChange + (3600*12), "\t", "light","\t", "gneg\n";
+    	}
     
-    #Both the days and the phases are annotated    
-    if ($A->{'phase'} eq "phasePeriod") 
-      {                
-        #Time points before first light phase change are annotated here    
-        for ($a=$firstPhLightChange -($deltaPh * 3600); $a < $firstPhLightChange; $a++)
-          {
-            $time->{$a}="1_Light";         
-          }
-        
-        for ($a=$firstPhLightChange -(24 * 3600); $a < $firstPhLightChange -($deltaPh * 3600); $a++)
-          {
-            $time->{$a}="1_dark";         
-          }
-                
-        $day =2;
-    
-        for ($b=1, $a=$firstPhLightChange; $a<$end; $b++)
-          {
-            for (my $c=0; $c<24*3600; $c++, $a++)
-              {
-                
-                if ($c < $deltaPh*3600 )
-                  {                                      
-                    $time->{$a}=$day."_Light";
-                  }
-                else
-                  {                    
-                    $time->{$a}=$day."_dark";                    
-                  }                  
-              }
-            $day++;
-          }
-      }
-    
-    #only phase (Light/dark) annotation  
-    else 
-      {
-        #Time points before first light phase change are annotated here    
-        for ($a=$firstPhLightChange -($deltaPh * 3600); $a < $firstPhLightChange; $a++)
-          {
-            $time->{$a}="dark";         
-          }
-        
-        for ($a=$firstPhLightChange -(24 * 3600); $a < $firstPhLightChange -($deltaPh * 3600); $a++)
-          {
-            $time->{$a}="Light";         
-          }
-                            
-        for ($b=1, $a=$firstPhLightChange; $a<$end; $b++)
-          {
-            for (my $c=0; $c<24*3600; $c++, $a++)
-              {
-                
-                if ($c < $deltaPh*3600 )
-                  {                                   
-                    $time->{$a}="Light";
-                  }
-                else
-                  {                    
-                    $time->{$a}="dark";                    
-                  }                   
-              }
-          }
-      }  
-          
-    #Now real time points are annotated
-    #If an interval belongs to both phases it will be annotated with the phase in which it starts
-    
-    foreach my $c (sort(keys (%$d)))
-      {
-	   foreach my $t (sort(keys (%{$d->{$c}})))
-	     {
-	       my $phase=$time->{$t};
-	       $d->{$c}{$t}{period}=$time->{$t};
-	     }
-      }
-    
-    delete($A->{period});
-    delete($A->{phase});
-    
-    return $d;
-      
+    my $lastEnd = $firstPhLightChange + (3600*12);
+    my $lastPhase = "light";
+    my $colour = "gneg";
+       
+    	  
+   	for ($a=$firstPhLightChange + (3600*12) + 1; $a < $end; $a ++)
+   		{	
+   			$a = $a + 43199;
+   			
+   			if ($lastPhase eq "dark") {$lastPhase="light"; $colour = "gneg";}
+   			else {$lastPhase = "dark"; $colour = "gpos25";}
+   			
+   			print "chr1", "\t", $lastEnd-$start, "\t", $a-$start, "\t", $lastPhase, "\t", $colour, "\n";
+   			
+   			$lastEnd = $a;
+   			#print $a, "\n";
+   			
+   		}
   }
+
+
+
+#
+#print "$start\n";
+#    	print "$end\n";die;
+# 
+#for ($a=$start - $start; $a < $end - $start; $a ++)
+#   			{
+#   				print "N";
+#   			}
+#   			
+#   		print "\n";
+    	
+sub fromInt2chromosome
+	{
+		my $d = shift;
+	    my $param = shift;
+	    
+	    #print Dumper ($param);	
+	    my $ph = $param->{phase};
+	    my $iniLightPh = $param->{iniLight};
+	    
+	    #By the moment I set the delta phase to 12 in case the phases are not symetric then I should see how to further implement the code
+	    my $deltaPh = 12; # = $A->{deltaPh}; my deltaPhTwo = 24 - $deltaPh;  
+	    
+	    my ($a,$b, $start, $end, $delta, $secAfterLastMidnight, $firstPhLightChange, $day); 
+	    my $time={};
+	    
+	    $start=$end=-1;
+	    
+	    #Traversing all intervals to set initial and end time
+	    foreach my $c (sort(keys (%$d)))
+	      {
+	    	foreach my $t (sort(keys (%{$d->{$c}})))
+	    	  {
+	    	    
+	    	    my $cstart = $d->{$c}{$t}{StartT};
+	    	    my $cend = $d->{$c}{$t}{EndT};
+	    	    
+	    	    if ($start==-1 || $start>$cstart){$start=$cstart;}
+	    	    if ($end==-1    || $end<$cend){$end=$cend;}
+	    	  }
+	      }
+    	
+    	print ">chr1\n";
+    	
+    	for ($a=$start - $start; $a < $end - $start; $a ++)
+   			{
+   				print "N";
+   			}
+   			
+   		print "\n";
+    	
+		
+	}
