@@ -10,23 +10,33 @@ my $d={};
 my $HEADER;
 my %WEIGHT;
 my $diffCh = 0;
+our @channel;
+
+@channel = ("Intake 1", "Intake 2", "Intake 3", "Intake 4");
 
 $param = &process_param (@ARGV);
 
 #Reads the data
 $d = &readData ($d, $param);
 
+$param = setOutputName ($param);
+
 ###RUNNING OPTIONS
-if ($param->{convert} eq "cytobandFile")
+if ($d && $param->{convert} eq "cytobandFile")
   {
-    &changeDayPhases2cytobandLikeFile ($d);
+    &changeDayPhases2cytobandLikeFile ($d, $param);
   }  
 
+if ($d && $param->{convert} eq "int2bed")
+  {
+    &int2bed ($d, $param);
+  } 
+  
 if ($param->{create} eq "chr")
   {
     &fromInt2chromosome ($d, $param);
   }  
-  
+    
 if ($d && $param->{outdata} ne "no")
   {  
     &display_data ($d, $param); 
@@ -404,6 +414,8 @@ sub check_parameters
     $rp->{data} = 1;
     $rp->{out} = 1;
     $rp->{convert} = 1;
+    $rp->{outBed} = 1;
+    $rp->{outCytoband} = 1;    
     $rp->{create} = 1;
 #    $rp->{action} = 1;
 #    $rp->{output} = 1;
@@ -436,33 +448,19 @@ sub changeDayPhases2cytobandLikeFile
   {
     my $d = shift;
     my $param = shift;
-    
-    #print Dumper ($param);	
     my $ph = $param->{phase};
     my $iniLightPh = $param->{iniLight};
-    
+    my $outCytobandFile = $param->{outCytoband};
     #By the moment I set the delta phase to 12 in case the phases are not symetric then I should see how to further implement the code
     my $deltaPh = 12; # = $A->{deltaPh}; my deltaPhTwo = 24 - $deltaPh;  
     
-    my ($a,$b, $start, $end, $delta, $secAfterLastMidnight, $firstPhLightChange, $day); 
+    my ($a,$b, $start, $end, $delta, $secAfterLastMidnight, $firstPhLightChange, $day, $file); 
     my $time={};
     
     $start=$end=-1;
     
     #Traversing all intervals to set initial and end time
-    foreach my $c (sort(keys (%$d)))
-      {
-    	foreach my $t (sort(keys (%{$d->{$c}})))
-    	  {
-    	    
-    	    my $cstart = $d->{$c}{$t}{StartT};
-    	    my $cend = $d->{$c}{$t}{EndT};
-    	    
-    	    #print $start, "\t", $cstart,"\n"; 
-    	    if ($start==-1 || $start>$cstart){$start=$cstart;}
-    	    if ($end==-1    || $end<$cend){$end=$cend;}
-    	  }
-      }
+    ($start, $end) = &firstAndLastTime ($d, $param);
       
     if (!$ph){$ph="lightDark"; $delta = 3600*12;}    
     elsif ($ph eq "lightDark") {$delta = 3600*12;}
@@ -496,16 +494,21 @@ sub changeDayPhases2cytobandLikeFile
         $firstPhLightChange =  $start - $secAfterLastMidnight  + ($iniLightPh * 3600);
       }
     
+    #opening the file
+    $file = $outCytobandFile."_cytoBand".".txt";
+    my $F= new FileHandle;
+	vfopen ($F, ">$file");
+	
     #Printing the first interval
     if ($start < $firstPhLightChange)
     	{
-    		print "chr1", "\t", $start-$start, "\t", $firstPhLightChange-$start, "\t", "dark", "\t", "gpos25\n";
-    		print "chr1", "\t", $firstPhLightChange-$start, "\t", $firstPhLightChange- $start + (3600*12), "\t", "light", "\t", "gneg\n";    		
+    		print $F "chr1", "\t", $start-$start, "\t", $firstPhLightChange-$start, "\t", "dark", "\t", "gpos25\n";
+    		print $F "chr1", "\t", $firstPhLightChange-$start, "\t", $firstPhLightChange- $start + (3600*12), "\t", "light", "\t", "gneg\n";    		
     	}
     #si es m‡s grande puedo imprimir el start y luego ya el siguiente cambio de fase 		
     else
     	{
-    		print "chr1", "\t", $start-$start, "\t", $firstPhLightChange + (3600*12), "\t", "light","\t", "gneg\n";
+    		print $F "chr1", "\t", $start-$start, "\t", $firstPhLightChange + (3600*12), "\t", "light","\t", "gneg\n";
     	}
     
     my $lastEnd = $firstPhLightChange + (3600*12);
@@ -520,7 +523,7 @@ sub changeDayPhases2cytobandLikeFile
    			if ($lastPhase eq "dark") {$lastPhase="light"; $colour = "gneg";}
    			else {$lastPhase = "dark"; $colour = "gpos25";}
    			
-   			print "chr1", "\t", $lastEnd-$start, "\t", $a-$start, "\t", $lastPhase, "\t", $colour, "\n";
+   			print $F "chr1", "\t", $lastEnd-$start, "\t", $a-$start, "\t", $lastPhase, "\t", $colour, "\n";
    			
    			$lastEnd = $a;
    			#print $a, "\n";
@@ -559,18 +562,20 @@ sub fromInt2chromosome
 	    $start=$end=-1;
 	    
 	    #Traversing all intervals to set initial and end time
-	    foreach my $c (sort(keys (%$d)))
-	      {
-	    	foreach my $t (sort(keys (%{$d->{$c}})))
-	    	  {
-	    	    
-	    	    my $cstart = $d->{$c}{$t}{StartT};
-	    	    my $cend = $d->{$c}{$t}{EndT};
-	    	    
-	    	    if ($start==-1 || $start>$cstart){$start=$cstart;}
-	    	    if ($end==-1    || $end<$cend){$end=$cend;}
-	    	  }
-	      }
+#	    foreach my $c (sort(keys (%$d)))
+#	      {
+#	    	foreach my $t (sort(keys (%{$d->{$c}})))
+#	    	  {
+#	    	    
+#	    	    my $cstart = $d->{$c}{$t}{StartT};
+#	    	    my $cend = $d->{$c}{$t}{EndT};
+#	    	    
+#	    	    if ($start==-1 || $start>$cstart){$start=$cstart;}
+#	    	    if ($end==-1    || $end<$cend){$end=$cend;}
+#	    	  }
+#	      }
+    	
+    	($start, $end) = &firstAndLastTime ($d, $param);    	
     	
     	print ">chr1\n";
     	
@@ -583,3 +588,114 @@ sub fromInt2chromosome
     	
 		
 	}
+
+sub firstAndLastTime
+	{
+		my $d = shift;
+    	my $param = shift;
+    	
+    	my ($start, $end);
+    	
+    	$start=$end=-1;
+    	
+		foreach my $c (sort(keys (%$d)))
+	      {
+	    	foreach my $t (sort(keys (%{$d->{$c}})))
+	    	  {	    	    
+	    	    my $cstart = $d->{$c}{$t}{StartT};
+	    	    my $cend = $d->{$c}{$t}{EndT};
+	    	    
+	    	    if ($start==-1 || $start>$cstart){$start=$cstart;}
+	    	    if ($end==-1    || $end<$cend){$end=$cend;}
+	    	  }
+	      }
+	      
+#		print $start, "\t", $end, "\n";
+		#die;
+		return ($start, $end);	  
+	}
+	     	
+sub int2bed
+	{
+		my $d = shift;
+    	my $param = shift;
+    	my $bedName = $param->{outBed};
+    	my ($start, $end, $startInt, $endInt); 
+    	
+    	($start, $end) = &firstAndLastTime ($d, $param);
+    	
+    	#print $start, "\t", $end, "\n";#del
+    	
+    	foreach my $c (sort ({$a<=>$b} keys(%$d)))
+	  		{
+	    		foreach my $ch (@channel)
+	    			{
+	    				$ch =~ m/(\d)/;
+	    				my $chN = $1;		  
+	    				
+	    				my $file = $bedName."cage".$c."ch".$chN.".bed";
+	    				printf "      Intervals cage $c, channel $ch in: $file\n";
+	      				my $F= new FileHandle;
+	      				vfopen ($F, ">$file");
+	    					
+    					foreach my $t (sort (keys (%{$d->{$c}})))
+      						{
+      							if ($d->{$c}{$t}{Channel} ne $ch)
+      								{next;}
+      							else
+      								{	
+	      								$startInt = $d->{$c}{$t}{StartT} - $start;
+	    								$endInt = $d->{$c}{$t}{EndT} - $start;
+	    								print $F "chr".$c, "\t", $startInt, "\t", $endInt, "\n";				
+	      							}	      					    				   					
+	      					}
+	      		
+	      				close ($F);
+	  				}
+	  		}	      	    	        	
+	}
+	
+sub vfopen 
+  {
+    my $f=shift;
+    my $file=shift;
+
+    if (($file =~/^\>/) && !($file =~/^\>\>/ )){open ($f, $file); return $f;}
+    elsif (($file =~/^\>\>(.*)/))
+      {
+	if (!-e $1){	print STDERR "\nERROR: $file does not exist [FATAL]\n";exit(1);}
+      }
+    elsif (!-e $file){	print STDERR "\nERROR: $file does not exist [FATAL]\n";exit(1);}
+   
+    open ($f,$file);
+    return $f;
+  }	
+  
+sub setOutputName
+  {
+    my $param=shift;
+    
+    if (!$param->{out})
+      {
+		$param->{out}=$param->{data};
+		$param->{out}=~s/\.[^\.]*$//;
+		
+#		if (!$param->{out})
+#  			{
+#   				$param->{out}=$param->{model};
+#    			$param->{out}=~s/\.[^\.]*$//;
+#  			}
+#  			
+		#if ($param->{out} eq "in.rhmm"){$param->{out}="out";}
+	  }
+	  
+    #$param->{out}=~s/\.rhmm//;
+    
+    if (!$param->{outBed}) {$param->{outBed} = "$param->{out}";}
+    if (!$param->{outCytoband}) {$param->{outCytoband} = "$param->{out}";}
+    #if (!$param->{outmodel})      {$param->{outmodel}      ="$param->{out}.rhmm.$nst\_$nem.model";}
+    #if (!$param->{outmodel_with_zero})      {$param->{outmodel_with_zero}      ="$param->{out}.rhmm.$nst\_$nem.model_zero";}
+    #if (!$param->{outconstraints}){$param->{outconstraints}="$param->{out}.rhmm.$nst\_$nem.constraints";}
+    
+    return $param;
+  }  
