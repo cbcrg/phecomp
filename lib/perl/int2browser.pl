@@ -22,7 +22,13 @@ $d = &readData ($d, $param);
 $param = setOutputName ($param);
 
 ###RUNNING OPTIONS
-if ($d && $param->{convert} eq "cytobandFile")
+#If this option is set the bed files for each cage and channel, the genome and the cytoband file will be generated at the same time
+if ($d && $param->{allFiles} eq "genomeBrowser")
+  {
+  	$param = &setAllOptions ($param);
+  }
+
+if ($d && $param->{generate} eq "cytobandFile")
   {
     &changeDayPhases2cytobandLikeFile ($d, $param);
   }  
@@ -418,16 +424,8 @@ sub check_parameters
     $rp->{outCytoband} = 1;
     $rp->{outGenome} = 1;    
     $rp->{create} = 1;
-#    $rp->{action} = 1;
-#    $rp->{output} = 1;
+    $rp->{allFiles} = 1;
     $rp->{outdata} = 1;
-#    $rp->{add} = 1;
-#    $rp->{bin} = 1;
-#    $rp->{countBin} = 1;
-#    $rp->{infile_format} = 1;
-#    $rp->{outBins} = 1;
-#    $rp->{outLogodd} = 1;
-#    $rp->{out} = 1;
     
     foreach my $k (keys (%$p))
       {
@@ -497,6 +495,7 @@ sub changeDayPhases2cytobandLikeFile
     
     #opening the file
     $file = $outCytobandFile."_cytoBand".".txt";
+    printf "      Cytoband like file in: $file\n";
     my $F= new FileHandle;
 	vfopen ($F, ">$file");
 	
@@ -556,6 +555,7 @@ sub fromInt2chromosome
     	
     	#opening the file
     	$file = $outGenomeFile."Genome.fa";
+    	printf "      Chromosome for browser in: $file\n";
     	my $F= new FileHandle;
 		vfopen ($F, ">$file");
 		
@@ -592,8 +592,6 @@ sub firstAndLastTime
 	    	  }
 	      }
 	      
-#		print $start, "\t", $end, "\n";
-		#die;
 		return ($start, $end);	  
 	}
 	     	
@@ -628,7 +626,8 @@ sub int2bed
       								{	
 	      								$startInt = $d->{$c}{$t}{StartT} - $start;
 	    								$endInt = $d->{$c}{$t}{EndT} - $start;
-	    								print $F "chr".$c, "\t", $startInt, "\t", $endInt, "\n";				
+	    								#print $F "chr".$c, "\t", $startInt, "\t", $endInt, "\n";
+	    								print $F "chr1", "\t", $startInt, "\t", $endInt, "\n";				
 	      							}	      					    				   					
 	      					}
 	      		
@@ -669,3 +668,14 @@ sub setOutputName
     
     return $param;
   }  
+
+sub setAllOptions
+	{
+		my $param=shift;
+		
+		$param->{generate} = "cytobandFile";
+		$param->{convert} = "int2bed";
+		$param->{create} = "chr";
+		
+		return ($param);		
+	}
