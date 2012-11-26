@@ -415,7 +415,8 @@ sub check_parameters
     $rp->{out} = 1;
     $rp->{convert} = 1;
     $rp->{outBed} = 1;
-    $rp->{outCytoband} = 1;    
+    $rp->{outCytoband} = 1;
+    $rp->{outGenome} = 1;    
     $rp->{create} = 1;
 #    $rp->{action} = 1;
 #    $rp->{output} = 1;
@@ -462,7 +463,7 @@ sub changeDayPhases2cytobandLikeFile
     #Traversing all intervals to set initial and end time
     ($start, $end) = &firstAndLastTime ($d, $param);
       
-    if (!$ph){$ph="lightDark"; $delta = 3600*12;}    
+    if (!$ph) {$ph="lightDark"; $delta = 3600*12;}    
     elsif ($ph eq "lightDark") {$delta = 3600*12;}
     elsif ($ph eq "day") {$delta = 3600*24;}
     
@@ -513,8 +514,7 @@ sub changeDayPhases2cytobandLikeFile
     
     my $lastEnd = $firstPhLightChange + (3600*12);
     my $lastPhase = "light";
-    my $colour = "gneg";
-       
+    my $colour = "gneg";       
     	  
    	for ($a=$firstPhLightChange + (3600*12) + 1; $a < $end; $a ++)
    		{	
@@ -526,8 +526,6 @@ sub changeDayPhases2cytobandLikeFile
    			print $F "chr1", "\t", $lastEnd-$start, "\t", $a-$start, "\t", $lastPhase, "\t", $colour, "\n";
    			
    			$lastEnd = $a;
-   			#print $a, "\n";
-   			
    		}
   }
 
@@ -548,43 +546,27 @@ sub fromInt2chromosome
 	{
 		my $d = shift;
 	    my $param = shift;
-	    
-	    #print Dumper ($param);	
-	    my $ph = $param->{phase};
-	    my $iniLightPh = $param->{iniLight};
-	    
-	    #By the moment I set the delta phase to 12 in case the phases are not symetric then I should see how to further implement the code
-	    my $deltaPh = 12; # = $A->{deltaPh}; my deltaPhTwo = 24 - $deltaPh;  
-	    
-	    my ($a,$b, $start, $end, $delta, $secAfterLastMidnight, $firstPhLightChange, $day); 
-	    my $time={};
-	    
+	    my ($a,$b, $start, $end, $outGenomeFile, $file); 
+	   	my $outGenomeFile = $param->{outGenome};
+	   	    
 	    $start=$end=-1;
 	    
-	    #Traversing all intervals to set initial and end time
-#	    foreach my $c (sort(keys (%$d)))
-#	      {
-#	    	foreach my $t (sort(keys (%{$d->{$c}})))
-#	    	  {
-#	    	    
-#	    	    my $cstart = $d->{$c}{$t}{StartT};
-#	    	    my $cend = $d->{$c}{$t}{EndT};
-#	    	    
-#	    	    if ($start==-1 || $start>$cstart){$start=$cstart;}
-#	    	    if ($end==-1    || $end<$cend){$end=$cend;}
-#	    	  }
-#	      }
-    	
+	    #Traversing all intervals to set initial and end time    	
     	($start, $end) = &firstAndLastTime ($d, $param);    	
     	
-    	print ">chr1\n";
+    	#opening the file
+    	$file = $outGenomeFile."Genome.fa";
+    	my $F= new FileHandle;
+		vfopen ($F, ">$file");
+		
+    	print $F ">chr1\n";
     	
     	for ($a=$start - $start; $a < $end - $start; $a ++)
    			{
-   				print "N";
+   				print $F "N";
    			}
    			
-   		print "\n";
+   		print $F "\n";
     	
 		
 	}
@@ -679,23 +661,11 @@ sub setOutputName
       {
 		$param->{out}=$param->{data};
 		$param->{out}=~s/\.[^\.]*$//;
-		
-#		if (!$param->{out})
-#  			{
-#   				$param->{out}=$param->{model};
-#    			$param->{out}=~s/\.[^\.]*$//;
-#  			}
-#  			
-		#if ($param->{out} eq "in.rhmm"){$param->{out}="out";}
 	  }
-	  
-    #$param->{out}=~s/\.rhmm//;
     
     if (!$param->{outBed}) {$param->{outBed} = "$param->{out}";}
     if (!$param->{outCytoband}) {$param->{outCytoband} = "$param->{out}";}
-    #if (!$param->{outmodel})      {$param->{outmodel}      ="$param->{out}.rhmm.$nst\_$nem.model";}
-    #if (!$param->{outmodel_with_zero})      {$param->{outmodel_with_zero}      ="$param->{out}.rhmm.$nst\_$nem.model_zero";}
-    #if (!$param->{outconstraints}){$param->{outconstraints}="$param->{out}.rhmm.$nst\_$nem.constraints";}
+    if (!$param->{outGenome}) {$param->{outGenome} = "$param->{out}";}
     
     return $param;
   }  
