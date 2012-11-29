@@ -1378,10 +1378,9 @@ sub data2stat
       {
 	print "period\tcage\tchannel\tduration_period\trec_period\tcount\tduration_T\tmean_duration\tvalue_T\tmean_value\tvelocity\n";
       }
-    
-    #print Dumper ($period); die;
-    foreach my $p (sort (keys (%$period)))
-    #foreach my $p (sort ({$a<=>$b}keys (%$period)))
+       	
+    #foreach my $p (sort (keys (%$period)))#If period is not a number
+    foreach my $p (sort ({$a<=>$b}keys (%$period)))
       {
 	
 	if ($A->{output}!~/R/) 
