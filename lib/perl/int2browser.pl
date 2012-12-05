@@ -424,6 +424,7 @@ sub check_parameters
     $rp->{outCytoband} = 1;
     $rp->{outGenome} = 1;    
     $rp->{create} = 1;
+    $rp->{generate} = 1;
     $rp->{allFiles} = 1;
     $rp->{outdata} = 1;
     
@@ -484,6 +485,7 @@ sub changeDayPhases2cytobandLikeFile
     #Searching from the first change to light phase taking place in the data
     $secAfterLastMidnight = $start % (3600 * 24);                
     
+    #print $start, "\n";
     if ($secAfterLastMidnight > (3600 * $iniLightPh))
       {
         $firstPhLightChange =  $start - $secAfterLastMidnight  + ($iniLightPh * 3600) + (24 * 3600);    
@@ -499,21 +501,39 @@ sub changeDayPhases2cytobandLikeFile
     my $F= new FileHandle;
 	vfopen ($F, ">$file");
 	
-    #Printing the first interval
-    if ($start < $firstPhLightChange)
-    	{
-    		print $F "chr1", "\t", $start-$start, "\t", $firstPhLightChange-$start, "\t", "dark", "\t", "gpos25\n";
-    		print $F "chr1", "\t", $firstPhLightChange-$start, "\t", $firstPhLightChange- $start + (3600*12), "\t", "light", "\t", "gneg\n";    		
-    	}
-    #si es m‡s grande puedo imprimir el start y luego ya el siguiente cambio de fase 		
-    else
-    	{
-    		print $F "chr1", "\t", $start-$start, "\t", $firstPhLightChange + (3600*12), "\t", "light","\t", "gneg\n";
-    	}
+	#print $firstPhLightChange, "\n";
     
-    my $lastEnd = $firstPhLightChange + (3600*12);
-    my $lastPhase = "light";
-    my $colour = "gneg";       
+    #Printing the first interval
+    #print $firstPhLightChange -($deltaPh * 3600), "\t", $start-$start;
+    
+    #is start more than 12 hours before first change to light phases? -> then start is occurring during the previous light phase     
+    if ($start < $firstPhLightChange -($deltaPh * 3600))
+    	{
+    		print $F "chr1", "\t", $start - $start, "\t", $firstPhLightChange -($deltaPh * 3600)- $start, "\t", "light", "\t", "gneg\n";
+    		#print $F "chr1", "\t", $start-$start, "\t", $firstPhLightChange-$start, "\t", "dark", "\t", "gpos25\n";
+    		print $F "chr1", "\t", $firstPhLightChange -($deltaPh * 3600) - $start, "\t", $firstPhLightChange - $start, "\t", "dark", "\t", "gpos25\n";
+    		
+    		#print $F "chr1", "\t", $firstPhLightChange-$start, "\t", $firstPhLightChange- $start + (3600*12), "\t", "light", "\t", "gneg\n";
+    	}
+    else 
+    	{
+    		print $F "chr1", "\t", $start - $start, "\t", $firstPhLightChange - $start, "\t", "dark", "\t", "gpos25\n";
+    	}	
+#    if ($start < $firstPhLightChange)
+#    	{
+#    		print $F "chr1", "\t", $start-$start, "\t", $firstPhLightChange-$start, "\t", "dark", "\t", "gpos25\n";
+#    		print $F "chr1", "\t", $firstPhLightChange-$start, "\t", $firstPhLightChange- $start + (3600*12), "\t", "light", "\t", "gneg\n";    		
+#    	}
+#    #si es m‡s grande puedo imprimir el start y luego ya el siguiente cambio de fase 		
+#    else
+#    	{
+#    		print $F "chr1", "\t", $start-$start, "\t", $firstPhLightChange + (3600*12), "\t", "light","\t", "gneg\n";
+#    	}
+    
+    #my $lastEnd = $firstPhLightChange + (3600*12);
+    my $lastEnd = $firstPhLightChange;
+    my $lastPhase = "dark";
+    my $colour = "gpos25";       
     	  
    	for ($a=$firstPhLightChange + (3600*12) + 1; $a < $end; $a ++)
    		{	
@@ -600,7 +620,7 @@ sub int2bed
 		my $d = shift;
     	my $param = shift;
     	my $bedName = $param->{outBed};
-    	my ($start, $end, $startInt, $endInt); 
+    	my ($start, $end, $startInt, $endInt, $nature); 
     	
     	($start, $end) = &firstAndLastTime ($d, $param);
     	
@@ -612,10 +632,25 @@ sub int2bed
 	    			{
 	    				$ch =~ m/(\d)/;
 	    				my $chN = $1;		  
-	    				
-	    				my $file = $bedName."cage".$c."ch".$chN.".bed";
-	    				printf "      Intervals cage $c, channel $ch in: $file\n";
+	    					    					    				
+	    				#Getting the label of the channel (food_SC, fat_food, ...)
+	    				foreach my $t (sort (keys (%{$d->{$c}})))
+      						{
+      							if ($d->{$c}{$t}{Channel} eq $ch)
+      								{
+      									$nature = $d->{$c}{$t}{Nature}; 
+      									last;		
+      								}
+      							else
+      								{
+      									next;
+      								}	
+      						}
+      							    				
+	    				my $file = $bedName."cage".$c."ch".$nature.".bed";
+	    				printf "      Intervals cage $c, channel $ch, nature $nature in: $file\n";
 	      				my $F= new FileHandle;
+	      				
 	      				vfopen ($F, ">$file");
 	    					
     					foreach my $t (sort (keys (%{$d->{$c}})))
@@ -626,7 +661,7 @@ sub int2bed
       								{	
 	      								$startInt = $d->{$c}{$t}{StartT} - $start;
 	    								$endInt = $d->{$c}{$t}{EndT} - $start;
-	    								#print $F "chr".$c, "\t", $startInt, "\t", $endInt, "\n";
+	    								#print $F "chr".$c, "\t", $startInt, "\t", $endInt, "\n";	    								 
 	    								print $F "chr1", "\t", $startInt, "\t", $endInt, "\n";				
 	      							}	      					    				   					
 	      					}
