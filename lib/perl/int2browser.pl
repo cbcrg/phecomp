@@ -497,7 +497,7 @@ sub changeDayPhases2cytobandLikeFile
     
     #opening the file
     $file = $outCytobandFile."_cytoBand".".txt";
-    printf "      Cytoband like file in: $file\n";
+    
     my $F= new FileHandle;
 	vfopen ($F, ">$file");
 	
@@ -546,6 +546,10 @@ sub changeDayPhases2cytobandLikeFile
    			
    			$lastEnd = $a;
    		}
+   		
+   	close ($F);
+   		
+   	printf "      Cytoband like file in: $file\n";
   }
 
 
@@ -575,7 +579,7 @@ sub fromInt2chromosome
     	
     	#opening the file
     	$file = $outGenomeFile."Genome.fa";
-    	printf "      Chromosome for browser in: $file\n";
+    	
     	my $F= new FileHandle;
 		vfopen ($F, ">$file");
 		
@@ -587,8 +591,9 @@ sub fromInt2chromosome
    			}
    			
    		print $F "\n";
+    	close ($F);
     	
-		
+		printf "      Chromosome for browser in: $file\n";
 	}
 
 sub firstAndLastTime
@@ -620,7 +625,13 @@ sub int2bed
 		my $d = shift;
     	my $param = shift;
     	my $bedName = $param->{outBed};
-    	my ($start, $end, $startInt, $endInt, $nature); 
+    	
+    	#Defines the initial display mode of the annotation track. Values for display_mode include: 0 - hide, 1 - dense, 2 - full, 3 - pack, and 4 - squish
+    	my $visibility = 2;#by the moment hardcoded in future it might be a parameter
+    	my $color = "0,0,0";
+    	my $priority = "user"; #from higher to low priority "user", "map", "genes", "rna", "regulation", "compGeno"
+    	
+    	my ($start, $end, $startInt, $endInt, $nature, $value); 
     	
     	($start, $end) = &firstAndLastTime ($d, $param);
     	
@@ -639,6 +650,24 @@ sub int2bed
       							if ($d->{$c}{$t}{Channel} eq $ch)
       								{
       									$nature = $d->{$c}{$t}{Nature}; 
+      									
+      									if ($nature eq "water")
+      										{
+      											$color = "0,0,255";
+      										}
+      									elsif ($nature eq "food_sc")
+      										{
+      											$color = "0,0,0";
+      										}
+      									elsif ($nature eq "food_fat")
+      										{
+      											$color = "0,128,0";
+      										}
+      									elsif ($nature eq "food_cd")
+      										{
+      											$color = "255,0,0";
+      										}
+      												  
       									last;		
       								}
       							else
@@ -648,11 +677,22 @@ sub int2bed
       						}
       							    				
 	    				my $file = $bedName."cage".$c."ch".$nature.".bed";
-	    				printf "      Intervals cage $c, channel $ch, nature $nature in: $file\n";
+	    				
 	      				my $F= new FileHandle;
 	      				
 	      				vfopen ($F, ">$file");
-	    					
+	      				
+	      				#Add track line specifications for the genome browser
+	      				#link to field info http://genome.ucsc.edu/goldenPath/help/customTrack.html#TRACK
+	    				print $F "track ";
+	    				print $F "name=", "\"cage ", $c, "\;", $nature, "\"", " ";
+	    				print $F "description=", "\"cage ", $c, "\;", $nature, "\"", " ";
+	    				print $F "visibility=", $visibility, " ";
+	    				print $F "color=", $color, " ";
+	    				print $F "useScore=", "1", " ";
+	    				print $F "priority=", $priority, " ";
+	    				print $F "\n";
+	    					    					    				
     					foreach my $t (sort (keys (%{$d->{$c}})))
       						{
       							if ($d->{$c}{$t}{Channel} ne $ch)
@@ -661,12 +701,15 @@ sub int2bed
       								{	
 	      								$startInt = $d->{$c}{$t}{StartT} - $start;
 	    								$endInt = $d->{$c}{$t}{EndT} - $start;
+	    								#$d->{$c}{$t}{Value} < 0 ? $value = int ($d->{$c}{$t}{Value} * 10000 + 0.5) : $value=0;
+	    								$value = int ($d->{$c}{$t}{Value} * 10000 + 0.5);
 	    								#print $F "chr".$c, "\t", $startInt, "\t", $endInt, "\n";	    								 
-	    								print $F "chr1", "\t", $startInt, "\t", $endInt, "\n";				
+	    								print $F "chr1", "\t", $startInt, "\t", $endInt, "\t", $nature, "\t", $value, "\n";				
 	      							}	      					    				   					
 	      					}
 	      		
 	      				close ($F);
+	      				printf "      Intervals cage $c, channel $ch, nature $nature in: $file\n";
 	  				}
 	  		}	      	    	        	
 	}
