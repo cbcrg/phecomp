@@ -47,6 +47,11 @@ if ($param->{create} eq "chr")
   {
     &fromInt2chromosome ($d, $param);
   }  
+
+if ($param->{process} eq "files2bed")
+  {
+    &fromLengthFiles2bed ($d, $param);
+  }  
     
 if ($d && $param->{outdata} ne "no")
   {  
@@ -431,6 +436,9 @@ sub check_parameters
     $rp->{outGenome} = 1;    
     $rp->{create} = 1;
     $rp->{generate} = 1;
+    $rp->{process} = 1;
+    $rp->{outFileDiv} = 1;
+    $rp->{outFilesBed} = 1;
     $rp->{allFiles} = 1;
     $rp->{outdata} = 1;
     
@@ -669,6 +677,72 @@ sub fromInt2chromosome
 		printf "      Chromosome for browser in: $file\n";
 	}
 
+sub fromLengthFiles2bed
+	{
+		my $d = shift;
+	    my $param = shift;
+	    my $outFileDiv = $param->{outFileDiv};
+	    
+	    my ($intFile, $pIntFile, $intFileName, $endT, $outFile);
+	    my @aryFiles;
+	    $pIntFile = "";
+	    
+	    foreach my $t (sort {$a<=>$b}keys (%{$d->{"1"}}))
+	      			{
+						#print "track file information\n";
+						$intFile = $d->{"1"}{$t}{File};
+						#print "----- $intFile\n";
+						if ($intFile ne $pIntFile)
+  							{
+  								push (@aryFiles, $intFile);
+  								print "track file information\n";
+						  								
+  								$intFileName = &path2fileName ($intFile);
+  								$endT = $d->{"1"}{$t}{EndT};
+  								print "----- $intFileName\t$endT\n";		  										  					
+    							#print  "$k;$d->{$c}{$t}{$k};";		
+  							} 
+						$pIntFile = $intFile;
+
+	      			}	
+	    
+	    #opening the file
+    	$outFile = $outFileDiv."_fileDiv".".bed";
+    	   	
+    	my $F= new FileHandle;
+		vfopen ($F, ">$outFile");
+		print $F "track name=\"Int Files div\" description=\"Track annotating the length of each int file\" visibility=2 color=0,0,255 useScore=1 priority=user\n";
+		
+		my $score=0;
+		
+	    foreach my $f (@aryFiles)
+	    	{
+	    		print STDERR "$f\n";#del
+	    			    		
+	    		my ($start, $end);
+    			$start=$end=-1;    			
+	    		 
+	    		foreach my $c (sort ({$a<=>$b}keys(%$d)))
+	  				{
+	    				foreach my $t (sort {$a<=>$b}keys (%{$d->{$c}}))
+	      					{	
+	      						if ($f ne $d->{$c}{$t}{File}) {next;}
+	      						my $cstart = $d->{$c}{$t}{StartT};
+	    	    				my $cend = $d->{$c}{$t}{EndT};	      						
+	      						
+	      						if ($start==-1 || $start>$cstart){$start=$cstart;}
+	      						if ($end==-1    || $end<$cend){$end=$cend;}
+	      					}
+	  				}
+	  				
+	  			print $F "chr1", "\t", $start, "\t", $end, "\t", $f, "\t", $score, "\n";
+	  			$score = ($score == 0)? 1000 : 0;
+	    	}
+	    
+    	close ($F);
+	    	
+	}
+	
 sub firstAndLastTime
 	{
 		my $d = shift;
@@ -831,3 +905,17 @@ sub setAllOptions
 		
 		return ($param);		
 	}
+
+sub path2fileName 
+  {
+    my $f = shift;
+                  
+    if ($f =~ /^*.\//) #avoiding names as us/cn/file.act -> file.act  #REVIEW!!!!!
+      {      
+        my @a = split ("/",$f);        
+        $f = pop (@a);      
+      } 
+    	
+    return ($f);
+    
+  }
