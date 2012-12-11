@@ -33,6 +33,11 @@ if ($d && $param->{generate} eq "cytobandFile")
     &changeDayPhases2cytobandLikeFile ($d, $param);
   }  
 
+if ($d && $param->{generate} eq "phase2bed")
+  {
+    &changeDayPhases2bedLikeFile ($d, $param);
+  } 
+  
 if ($d && $param->{convert} eq "int2bed")
   {
     &int2bed ($d, $param);
@@ -422,6 +427,7 @@ sub check_parameters
     $rp->{convert} = 1;
     $rp->{outBed} = 1;
     $rp->{outCytoband} = 1;
+    $rp->{outPhaseBed} = 1;
     $rp->{outGenome} = 1;    
     $rp->{create} = 1;
     $rp->{generate} = 1;
@@ -482,12 +488,13 @@ sub changeDayPhases2cytobandLikeFile
         print STDERR "WARNING: Beginning of the light phase has been set to 6:00 AM GMT (8:00 spanish summer time) as the value provided by iniLight: $iniLightPh is not in the correct range\n\n";
       }
     
-    #Searching from the first change to light phase taking place in the data
+    #Searching the first change to light phase taking place in the data
     $secAfterLastMidnight = $start % (3600 * 24);                
-    
-    #print $start, "\n";
+   
+    #print $start, "\n";die;#del
     if ($secAfterLastMidnight > (3600 * $iniLightPh))
       {
+      	#As the start is after the change to light, we calculate unix midnight, add seconds until change to light and we add a whole day
         $firstPhLightChange =  $start - $secAfterLastMidnight  + ($iniLightPh * 3600) + (24 * 3600);    
       }
     else 
@@ -501,41 +508,22 @@ sub changeDayPhases2cytobandLikeFile
     my $F= new FileHandle;
 	vfopen ($F, ">$file");
 	
-	#print $firstPhLightChange, "\n";
-    
-    #Printing the first interval
-    #print $firstPhLightChange -($deltaPh * 3600), "\t", $start-$start;
-    
     #is start more than 12 hours before first change to light phases? -> then start is occurring during the previous light phase     
-    if ($start < $firstPhLightChange -($deltaPh * 3600))
+    if ($start < ($firstPhLightChange - ($deltaPh * 3600)))
     	{
     		print $F "chr1", "\t", $start - $start, "\t", $firstPhLightChange -($deltaPh * 3600)- $start, "\t", "light", "\t", "gneg\n";
-    		#print $F "chr1", "\t", $start-$start, "\t", $firstPhLightChange-$start, "\t", "dark", "\t", "gpos25\n";
     		print $F "chr1", "\t", $firstPhLightChange -($deltaPh * 3600) - $start, "\t", $firstPhLightChange - $start, "\t", "dark", "\t", "gpos25\n";
-    		
-    		#print $F "chr1", "\t", $firstPhLightChange-$start, "\t", $firstPhLightChange- $start + (3600*12), "\t", "light", "\t", "gneg\n";
     	}
     else 
     	{
     		print $F "chr1", "\t", $start - $start, "\t", $firstPhLightChange - $start, "\t", "dark", "\t", "gpos25\n";
     	}	
-#    if ($start < $firstPhLightChange)
-#    	{
-#    		print $F "chr1", "\t", $start-$start, "\t", $firstPhLightChange-$start, "\t", "dark", "\t", "gpos25\n";
-#    		print $F "chr1", "\t", $firstPhLightChange-$start, "\t", $firstPhLightChange- $start + (3600*12), "\t", "light", "\t", "gneg\n";    		
-#    	}
-#    #si es m‡s grande puedo imprimir el start y luego ya el siguiente cambio de fase 		
-#    else
-#    	{
-#    		print $F "chr1", "\t", $start-$start, "\t", $firstPhLightChange + (3600*12), "\t", "light","\t", "gneg\n";
-#    	}
-    
-    #my $lastEnd = $firstPhLightChange + (3600*12);
+
     my $lastEnd = $firstPhLightChange;
     my $lastPhase = "dark";
     my $colour = "gpos25";       
     	  
-   	for ($a=$firstPhLightChange + (3600*12) + 1; $a < $end; $a ++)
+   	for ($a=$firstPhLightChange + 1; $a < $end; $a ++)
    		{	
    			$a = $a + 43199;
    			
@@ -552,18 +540,103 @@ sub changeDayPhases2cytobandLikeFile
    	printf "      Cytoband like file in: $file\n";
   }
 
+#This function will create a bed file within which intervals correspond to division into dark/light phases of the time length of the experiment
+sub changeDayPhases2bedLikeFile
+  {
+    my $d = shift;
+    my $param = shift;
+    my $ph = $param->{phase};
+    my $iniLightPh = $param->{iniLight};
+    my $outBedPhFile = $param->{outPhaseBed};
+    #By the moment I set the delta phase to 12 in case the phases are not symetric then I should see how to further implement the code
+    my $deltaPh = 12; # = $A->{deltaPh}; my deltaPhTwo = 24 - $deltaPh;  
+    
+    my ($a,$b, $start, $end, $delta, $secAfterLastMidnight, $firstPhLightChange, $day, $file); 
+    my $time={};
+    
+    $start=$end=-1;
+    
+    #Traversing all intervals to set initial and end time
+    ($start, $end) = &firstAndLastTime ($d, $param);
+      
+    if (!$ph) {$ph="lightDark"; $delta = 3600*12;}    
+    elsif ($ph eq "lightDark") {$delta = 3600*12;}
+    elsif ($ph eq "day") {$delta = 3600*24;}
+    
+    if (!$iniLightPh)
+      {
+        $iniLightPh = 6;
+        print STDERR "WARNING: Beginning of the light phase has been set to 8:00 AM as you didn't provide any info (iniLight)\n\n";
+      }
+    elsif ($iniLightPh !~ /^\d+$/) 
+      {
+        $iniLightPh = 6;
+        print STDERR "WARNING: Beginning of the light phase has been set to 6:00 AM GMT (8:00 spanish summer time) as the value provided by iniLight: $iniLightPh is not a number\n\n";
+      }
+    elsif ($iniLightPh < 1 || $iniLightPh > 24)
+      {
+        $iniLightPh = 6;
+        print STDERR "WARNING: Beginning of the light phase has been set to 6:00 AM GMT (8:00 spanish summer time) as the value provided by iniLight: $iniLightPh is not in the correct range\n\n";
+      }
+    
+    #Searching the first change to light phase taking place in the data
+    $secAfterLastMidnight = $start % (3600 * 24);                
+   
+    #print $start, "\n";die;#del
+    if ($secAfterLastMidnight > (3600 * $iniLightPh))
+      {
+      	#As the start is after the change to light, we calculate unix midnight, add seconds until change to light and we add a whole day
+        $firstPhLightChange =  $start - $secAfterLastMidnight  + ($iniLightPh * 3600) + (24 * 3600);    
+      }
+    else 
+      {
+        $firstPhLightChange =  $start - $secAfterLastMidnight  + ($iniLightPh * 3600);
+      }
+    
+    #opening the file
+    $file = $outBedPhFile."_Phase".".bed";
+    
+    my $F= new FileHandle;
+	vfopen ($F, ">$file");
+	
+	print $F "track name=\"Day phases\" description=\"Track annotating the dark and light phase of the experiment\" visibility=2 color=0,0,255 useScore=1 priority=user\n";
+	
+	#print $firstPhLightChange, "\n";
+    
+    #Printing the first interval
+    #print $firstPhLightChange -($deltaPh * 3600), "\t", $start-$start;
+    
+    #is start more than 12 hours before first change to light phases? -> then start is occurring during the previous light phase     
+    if ($start < ($firstPhLightChange - ($deltaPh * 3600)))
+    	{
+    		print $F "chr1", "\t", $start - $start, "\t", $firstPhLightChange -($deltaPh * 3600)- $start, "\t", "light", "\t", "0\n";
+    		print $F "chr1", "\t", $firstPhLightChange -($deltaPh * 3600) - $start, "\t", $firstPhLightChange - $start, "\t", "dark", "\t", "1000\n";
+    	}
+    else 
+    	{
+    		print $F "chr1", "\t", $start - $start, "\t", $firstPhLightChange - $start, "\t", "dark", "\t", "1000\n";
+    	}	
 
-
-#
-#print "$start\n";
-#    	print "$end\n";die;
-# 
-#for ($a=$start - $start; $a < $end - $start; $a ++)
-#   			{
-#   				print "N";
-#   			}
-#   			
-#   		print "\n";
+    my $lastEnd = $firstPhLightChange;
+    my $lastPhase = "dark";
+    my $scorePhase = 1000;       
+    	  
+   	for ($a=$firstPhLightChange + 1; $a < $end; $a ++)
+   		{	
+   			$a = $a + 43199;
+   			
+   			if ($lastPhase eq "dark") {$lastPhase="light"; $scorePhase = 0;}
+   			else {$lastPhase = "dark"; $scorePhase = 1000;}
+   			
+   			print $F "chr1", "\t", $lastEnd-$start, "\t", $a-$start, "\t", $lastPhase, "\t", $scorePhase, "\n";
+   			
+   			$lastEnd = $a;
+   		}
+   		
+   	close ($F);
+   		
+   	printf "      Bed like file with day phases in: $file\n";
+  }
     	
 sub fromInt2chromosome
 	{
@@ -700,11 +773,11 @@ sub int2bed
       							else
       								{	
 	      								$startInt = $d->{$c}{$t}{StartT} - $start;
-	    								$endInt = $d->{$c}{$t}{EndT} - $start;
-	    								#$d->{$c}{$t}{Value} < 0 ? $value = int ($d->{$c}{$t}{Value} * 10000 + 0.5) : $value=0;
+	    								$endInt = $d->{$c}{$t}{EndT} - $start;	    								
 	    								$value = int ($d->{$c}{$t}{Value} * 10000 + 0.5);
 	    								#print $F "chr".$c, "\t", $startInt, "\t", $endInt, "\n";	    								 
-	    								print $F "chr1", "\t", $startInt, "\t", $endInt, "\t", $nature, "\t", $value, "\n";				
+	    								#print $F "chr1", "\t", $startInt, "\t", $endInt, "\t", $nature, "\t", $value, "\n";#too many nature labels	
+	    								print $F "chr1", "\t", $startInt, "\t", $endInt, "\t", "\t", $value, "\n";				
 	      							}	      					    				   					
 	      					}
 	      		
@@ -742,6 +815,7 @@ sub setOutputName
     
     if (!$param->{outBed}) {$param->{outBed} = "$param->{out}";}
     if (!$param->{outCytoband}) {$param->{outCytoband} = "$param->{out}";}
+    if (!$param->{outPhaseBed}) {$param->{outPhaseBed} = "$param->{out}";}
     if (!$param->{outGenome}) {$param->{outGenome} = "$param->{out}";}
     
     return $param;
