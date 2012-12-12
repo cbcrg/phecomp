@@ -682,38 +682,45 @@ sub fromLengthFiles2bed
 		my $d = shift;
 	    my $param = shift;
 	    my $outFileDiv = $param->{outFileDiv};
+	    my $switch = 0;
 	    
 	    my ($intFile, $pIntFile, $intFileName, $endT, $outFile);
 	    my @aryFiles;
 	    $pIntFile = "";
 	    
+	    #Traversing all intervals to set initial and end time    	
+    	my ($globalStart, $globalEnd) = &firstAndLastTime ($d, $param);
+    			
 	    foreach my $t (sort {$a<=>$b}keys (%{$d->{"1"}}))
-	      			{
-						#print "track file information\n";
-						$intFile = $d->{"1"}{$t}{File};
-						#print "----- $intFile\n";
-						if ($intFile ne $pIntFile)
-  							{
-  								push (@aryFiles, $intFile);
-  								print "track file information\n";
+	    	{
+				#print "track file information\n";
+				$intFile = $d->{"1"}{$t}{File};
+				#print "----- $intFile\n";
+				if ($intFile ne $pIntFile)
+  					{
+  						push (@aryFiles, $intFile);
+  						print "track file information\n";
 						  								
-  								$intFileName = &path2fileName ($intFile);
-  								$endT = $d->{"1"}{$t}{EndT};
-  								print "----- $intFileName\t$endT\n";		  										  					
-    							#print  "$k;$d->{$c}{$t}{$k};";		
-  							} 
-						$pIntFile = $intFile;
-
-	      			}	
+  						$intFileName = &path2fileName ($intFile);
+  						$endT = $d->{"1"}{$t}{EndT};
+  						print "----- $intFileName\t$endT\n";		  										  					
+    					#print  "$k;$d->{$c}{$t}{$k};";		
+  					} 
+				
+				$pIntFile = $intFile;
+	    	}	
 	    
 	    #opening the file
     	$outFile = $outFileDiv."_fileDiv".".bed";
     	   	
     	my $F= new FileHandle;
 		vfopen ($F, ">$outFile");
-		print $F "track name=\"Int Files div\" description=\"Track annotating the length of each int file\" visibility=2 color=0,0,255 useScore=1 priority=user\n";
 		
-		my $score=0;
+		#In this case we use itemRgb this flag is used to use define a precise color for each band inside track file
+		print $F "track name=\"Int Files div\" description=\"Track annotating the length of each int file\" visibility=2  useScore=1 priority=user itemRgb=\"On\"\n";
+		
+		my $score=1000;		
+		my $color="255,0,0";#red
 		
 	    foreach my $f (@aryFiles)
 	    	{
@@ -731,12 +738,13 @@ sub fromLengthFiles2bed
 	    	    				my $cend = $d->{$c}{$t}{EndT};	      						
 	      						
 	      						if ($start==-1 || $start>$cstart){$start=$cstart;}
-	      						if ($end==-1    || $end<$cend){$end=$cend;}
+	      						if ($end==-1 || $end<$cend){$end=$cend;}
 	      					}
 	  				}
-	  				
-	  			print $F "chr1", "\t", $start, "\t", $end, "\t", $f, "\t", $score, "\n";
-	  			$score = ($score == 0)? 1000 : 0;
+	  				  			
+	  			print $F "chr1", "\t", $start-$globalStart, "\t", $end-$globalStart, "\t", $f, "\t", $score, "\t", "+","\t",$start-$globalStart, "\t", $end-$globalStart, ,"\t", $color, "\n";
+	  			#$score = ($score == 0)? 1000 : 0;
+	  			$color = ($color eq "255,0,0")? "255,215,0" : "255,0,0";
 	    	}
 	    
     	close ($F);
