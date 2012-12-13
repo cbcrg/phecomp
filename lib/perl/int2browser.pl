@@ -39,7 +39,7 @@ if ($d && $param->{generate} eq "phase2bed")
   } 
   
 if ($d && $param->{convert} eq "int2bed")
-  {
+  {  	
     &int2bed ($d, $param);
   } 
   
@@ -430,6 +430,7 @@ sub check_parameters
     $rp->{data} = 1;
     $rp->{out} = 1;
     $rp->{convert} = 1;
+    $rp->{convertMode} = 1;
     $rp->{outBed} = 1;
     $rp->{outCytoband} = 1;
     $rp->{outPhaseBed} = 1;
@@ -778,51 +779,65 @@ sub firstAndLastTime
 sub int2bed
 	{
 		my $d = shift;
-    	my $param = shift;
-    	my $bedName = $param->{outBed};
+    	my $param = shift;    	
     	
-    	#Defines the initial display mode of the annotation track. Values for display_mode include: 0 - hide, 1 - dense, 2 - full, 3 - pack, and 4 - squish
-    	my $visibility = 2;#by the moment hardcoded in future it might be a parameter
-    	my $color = "0,0,0";
-    	my $priority = "user"; #from higher to low priority "user", "map", "genes", "rna", "regulation", "compGeno"
+    	if (!exists ($param->{convertMode})) {$param->{convertMode} = "singleCh2track";}#by default each channel into a single track
     	
+    	my $convertMode = $param->{convertMode};
+    	    	   	
     	my ($start, $end, $startInt, $endInt, $nature, $value); 
     	
     	($start, $end) = &firstAndLastTime ($d, $param);
     	
     	#print $start, "\t", $end, "\n";#del
     	
-    	foreach my $c (sort ({$a<=>$b} keys(%$d)))
+    	if ($convertMode eq "singleCh2track")
+    		{    		
+    			int2bedSingleCh2track ($d, $param, $start, $end);
+    		}
+    	elsif ($convertMode eq "allFoodCh2track")
+    		{
+    			
+    			int2bedAllFoodCh2track ($d, $param, $start, $end);
+    		}
+    	elsif ($convertMode eq "allCh2track")
+    		{
+    			print STDERR "kdkdkdkdkkd";
+    		}
+    	else
+    		{
+    			print STDERR "FATAL ERROR: problem while processing convertMode option\n";
+    		}    	    		      	    	        
+	}
+
+sub int2bedSingleCh2track
+	{
+		my $d = shift;
+    	my $param = shift;
+    	my $start = shift;
+    	my $end = shift;
+    	my $bedName = $param->{outBed};
+    	my ($startInt, $endInt, $nature, $value, $chN);
+    	
+    	#Defines the initial display mode of the annotation track. Values for display_mode include: 0 - hide, 1 - dense, 2 - full, 3 - pack, and 4 - squish
+    	my $visibility = 2;#by the moment hardcoded in future it might be a parameter
+    	my $color = "0,0,0";
+    	my $priority = "user"; #from higher to low priority "user", "map", "genes", "rna", "regulation", "compGeno"
+    	
+		foreach my $c (sort ({$a<=>$b} keys(%$d)))
 	  		{
 	    		foreach my $ch (@channel)
 	    			{
 	    				$ch =~ m/(\d)/;
-	    				my $chN = $1;		  
+	    				$chN = $1;		  
 	    					    					    				
 	    				#Getting the label of the channel (food_SC, fat_food, ...)
 	    				foreach my $t (sort (keys (%{$d->{$c}})))
-      						{
+      						{      							      								
       							if ($d->{$c}{$t}{Channel} eq $ch)
       								{
-      									$nature = $d->{$c}{$t}{Nature}; 
-      									
-      									if ($nature eq "water")
-      										{
-      											$color = "0,0,255";
-      										}
-      									elsif ($nature eq "food_sc")
-      										{
-      											$color = "0,0,0";
-      										}
-      									elsif ($nature eq "food_fat")
-      										{
-      											$color = "0,128,0";
-      										}
-      									elsif ($nature eq "food_cd")
-      										{
-      											$color = "255,0,0";
-      										}
-      												  
+      									$nature = $d->{$c}{$t}{Nature};       									
+      									$color = &nature2color ($nature);      									      												 
       									last;		
       								}
       							else
@@ -831,7 +846,7 @@ sub int2bed
       								}	
       						}
       							    				
-	    				my $file = $bedName."cage".$c."ch".$nature.".bed";
+	    				my $file = $bedName."cage".$c."ch".$nature.$chN.".bed";
 	    				
 	      				my $F= new FileHandle;
 	      				
@@ -866,9 +881,111 @@ sub int2bed
 	      				close ($F);
 	      				printf "      Intervals cage $c, channel $ch, nature $nature in: $file\n";
 	  				}
-	  		}	      	    	        	
+	  		}
 	}
-	
+
+sub int2bedAllFoodCh2track
+	{
+		my $d = shift;
+    	my $param = shift;
+    	my $start = shift;
+    	my $end = shift;
+    	my $bedName = $param->{outBed};
+    	my ($startInt, $endInt, $nature, $value, $chN);
+    	
+    	#Defines the initial display mode of the annotation track. Values for display_mode include: 0 - hide, 1 - dense, 2 - full, 3 - pack, and 4 - squish
+    	my $visibility = 2;#by the moment hardcoded in future it might be a parameter
+    	my $color = "0,0,0";
+    	my $priority = "user"; #from higher to low priority "user", "map", "genes", "rna", "regulation", "compGeno"
+    	    		   		   
+    	foreach my $c (sort ({$a<=>$b} keys(%$d)))
+	  		{
+	  			#Two files open one for drink annotations and a second one for food annotations
+		    	#Drink file
+		    	my $Dfile = $bedName."cage".$c."Drink.bed";
+			   	my $FD= new FileHandle;
+			   	vfopen ($FD, ">$Dfile");			   	
+	      		
+	      		#Add track line specifications for the genome browser
+      			#link to field info http://genome.ucsc.edu/goldenPath/help/customTrack.html#TRACK
+    			print $FD "track ";
+    			print $FD "name=", "\"cage ", $c, "\;", "drink", "\"", " ";
+    			print $FD "description=", "\"cage ", $c, "\;", "drink", "\"", " ";
+    			print $FD "visibility=", $visibility, " ";			    				
+    			print $FD "itemRgb=\"On\"";#different natures have different color
+    			print $FD "priority=", $priority, " ";
+    			print $FD "\n";	
+    					
+			   	#Food File
+			   	my $Ffile = $bedName."cage".$c."Food.bed";
+			   	my $FF= new FileHandle;
+			   	vfopen ($FF, ">$Ffile");
+			   	print $FF "track ";
+    			print $FF "name=", "\"cage ", $c, "\;", "food", "\"", " ";
+    			print $FF "description=", "\"cage ", $c, "\;", "food", "\"", " ";
+    			print $FF "visibility=", $visibility, " ";			    				
+    			print $FF "itemRgb=\"On\"";#different natures have different color
+    			print $FF "priority=", $priority, " ";
+    			print $FF "\n";
+			   	      					
+      			foreach my $t (sort (keys (%{$d->{$c}})))
+      				{
+      					if ($d->{$c}{$t}{Channel} eq "Intake 1" ||  $d->{$c}{$t}{Channel} eq "Intake 2")
+      						{		      							      							    					    					    	
+		    					$startInt = $d->{$c}{$t}{StartT} - $start;
+    							$endInt = $d->{$c}{$t}{EndT} - $start;	    								
+    							$value = int ($d->{$c}{$t}{Value} * 10000 + 0.5);
+    							$nature = $d->{$c}{$t}{Nature};
+    							$color = &nature2color ($nature);
+    							
+    							print $FD "chr1", "\t", $startInt, "\t", $endInt, "\t", "", "\t", $value, "\t", "+","\t",$startInt, "\t", $endInt, "\t", $color, "\n";							      								      					    				   								      						      		      					
+      						}
+      					
+      					elsif ($d->{$c}{$t}{Channel} eq "Intake 3" ||  $d->{$c}{$t}{Channel} eq "Intake 4")
+      						{		      							      							    					    					    	
+		    					$startInt = $d->{$c}{$t}{StartT} - $start;
+    							$endInt = $d->{$c}{$t}{EndT} - $start;	    								
+    							$value = int ($d->{$c}{$t}{Value} * 10000 + 0.5);
+    							$nature = $d->{$c}{$t}{Nature};
+    							$color = &nature2color ($nature);
+    							    							
+    							print $FF "chr1", "\t", $startInt, "\t", $endInt, "\t", "", "\t", $value, "\t", "+","\t",$startInt, "\t", $endInt, "\t", $color, "\n";							      								      					    				   								      						      		      					
+      						}      												
+	  				}
+	  				
+  				close ($FD);
+				close ($FF);
+      				
+      			printf "      Intervals cage $c, drink channels are in: $Dfile\n";
+      			printf "      Intervals cage $c, foods channels are in: $Ffile\n";
+	  		}	
+	}
+
+sub nature2color
+	{
+		my $nature = shift;
+		my $color;
+			
+		if ($nature eq "water")
+      		{
+      			$color = "0,0,255";
+      		}
+      	elsif ($nature eq "food_sc")
+      		{
+      			$color = "0,0,0";
+      		}
+      	elsif ($nature eq "food_fat")
+      		{
+      			$color = "0,128,0";
+      		}
+      	elsif ($nature eq "food_cd")
+      		{
+      			$color = "255,0,0";
+      		}
+      	
+      	return ($color)
+	}
+		
 sub vfopen 
   {
     my $f=shift;
