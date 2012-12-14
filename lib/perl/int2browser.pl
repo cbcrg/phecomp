@@ -12,6 +12,25 @@ my %WEIGHT;
 my $diffCh = 0;
 our @channel;
 
+our @blackGradient = ("226,226,226", "198,198,198", "170,170,170", "141,141,141", "113,113,113", "85,85,85", "56,56,56", "28,28,28", "0,0,0");
+our @blueGradient = ( "229,229,254", "203,203,254", "178,178,254", "152,152,254", "127,127,254", "102,102,254", "76,76,173", "51,51,162", "0,0,128");
+our @redGradient = ("254,172,182", "254,153,162", "254,134,142", "254,115,121", "254,96,101", "254,77,81", "254,57,61", "254,38,40", "254,19,20");
+our @greenGradient = ("203,254,203", "178,254,178", "152,254,152", "127,254,127", "102,254,102", "76,254,76", "51,254,51", "0,254,0", "25,115,25"); 
+
+our @intervals = ("0.03", "0.04", "0.05", "0.06", "0.07", "0.08", "0.09", "1", "1000");
+
+our $colorsGrad = {};
+$colorsGrad ->{"water"} = [@blueGradient];
+$colorsGrad -> {"food_sc"} = [@blackGradient];
+$colorsGrad -> {"food_cd"} = [@redGradient];
+$colorsGrad -> {"food_fat"} = [@greenGradient];
+
+our $colorsSingleTone = {};
+$colorsSingleTone -> {"water"} = "0,0,255";
+$colorsSingleTone -> {"food_sc"} = "0,0,0";
+$colorsSingleTone -> {"food_cd"} = "255,0,0";
+$colorsSingleTone -> {"food_fat"} = "0,128,0";
+
 @channel = ("Intake 1", "Intake 2", "Intake 3", "Intake 4");
 
 $param = &process_param (@ARGV);
@@ -837,7 +856,7 @@ sub int2bedSingleCh2track
       							if ($d->{$c}{$t}{Channel} eq $ch)
       								{
       									$nature = $d->{$c}{$t}{Nature};       									
-      									$color = &nature2color ($nature);      									      												 
+      									$color = &natureValue2color ($nature);      									      												 
       									last;		
       								}
       							else
@@ -891,7 +910,7 @@ sub int2bedAllFoodCh2track
     	my $start = shift;
     	my $end = shift;
     	my $bedName = $param->{outBed};
-    	my ($startInt, $endInt, $nature, $value, $chN);
+    	my ($startInt, $endInt, $nature, $value, $score, $chN);
     	
     	#Defines the initial display mode of the annotation track. Values for display_mode include: 0 - hide, 1 - dense, 2 - full, 3 - pack, and 4 - squish
     	my $visibility = 2;#by the moment hardcoded in future it might be a parameter
@@ -933,21 +952,26 @@ sub int2bedAllFoodCh2track
       					if ($d->{$c}{$t}{Channel} eq "Intake 1" ||  $d->{$c}{$t}{Channel} eq "Intake 2")
       						{		      							      							    					    					    	
 		    					$startInt = $d->{$c}{$t}{StartT} - $start;
-    							$endInt = $d->{$c}{$t}{EndT} - $start;	    								
-    							$value = int ($d->{$c}{$t}{Value} * 10000 + 0.5);
+    							$endInt = $d->{$c}{$t}{EndT} - $start;
+    							$value = $d->{$c}{$t}{Value};	    								
+    							$score = int ($value * 10000 + 0.5);
     							$nature = $d->{$c}{$t}{Nature};
-    							$color = &nature2color ($nature);
-    							
+    							#$color = &nature2color ($nature);
+    							$color = &natureValue2color ($nature, $value);
+    							print STDERR "------------$color\n";
     							print $FD "chr1", "\t", $startInt, "\t", $endInt, "\t", "", "\t", $value, "\t", "+","\t",$startInt, "\t", $endInt, "\t", $color, "\n";							      								      					    				   								      						      		      					
       						}
       					
       					elsif ($d->{$c}{$t}{Channel} eq "Intake 3" ||  $d->{$c}{$t}{Channel} eq "Intake 4")
       						{		      							      							    					    					    	
 		    					$startInt = $d->{$c}{$t}{StartT} - $start;
-    							$endInt = $d->{$c}{$t}{EndT} - $start;	    								
-    							$value = int ($d->{$c}{$t}{Value} * 10000 + 0.5);
+    							$endInt = $d->{$c}{$t}{EndT} - $start;	
+    							$value = $d->{$c}{$t}{Value};    								
+    							$score = int ($value * 10000 + 0.5);
     							$nature = $d->{$c}{$t}{Nature};
-    							$color = &nature2color ($nature);
+    							#$color = &nature2color ($nature);
+    							$color = &natureValue2color ($nature, $value);
+    							print STDERR "------------$color\n";
     							    							
     							print $FF "chr1", "\t", $startInt, "\t", $endInt, "\t", "", "\t", $value, "\t", "+","\t",$startInt, "\t", $endInt, "\t", $color, "\n";							      								      					    				   								      						      		      					
       						}      												
@@ -961,26 +985,34 @@ sub int2bedAllFoodCh2track
 	  		}	
 	}
 
-sub nature2color
+sub natureValue2color
 	{
 		my $nature = shift;
-		my $color;
-			
-		if ($nature eq "water")
+				
+		my ($value, $color, $i);
+		
+		if (@ARGV) {$value = shift;} 	
+		
+		if ($value) 
       		{
-      			$color = "0,0,255";
+
+      			for ($i=0; $i < scalar (@intervals); $i++)
+      				{
+						if ($value <= $intervals [$i])
+      						{
+      							$color = $colorsGrad -> {$nature} [$i];
+      							#print STDERR "-------$nature -> $value -> $color \n";
+      							last;		
+      						}
+      					else
+      						{
+      							print STDERR "FATAL ERROR: The color of an interval with value $value and nature $nature couldn't be assigned\n";
+      						}
+      					}      					
       		}
-      	elsif ($nature eq "food_sc")
+      	else
       		{
-      			$color = "0,0,0";
-      		}
-      	elsif ($nature eq "food_fat")
-      		{
-      			$color = "0,128,0";
-      		}
-      	elsif ($nature eq "food_cd")
-      		{
-      			$color = "255,0,0";
+      			$color = $colorsSingleTone->{$nature};
       		}
       	
       	return ($color)
