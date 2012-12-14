@@ -56,7 +56,12 @@ if ($d && $param->{generate} eq "phase2bed")
   {
     &changeDayPhases2bedLikeFile ($d, $param);
   } 
-  
+
+if ($d && $param->{generate} eq "timeDivision")
+  {
+    &timeDiv2bedFile ($d, $param);
+  }
+    
 if ($d && $param->{convert} eq "int2bed")
   {  	
     &int2bed ($d, $param);
@@ -453,12 +458,14 @@ sub check_parameters
     $rp->{outBed} = 1;
     $rp->{outCytoband} = 1;
     $rp->{outPhaseBed} = 1;
+    $rp->{period} = 1;
     $rp->{outGenome} = 1;    
     $rp->{create} = 1;
     $rp->{generate} = 1;
     $rp->{process} = 1;
     $rp->{outFileDiv} = 1;
     $rp->{outFilesBed} = 1;
+    $rp->{outTimeDiv} = 1;
     $rp->{allFiles} = 1;
     $rp->{outdata} = 1;
     
@@ -665,7 +672,61 @@ sub changeDayPhases2bedLikeFile
    		
    	printf "      Bed like file with day phases in: $file\n";
   }
+
+#Function to generate a file displaying tick marks each period of time selected
+sub timeDiv2bedFile
+	{
+		my $d = shift;
+	    my $param = shift;
+	    my $outTimeDivFile = $param->{outTimeDiv};
+	    
+	    my ($period, $start, $end, $file, $visibility, $priority, $i, $j);
+	    
+	    if (exists ($param->{period}))
+	    	{
+	    		$period = 3600 * $param->{period};	    			
+	    	}
+	    else 
+	    	{
+	    		$period = 3600;
+	    		print STDERR "INFO: Time division have been set to 1 hour a it was not provided using \"-period\" parameter\n";
+	    	}	
+	    
+	    
+	    #Traversing all intervals to set initial and end time    	
+    	($start, $end) = &firstAndLastTime ($d, $param);
     	
+    	$file = $outTimeDivFile."TimeDiv.bed";
+	    
+    	my $F= new FileHandle;
+		vfopen ($F, ">$file");
+		
+		#Add track line specifications for the genome browser
+      	#link to field info http://genome.ucsc.edu/goldenPath/help/customTrack.html#TRACK
+      	$visibility = 2;#by the moment hardcoded in future it might be a parameter
+      	$priority = "user"; #from higher to low priority "user", "map", "genes", "rna", "regulation", "compGeno"
+      	
+    	print $F "track name=", "\"ticks each $period sec\"", " ";
+    	print $F "description=", "\"Blue ticks every $period seconds\" ";
+    	print $F "visibility=", $visibility, " ";			    				
+    	print $F "color=0,0,255 ";#blue
+    	print $F "priority=", $priority, " ";
+    	print $F "\n";
+	    	    
+	    $end -=$start;
+	    $i = 1;
+	    
+	    while ($i < $end)
+	    	{
+	    		$j = $i+5;
+	    		print $F "chr1", "\t", "$i", "\t", "$j", "\n";
+	    		$i= $i + $period;
+	    	}
+	    
+	    print $F "\n";
+	    close ($F);
+	}    	
+	
 sub fromInt2chromosome
 	{
 		my $d = shift;
