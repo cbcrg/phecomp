@@ -12,6 +12,54 @@ my %WEIGHT;
 my $diffCh = 0;
 our @channel;
 
+if ($#ARGV ==-1)
+  {
+    
+    print "****************** Description *************************\n";
+    print "Transform longitudinal phenomic data into tracks viewable in a genome browser\n";
+    print "Calculate additional longitudinal statistical parameters\n";
+    
+    print "****************** Command Line  ***********************\n";
+    print "int2browser.pl -data <data_file> -convert <file in file out> -convertMode <channels contained in a single> -outBed <name of bed file> 
+           =create <type of file> -generate <type of file> -period <time in hours> -outPhaseBed <name of file> -outCytoband <name of file> -create <genome> -outGenome <name of file> -outdata <name of int file>
+    	   -outTimeDiv <name of file> -allFiles <mode> -outdata <file or no>\n";
+    print "****************** Flags      **************************\n";
+    print "  -data  <file1 file2.. >.........File: input data from file(s).\n";
+    print "  -convert      <mode> ...........Mode: 'int2bed' convert an intervals file (raw data) into a bed file\n";
+ 	print "  -convertMode  <mode> ...........Mode: 'singleCh2track' each channel in the raw data converted into a single track bed file\n";
+ 	print "  ................................Mode: 'allFoodCh2track' food channels combined into the same track bed file\n"; 
+ 	print "  ................................Mode: 'allFoodCh2track' food and drink channels combined into the same track bed file\n";  											  	
+    print "  -outBed       <file> ...........File:  name of the output Bed file containning the resulting tracks.\n";
+    print "  -create       <file> ...........Mode: 'chr' produces a chromosome to be load as a genome with the length of the experiment in seconds\n";    
+    print "  -generate     <mode> ...........Mode: 'cytobandFile' produces a cytoband like file with bands corresponding to light/dark phases\n";
+    print "  ................................Mode: 'phase2bed' produces a track with intervals corresponding to light/dark phases in a bed file\n";
+    print "  ................................Mode: 'timeDivision' produces a track with ticks showing a temporal division, by default 1 hour, different time separation provided with -period parameter\n";
+    print "  -period      <value>............Value: time in hours.\n";
+    print "  -outGenome   <file>.............Value: name of the genome file from \"-create chr\"\n";    
+    print "  -outCytoband <file>.............Value: name of cytoband like file from \"-generate cytobandFile\"\n";
+    print "  -outPhaseBed <file>.............Value: name of phases bed file from \"-generate phase2bed\"\n";
+    print "  -outTimeDiv  <file>.............Value: name of temporal division bed file (ticks) from \"-generate timeDivision\"\n";
+    print "  -allFiles    <mode>.............Mode:  'genomeBrowser' Produces without setting other parameters a bed file from intervals, a chr to load as a genome and a bed files with the intervals .\n";
+    print "  -outdata     <mode>.............Mode: 'no'  Intervals files are not generated or show in standard output\n";
+    print "  -out         <file>.............File:  name of output files if parameters for each type of file were not given.\n";
+    print "****************** Data Format **************************\n";
+    print "  Raw Data\n";
+    
+    
+    
+    print "Note: extra fields are ignored\n";
+ 
+    print "****************** Model Format **************************\n";
+    print "  #set;<state label>;<state label>;proba;\n";
+    print "  #set;<state label>;<emission bin>;proba;\n";
+    print "  #comment;<free text>;\n";
+    print "\n";
+    print "******************Contact **************************\n";
+    print "contact: joseantonio.espinosa\@crg.eu\n\n";
+    
+    die;
+  }
+  
 our @blackGradient = ("226,226,226", "198,198,198", "170,170,170", "141,141,141", "113,113,113", "85,85,85", "56,56,56", "28,28,28", "0,0,0");
 our @blueGradient = ( "229,229,254", "203,203,254", "178,178,254", "152,152,254", "127,127,254", "102,102,254", "76,76,173", "51,51,162", "0,0,128");
 our @redGradient = ("254,172,182", "254,153,162", "254,134,142", "254,115,121", "254,96,101", "254,77,81", "254,57,61", "254,38,40", "254,19,20");
@@ -883,7 +931,8 @@ sub int2bed
     		}
     	elsif ($convertMode eq "allCh2track")
     		{
-    			print STDERR "kdkdkdkdkkd";
+    			print STDERR "This option should be developed\n"; 
+    			die;
     		}
     	else
     		{
