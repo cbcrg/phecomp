@@ -126,7 +126,12 @@ if ($param->{process} eq "files2bed")
   {
     &fromLengthFiles2bed ($d, $param);
   }  
-    
+
+if ($param->{window} eq "cumulative")
+  {
+    &cumulativeWindow ($d, $param);
+  }
+      
 if ($d && $param->{outdata} ne "no")
   {  
     &display_data ($d, $param); 
@@ -516,6 +521,9 @@ sub check_parameters
     $rp->{outFileDiv} = 1;
     $rp->{outFilesBed} = 1;
     $rp->{outTimeDiv} = 1;
+    $rp->{window} = 1;
+    $rp->{ws} = 1;
+    $rp->{wp} = 1;    
     $rp->{allFiles} = 1;
     $rp->{outdata} = 1;
     
@@ -961,7 +969,7 @@ sub int2bedSingleCh2track
 	    				$ch =~ m/(\d)/;
 	    				$chN = $1;		  
 	    					    					    				
-	    				#Getting the label of the channel (food_SC, fat_food, ...)
+	    				#Getting the nature of the channel (food_SC, fat_food, ...)
 	    				foreach my $t (sort (keys (%{$d->{$c}})))
       						{      							      								
       							if ($d->{$c}{$t}{Channel} eq $ch)
@@ -1103,9 +1111,7 @@ sub natureValue2color
 		my ($value, $color, $i);
 		
 		if (@ARGV) {$value = shift;} 	
-		
-		$color = "culo";
-		
+	
 		if ($value) 
       		{
 
@@ -1130,7 +1136,107 @@ sub natureValue2color
       	
       	return ($color)
 	}
-		
+
+sub cumulativeWindow 
+	{
+		my $d = shift;
+    	my $param = shift;
+  		my ($start, $end, $startInt, $winIndex, $chN, $ch, $acuValue, $nature);
+    	
+  		#Checking parameteres if empty setting default
+    	my $winSize = $param->{ws}? 3600 * $param->{ws} : 1800; #by default win 30 minuts
+    	my $winParam = $param -> {wp}? $param->{wp} : "Value";
+    	my $winFile = $param -> {winFile}? $param -> {winFile} : "";
+    	
+    	#Defines the initial display mode of the annotation track. Values for display_mode include: 0 - hide, 1 - dense, 2 - full, 3 - pack, and 4 - squish
+    	my $visibility = "full";#by the moment hardcoded in future it might be a parameter
+    	my $color = "200,100,0";
+    	my $altColor = "0,100,200";
+    	my $priority = "20";
+    	my $type = "bedGraph";
+    	 
+    	($start, $end) = &firstAndLastTime ($d, $param);
+    	
+    	foreach my $c (sort ({$a<=>$b} keys(%$d)))
+	  		{	
+	  			foreach my $ch (@channel)
+	  				{	  					
+	  					$ch =~ m/(\d)/;
+	    				$chN = $1;
+	  					$startInt = 1;
+	  					$acuValue = 0;
+	  					$winIndex = $winSize;
+	  					
+	  					#Getting the nature of the channel (food_SC, fat_food, ...)
+	    				foreach my $t (sort (keys (%{$d->{$c}})))
+      						{      							      								
+      							if ($d->{$c}{$t}{Channel} eq $ch)
+      								{
+      									$nature = $d->{$c}{$t}{Nature};       									      									  									      												
+      									last;		
+      								}
+      							else
+      								{
+      									next;
+      								}	
+      						}
+      						
+	  					my $file = $winFile."cage".$c."ch".$nature.$chN.".bedGraph";
+	    				
+	      				my $F= new FileHandle;
+	      				
+	      				vfopen ($F, ">$file");
+	      				
+	      				#Add track line specifications for the genome browser
+	      				#link to field info http://genome.ucsc.edu/goldenPath/help/customTrack.html#TRACK
+	    				print $F "track ";
+	    				print $F "type=$type ";	    				
+	    				print $F "name=", "\"cage ", $c, "\;", "ch", $nature, "\"", " ";
+	    				print $F "description=", "\"cage ", $c, "\;", $nature, "\"", " ";
+	    				print $F "visibility=", $visibility, " ";
+	    				print $F "color=", $color, " ";
+	    				print $F "altcolor=", $altColor, " ";
+	    				print $F "priority=", $priority, " ";
+	    				print $F "\n";
+	    					
+	  					foreach my $t (sort (keys (%{$d->{$c}})))
+      						{   
+      							if ($d->{$c}{$t}{Channel} eq $ch)
+      								{
+      									if ($t-$start < $winIndex)
+      										{
+      											my $ccc = $d->{$c}{$t}{Value};
+      											    											
+      											$acuValue = $acuValue + $d->{$c}{$t}{Value};
+      											print STDERR "$ccc\t$acuValue\n";        											
+      										}
+      									#Printing the interval in the file and sliding the window
+      									else
+      										{
+      											$startInt += $winSize;
+      											$winIndex += $winSize;
+      											
+      											print "chr1\t$startInt\t$winIndex\t$acuValue\n";
+      											print $F "chr1\t$startInt\t$winIndex\t$acuValue\n"; 
+      										}		
+      								}
+      							else
+      								{
+      									next;
+      								}
+      							      							   							      								
+      							
+      							
+      						}
+      						
+      						close ($F);
+	      				    printf "      Results of cumulative window for $winParam of cage $c, channel $ch, nature $nature in: $file\n";
+	  				}
+	  				 			      					
+      		}
+      		die;
+	}  
+			      									
 sub vfopen 
   {
     my $f=shift;
