@@ -21,12 +21,14 @@ our @intervals = ("0.03", "0.04", "0.05", "0.06", "0.07", "0.08", "0.09", "1", "
 
 our $colorsGrad = {};
 $colorsGrad ->{"water"} = [@blueGradient];
+$colorsGrad ->{"drink"} = [@blueGradient];
 $colorsGrad -> {"food_sc"} = [@blackGradient];
 $colorsGrad -> {"food_cd"} = [@redGradient];
 $colorsGrad -> {"food_fat"} = [@greenGradient];
 
 our $colorsSingleTone = {};
 $colorsSingleTone -> {"water"} = "0,0,255";
+$colorsSingleTone -> {"drink"} = "0,0,255";
 $colorsSingleTone -> {"food_sc"} = "0,0,0";
 $colorsSingleTone -> {"food_cd"} = "255,0,0";
 $colorsSingleTone -> {"food_fat"} = "0,128,0";
@@ -322,7 +324,7 @@ sub channel2Nature
 			      
 			elsif ($Caption=~/Food/){$Nature="food";}
 			
-			elsif ($Caption=~/Drink/)
+			elsif ($Caption=~/Drink/ && $diffCh)
 			  {
 			  	my $nat = lc($Caption);
 			  	
@@ -876,8 +878,7 @@ sub int2bed
     			int2bedSingleCh2track ($d, $param, $start, $end);
     		}
     	elsif ($convertMode eq "allFoodCh2track")
-    		{
-    			
+    		{    			
     			int2bedAllFoodCh2track ($d, $param, $start, $end);
     		}
     	elsif ($convertMode eq "allCh2track")
@@ -1054,20 +1055,22 @@ sub natureValue2color
 		
 		if (@ARGV) {$value = shift;} 	
 		
+		$color = "culo";
+		
 		if ($value) 
       		{
 
       			for ($i=0; $i < scalar (@intervals); $i++)
       				{
 						if ($value <= $intervals [$i])
-      						{
+      						{      						
       							$color = $colorsGrad -> {$nature} [$i];
-      							#print STDERR "-------$nature -> $value -> $color \n";
+      							if ($color eq "") {print STDERR "FATAL ERROR: The color can not be assigned because the $nature is not declared\n"; die;}
       							last;		
       						}
       					else
       						{
-      							print STDERR "FATAL ERROR: The color of an interval with value $value and nature $nature couldn't be assigned\n";
+      							#print STDERR "FATAL ERROR: The color of an interval with value $value and nature $nature couldn't be assigned\n";
       						}
       					}      					
       		}
