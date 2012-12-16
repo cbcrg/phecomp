@@ -919,7 +919,7 @@ sub int2bed
 		my $d = shift;
     	my $param = shift;    	
     	
-    	if (!exists ($param->{convertMode})) {$param->{convertMode} = "singleCh2track";}#by default each channel into a single track
+    	if (!exists ($param->{convertMode})) {$param->{convertMode} = "allFoodCh2track";}#by default each channel into a single track
     	
     	my $convertMode = $param->{convertMode};
     	    	   	
