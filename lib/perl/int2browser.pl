@@ -1141,7 +1141,7 @@ sub cumulativeWindow
 	{
 		my $d = shift;
     	my $param = shift;
-  		my ($start, $end, $startInt, $winIndex, $chN, $ch, $acuValue, $nature);
+  		my ($start, $end, $startInt, $winIndex, $startInt, $endInt, $chN, $ch, $acuValue, $nature);
     	
   		#Checking parameteres if empty setting default
     	my $winSize = $param->{ws}? 3600 * $param->{ws} : 1800; #by default win 30 minuts
@@ -1162,10 +1162,10 @@ sub cumulativeWindow
 	  			foreach my $ch (@channel)
 	  				{	  					
 	  					$ch =~ m/(\d)/;
-	    				$chN = $1;
-	  					$startInt = 1;
+	    				$chN = $1;	  					
 	  					$acuValue = 0;
-	  					$winIndex = $winSize;
+	  					$startInt = 1;
+	  					$endInt = $winSize;
 	  					
 	  					#Getting the nature of the channel (food_SC, fat_food, ...)
 	    				foreach my $t (sort (keys (%{$d->{$c}})))
@@ -1203,30 +1203,46 @@ sub cumulativeWindow
       						{   
       							if ($d->{$c}{$t}{Channel} eq $ch)
       								{
-      									if ($t-$start < $winIndex)
+      									my $newT = $t-$start;
+      									print "---$newT\t$winIndex\n";
+      									
+      									#primeros intervales menores que primer tiempo
+      									if ($newT > $endInt)
+      										{
+      											while ($endInt < $newT)
+      												{
+      													print "chr1\t$startInt\t$endInt\t$acuValue\n";
+      													print $F "chr1\t$startInt\t$endInt\t$acuValue\n";
+      													
+      													$startInt += $winSize;
+      													$endInt += $winSize;
+      											      													
+      												}
+      											        											
+      										}
+      									
+      									elsif ($newT > $startInt && $newT <= $endInt)
       										{
       											my $ccc = $d->{$c}{$t}{Value};
       											    											
       											$acuValue = $acuValue + $d->{$c}{$t}{Value};
-      											print STDERR "$ccc\t$acuValue\n";        											
+      											       											
       										}
       									#Printing the interval in the file and sliding the window
       									else
       										{
       											$startInt += $winSize;
-      											$winIndex += $winSize;
+      											$endInt += $winSize;
       											
-      											print "chr1\t$startInt\t$winIndex\t$acuValue\n";
-      											print $F "chr1\t$startInt\t$winIndex\t$acuValue\n"; 
+      											print "chr1\t$startInt\t$endInt\t$acuValue\n";
+      											print $F "chr1\t$startInt\t$endInt\t$acuValue\n"; 
       										}		
       								}
       							else
       								{
       									next;
       								}
-      							      							   							      								
-      							
-      							
+      							      							   							      								      							      							
       						}
       						
       						close ($F);
