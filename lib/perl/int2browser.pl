@@ -968,7 +968,7 @@ sub int2bedSingleCh2track
     	#Defines the initial display mode of the annotation track. Values for display_mode include: 0 - hide, 1 - dense, 2 - full, 3 - pack, and 4 - squish
     	my $visibility = 2;#by the moment hardcoded in future it might be a parameter
     	my $color = "0,0,0";
-    	my $priority = "user"; #from higher to low priority "user", "map", "genes", "rna", "regulation", "compGeno"
+    	my $priority = 20; #from higher to low priority "user", "map", "genes", "rna", "regulation", "compGeno"
     	
 		foreach my $c (sort ({$a<=>$b} keys(%$d)))
 	  		{
@@ -1043,7 +1043,7 @@ sub int2bedAllFoodCh2track
     	#Defines the initial display mode of the annotation track. Values for display_mode include: 0 - hide, 1 - dense, 2 - full, 3 - pack, and 4 - squish
     	my $visibility = 2;#by the moment hardcoded in future it might be a parameter
     	my $color = "0,0,0";
-    	my $priority = "user"; #from higher to low priority "user", "map", "genes", "rna", "regulation", "compGeno"
+    	my $priority = 20; #from higher to low priority "user", "map", "genes", "rna", "regulation", "compGeno"
     	    		   		   
     	foreach my $c (sort ({$a<=>$b} keys(%$d)))
 	  		{
@@ -1059,7 +1059,7 @@ sub int2bedAllFoodCh2track
     			print $FD "name=", "\"cage ", $c, "\;", "drink", "\"", " ";
     			print $FD "description=", "\"cage ", $c, "\;", "drink", "\"", " ";
     			print $FD "visibility=", $visibility, " ";			    				
-    			print $FD "itemRgb=\"On\"";#different natures have different color
+    			print $FD "itemRgb=\"On\"", " ";#different natures have different color
     			print $FD "priority=", $priority, " ";
     			print $FD "\n";	
     					
@@ -1071,7 +1071,7 @@ sub int2bedAllFoodCh2track
     			print $FF "name=", "\"cage ", $c, "\;", "food", "\"", " ";
     			print $FF "description=", "\"cage ", $c, "\;", "food", "\"", " ";
     			print $FF "visibility=", $visibility, " ";			    				
-    			print $FF "itemRgb=\"On\"";#different natures have different color
+    			print $FF "itemRgb=\"On\"", " ";#different natures have different color
     			print $FF "priority=", $priority, " ";
     			print $FF "\n";
 			   	      					
