@@ -412,9 +412,20 @@ sub channel2Nature
 				
 				#print STDERR "$Nature\n";
 			  }
-			      
-			elsif ($Caption=~/Food/){$Nature="food";}
 			
+			elsif ($Caption=~/Food/ && $diffCh)
+			 {
+			   my $nat = lc($Caption);			  	
+			   #separating old annotated files into food_1 and food_2
+			   $nat =~ s/\s/_/g;
+			   $Nature = $nat;		   
+			 }
+			       
+			elsif ($Caption=~/Food/)
+			 {
+			   $Nature="food";
+			 }
+			   			
 			elsif ($Caption=~/Drink/ && $diffCh)
 			  {
 			  	my $nat = lc($Caption);
