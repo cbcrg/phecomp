@@ -441,7 +441,8 @@ sub channel2Nature
 			  {
 			    #print STDERR "--$Name--\n";
 			    			     
-				if ($Name eq "sc"){$Nature.="_sc";}
+				#if ($Name eq "sc"){$Nature.="_sc";}#Original before fusedSCforFDF heatMap
+			    if ($Name eq "sc"){;}#fusedSCforFDF heatMap
 			    
 			#####################
 			#Modification 31/08/2010
@@ -464,7 +465,8 @@ sub channel2Nature
 			      }
 			  }
 			
-			if    ($Name =~/sc/ && $Nature eq "food"){$Nature="sc_".$Nature;}		
+			#if    ($Name =~/sc/ && $Nature eq "food"){$Nature="sc_".$Nature;}#fusedSCforFDF heatMap
+			if    ($Name =~/sc/ && $Nature eq "food"){;}#fusedSCforFDF heatMap
 			#elsif ($Name =~/cd/){$Nature="cd_".$Nature;}
 			elsif (($Name =~/cd/ || $Name =~ /choc/) && $Nature eq "food"){$Nature="cd_".$Nature;}
 			#########end modification 31/08/2010
@@ -3964,19 +3966,23 @@ sub anot2nature
                     
                   ($annot eq "s") && do 
                     { 
-                      return ("food_sc");                          
+                      #return ("food_sc");#Original before fusedSCforFDF heatMap
+                      return ("food"); #fusedSCforFDF heatMap
+                                                
                       last SWITCH;
                     };
                       
                   ($annot eq "f") && do 
                     { 
-                      return ("food_fat");                             
+                      #return ("food_fat");
+                      return ("food");                                              
                       last SWITCH;
                     };
                     
                   ($annot eq "c") && do 
                     { 
-                      return ("food_cd");                          
+                      #return ("food_cd");#Original before fusedSCforFDF heatMap
+                      return ("food");#fusedSCforFDF heatMap                           
                       last SWITCH;
                     };  
                 }
