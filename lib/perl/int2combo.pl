@@ -1389,25 +1389,29 @@ sub data2stat
     #modification stat R output 23/09/10
     if ($A->{output}=~/R/)
       {
-	print "period\tcage\tchannel\tduration_period\trec_period\tcount\tduration_T\tmean_duration\tvalue_T\tmean_value\tvelocity\n";
+	     print "period\tcage\tchannel\tduration_period\trec_period\tcount\tduration_T\tmean_duration\tvalue_T\tmean_value\tvelocity\n";
       }
        	
     #foreach my $p (sort (keys (%$period)))#If period is not a number
     foreach my $p (sort ({$a<=>$b}keys (%$period)))
       {
 	
-	if ($A->{output}!~/R/) 
-	  {
-	    print "-- $p--\n";
-	  }
+	     if ($A->{output}!~/R/) 
+	       {
+	         print "-- $p--\n";
+	       }
     #end modification - 23/09/10
 
-	$A->{period}=$p;
-	$A->{name}="$p";
-	data2display_period_stat ($d, $A);
+      	$A->{period}=$p;
+      	$A->{name}="$p";
+      	data2display_period_stat ($d, $A);
       }
+      
     die;
   }
+
+#if value_T or mean_value equal to negative value then send mail if the parameter is set (stats mail notification or may mail notifications in general
+#this way if a new parameter to check it is added in a different part of the code the same flag could be used) 
 
 sub data2display_period_stat
   {
@@ -1421,22 +1425,22 @@ sub data2display_period_stat
     
     foreach my $c (sort(keys (%$d)))
       {
-	my ($ch, $pendt);
-	foreach my $t (sort(keys (%{$d->{$c}})))
-	  {
-	    my $period=$d->{$c}{$t}{period};
-	    if ($period ne $A->{period}){next;}
-	    my $ch=$d->{$c}{$t}{bin};
-	    if ($mintime==-1){$mintime=$t;}
-	    if ($maxtime==-1){$maxtime=$t;}
-	    $mintime=($t<$mintime)?$t:$mintime;
-	    $maxtime=($t>$maxtime)?$t:$maxtime;
-	    $tot++;
-	    $S->{$c}{$ch}{count}++;
-	    $S->{$c}{$ch}{duration}+=$d->{$c}{$t}{Duration};
-	    $S->{$c}{$ch}{value}+=$d->{$c}{$t}{Value};
-	    #printf "%10s --> %6.2f  %6.2f\n", $ch,$d->{$c}{$t}{Duration},$d->{$c}{$t}{Value}; 
-	  }
+	     my ($ch, $pendt);
+	     foreach my $t (sort(keys (%{$d->{$c}})))
+	       {
+      	     my $period=$d->{$c}{$t}{period};
+      	     if ($period ne $A->{period}){next;}
+      	     my $ch=$d->{$c}{$t}{bin};
+      	     if ($mintime==-1){$mintime=$t;}
+      	     if ($maxtime==-1){$maxtime=$t;}
+      	     $mintime=($t<$mintime)?$t:$mintime;
+      	     $maxtime=($t>$maxtime)?$t:$maxtime;
+      	     $tot++;
+      	     $S->{$c}{$ch}{count}++;
+      	     $S->{$c}{$ch}{duration}+=$d->{$c}{$t}{Duration};
+      	     $S->{$c}{$ch}{value}+=$d->{$c}{$t}{Value};
+      	     #printf "%10s --> %6.2f  %6.2f\n", $ch,$d->{$c}{$t}{Duration},$d->{$c}{$t}{Value}; 
+	       }
       }
       
      #print STDERR "maxtime: $maxtime\tmintime:$mintime\n"; #del
@@ -1445,79 +1449,79 @@ sub data2display_period_stat
      
      foreach my $c (keys (%$S))
        {
-	 foreach my $ch (keys(%{$S->{$c}}))
-	   {
-	     $S->{$c}{$ch}{velocity}=$S->{$c}{$ch}{value}/$S->{$c}{$ch}{duration};
-	   }
+	     foreach my $ch (keys(%{$S->{$c}}))
+	       {
+	         $S->{$c}{$ch}{velocity}=$S->{$c}{$ch}{value}/$S->{$c}{$ch}{duration};
+	       }
        }
      
      #modification stat R output 23/09/10
      if ($A->{output}!~/R/) 
        {
-	 print "--- Period -- $A->{period} : "; 
-	 print "Duration: $duration sec. ($tt). N Records: $tot\n";
+	     print "--- Period -- $A->{period} : "; 
+	     print "Duration: $duration sec. ($tt). N Records: $tot\n";
 	 
-	 foreach my $c (sort ({$a<=>$b}keys (%$S)))
-	   {
-	     printf "Cage: $c\n";
-	     foreach my $ch (sort (keys(%{$S->{$c}})))
+	     foreach my $c (sort ({$a<=>$b}keys (%$S)))
 	       {
-		 my $count=$S->{$c}{$ch}{count};
-		 printf "\tChannel: %8s", $ch;
+	         printf "Cage: $c\n";
+	         
+	         foreach my $ch (sort (keys(%{$S->{$c}})))
+	           {
+		          my $count=$S->{$c}{$ch}{count};
+		          printf "\tChannel: %8s", $ch;
        
-		 foreach my $f (sort ({$a cmp $b}keys(%{$S->{$c}{$ch}})))
-		   {		     
-		     if ($f ne "count" & $f ne "velocity")
-		       { 		     
-			 printf "- %8s: %6.2f ",$f."T",$S->{$c}{$ch}{$f};
-			 $S->{$c}{$ch}{$f}/=$count;
-		       }
-		     elsif ($f eq "count")
-		       {
-			 printf "- %8s: %6d ",$f,$S->{$c}{$ch}{$f};
-			 next;
-		       }
-		     elsif ($f eq "velocity")
-		       {
-			 printf "- %8s: %6.5f ",$f,$S->{$c}{$ch}{$f};
-			 next;
-		       }
+		          foreach my $f (sort ({$a cmp $b}keys(%{$S->{$c}{$ch}})))
+		            {		     
+		              if ($f ne "count" & $f ne "velocity")
+		                { 		     
+			               printf "- %8s: %6.2f ",$f."T",$S->{$c}{$ch}{$f};
+			               $S->{$c}{$ch}{$f}/=$count;
+		                }
+		              elsif ($f eq "count")
+		                {
+			               printf "- %8s: %6d ",$f,$S->{$c}{$ch}{$f};
+			               next;
+		                }
+          		      elsif ($f eq "velocity")
+          		        {
+          			       printf "- %8s: %6.5f ",$f,$S->{$c}{$ch}{$f};
+          			       next;
+          		        }
 
-		     printf "- %8s: %6.2f ",$f,$S->{$c}{$ch}{$f};
-		   }
-		 print "\n";
-	       }
-	   }
-	 
+		              printf "- %8s: %6.2f ",$f,$S->{$c}{$ch}{$f};
+		            }
+		          print "\n";
+	           }
+	       }	 
        }
      else
        {	  	 	 
-	 foreach my $c (sort ({$a<=>$b}keys (%$S)))
-	   {	     	    
-	     foreach my $ch (sort (keys(%{$S->{$c}})))
-	       {
-		 my $count=$S->{$c}{$ch}{count};		 
-		 print "$A->{period}\t$c\t$ch\t$duration\t$tot\t";
+	     foreach my $c (sort ({$a<=>$b}keys (%$S)))
+	       {	     	    
+	         foreach my $ch (sort (keys(%{$S->{$c}})))
+	           {
+		          my $count=$S->{$c}{$ch}{count};		 
+		          print "$A->{period}\t$c\t$ch\t$duration\t$tot\t";
 		 
-		 foreach my $f (sort ({$a cmp $b} keys(%{$S->{$c}{$ch}})))
-		   { 
-		     if ($f ne "count" & $f ne "velocity")		       
-		       { 		     
-			 printf "%6.2f\t",$S->{$c}{$ch}{$f};
-			 $S->{$c}{$ch}{$f}/=$count;
-		       }
-		     if ($f ne "velocity")
-		       {
-			 printf "%6.2f\t",$S->{$c}{$ch}{$f};
-		       }
-		     else 
-		       {
-			 printf "%6.5f\n",$S->{$c}{$ch}{$f};
-		       }
-		   }		 
-	       }
-	   }
-       }
+		          foreach my $f (sort ({$a cmp $b} keys(%{$S->{$c}{$ch}})))
+		            { 
+		              if ($f ne "count" & $f ne "velocity")		       
+		                { 		     
+			               printf "%6.2f\t",$S->{$c}{$ch}{$f};
+			               $S->{$c}{$ch}{$f}/=$count;
+		                }
+		              if ($f ne "velocity")
+		                {
+			               printf "%6.2f\t",$S->{$c}{$ch}{$f};
+		                }
+		              else 
+		                {
+			               printf "%6.5f\n",$S->{$c}{$ch}{$f};
+		                }
+		            }		 
+	             }
+	         }
+           }
      #end modification - 23/09/10
 
      return;
