@@ -14,6 +14,8 @@
 ###                          GMT TIME!!! By default is 6 which corresponds to 8:00 AM in   ###
 ###                          Spanish summer time                                           ###
 ### -winLogodd win <n>    -> Sliding window of logodd using length of period n             ###
+### -stats mail <mode>    -> Sending mail when a stats value is negative, in combination   ###
+###                          with the real time validation of mtb files                    ###
 ##############################################################################################
 
 use HTTP::Date;
@@ -1404,14 +1406,12 @@ sub data2stat
 
       	$A->{period}=$p;
       	$A->{name}="$p";
+
       	data2display_period_stat ($d, $A);
       }
       
     die;
-  }
-
-#if value_T or mean_value equal to negative value then send mail if the parameter is set (stats mail notification or may mail notifications in general
-#this way if a new parameter to check it is added in a different part of the code the same flag could be used) 
+  } 
 
 sub data2display_period_stat
   {
@@ -1422,7 +1422,9 @@ sub data2display_period_stat
      my $maxtime=-1;
      my $duration;
      my $tot=0;
-    
+     my $mailData = "";
+     my $mailBody = "";
+     
     foreach my $c (sort(keys (%$d)))
       {
 	     my ($ch, $pendt);
@@ -1508,6 +1510,13 @@ sub data2display_period_stat
 		              if ($f ne "count" & $f ne "velocity")		       
 		                { 		     
 			               printf "%6.2f\t",$S->{$c}{$ch}{$f};
+			               
+			               #Before calculating the mean
+			               if ($f eq "value" && $S->{$c}{$ch}{$f} < 0)
+		              	   	{		     		              		         	
+		              			$mailData.="############################################CAGE: $c\tPERIOD: $A->{period}\tVALUE:$S->{$c}{$ch}{$f}\n";		              					              				              
+		              		}
+		              		
 			               $S->{$c}{$ch}{$f}/=$count;
 		                }
 		              if ($f ne "velocity")
@@ -1517,10 +1526,24 @@ sub data2display_period_stat
 		              else 
 		                {
 			               printf "%6.5f\n",$S->{$c}{$ch}{$f};
-		                }
+		                }		                		             
 		            }		 
 	             }
 	         }
+	         
+	         if (exists ($A->{mail}))
+	         	{
+	         			         		
+	         		my $mailBody = "Channels intake values are negative, cages involved might be experimenting problems:\n\n".$mailData;
+	         		my $mailScript = "callSesMail.sh";
+	         		my $mailSubj = "negativeIntakeValues";
+	         		my $mailSender = 'phecompubio@gmail.com';
+	         		my $mailRecip = 'kadomu@gmail.com';
+	         		
+	         		my @args = ($mailScript, $mailBody, $mailSubj, $mailSender, $mailRecip);
+	         		system (@args) == 0 || print STDERR "system @args failed\n";	         		
+	         	}	         			 
+	         
            }
      #end modification - 23/09/10
 
