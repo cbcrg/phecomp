@@ -1514,7 +1514,7 @@ sub data2display_period_stat
 			               #Before calculating the mean
 			               if ($f eq "value" && $S->{$c}{$ch}{$f} < 0)
 		              	   	{		     		              		         	
-		              			$mailData.="############################################CAGE: $c\tPERIOD: $A->{period}\tVALUE:$S->{$c}{$ch}{$f}\n";		              					              				              
+		              			$mailData.="############################################CAGE: $c\tPERIOD: $A->{period}\tCHANNEL:$ch\tVALUE:$S->{$c}{$ch}{$f}\n";		              					              				              
 		              		}
 		              		
 			               $S->{$c}{$ch}{$f}/=$count;
