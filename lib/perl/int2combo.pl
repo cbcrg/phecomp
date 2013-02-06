@@ -38,7 +38,8 @@ my $A={};
 my %WEIGHT;
 my $file=shift (@ARGV);
 my $cl=join(" ", @ARGV);
-
+our $mailTime = time ();
+ 
 #Reanotate command should be read before &run_instruction() that is why
 #although not elegant I read this option here.
 #This is meant to separate channels with the same type of food or liquid
@@ -389,7 +390,8 @@ sub channel2Nature
 			    
 		      	if ($i==1) 
 		      		{
-		      			$Nature.=&anot2nature ($1);		      			
+		      		    
+		      			$Nature.=&anot2nature ($1);		      					      		
 		      			($diffCh)? $Nature.="_$i" : $Nature=$Nature;#many times we have water in both channels, separate them into water_1 and water_2		      			
 		      		}
 		      		
@@ -403,7 +405,7 @@ sub channel2Nature
 		      	elsif ($i==3) 
 		      		{
 		      			$Nature.=&anot2nature ($3);
-                        ($3 == $4 && $diffCh)? $Nature.="_$i" : $Nature=$Nature;		      			
+		      			($3 == $4 && $diffCh)? $Nature.="_$i" : $Nature=$Nature;		      			
 		      		}
 		      		
 	      		elsif ($i==4) 
@@ -612,24 +614,25 @@ sub data2avg_sd
       my $nature=shift;
       my $field=shift;
       my ($Sx, $Sx2,$avg,$sd, $n);
-      
+            
       foreach my $c (keys (%$d))
 	{
+	  
 	  foreach my $t (keys (%{$d->{$c}}))
-	    {
+	    {		      
 	      if ($d->{$c}{$t}{Nature} eq $nature)
-		{
-		  
-		  my $v=$d->{$c}{$t}{$field};
+		{		  
+		  my $v=$d->{$c}{$t}{$field};		  
 		  $Sx+=$v;
 		  $Sx2+=$v*$v;
 		  $n++;
 		}
 	    }
 	}
+      
       $avg=$Sx/$n;
       $sd=sqrt(($Sx2/$n)-($avg*$avg));
-
+      
       return ($avg, $sd);
     }
 
@@ -1415,16 +1418,20 @@ sub data2stat
 
 sub data2display_period_stat
   {
-     my $d=shift;
-     my $A=shift;
-     my $S={};
-     my $mintime=-1;
-     my $maxtime=-1;
-     my $duration;
-     my $tot=0;
-     my $mailData = "";
-     my $mailBody = "";
-     
+    my $d=shift;
+    my $A=shift;
+    my $S={};
+    my $mintime=-1;
+    my $maxtime=-1;
+    my $duration;
+    my $tot=0;
+    my $mailData = "";
+    my $mailBody = "";
+    
+    #This hash will keep the stats results, so that it could be validated for each value whether it is "strange" (value far from the mean...)
+    my $statsH = {};
+    my $dP = {};
+    
     foreach my $c (sort(keys (%$d)))
       {
 	     my ($ch, $pendt);
@@ -1439,8 +1446,11 @@ sub data2display_period_stat
       	     $maxtime=($t>$maxtime)?$t:$maxtime;
       	     $tot++;
       	     $S->{$c}{$ch}{count}++;
-      	     $S->{$c}{$ch}{duration}+=$d->{$c}{$t}{Duration};
-      	     $S->{$c}{$ch}{value}+=$d->{$c}{$t}{Value};
+      	     $S->{$c}{$ch}{Duration}+=$d->{$c}{$t}{Duration};      	     
+      	     $dP->{$c}{$t}{Duration} = $d->{$c}{$t}{Duration};      	    
+      	     $S->{$c}{$ch}{Value}+=$d->{$c}{$t}{Value};
+      	     $dP->{$c}{$t}{Value} = $d->{$c}{$t}{Value};
+      	     $dP->{$c}{$t}{Nature} = $d->{$c}{$t}{Nature};
       	     #printf "%10s --> %6.2f  %6.2f\n", $ch,$d->{$c}{$t}{Duration},$d->{$c}{$t}{Value}; 
 	       }
       }
@@ -1453,13 +1463,13 @@ sub data2display_period_stat
        {
 	     foreach my $ch (keys(%{$S->{$c}}))
 	       {
-	         $S->{$c}{$ch}{velocity}=$S->{$c}{$ch}{value}/$S->{$c}{$ch}{duration};
+	         $S->{$c}{$ch}{velocity}=$S->{$c}{$ch}{Value}/$S->{$c}{$ch}{Duration};
 	       }
        }
      
      #modification stat R output 23/09/10
      if ($A->{output}!~/R/) 
-       {
+       {         
 	     print "--- Period -- $A->{period} : "; 
 	     print "Duration: $duration sec. ($tt). N Records: $tot\n";
 	 
@@ -1471,11 +1481,18 @@ sub data2display_period_stat
 	           {
 		          my $count=$S->{$c}{$ch}{count};
 		          printf "\tChannel: %8s", $ch;
-       
+                  
 		          foreach my $f (sort ({$a cmp $b}keys(%{$S->{$c}{$ch}})))
-		            {		     
+		            {		              		                  		    
 		              if ($f ne "count" & $f ne "velocity")
-		                { 		     
+		                { 			                    		                    
+#		                    #I generate this hash to reuse data2avg_sd function
+#		                    my $dPCage = {};
+#		                    $dPCage->{$c} = $dP->{$c};
+#		                         
+#		                   ($statsH->{$c}{$ch}{$f}{avg}, $statsH->{$c}{$ch}{$f}{sd}) = data2avg_sd($dPCage, $ch, $f);
+		                    
+		                   #print Dumper ($statsH);#del
 			               printf "- %8s: %6.2f ",$f."T",$S->{$c}{$ch}{$f};
 			               $S->{$c}{$ch}{$f}/=$count;
 		                }
@@ -1504,17 +1521,23 @@ sub data2display_period_stat
 	           {
 		          my $count=$S->{$c}{$ch}{count};		 
 		          print "$A->{period}\t$c\t$ch\t$duration\t$tot\t";
-		 
+		          
 		          foreach my $f (sort ({$a cmp $b} keys(%{$S->{$c}{$ch}})))
 		            { 
 		              if ($f ne "count" & $f ne "velocity")		       
-		                { 		     
+		                { 
+		                   #I generate this hash to reuse data2avg_sd function
+		                    #my $dPCage = {};
+		                    #$dPCage->{$c} = $dP->{$c};
+		                   #($statsH->{$ch}{$f}{avg}, $statsH->{$ch}{$f}{sd}) = data2avg_sd($d, $ch, $f);      
+#		                   ($statsH->{$c}{$ch}{$f}{avg}, $statsH->{$c}{$ch}{$f}{sd}) = data2avg_sd($dPCage, $ch, $f);		                   		    
 			               printf "%6.2f\t",$S->{$c}{$ch}{$f};
 			               
 			               #Before calculating the mean
 			               if ($f eq "value" && $S->{$c}{$ch}{$f} < 0)
 		              	   	{		     		              		         	
-		              			$mailData.="############################################CAGE: $c\tPERIOD: $A->{period}\tCHANNEL:$ch\tVALUE:$S->{$c}{$ch}{$f}\n";		              					              				              
+		              			$mailData.="############################################CAGE: $c\tPERIOD: $A->{period}\tCHANNEL:$ch\tVALUE:$S->{$c}{$ch}{$f}\n";
+		              					              					              				              
 		              		}
 		              		
 			               $S->{$c}{$ch}{$f}/=$count;
@@ -1531,21 +1554,70 @@ sub data2display_period_stat
 	             }
 	         }
 	         
-	         if (exists ($A->{mail}))
+	         if (exists ($A->{mail}) && $mailData ne "")
 	         	{
 	         			         		
 	         		my $mailBody = "Channels intake values are negative, cages involved might be experimenting problems:\n\n".$mailData;
 	         		my $mailScript = "callSesMail.sh";
-	         		my $mailSubj = "negativeIntakeValues";
+	         		my $mailSubj = "negativeIntakeValues".$mailTime;	         		
 	         		my $mailSender = 'phecompubio@gmail.com';
 	         		my $mailRecip = 'kadomu@gmail.com';
 	         		
+	         		print STDERR "INFO: Sending mail negative values\n";
+	         		my @args = ($mailScript, $mailBody, $mailSubj, $mailSender, $mailRecip);
+	         		system (@args) == 0 || print STDERR "system @args failed\n";
+	         		$mailData="";	         		
+	         	}
+             
+             if (exists ($A->{zscoreS}))
+              {
+                foreach my $c (sort ({$a<=>$b}keys (%$S)))
+	             {	 
+	                 print "-----------$c\n";    	    
+        	         foreach my $ch (sort (keys(%{$S->{$c}})))
+        	           {
+        		          my $count=$S->{$c}{$ch}{count};		         		          
+        		          
+        		          foreach my $f (sort ({$a cmp $b} keys(%{$S->{$c}{$ch}})))
+        		            { 
+        		              if ($f ne "count" & $f ne "velocity")		       
+        		                { 
+        		                   #I generate this hash to reuse data2avg_sd function
+        		                    #my $dPCage = {};
+        		                    #$dPCage->{$c} = $dP->{$c};
+        		                    #here is already the mean $S->{$c}{$ch}{$f};
+        		                   ($statsH->{$ch}{$f}{avg}, $statsH->{$ch}{$f}{sd}) = data2avg_sd($d, $ch, $f);
+        		                   my $z1 = abs (($S->{$c}{$ch}{$f} - $statsH->{$ch}{$f}{avg}) / $statsH->{$ch}{$f}{sd});
+        		                   
+#        		                   if ( $z1 > 3)
+#                              	       {
+                              		     $mailData.="############################################CAGE: $c\tPERIOD: $A->{period}\tCHANNEL:$ch\tVALUE:$S->{$c}{$ch}{$f}\n"; 
+#                              	       }      
+#		                           ($statsH->{$c}{$ch}{$f}{avg}, $statsH->{$c}{$ch}{$f}{sd}) = data2avg_sd($dPCage, $ch, $f);
+                                }
+        		            }
+        	           }        	          
+	             }              
+              }
+              
+              if (exists ($A->{mail}) && $mailData ne "")
+	         	{
+	         			         		
+	         		my $mailBody = "Some channels present a mean value more than 3 Z scores above/below the SD of the whole sample:\n\n".$mailData;
+	         		my $mailScript = "callSesMail.sh";
+	         		my $mailSubj = "channels with abnormal behavior Zscore".$mailTime;	         		
+	         		my $mailSender = 'phecompubio@gmail.com';
+	         		my $mailRecip = 'kadomu@gmail.com';
+	         		
+	         		print STDERR "INFO: Sending mail zscores\n";
 	         		my @args = ($mailScript, $mailBody, $mailSubj, $mailSender, $mailRecip);
 	         		system (@args) == 0 || print STDERR "system @args failed\n";	         		
-	         	}	         			 
+	         	}	         		         			 
 	         
            }
      #end modification - 23/09/10
+     
+     print Dumper ($statsH);die; 
 
      return;
    }
@@ -1557,7 +1629,6 @@ sub data2log_odd
     my $period=data2period_list ($d);
     my $mode = $A->{mode};
     my $bitThreshold = $A->{fieldT};
-    
     
     if (!$mode) {$mode = "logodd";}
     
@@ -3993,23 +4064,23 @@ sub anot2nature
                     
                   ($annot eq "s") && do 
                     { 
-                      #return ("food_sc");#Original before fusedSCforFDF heatMap
-                      return ("food"); #fusedSCforFDF heatMap
+                      return ("food_sc");#Original before fusedSCforFDF heatMap
+                      #return ("food"); #fusedSCforFDF heatMap
                                                 
                       last SWITCH;
                     };
                       
                   ($annot eq "f") && do 
                     { 
-                      #return ("food_fat");
-                      return ("food");                                              
+                      return ("food_fat");
+                      #return ("food");                                              
                       last SWITCH;
                     };
                     
                   ($annot eq "c") && do 
                     { 
-                      #return ("food_cd");#Original before fusedSCforFDF heatMap
-                      return ("food");#fusedSCforFDF heatMap                           
+                      return ("food_cd");#Original before fusedSCforFDF heatMap
+                      #return ("food");#fusedSCforFDF heatMap                           
                       last SWITCH;
                     };  
                 }
