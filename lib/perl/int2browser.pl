@@ -1324,7 +1324,8 @@ sub data2win
     		
     	#hashUnitWin will be a hash with data divided in intervals of size equal to the greater common divisor between ws and wss
     	elsif ($winSize > $winStepSize)
-			{   							
+			{   
+			    							
     			$winSize2dataWinDistro = &euclideanAlgGCD ($winSize, $winStepSize);     			  			
 				$hashUnitWin = &data2winDistro ($d, $param, $winSize2dataWinDistro);							
 			}
@@ -1341,7 +1342,7 @@ sub data2win
     	$hashUnitWin = exists ($param->{winCh2comb}) ? &joinChannelsUnitWin ($hashUnitWin) : $hashUnitWin;
     	
     	#In this case, no sliding window, discrete intervals, the $hashUnitWin it is directly the output  	    	
-    	if ($winStepSize == 0)
+    	if ($winStepSize == $winSize)
     		{
     			$hashWin = $hashUnitWin;
     		}
@@ -1797,6 +1798,8 @@ sub setAllOptions
 		$param->{files2bed} = 1;
 		$param->{phase2bed} = 1;
 		$param->{window} = "Value" ;
+		$param->{ws} = "1800" ;
+		$param->{wss} = "1800" ;
 				
 		$param->{outCytoband} = exists ($param->{outCytoband})? $param->{outCytoband} : $param->{out};
 		$param->{outBed} = exists ($param->{outBed})? $param->{outBed} : $param->{out};
