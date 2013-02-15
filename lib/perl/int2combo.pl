@@ -17,7 +17,7 @@
 ### -stats mail <mode>             -> Sending mail when a stats value is negative, in combination   ###
 ###                                   with the real time validation of mtb files                    ###
 ### -annotate interInterval <mode> -> Mode: meals/all Annotating inter-intervals time for only      ###
-###                                   meals events or for all intervals                             ###
+###                                   meals events or for all events                                ###
 #######################################################################################################
 
 use HTTP::Date;
@@ -338,36 +338,62 @@ sub annotate
            
     foreach my $c (keys (%$d))
       {
-        foreach my $t (keys (%{$d->{$c}}))
+        $pT = -1;
+        
+        foreach my $t (sort(keys (%{$d->{$c}})))
           {
             if ($pT == -1)
               {                
                 $pT = $t;
                 $pEndT = $d->{$c}{$t}{EndT};
                 next;
-              }	            
+              }	
+                          
             elsif ($d->{$c}{$t}{Channel} =~ m/Intake(\s)+[3-4]/)
               {                
                 $cStartT = $d->{$c}{$t}{StartT};
-                $interMealTime = $pEndT - $cStartT;
-                $d->{$c}{$pT}{InterTime} = $interMealTime;
+                $interMealTime = $cStartT - $pEndT;
+                
+                #Overlaps are annotated as NA
+                if ($interMealTime < 0) 
+                  {
+                    #print "currentStart $cStartT\tprevious End$pEndT\t$interMealTime\n";
+                    $d->{$c}{$pT}{InterTime} = "NA";                       
+                  }
+                else
+                  {  
+                    $d->{$c}{$pT}{InterTime} = $interMealTime;
+                  }
+                  
                 $pT = $t;
                 $pEndT = $d->{$c}{$t}{EndT};  
               }
+              
             elsif ($d->{$c}{$t}{Channel} =~ m/Intake(\s)+[1-2]/)
               { 
                 if ($field eq "meals")
                   {                                       
                     $d->{$c}{$pT}{InterTime} = "NA";
-                    #Not consider water intervals thus time should not be modified
+                    #Not consider water intervals thus time should not be modified, commented for this reason
                     #$pT = $t;
                     #$pEndT = $d->{$c}{$t}{EndT};
                   }
                 elsif ($field eq "all")
                   {
                     $cStartT = $d->{$c}{$t}{StartT};
-                    $interMealTime = $pEndT - $cStartT;
-                    $d->{$c}{$pT}{InterTime} = $interMealTime;
+                    $interMealTime =  $cStartT - $pEndT;
+                    
+                    #Overlaps are annotated as NA
+                    if ($interMealTime < 0) 
+                      {
+                        #print "currentStart $cStartT\tprevious End$pEndT\t$interMealTime\n";
+                        $d->{$c}{$pT}{InterTime} = "NA"; 
+                      }
+                    else
+                      {  
+                        $d->{$c}{$pT}{InterTime} = $interMealTime;
+                      }
+                      
                     $pT = $t;
                     $pEndT = $d->{$c}{$t}{EndT};
                   }
@@ -1497,9 +1523,9 @@ sub data2display_period_stat
     my $mailData = "";
     my $mailBody = "";
     
-    #This hash will keep the stats results, so that it could be validated for each value whether it is "strange" (value far from the mean...)
+    #This hash will keep the stats results, so that it could be validated for each value whether it is "strange" (value far from the mean in terms of Zscore...)
     my $statsH = {};
-    my $dP = {};
+    #my $dP = {};
     
     foreach my $c (sort(keys (%$d)))
       {
@@ -1515,16 +1541,17 @@ sub data2display_period_stat
       	     $maxtime=($t>$maxtime)?$t:$maxtime;
       	     $tot++;
       	     $S->{$c}{$ch}{count}++;
+      	     #For inter-intervals time sometimes water events are not considered
+      	     $S->{$c}{$ch}{countInterTime}++;
       	     $S->{$c}{$ch}{Duration}+=$d->{$c}{$t}{Duration};      	     
-      	     $dP->{$c}{$t}{Duration} = $d->{$c}{$t}{Duration};      	    
+      	     #$dP->{$c}{$t}{Duration} = $d->{$c}{$t}{Duration};      	    
       	     $S->{$c}{$ch}{Value}+=$d->{$c}{$t}{Value};
-      	     $dP->{$c}{$t}{Value} = $d->{$c}{$t}{Value};
-      	     $dP->{$c}{$t}{Nature} = $d->{$c}{$t}{Nature};
+      	     #$dP->{$c}{$t}{Value} = $d->{$c}{$t}{Value};
+      	     #$dP->{$c}{$t}{Nature} = $d->{$c}{$t}{Nature};      	     
       	     #printf "%10s --> %6.2f  %6.2f\n", $ch,$d->{$c}{$t}{Duration},$d->{$c}{$t}{Value}; 
 	       }
       }
-      
-     #print STDERR "maxtime: $maxtime\tmintime:$mintime\n"; #del
+           
      $duration=$maxtime-$mintime;
      my $tt=sec2time($duration);
      
@@ -1555,14 +1582,14 @@ sub data2display_period_stat
 		            {		              		                  		    
 		              if ($f ne "count" & $f ne "velocity")
 		                { 			                    		                    
-#		                    #I generate this hash to reuse data2avg_sd function
-#		                    my $dPCage = {};
-#		                    $dPCage->{$c} = $dP->{$c};
-#		                         
-#		                   ($statsH->{$c}{$ch}{$f}{avg}, $statsH->{$c}{$ch}{$f}{sd}) = data2avg_sd($dPCage, $ch, $f);
-		                    
-		                   #print Dumper ($statsH);#del
 			               printf "- %8s: %6.2f ",$f."T",$S->{$c}{$ch}{$f};
+			               
+			               #Before calculating the mean is assessed whether total channel value is negative			             
+			               if ($f eq "value" && $S->{$c}{$ch}{$f} < 0)
+		              	   	{		     		              		         	
+		              			$mailData.="############################################CAGE: $c\tPERIOD: $A->{period}\tCHANNEL:$ch\tVALUE:$S->{$c}{$ch}{$f}\n";		              					              					              				             
+		              		}
+		              		
 			               $S->{$c}{$ch}{$f}/=$count;
 		                }
 		              elsif ($f eq "count")
@@ -1591,22 +1618,17 @@ sub data2display_period_stat
 		          my $count=$S->{$c}{$ch}{count};		 
 		          print "$A->{period}\t$c\t$ch\t$duration\t$tot\t";
 		          
+		          #foreach field
 		          foreach my $f (sort ({$a cmp $b} keys(%{$S->{$c}{$ch}})))
 		            { 
 		              if ($f ne "count" & $f ne "velocity")		       
-		                { 
-		                   #I generate this hash to reuse data2avg_sd function
-		                    #my $dPCage = {};
-		                    #$dPCage->{$c} = $dP->{$c};
-		                   #($statsH->{$ch}{$f}{avg}, $statsH->{$ch}{$f}{sd}) = data2avg_sd($d, $ch, $f);      
-#		                   ($statsH->{$c}{$ch}{$f}{avg}, $statsH->{$c}{$ch}{$f}{sd}) = data2avg_sd($dPCage, $ch, $f);		                   		    
+		                { 		                   		                   		   
 			               printf "%6.2f\t",$S->{$c}{$ch}{$f};
 			               
-			               #Before calculating the mean
+			               #Before calculating the mean is assessed whether total channel value is negative			             
 			               if ($f eq "value" && $S->{$c}{$ch}{$f} < 0)
 		              	   	{		     		              		         	
-		              			$mailData.="############################################CAGE: $c\tPERIOD: $A->{period}\tCHANNEL:$ch\tVALUE:$S->{$c}{$ch}{$f}\n";
-		              					              					              				              
+		              			$mailData.="############################################CAGE: $c\tPERIOD: $A->{period}\tCHANNEL:$ch\tVALUE:$S->{$c}{$ch}{$f}\n";		              					              					              				             
 		              		}
 		              		
 			               $S->{$c}{$ch}{$f}/=$count;
@@ -1651,13 +1673,11 @@ sub data2display_period_stat
         		            { 
         		              if ($f ne "count" & $f ne "velocity")		       
         		                { 
-        		                   #I generate this hash to reuse data2avg_sd function
-        		                    #my $dPCage = {};
-        		                    #$dPCage->{$c} = $dP->{$c};
-        		                    #here is already the mean $S->{$c}{$ch}{$f};
-        		                   ($statsH->{$ch}{$f}{avg}, $statsH->{$ch}{$f}{sd}) = data2avg_sd($d, $ch, $f);
+        		                   #Mean value and SD among cages for all channels and field stored in statsH
+        		                   ($statsH->{$ch}{$f}{avg}, $statsH->{$ch}{$f}{sd}) = data2avg_sd ($d, $ch, $f);
         		                   my $z1 = abs (($S->{$c}{$ch}{$f} - $statsH->{$ch}{$f}{avg}) / $statsH->{$ch}{$f}{sd});
-        		                   
+        		                   #I CALCULATE EACH TIME THE MEAN VALUE AND SD FOR ALL CAGES TO IMPROVE #del
+        		                   #print "cage mean $S->{$c}{$ch}{$f} overall mean $statsH->{$ch}{$f}{avg}\n";#del
 #        		                   if ( $z1 > 3)
 #                              	       {
                               		     $mailData.="############################################CAGE: $c\tPERIOD: $A->{period}\tCHANNEL:$ch\tVALUE:$S->{$c}{$ch}{$f}\n"; 
@@ -1686,7 +1706,7 @@ sub data2display_period_stat
            }
      #end modification - 23/09/10
      
-     print Dumper ($statsH);die; 
+     #print Dumper ($statsH);die; #del 
 
      return;
    }
