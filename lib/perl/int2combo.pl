@@ -1014,7 +1014,7 @@ sub data2phase
   } 
   
 sub data2period
-  {
+  {    
     my $d=shift;
     my $A=shift;
 
@@ -1059,7 +1059,7 @@ sub data2period
 	    $time->{$a}=$b;
 	  }
       }
-    
+   
     #Then it looks where does the interval time correspond
     foreach my $c (sort(keys (%$d)))
       {
@@ -1503,8 +1503,7 @@ sub data2stat
        	
     #foreach my $p (sort (keys (%$period)))#If period is not a number
     foreach my $p (sort ({$a<=>$b}keys (%$period)))
-      {
-	
+      {	
 	     if ($A->{output}!~/R/) 
 	       {
 	         print "-- $p--\n";
@@ -1535,7 +1534,7 @@ sub data2display_period_stat
     #This hash will keep the stats results, so that it could be validated for each value whether it is "strange" (value far from the mean in terms of Zscore...)
     my $statsH = {};
     #my $dP = {};
-    
+    #print "culo\n";die;
     foreach my $c (sort(keys (%$d)))
       {
 	     my ($ch, $pendt);
@@ -1552,9 +1551,15 @@ sub data2display_period_stat
       	     $S->{$c}{$ch}{count}++;
       	     
       	     #Calculation of inter-time stats if annotated      	     
-      	     if (exists ($d->{$c}{$t}{InterTime})) {die;}
-      	     #For inter-intervals time some events are not considered (overlaps or water when only intermeal time is calculated)
-      	     $S->{$c}{$ch}{countInterTime}++;
+      	     if (exists ($d->{$c}{$t}{InterTime})) 
+      	       {
+      	         #For inter-intervals time some events are not considered (overlaps or water when only intermeal time is calculated)
+      	         if ($d->{$c}{$t}{InterTime} ne "NA")
+      	           {
+      	             $S->{$c}{$ch}{InterTime}+=$d->{$c}{$t}{InterTime};
+      	             $S->{$c}{$ch}{countInterTime}++;
+      	           }
+      	       }
       	     
       	     $S->{$c}{$ch}{Duration}+=$d->{$c}{$t}{Duration};      	     
       	     #$dP->{$c}{$t}{Duration} = $d->{$c}{$t}{Duration};      	    
@@ -1589,11 +1594,13 @@ sub data2display_period_stat
 	         foreach my $ch (sort (keys(%{$S->{$c}})))
 	           {
 		          my $count=$S->{$c}{$ch}{count};
+		          my $countInterTime=$S->{$c}{$ch}{countInterTime};
+		          
 		          printf "\tChannel: %8s", $ch;
                   
 		          foreach my $f (sort ({$a cmp $b}keys(%{$S->{$c}{$ch}})))
 		            {		              		                  		    
-		              if ($f ne "count" & $f ne "velocity")
+		              if ($f ne "count" & $f ne "velocity" & $f ne "InterTime" & $f ne "countInterTime")
 		                { 			                    		                    
 			               printf "- %8s: %6.2f ",$f."T",$S->{$c}{$ch}{$f};
 			               
@@ -1615,6 +1622,11 @@ sub data2display_period_stat
           			       printf "- %8s: %6.5f ",$f,$S->{$c}{$ch}{$f};
           			       next;
           		        }
+          		      elsif ($f eq "InterTime")
+          		        {
+          			       printf "- %8s: %6.2f ",$f."T",$S->{$c}{$ch}{$f};
+          			       $S->{$c}{$ch}{$f}/=$countInterTime;          			       
+          		        }
 
 		              printf "- %8s: %6.2f ",$f,$S->{$c}{$ch}{$f};
 		            }
@@ -1634,7 +1646,7 @@ sub data2display_period_stat
 		          #foreach field
 		          foreach my $f (sort ({$a cmp $b} keys(%{$S->{$c}{$ch}})))
 		            { 
-		              if ($f ne "count" & $f ne "velocity")		       
+		              if ($f ne "count" & $f ne "velocity" & $f ne "InterTime" & $f ne "countInterTime")		       
 		                { 		                   		                   		   
 			               printf "%6.2f\t",$S->{$c}{$ch}{$f};
 			               
