@@ -2,21 +2,23 @@
 # -filter field <field name> contains|equals|min|max value
 # -bin
 
-##############################################################################################
-###OPTIONS                                                                                 ###
-### -diffChannel          -> When this option is set channels with the same type of food   ###
-###                          but in different dispensers are differentiated (eg w1, w2)    ###  
-### -period period <mode> -> Mode: day/ week/ eleven/ month                                ###
-###         phase  <mode> -> Mode: phase / phasePeriod                                     ###
-###                                Annotation of phase only light and dark or phase and    ###
-###                                period (day 1, day 2, ...)                              ###
-###         iniLight <n>  -> A single digit for the starting time of the light phase, on   ###
-###                          GMT TIME!!! By default is 6 which corresponds to 8:00 AM in   ###
-###                          Spanish summer time                                           ###
-### -winLogodd win <n>    -> Sliding window of logodd using length of period n             ###
-### -stats mail <mode>    -> Sending mail when a stats value is negative, in combination   ###
-###                          with the real time validation of mtb files                    ###
-##############################################################################################
+#######################################################################################################
+###OPTIONS                                                                                          ###
+### -diffChannel                   -> When this option is set channels with the same type of food   ###
+###                                   but in different dispensers are differentiated (eg w1, w2)    ###  
+### -period period <mode>          -> Mode: day/ week/ eleven/ month                                ###
+###                  phase  <mode> -> Mode: phase / phasePeriod                                     ###
+###                                   Annotation of phase only light and dark or phase and period   ###
+###                                   (day 1, day 2, ...)                                           ###
+###                  iniLight <n>  -> A single digit for the starting time of the light phase, on   ###
+###                                   GMT TIME!!! By default is 6 which corresponds to 8:00 AM in   ###
+###                                   Spanish summer time                                           ###
+### -winLogodd win <n>             -> Sliding window of logodd using length of period n             ###
+### -stats mail <mode>             -> Sending mail when a stats value is negative, in combination   ###
+###                                   with the real time validation of mtb files                    ###
+### -annotate interInterval <mode> -> Mode: meals/all Annotating inter-intervals time for only      ###
+###                                   meals events or for all intervals                             ###
+#######################################################################################################
 
 use HTTP::Date;
 use Data::Dumper;
@@ -50,7 +52,7 @@ if ($cl =~ s/-diffChannel//)
   {    
     $diffCh = 1;    
   }
-
+  
 my @commands=split (/\-+/,$cl); 
 #test_bw_trainning();die;
 
@@ -69,13 +71,19 @@ sub run_instruction
     my $A=shift;
     my $c=shift;
     my $sep = '\s+';
-
+    
     $A=string2hash ($c, $A, $sep);
 	
-    if ($c=~/^tag/) 
+	#Calculate interinterval time
+	if ($c=~/^annotate/)
+	 {
+	   $d = &annotate($d, $A);
+	 }
+	 
+    elsif ($c=~/^tag/) 
       {	
-	$d=tag($d, $A);
-      }
+	     $d=tag($d, $A);
+      }     
       
 #    option to rename cage 6 from 13 to 18          
 #    elsif ($c=~/^rename/)
@@ -317,6 +325,67 @@ sub parse_data
     $data=&channel2Nature($data);
          
     return $data;
+  }
+
+sub annotate
+  {
+    my $d = shift;
+    my $A = shift;
+    my ($pT, $cStartT, $pEndT, $interMealTime) = -1;
+    
+    #interInterval between all type of events or only meals (all/meals)   
+    my $field = $A->{interInterval};    
+           
+    foreach my $c (keys (%$d))
+      {
+        foreach my $t (keys (%{$d->{$c}}))
+          {
+            if ($pT == -1)
+              {                
+                $pT = $t;
+                $pEndT = $d->{$c}{$t}{EndT};
+                next;
+              }	            
+            elsif ($d->{$c}{$t}{Channel} =~ m/Intake(\s)+[3-4]/)
+              {                
+                $cStartT = $d->{$c}{$t}{StartT};
+                $interMealTime = $pEndT - $cStartT;
+                $d->{$c}{$pT}{InterTime} = $interMealTime;
+                $pT = $t;
+                $pEndT = $d->{$c}{$t}{EndT};  
+              }
+            elsif ($d->{$c}{$t}{Channel} =~ m/Intake(\s)+[1-2]/)
+              { 
+                if ($field eq "meals")
+                  {                                       
+                    $d->{$c}{$pT}{InterTime} = "NA";
+                    #Not consider water intervals thus time should not be modified
+                    #$pT = $t;
+                    #$pEndT = $d->{$c}{$t}{EndT};
+                  }
+                elsif ($field eq "all")
+                  {
+                    $cStartT = $d->{$c}{$t}{StartT};
+                    $interMealTime = $pEndT - $cStartT;
+                    $d->{$c}{$pT}{InterTime} = $interMealTime;
+                    $pT = $t;
+                    $pEndT = $d->{$c}{$t}{EndT};
+                  }
+                else
+                  {
+                    print STDERR "FATAL ERROR: Option for field annotation not known\n"; 
+                    die;  
+                  }
+              }
+            else
+              {
+                print STDERR "FATAL ERROR: Channel not recognized by annotate\n";
+                die;
+              }    
+          }
+      } 
+      
+    return ($d); 
   }
 
   #  #Filter data
