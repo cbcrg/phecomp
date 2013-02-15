@@ -332,30 +332,39 @@ sub annotate
     my $d = shift;
     my $A = shift;
     my ($pT, $cStartT, $pEndT, $interMealTime) = -1;
-    
+    my $firstCage = 1;
     #interInterval between all type of events or only meals (all/meals)   
     my $field = $A->{interInterval};    
            
-    foreach my $c (keys (%$d))
+    foreach my $c (sort ({$a<=>$b}keys (%$d)))
       {
-        $pT = -1;
-        
-        foreach my $t (sort(keys (%{$d->{$c}})))
-          {
-            if ($pT == -1)
-              {                
-                $pT = $t;
+        $pEndT = -1;
+         
+        foreach my $t (sort ({$a<=>$b}keys (%{$d->{$c}})))
+          {                                   
+            if ($firstCage == 1)
+              {
+                $firstCage = 0;
                 $pEndT = $d->{$c}{$t}{EndT};
+                $pT = $t;                           
+                next;
+              }
+            elsif ($pEndT == -1)
+              {                 
+                my $pC = $c-1;               
+                $d->{$pC}{$pT}{InterTime}= "NA";                        
+                $pT = $t;
+                $pEndT = $d->{$c}{$t}{EndT};                                    
                 next;
               }	
                           
             elsif ($d->{$c}{$t}{Channel} =~ m/Intake(\s)+[3-4]/)
-              {                
+              {                                       
                 $cStartT = $d->{$c}{$t}{StartT};
                 $interMealTime = $cStartT - $pEndT;
                 
                 #Overlaps are annotated as NA
-                if ($interMealTime < 0) 
+                if ($interMealTime <= 0) 
                   {
                     #print "currentStart $cStartT\tprevious End$pEndT\t$interMealTime\n";
                     $d->{$c}{$pT}{InterTime} = "NA";                       
@@ -370,13 +379,14 @@ sub annotate
               }
               
             elsif ($d->{$c}{$t}{Channel} =~ m/Intake(\s)+[1-2]/)
-              { 
+              {                 
                 if ($field eq "meals")
-                  {                                       
+                  {                                                         
                     $d->{$c}{$pT}{InterTime} = "NA";
-                    #Not consider water intervals thus time should not be modified, commented for this reason
-                    #$pT = $t;
+                    
+                    #Not consider water intervals thus time should not be modified, commented for this reason                    
                     #$pEndT = $d->{$c}{$t}{EndT};
+                    $pT = $t; #I need this to annotate the correct interval
                   }
                 elsif ($field eq "all")
                   {
@@ -384,13 +394,12 @@ sub annotate
                     $interMealTime =  $cStartT - $pEndT;
                     
                     #Overlaps are annotated as NA
-                    if ($interMealTime < 0) 
-                      {
-                        #print "currentStart $cStartT\tprevious End$pEndT\t$interMealTime\n";
+                    if ($interMealTime <= 0) 
+                      {                        
                         $d->{$c}{$pT}{InterTime} = "NA"; 
                       }
                     else
-                      {  
+                      {                         
                         $d->{$c}{$pT}{InterTime} = $interMealTime;
                       }
                       
@@ -404,8 +413,8 @@ sub annotate
                   }
               }
             else
-              {
-                print STDERR "FATAL ERROR: Channel not recognized by annotate\n";
+              {                
+                print STDERR "FATAL ERROR: Cage $c\t$t\t$d->{$c}{$t}{Channel} not recognized by annotate option\n";
                 die;
               }    
           }
@@ -1541,8 +1550,12 @@ sub data2display_period_stat
       	     $maxtime=($t>$maxtime)?$t:$maxtime;
       	     $tot++;
       	     $S->{$c}{$ch}{count}++;
-      	     #For inter-intervals time sometimes water events are not considered
+      	     
+      	     #Calculation of inter-time stats if annotated      	     
+      	     if (exists ($d->{$c}{$t}{InterTime})) {die;}
+      	     #For inter-intervals time some events are not considered (overlaps or water when only intermeal time is calculated)
       	     $S->{$c}{$ch}{countInterTime}++;
+      	     
       	     $S->{$c}{$ch}{Duration}+=$d->{$c}{$t}{Duration};      	     
       	     #$dP->{$c}{$t}{Duration} = $d->{$c}{$t}{Duration};      	    
       	     $S->{$c}{$ch}{Value}+=$d->{$c}{$t}{Value};
