@@ -41,6 +41,7 @@ my %WEIGHT;
 my $file=shift (@ARGV);
 my $cl=join(" ", @ARGV);
 our $mailTime = time ();
+our $natureH = {};
  
 #Reanotate command should be read before &run_instruction() that is why
 #although not elegant I read this option here.
@@ -327,40 +328,163 @@ sub parse_data
     return $data;
   }
 
+#This function annotated time between events without taking in consideration the nature of the channel.
+#i.e. if an SC event occurs and interInterval is set to meals it will consider as next event any food
+#regardless of its nature. If flag is set to all then next event is just the following one (water of food).
+#This is not the way is performed in Compulse. 
+#
+#sub annotate
+#  {
+#    my $d = shift;
+#    my $A = shift;
+#    my ($pT, $cStartT, $pEndT, $interMealTime) = -1;
+#    my $firstCage = 1;
+#    #interInterval between all type of events or only meals (all/meals)   
+#    my $field = $A->{interInterval};    
+#           
+#    foreach my $c (sort ({$a<=>$b}keys (%$d)))
+#      {
+#        $pEndT = -1;
+#         
+#        foreach my $t (sort ({$a<=>$b}keys (%{$d->{$c}})))
+#          {                                   
+#            if ($firstCage == 1)
+#              {
+#                $firstCage = 0;
+#                $pEndT = $d->{$c}{$t}{EndT};
+#                $pT = $t;                           
+#                next;
+#              }
+#              
+#            elsif ($pEndT == -1)
+#              {                 
+#                my $pC = $c-1;               
+#                $d->{$pC}{$pT}{InterTime}= "NA";                        
+#                $pT = $t;
+#                $pEndT = $d->{$c}{$t}{EndT};                                    
+#                next;
+#              }	
+#                          
+#            elsif ($d->{$c}{$t}{Channel} =~ m/Intake(\s)+[3-4]/)
+#              {                                       
+#                $cStartT = $d->{$c}{$t}{StartT};
+#                $interMealTime = $cStartT - $pEndT;
+#                
+#                #Overlaps are annotated as NA
+#                if ($interMealTime <= 0) 
+#                  {
+#                    #print "currentStart $cStartT\tprevious End$pEndT\t$interMealTime\n";
+#                    $d->{$c}{$pT}{InterTime} = "NA";                       
+#                  }
+#                else
+#                  {  
+#                    $d->{$c}{$pT}{InterTime} = $interMealTime;
+#                  }
+#                  
+#                $pT = $t;
+#                $pEndT = $d->{$c}{$t}{EndT};  
+#              }
+#              
+#            elsif ($d->{$c}{$t}{Channel} =~ m/Intake(\s)+[1-2]/)
+#              {                 
+#                if ($field eq "meals")
+#                  {                                                         
+#                    $d->{$c}{$pT}{InterTime} = "NA";
+#                    
+#                    #Not consider water intervals thus time should not be modified, commented for this reason                    
+#                    #$pEndT = $d->{$c}{$t}{EndT};
+#                    $pT = $t; #I need this to annotate the correct interval
+#                  }
+#                elsif ($field eq "all")
+#                  {
+#                    $cStartT = $d->{$c}{$t}{StartT};
+#                    $interMealTime =  $cStartT - $pEndT;
+#                    
+#                    #Overlaps are annotated as NA
+#                    if ($interMealTime <= 0) 
+#                      {                        
+#                        $d->{$c}{$pT}{InterTime} = "NA"; 
+#                      }
+#                    else
+#                      {                         
+#                        $d->{$c}{$pT}{InterTime} = $interMealTime;
+#                      }
+#                      
+#                    $pT = $t;
+#                    $pEndT = $d->{$c}{$t}{EndT};
+#                  }
+#                else
+#                  {
+#                    print STDERR "FATAL ERROR: Option for field annotation not known\n"; 
+#                    die;  
+#                  }
+#              }
+#            else
+#              {                
+#                print STDERR "FATAL ERROR: Cage $c\t$t\t$d->{$c}{$t}{Channel} not recognized by annotate option\n";
+#                die;
+#              }    
+#          }
+#      } 
+#      
+#    return ($d); 
+#  }
+
 sub annotate
   {
     my $d = shift;
     my $A = shift;
-    my ($pT, $cStartT, $pEndT, $interMealTime) = -1;
+    my ($pT, $cStartT, $pEndT, $interMealTime, $nature) = -1;
+    my $HpEndT = {};
+    my $HpT = {};
+    my $HfirstCage = {};
+    
+    foreach my $nat (keys (%$natureH))
+   	  {
+        $HfirstCage->{$nat} = 1;
+      }
+       
     my $firstCage = 1;
+    
     #interInterval between all type of events or only meals (all/meals)   
     my $field = $A->{interInterval};    
            
     foreach my $c (sort ({$a<=>$b}keys (%$d)))
-      {
-        $pEndT = -1;
-         
+      {        
+        
+        foreach my $nat (keys (%$natureH))
+        	{
+        		$HpEndT->{$nat} = -1;
+        	} 
+        
         foreach my $t (sort ({$a<=>$b}keys (%{$d->{$c}})))
-          {                                   
-            if ($firstCage == 1)
+          {                    
+          	$nature = $d->{$c}{$t}{Nature};
+          	               
+            if ($HfirstCage->{$nature} == 1)
               {
-                $firstCage = 0;
-                $pEndT = $d->{$c}{$t}{EndT};
-                $pT = $t;                           
+                $HfirstCage->{$nature} = 0;                            
+                $HpEndT->{$nature} = $d->{$c}{$t}{EndT}; 
+                $HpT->{$nature} = $t;                                           
                 next;
               }
-            elsif ($pEndT == -1)
+              
+            elsif ($HpEndT->{$nature} == -1)
               {                 
-                my $pC = $c-1;               
-                $d->{$pC}{$pT}{InterTime}= "NA";                        
-                $pT = $t;
-                $pEndT = $d->{$c}{$t}{EndT};                                    
+                my $pC = $c-1;
+                $pT = $HpT->{$nature};               
+                $d->{$pC}{$pT}{InterTime}= "NA";                                        
+                $HpT->{$nature} = $t;
+                $HpEndT->{$nature} = $d->{$c}{$t}{EndT};                               
                 next;
               }	
                           
             elsif ($d->{$c}{$t}{Channel} =~ m/Intake(\s)+[3-4]/)
               {                                       
                 $cStartT = $d->{$c}{$t}{StartT};
+                $pEndT = $HpEndT->{$nature};
+                $pT = $HpT->{$nature};
+                
                 $interMealTime = $cStartT - $pEndT;
                 
                 #Overlaps are annotated as NA
@@ -374,23 +498,28 @@ sub annotate
                     $d->{$c}{$pT}{InterTime} = $interMealTime;
                   }
                   
-                $pT = $t;
-                $pEndT = $d->{$c}{$t}{EndT};  
+                $HpT->{$nature} = $t;
+                $HpEndT->{$nature} = $d->{$c}{$t}{EndT};  
               }
               
             elsif ($d->{$c}{$t}{Channel} =~ m/Intake(\s)+[1-2]/)
               {                 
                 if ($field eq "meals")
-                  {                                                         
+                  { 
+                  	$pT = $HpT->{$nature};                                                        
                     $d->{$c}{$pT}{InterTime} = "NA";
                     
                     #Not consider water intervals thus time should not be modified, commented for this reason                    
                     #$pEndT = $d->{$c}{$t}{EndT};
-                    $pT = $t; #I need this to annotate the correct interval
+                    #$pT = $t; #I need this to annotate the correct interval
+                    $HpT->{$nature} = $t;
                   }
                 elsif ($field eq "all")
                   {
                     $cStartT = $d->{$c}{$t}{StartT};
+                    $pEndT = $HpEndT->{$nature};
+                	$pT = $HpT->{$nature};
+                	
                     $interMealTime =  $cStartT - $pEndT;
                     
                     #Overlaps are annotated as NA
@@ -403,8 +532,8 @@ sub annotate
                         $d->{$c}{$pT}{InterTime} = $interMealTime;
                       }
                       
-                    $pT = $t;
-                    $pEndT = $d->{$c}{$t}{EndT};
+                    $HpT->{$nature} = $t;
+                	$HpEndT->{$nature} = $d->{$c}{$t}{EndT};                   
                   }
                 else
                   {
@@ -422,7 +551,7 @@ sub annotate
       
     return ($d); 
   }
-
+  
   #  #Filter data
 #    $data=&filter_data ($data,"Value","float","rm",-9999999,$T);
 #    $data=&filter_overlap ($data, $dup);
@@ -580,6 +709,7 @@ sub channel2Nature
 			#########end modification 31/08/2010
 			
 			$d->{$c}{$t}{Nature}=$Nature;
+			$natureH->{$Nature} = 1;
 		
 	      }
 	  }
