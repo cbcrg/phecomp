@@ -441,6 +441,7 @@ sub annotate
     my $HpEndT = {};
     my $HpT = {};
     my $HfirstCage = {};
+    my $cOcurr = {};
     
     foreach my $nat (keys (%$natureH))
    	  {
@@ -461,24 +462,27 @@ sub annotate
         	} 
         
         foreach my $t (sort ({$a<=>$b}keys (%{$d->{$c}})))
-          {                    
-          	$nature = $d->{$c}{$t}{Nature};
-          	               
+          {                   
+          	$nature = $d->{$c}{$t}{Nature};           
+                
             if ($HfirstCage->{$nature} == 1)
               {
                 $HfirstCage->{$nature} = 0;                            
                 $HpEndT->{$nature} = $d->{$c}{$t}{EndT}; 
-                $HpT->{$nature} = $t;                                           
+                $HpT->{$nature} = $t;
+                $cOcurr->{$nature} = $c;                                           
                 next;
               }
               
             elsif ($HpEndT->{$nature} == -1)
               {                 
-                my $pC = $c-1;
+                #my $pC = $c-1;#case and control alternated and so natures if forced diet so I will need -2 or keep previous cage corresponding the nature
+                my $pC = $cOcurr->{$nature};
                 $pT = $HpT->{$nature};               
                 $d->{$pC}{$pT}{InterTime}= "LAST";                                        
                 $HpT->{$nature} = $t;
-                $HpEndT->{$nature} = $d->{$c}{$t}{EndT};                               
+                $HpEndT->{$nature} = $d->{$c}{$t}{EndT};
+                $cOcurr->{$nature} = $c;                               
                 next;
               }	
                           
@@ -502,7 +506,8 @@ sub annotate
                   }
                   
                 $HpT->{$nature} = $t;
-                $HpEndT->{$nature} = $d->{$c}{$t}{EndT};  
+                $HpEndT->{$nature} = $d->{$c}{$t}{EndT};
+                $cOcurr->{$nature} = $c;  
               }
               
             elsif ($d->{$c}{$t}{Channel} =~ m/Intake(\s)+[1-2]/)
@@ -516,12 +521,13 @@ sub annotate
                     #$pEndT = $d->{$c}{$t}{EndT};
                     #$pT = $t; #I need this to annotate the correct interval
                     $HpT->{$nature} = $t;
+                    $cOcurr->{$nature} = $c;
                   }
                 elsif ($field eq "all")
                   {
                     $cStartT = $d->{$c}{$t}{StartT};
                     $pEndT = $HpEndT->{$nature};
-                	$pT = $HpT->{$nature};
+                	  $pT = $HpT->{$nature};
                 	
                     $interMealTime =  $cStartT - $pEndT;
                     
@@ -536,7 +542,8 @@ sub annotate
                       }
                       
                     $HpT->{$nature} = $t;
-                	$HpEndT->{$nature} = $d->{$c}{$t}{EndT};                   
+                	  $HpEndT->{$nature} = $d->{$c}{$t}{EndT};
+                	  $cOcurr->{$nature} = $c;                   
                   }
                 else
                   {
@@ -1161,7 +1168,7 @@ sub data2period
       {
 	foreach my $t (sort(keys (%{$d->{$c}})))
 	  {
-	    
+	    if (!exists ($d->{$c}{$t}{StartT})) {print "cage $c --- $t\n";}
 	    my $cstart=$d->{$c}{$t}{StartT};
 	    my $cend=$d->{$c}{$t}{EndT};
 	    
