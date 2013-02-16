@@ -16,6 +16,9 @@
 ### -winLogodd win <n>             -> Sliding window of logodd using length of period n             ###
 ### -stats mail <mode>             -> Sending mail when a stats value is negative, in combination   ###
 ###                                   with the real time validation of mtb files                    ###
+###       labels <mode>            -> Mode: compulse                                                ###
+###                                   Labels of table by default have historical names if compulse  ###
+###                                   is set then labels are like in compulse software              ###  
 ### -annotate interInterval <mode> -> Mode: meals/all Annotating inter-intervals time for only      ###
 ###                                   meals events or for all events                                ###
 #######################################################################################################
@@ -1630,7 +1633,15 @@ sub data2stat
       {
 	     if (exists ($A->{interInterval}))
 	       {
-	         print "period\tcage\tchannel\tduration_period\trec_period\tcount\tcountInterMeal\tduration_T\tmean_duration\tInterTime_T\tInterTime\tvalue_T\tmean_value\tvelocity\n";
+	         if ($A->{labels} eq "compulse")
+	           {
+	             print "period\tcage\tchannel\tduration_period\trec_period\tN_meals\tN_inter_Meals\tDuration\tAvg_Duration\tTotal_Intermeal_Duration\tAvg_Intermeal_Duration\tTotal_Intake\tAvg_Intake\tRate\n";
+	           }
+	         else
+	           {
+	             print "period\tcage\tchannel\tduration_period\trec_period\tcount\tcountInterMeal\tduration_T\tmean_duration\tInterTime_T\tInterTime\tvalue_T\tmean_value\tvelocity\n";	             
+	           }    
+	      
 	       }
 	     else
 	       {
