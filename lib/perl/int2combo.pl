@@ -1628,7 +1628,14 @@ sub data2stat
     #modification stat R output 23/09/10
     if ($A->{output}=~/R/)
       {
-	     print "period\tcage\tchannel\tduration_period\trec_period\tcount\tduration_T\tmean_duration\tvalue_T\tmean_value\tvelocity\n";
+	     if (exists ($A->{interInterval}))
+	       {
+	         print "period\tcage\tchannel\tduration_period\trec_period\tcount\tcountInterMeal\tduration_T\tmean_duration\tInterTime_T\tInterTime\tvalue_T\tmean_value\tvelocity\n";
+	       }
+	     else
+	       {
+	         print "period\tcage\tchannel\tduration_period\trec_period\tcount\tduration_T\tmean_duration\tvalue_T\tmean_value\tvelocity\n";
+	       }
       }
        	
     #foreach my $p (sort (keys (%$period)))#If period is not a number
@@ -1664,7 +1671,7 @@ sub data2display_period_stat
     #This hash will keep the stats results, so that it could be validated for each value whether it is "strange" (value far from the mean in terms of Zscore...)
     my $statsH = {};
     #my $dP = {};
-    #print "culo\n";die;
+
     foreach my $c (sort(keys (%$d)))
       {
 	     my ($ch, $pendt);
@@ -1678,7 +1685,7 @@ sub data2display_period_stat
       	     $mintime=($t<$mintime)?$t:$mintime;
       	     $maxtime=($t>$maxtime)?$t:$maxtime;
       	     $tot++;
-      	     $S->{$c}{$ch}{count}++;
+      	     $S->{$c}{$ch}{Count}++;
       	     
       	     #Calculation of inter-time stats if annotated      	     
       	     if (exists ($d->{$c}{$t}{InterTime})) 
@@ -1687,7 +1694,7 @@ sub data2display_period_stat
       	         if ($d->{$c}{$t}{InterTime} ne "NA")
       	           {
       	             $S->{$c}{$ch}{InterTime}+=$d->{$c}{$t}{InterTime};
-      	             $S->{$c}{$ch}{countInterTime}++;
+      	             $S->{$c}{$ch}{CountInterTime}++;
       	           }
       	       }
       	     
@@ -1716,33 +1723,33 @@ sub data2display_period_stat
        {         
 	     print "--- Period -- $A->{period} : "; 
 	     print "Duration: $duration sec. ($tt). N Records: $tot\n";
-	 
+	     
 	     foreach my $c (sort ({$a<=>$b}keys (%$S)))
 	       {
 	         printf "Cage: $c\n";
 	         
 	         foreach my $ch (sort (keys(%{$S->{$c}})))
 	           {
-		          my $count=$S->{$c}{$ch}{count};
-		          my $countInterTime=$S->{$c}{$ch}{countInterTime};
-		          
+		          my $count=$S->{$c}{$ch}{Count};
+		          my $countInterTime=$S->{$c}{$ch}{CountInterTime};
+		         		         
 		          printf "\tChannel: %8s", $ch;
                   
 		          foreach my $f (sort ({$a cmp $b}keys(%{$S->{$c}{$ch}})))
 		            {		              		                  		    
-		              if ($f ne "count" & $f ne "velocity" & $f ne "InterTime" & $f ne "countInterTime")
+		              if ($f ne "Count" & $f ne "velocity" & $f ne "InterTime" & $f ne "CountInterTime")
 		                { 			                    		                    
 			               printf "- %8s: %6.2f ",$f."T",$S->{$c}{$ch}{$f};
 			               
 			               #Before calculating the mean is assessed whether total channel value is negative			             
-			               if ($f eq "value" && $S->{$c}{$ch}{$f} < 0)
+			               if ($f eq "Value" && $S->{$c}{$ch}{$f} < 0)
 		              	   	{		     		              		         	
 		              			$mailData.="############################################CAGE: $c\tPERIOD: $A->{period}\tCHANNEL:$ch\tVALUE:$S->{$c}{$ch}{$f}\n";		              					              					              				             
 		              		}
 		              		
 			               $S->{$c}{$ch}{$f}/=$count;
 		                }
-		              elsif ($f eq "count")
+		              elsif ($f eq "Count")
 		                {
 			               printf "- %8s: %6d ",$f,$S->{$c}{$ch}{$f};
 			               next;
@@ -1770,14 +1777,15 @@ sub data2display_period_stat
 	       {	     	    
 	         foreach my $ch (sort (keys(%{$S->{$c}})))
 	           {
-		          my $count=$S->{$c}{$ch}{count};		 
+		          my $count=$S->{$c}{$ch}{Count};
+		          my $countInterTime=$S->{$c}{$ch}{CountInterTime};		 
 		          print "$A->{period}\t$c\t$ch\t$duration\t$tot\t";
 		          
 		          #foreach field
 		          foreach my $f (sort ({$a cmp $b} keys(%{$S->{$c}{$ch}})))
-		            { 
-		              if ($f ne "count" & $f ne "velocity" & $f ne "InterTime" & $f ne "countInterTime")		       
-		                { 		                   		                   		   
+		            { 		            
+		              if ($f ne "Count" & $f ne "velocity" & $f ne "CountInterTime")		       
+		                { 		                   		                   		   			                
 			               printf "%6.2f\t",$S->{$c}{$ch}{$f};
 			               
 			               #Before calculating the mean is assessed whether total channel value is negative			             
@@ -1785,13 +1793,20 @@ sub data2display_period_stat
 		              	   	{		     		              		         	
 		              			$mailData.="############################################CAGE: $c\tPERIOD: $A->{period}\tCHANNEL:$ch\tVALUE:$S->{$c}{$ch}{$f}\n";		              					              					              				             
 		              		}
-		              		
-			               $S->{$c}{$ch}{$f}/=$count;
+		              	   
+		              	   if ($f eq "InterTime")
+			                 {
+			                   $S->{$c}{$ch}{$f}/=$countInterTime;
+			                 }
+			               else
+			                 {  	
+			                   $S->{$c}{$ch}{$f}/=$count;
+			                 }
 		                }
 		              if ($f ne "velocity")
 		                {
 			               printf "%6.2f\t",$S->{$c}{$ch}{$f};
-		                }
+		                }  
 		              else 
 		                {
 			               printf "%6.5f\n",$S->{$c}{$ch}{$f};
@@ -1822,11 +1837,11 @@ sub data2display_period_stat
 	                 print "-----------$c\n";    	    
         	         foreach my $ch (sort (keys(%{$S->{$c}})))
         	           {
-        		          my $count=$S->{$c}{$ch}{count};		         		          
+        		          my $count=$S->{$c}{$ch}{Count};		         		          
         		          
         		          foreach my $f (sort ({$a cmp $b} keys(%{$S->{$c}{$ch}})))
         		            { 
-        		              if ($f ne "count" & $f ne "velocity")		       
+        		              if ($f ne "Count" & $f ne "velocity")		       
         		                { 
         		                   #Mean value and SD among cages for all channels and field stored in statsH
         		                   ($statsH->{$ch}{$f}{avg}, $statsH->{$ch}{$f}{sd}) = data2avg_sd ($d, $ch, $f);
