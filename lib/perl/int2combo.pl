@@ -473,7 +473,7 @@ sub annotate
               {                 
                 my $pC = $c-1;
                 $pT = $HpT->{$nature};               
-                $d->{$pC}{$pT}{InterTime}= "NA";                                        
+                $d->{$pC}{$pT}{InterTime}= "LAST";                                        
                 $HpT->{$nature} = $t;
                 $HpEndT->{$nature} = $d->{$c}{$t}{EndT};                               
                 next;
@@ -491,7 +491,7 @@ sub annotate
                 if ($interMealTime <= 0) 
                   {
                     #print "currentStart $cStartT\tprevious End$pEndT\t$interMealTime\n";
-                    $d->{$c}{$pT}{InterTime} = "NA";                       
+                    $d->{$c}{$pT}{InterTime} = "COLL";                       
                   }
                 else
                   {  
@@ -525,7 +525,7 @@ sub annotate
                     #Overlaps are annotated as NA
                     if ($interMealTime <= 0) 
                       {                        
-                        $d->{$c}{$pT}{InterTime} = "NA"; 
+                        $d->{$c}{$pT}{InterTime} = "COLL"; 
                       }
                     else
                       {                         
@@ -1691,9 +1691,14 @@ sub data2display_period_stat
       	     if (exists ($d->{$c}{$t}{InterTime})) 
       	       {
       	         #For inter-intervals time some events are not considered (overlaps or water when only intermeal time is calculated)
-      	         if ($d->{$c}{$t}{InterTime} ne "NA")
+      	         if ($d->{$c}{$t}{InterTime} ne "NA" & $d->{$c}{$t}{InterTime} ne "LAST" & $d->{$c}{$t}{InterTime} ne "COLL")
       	           {
       	             $S->{$c}{$ch}{InterTime}+=$d->{$c}{$t}{InterTime};
+      	             $S->{$c}{$ch}{CountInterTime}++;
+      	           }
+      	         elsif ($d->{$c}{$t}{InterTime} eq "NA")
+      	           {
+      	             $S->{$c}{$ch}{InterTime}=0;
       	             $S->{$c}{$ch}{CountInterTime}++;
       	           }
       	       }
