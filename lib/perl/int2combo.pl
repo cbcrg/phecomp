@@ -824,11 +824,16 @@ sub zfilter_data
       foreach my $nature (keys(%$nl))
 	{
 	  ($stat->{$nature}{Duration}{avg}, $stat->{$nature}{Duration}{sd})=data2avg_sd($d,$nature,"Duration");
-	  ($stat->{$nature}{Value}{avg}, $stat->{$nature}{Value}{sd})=data2avg_sd($d,$nature,"Value");
-	
-	  #print "$nature D: $stat->{$nature}{Duration}{avg}, $stat->{$nature}{Duration}{sd} V: $stat->{$nature}{Value}{avg}, $stat->{$nature}{Value}{sd}\n";
+	  ($stat->{$nature}{Value}{avg}, $stat->{$nature}{Value}{sd})= data2avg_sd($d,$nature,"Value");
+	  
+	  print "$nature D: $stat->{$nature}{Duration}{avg}, $stat->{$nature}{Duration}{sd} V: $stat->{$nature}{Value}{avg}, $stat->{$nature}{Value}{sd}\n";
+	  
+#	  ($stat->{$nature}{Duration}{avg}, $stat->{$nature}{Duration}{sd})=newData2avg_sd($d,$nature,"Duration");
+#	  ($stat->{$nature}{Value}{avg}, $stat->{$nature}{Value}{sd})= newData2avg_sd($d,$nature,"Value");
+#	  
+#	  print "$nature D new: $stat->{$nature}{Duration}{avg}, $stat->{$nature}{Duration}{sd} V: $stat->{$nature}{Value}{avg}, $stat->{$nature}{Value}{sd}\n";
 	}
-      
+      die;
       foreach my $c (keys (%$d))
        {
 	 foreach my $t (keys (%{$d->{$c}}))
@@ -852,6 +857,7 @@ sub zfilter_data
       print STDERR "\nZ-Score Filtering: removed $removed values out of $n (Filter Z=$zf)\n";
       
     }
+    
 sub data2avg_sd 
     {
       my $d=shift;
@@ -879,6 +885,52 @@ sub data2avg_sd
       
       return ($avg, $sd);
     }
+
+#This was meant to see whether SD was correctly calculated
+#and it was, this function and the one above give exactly the
+#the same results
+sub newData2avg_sd 
+    {
+      my $d=shift;
+      my $nature=shift;
+      my $field=shift;
+      my ($Sx, $Sx2,$avg,$sd, $n);
+      
+      #avg calculation
+      foreach my $c (keys (%$d))
+	   {
+	     foreach my $t (keys (%{$d->{$c}}))
+	       {
+      	     if ($d->{$c}{$t}{Nature} eq $nature)
+      		  {
+      		    my $v = $d->{$c}{$t}{$field};
+      		    $Sx += $v;
+      		    $n++;    
+      		  }
+	       }	
+	   }
+	   
+	  $avg = $Sx/$n;
+	  
+	  #stdev        
+      foreach my $c (keys (%$d))
+	   {  
+	  
+	     foreach my $t (keys (%{$d->{$c}}))
+	       {		      
+	         if ($d->{$c}{$t}{Nature} eq $nature)
+		      {		  
+		        my $v = $d->{$c}{$t}{$field};		  		        
+		        $Sx2 += ($avg-$v)** 2;		        
+		      }
+	       }
+	     }
+      
+      #$avg=$Sx/$n;
+      $sd = sqrt ($Sx2/$n);
+      
+      return ($avg, $sd);
+    }    
 
 sub filter_data
    {
