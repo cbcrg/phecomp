@@ -21,6 +21,8 @@
 ###                                   is set then labels are like in compulse software              ###  
 ### -annotate interInterval <mode> -> Mode: meals/all Annotating inter-intervals time for only      ###
 ###                                   meals events or for all events                                ###
+###           minSep <n>           -> Minimun separation between meals to annotate then as separate ###
+###                                   meals for inter intervals time calculation.                   ###
 #######################################################################################################
 
 use HTTP::Date;
@@ -451,7 +453,9 @@ sub annotate
     my $firstCage = 1;
     
     #interInterval between all type of events or only meals (all/meals)   
-    my $field = $A->{interInterval};    
+    my $field = $A->{interInterval};
+    #minimum separation to consider that the intervals are different meals and thus that the between interval time should be calculated    
+    my $minSep = $A->{minSep};
            
     foreach my $c (sort ({$a<=>$b}keys (%$d)))
       {        
@@ -493,13 +497,17 @@ sub annotate
                 $pT = $HpT->{$nature};
                 
                 $interMealTime = $cStartT - $pEndT;
-                
+                                                  
                 #Overlaps are annotated as NA
                 if ($interMealTime <= 0) 
                   {
                     #print "currentStart $cStartT\tprevious End$pEndT\t$interMealTime\n";
-                    $d->{$c}{$pT}{InterTime} = "COLL";                       
+                    $d->{$c}{$pT}{InterTime} = $interMealTime."COLL";                       
                   }
+                elsif ($interMealTime <= $minSep) 
+                  {
+                    $d->{$c}{$pT}{InterTime} = "NA";                    
+                  }  
                 else
                   {  
                     $d->{$c}{$pT}{InterTime} = $interMealTime;
@@ -536,6 +544,10 @@ sub annotate
                       {                        
                         $d->{$c}{$pT}{InterTime} = "COLL"; 
                       }
+                    elsif ($interMealTime <= $minSep) 
+                      {
+                        $d->{$c}{$pT}{InterTime} = "NA";                        
+                      }  
                     else
                       {                         
                         $d->{$c}{$pT}{InterTime} = $interMealTime;
@@ -688,8 +700,8 @@ sub channel2Nature
 			  {
 			    #print STDERR "--$Name--\n";
 			    			     
-				#if ($Name eq "sc"){$Nature.="_sc";}#Original before fusedSCforFDF heatMap
-			    if ($Name eq "sc"){;}#fusedSCforFDF heatMap
+		  if ($Name eq "sc"){$Nature.="_sc";}#Original before fusedSCforFDF heatMap
+			#if ($Name eq "sc"){;}#fusedSCforFDF heatMap
 			    
 			#####################
 			#Modification 31/08/2010
@@ -1240,6 +1252,8 @@ sub data2period
     elsif ($n eq "year"){$delta=3600*24*365;}
     elsif ($n eq "full"){$delta=$end-$start;}
     else {$delta=($end-$start)/$n;}
+    
+    #print "$start\t$end\tdelta\n"; die;
     
     #while second has not reach delta we are in the same period then it goes out of nested for and change period->$b
     #$time will have annotated all seconds between start and end
