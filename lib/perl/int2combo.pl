@@ -445,6 +445,19 @@ sub annotate
     my $HfirstCage = {};
     my $cOcurr = {};
     
+    #This variable sets whether we want to use Nature (food_fat, food_sc, ...) or "Channel" (intake 1, intake 2,...)
+    #second option will consider only individual channel for time between meals calculation 
+    my $dispenserOpt = "";
+    
+    if (!exists ($A->{consecutive}) || lc ($A->{consecutive}) eq "nature")   
+      {
+        $dispenserOpt = "Nature"; 
+      }
+    elsif (lc ($A->{consecutive}) eq "dispenser")
+      {
+        $dispenserOpt = "Channel";
+      }
+          
     foreach my $nat (keys (%$natureH))
    	  {
         $HfirstCage->{$nat} = 1;
@@ -466,8 +479,9 @@ sub annotate
         	} 
         
         foreach my $t (sort ({$a<=>$b}keys (%{$d->{$c}})))
-          {                   
-          	$nature = $d->{$c}{$t}{Nature};           
+          { 
+            #print "$dispenserOpt-------"; die;                          
+          	$nature = $d->{$c}{$t}{Channel};           
                 
             if ($HfirstCage->{$nature} == 1)
               {
