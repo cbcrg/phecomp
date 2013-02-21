@@ -23,6 +23,9 @@
 ###                                   meals events or for all events                                ###
 ###           minSep <n>           -> Minimun separation between meals to annotate then as separate ###
 ###                                   meals for inter intervals time calculation.                   ###
+###           consecutive <mode>   -> Mode: dispenser/nature                                        ###
+###                                   Dispenser will calculate the intermeal intervals between them,###
+###                                   nature between types of food (food_sc, food_fat)              ###
 #######################################################################################################
 
 use HTTP::Date;
@@ -47,6 +50,7 @@ my $file=shift (@ARGV);
 my $cl=join(" ", @ARGV);
 our $mailTime = time ();
 our $natureH = {};
+our $channelH = {};
  
 #Reanotate command should be read before &run_instruction() that is why
 #although not elegant I read this option here.
@@ -451,18 +455,24 @@ sub annotate
     
     if (!exists ($A->{consecutive}) || lc ($A->{consecutive}) eq "nature")   
       {
-        $dispenserOpt = "Nature"; 
+        $dispenserOpt = "Nature";
+        
+        foreach my $nat (keys (%$natureH))
+   	      {
+            $HfirstCage->{$nat} = 1;
+          } 
       }
+      
     elsif (lc ($A->{consecutive}) eq "dispenser")
       {
         $dispenserOpt = "Channel";
+        
+        foreach my $ch (keys (%$channelH))
+   	      {
+            $HfirstCage->{$ch} = 1;
+          }
       }
-          
-    foreach my $nat (keys (%$natureH))
-   	  {
-        $HfirstCage->{$nat} = 1;
-      }
-       
+                       
     my $firstCage = 1;
     
     #interInterval between all type of events or only meals (all/meals)   
@@ -472,16 +482,24 @@ sub annotate
            
     foreach my $c (sort ({$a<=>$b}keys (%$d)))
       {        
-        
-        foreach my $nat (keys (%$natureH))
-        	{
-        		$HpEndT->{$nat} = -1;
-        	} 
-        
+        if ($dispenserOpt eq "Nature")
+          {
+            foreach my $nat (keys (%$natureH))
+            	{
+            		$HpEndT->{$nat} = -1;
+            	}
+          }
+        elsif ($dispenserOpt eq "Nature") 
+          {
+            foreach my $ch (keys (%$channelH))
+            	{
+            		$HpEndT->{$ch} = -1;
+            	}
+          } 
+         
         foreach my $t (sort ({$a<=>$b}keys (%{$d->{$c}})))
-          { 
-            #print "$dispenserOpt-------"; die;                          
-          	$nature = $d->{$c}{$t}{Channel};           
+          {                                    
+          	$nature = $d->{$c}{$t}{$dispenserOpt};           
                 
             if ($HfirstCage->{$nature} == 1)
               {
@@ -496,7 +514,8 @@ sub annotate
               {                 
                 #my $pC = $c-1;#case and control alternated and so natures if forced diet so I will need -2 or keep previous cage corresponding the nature
                 my $pC = $cOcurr->{$nature};
-                $pT = $HpT->{$nature};               
+                $pT = $HpT->{$nature};
+                print "------------$t\t$pC\t$pT\n";die;               
                 $d->{$pC}{$pT}{InterTime}= "LAST";                                        
                 $HpT->{$nature} = $t;
                 $HpEndT->{$nature} = $d->{$c}{$t}{EndT};
@@ -746,7 +765,7 @@ sub channel2Nature
 			
 			$d->{$c}{$t}{Nature}=$Nature;
 			$natureH->{$Nature} = 1;
-		
+		    $channelH->{$Channel} = 1;
 	      }
 	  }
 	  
@@ -852,7 +871,7 @@ sub zfilter_data
 	  ($stat->{$nature}{Duration}{avg}, $stat->{$nature}{Duration}{sd})=data2avg_sd($d,$nature,"Duration");
 	  ($stat->{$nature}{Value}{avg}, $stat->{$nature}{Value}{sd})= data2avg_sd($d,$nature,"Value");
 	  
-	  print "$nature D: $stat->{$nature}{Duration}{avg}, $stat->{$nature}{Duration}{sd} V: $stat->{$nature}{Value}{avg}, $stat->{$nature}{Value}{sd}\n";
+#	  print "$nature D: $stat->{$nature}{Duration}{avg}, $stat->{$nature}{Duration}{sd} V: $stat->{$nature}{Value}{avg}, $stat->{$nature}{Value}{sd}\n";
 	  
 #	  ($stat->{$nature}{Duration}{avg}, $stat->{$nature}{Duration}{sd})=newData2avg_sd($d,$nature,"Duration");
 #	  ($stat->{$nature}{Value}{avg}, $stat->{$nature}{Value}{sd})= newData2avg_sd($d,$nature,"Value");
