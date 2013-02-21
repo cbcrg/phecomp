@@ -489,7 +489,7 @@ sub annotate
             		$HpEndT->{$nat} = -1;
             	}
           }
-        elsif ($dispenserOpt eq "Nature") 
+        elsif ($dispenserOpt eq "Channel") 
           {
             foreach my $ch (keys (%$channelH))
             	{
@@ -514,8 +514,7 @@ sub annotate
               {                 
                 #my $pC = $c-1;#case and control alternated and so natures if forced diet so I will need -2 or keep previous cage corresponding the nature
                 my $pC = $cOcurr->{$nature};
-                $pT = $HpT->{$nature};
-                print "------------$t\t$pC\t$pT\n";die;               
+                $pT = $HpT->{$nature};                              
                 $d->{$pC}{$pT}{InterTime}= "LAST";                                        
                 $HpT->{$nature} = $t;
                 $HpEndT->{$nature} = $d->{$c}{$t}{EndT};
@@ -534,8 +533,9 @@ sub annotate
                 #Overlaps are annotated as NA
                 if ($interMealTime <= 0) 
                   {
-                    #print "currentStart $cStartT\tprevious End$pEndT\t$interMealTime\n";
-                    $d->{$c}{$pT}{InterTime} = $interMealTime."COLL";                       
+                    #print STDERR "currentStart $cStartT\tprevious End$pEndT\t$interMealTime\n";die;
+                    #$d->{$c}{$pT}{InterTime} = $interMealTime."COLL";                       
+                    $d->{$c}{$pT}{InterTime} = "COLL";
                   }
                 elsif ($interMealTime <= $minSep) 
                   {
@@ -568,13 +568,13 @@ sub annotate
                   {
                     $cStartT = $d->{$c}{$t}{StartT};
                     $pEndT = $HpEndT->{$nature};
-                	  $pT = $HpT->{$nature};
+                	$pT = $HpT->{$nature};
                 	
                     $interMealTime =  $cStartT - $pEndT;
                     
                     #Overlaps are annotated as NA
                     if ($interMealTime <= 0) 
-                      {                        
+                      {                                               
                         $d->{$c}{$pT}{InterTime} = "COLL"; 
                       }
                     elsif ($interMealTime <= $minSep) 
