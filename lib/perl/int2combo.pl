@@ -24,8 +24,8 @@
 ###           minSep <n>           -> Minimun separation between meals to annotate then as separate ###
 ###                                   meals for inter intervals time calculation.                   ###
 ###           consecutive <mode>   -> Mode: dispenser/nature                                        ###
-###                                   Dispenser will calculate the intermeal intervals between them,###
-###                                   nature between types of food (food_sc, food_fat)              ###
+###                                   Dispenser will calculate the intermeal intervals between      ###
+###                                   feeders, nature between types of food (food_sc, food_fat)     ###
 #######################################################################################################
 
 use HTTP::Date;
@@ -733,7 +733,7 @@ sub channel2Nature
 			  {
 			    #print STDERR "--$Name--\n";
 			    			     
-		  if ($Name eq "sc"){$Nature.="_sc";}#Original before fusedSCforFDF heatMap
+		    if ($Name eq "sc"){$Nature.="_sc";}#Original before fusedSCforFDF heatMap
 			#if ($Name eq "sc"){;}#fusedSCforFDF heatMap
 			    
 			#####################
@@ -4445,7 +4445,7 @@ sub anot2nature
                     
                   ($annot eq "s") && do 
                     { 
-                      return ("food_sc");#Original before fusedSCforFDF heatMap
+                      return ("food_sc"); #Original before fusedSCforFDF heatMap
                       #return ("food"); #fusedSCforFDF heatMap
                                                 
                       last SWITCH;
@@ -4453,8 +4453,8 @@ sub anot2nature
                       
                   ($annot eq "f") && do 
                     { 
-                      return ("food_fat");
-                      #return ("food");                                              
+                      return ("food_fat"); #Original before fusedSCforFDF heatMap
+                      #return ("food"); #fusedSCforFDF heatMap                                              
                       last SWITCH;
                     };
                     
