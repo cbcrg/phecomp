@@ -69,6 +69,7 @@ my $startTime = {};
 foreach my $c (@commands)
   {
     #&run_instruction (\@files, $A, $c);
+    $A={};
     &run_instruction ($ary_files, $A, $c); #now we first check files
   }
 die;
@@ -78,26 +79,27 @@ sub run_instruction
     my $ary_files=shift;
     my $A=shift;#now is empty
     my $c=shift;    
-      
+    
+   
     $A=string2hash ($c,$A);
-      
+   
     if ($c=~/info/)
       {
-        if (exists ($A->{cages}))
-          {
+#        if (exists ($A->{cages}))
+#          {
             ($H, $switch_f) = &file2channel ($A,$H);
-          }
+#          }
           
-        elsif (exists ($A->{SN}))
-          {
-            $SWnewNotation = 1; 
-          }
-          
-        else
-          {
-            print STDERR "FATAL ERROR: Info option flags is not correct so please check your command line!!!\n";
-            die;
-          }
+#        elsif (exists ($A->{SN}))
+#          {
+#            $SWnewNotation = 1; 
+#          }
+#          
+#        else
+#          {
+#            print STDERR "FATAL ERROR: Info option flags is not correct so please check your command line!!!\n";
+#            die;
+#          }
       }
           
     elsif ($c =~ /rename/)
@@ -148,7 +150,9 @@ sub file2channel
                    
     foreach my $file (keys (%$A)) 
       {   
-        				   
+        	   print STDERR "-------------------";
+        	   print Dumper (%$A);
+        	   			   
 			   if ($file eq "file12")
 			     {
 			       $switch_f=1;
