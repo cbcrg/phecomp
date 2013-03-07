@@ -26,9 +26,9 @@ if ($#ARGV ==-1)
     print "****************** Flags      **************************\n";
     print "  -data  <file1 file2.. >.........File: input data from file(s).\n";
     print "  -convert       <mode> ...........Mode: 'int2bed' convert an intervals file (raw data) into a bed file\n";
- 	print "  -convertMode   <mode> ...........Mode: 'singleCh2track' each channel in the raw data converted into a single track bed file\n";
- 	print "  .................................Mode: 'allFoodCh2track' food channels combined into the same track bed file\n"; 
- 	print "  .................................Mode: 'allCh2track' food and drink channels combined into the same track bed file\n";  											  	
+ 	  print "  -convertMode   <mode> ...........Mode: 'singleCh2track' each channel in the raw data converted into a single track bed file\n";
+ 	  print "  .................................Mode: 'allFoodCh2track' food channels combined into the same track bed file\n"; 
+ 	  print "  .................................Mode: 'allCh2track' food and drink channels combined into the same track bed file\n";  											  	
     print "  -outBed        <file> ...........File:  name of the output Bed file containning the resulting tracks.\n";
     print "  -create        <file> ...........Mode: 'chr' produces a chromosome to be load as a genome with the length of the experiment in seconds\n";    
     #Deprecated
@@ -49,6 +49,8 @@ if ($#ARGV ==-1)
     print "   ................................Int: '12,34' channels 1 and 2, 3 and 4.\n";    
     print "   ................................Int: '12' combine channels 1 and 2\n";
     print "   ................................Int: '34' combine channels 3 and 4.\n";
+    print "  -winCombMode  <mode>.............Mode: 'additive' values of the channels add in single intervals, default value\n";
+    print "   ................................Mode: 'sign' values of the channels are combined in a track, one channel as negative and the other as positive\n";    
     print "  -winViewLim   <int>..............Int: This option set the browser maximun to be shown in bedGraph window files.\n";      
     print "  -outGenome    <file>.............Value: name of the genome file from \"-create chr\"\n";    
     print "  -outCytoband  <file>.............Value: name of cytoband like file from \"-generate cytobandFile\"\n";
@@ -562,6 +564,7 @@ sub check_parameters
     $rp->{winMode} = 1;
     $rp->{winFile} = 1;
     $rp->{winCh2comb} = 1;
+    $rp->{winCombMode} = 1;
     $rp->{winViewLim} = 1;   
     $rp->{allFiles} = 1;
     $rp->{outdata} = 1;
@@ -1304,7 +1307,15 @@ sub data2win
   		my $winParam = $param -> {window}? $param->{window} : "Value"; 
     	#my $winSize = $param->{ws}? 3600 * $param->{ws} : 1800; #by default win 30 minuts
     	my $winSize = exists ($param->{ws})? $param->{ws} : 1800; #by default win 30 minuts in seconds    	
-    	my $winStepSize = exists ($param->{wss})? $param->{wss} : 300; #by default win 5 minuts in seconds    	    	    	       
+    	my $winStepSize = exists ($param->{wss})? $param->{wss} : 300; #by default win 5 minuts in seconds
+    	my $winCombMode = (exists ($param->{winCh2comb}) && !exists ($param->{winCombMode}))? "additive" : $param->{winCombMode};     	    	    	       
+    	
+    	#our $param->{winCh2comb} = (!exists ($param->{winCh2comb}) && exists ($param->{winCombMode}))? "12,34" : $param->{winCh2comb}; 
+    	if (!exists ($param->{winCh2comb}) && exists ($param->{winCombMode}))
+    	 {
+    	   print STDERR "FATAL ERROR: winCh2comb was not set\n";
+    	 }
+    	 
     	my $winFile = $param -> {winFile}? $param -> {winFile} : "";
     	#my $winMode = $param -> {winMode}? $param -> {winMode} : "discrete"; #by default discrete
     	my $viewLimits = $param -> {winViewLim}? $param -> {winViewLim} : "0.5";
@@ -1324,39 +1335,62 @@ sub data2win
     		
     	#hashUnitWin will be a hash with data divided in intervals of size equal to the greater common divisor between ws and wss
     	elsif ($winSize > $winStepSize)
-			{   
-			    							
-    			$winSize2dataWinDistro = &euclideanAlgGCD ($winSize, $winStepSize);     			  			
-				$hashUnitWin = &data2winDistro ($d, $param, $winSize2dataWinDistro);							
-			}
+			 {   			    						
+    	   $winSize2dataWinDistro = &euclideanAlgGCD ($winSize, $winStepSize);     			  			
+				 $hashUnitWin = &data2winDistro ($d, $param, $winSize2dataWinDistro);							
+			 }
     	else
     		{
     			print STDERR "FATAL ERROR: window size should be equal or greater than window step size\n";
     			die; 
     		}  
-    	
+    	    	
     	#Combining channels if the parameter  winCh2comb is set
-    	#here it is possible to use unionBedGraphs to combine hashUnitWin first I should write bedGraph temp files
+    	#here it is possible to use unionBedGraphs a bedtools tool to combine hashUnitWin first I should write bedGraph temp files first
     	#http://seqanswers.com/forums/showthread.php?t=6424
     	#the hash could be dump into a temp bedGraph file, and a bedGraph file could be easily read into a hash   
-    	$hashUnitWin = exists ($param->{winCh2comb}) ? &joinChannelsUnitWin ($hashUnitWin) : $hashUnitWin;
-    	
-    	#In this case, no sliding window, discrete intervals, the $hashUnitWin it is directly the output  	    	
-    	if ($winStepSize == $winSize)
-    		{
-    			$hashWin = $hashUnitWin;
-    		}
-    	#The discrete intervals of the GCD size will be joint by the ws and in a sliding window with wss	
-    	else
-    		{		
-    			$hashWin = &joinUnitWindow2winSize ($hashUnitWin, $winSize, $winStepSize, $winSize2dataWinDistro);
-    		}
-    	
-    	#print Dumper ($hashWin);	
-    	&writeWindowBedPhile ($hashWin, $winFile);    		   
-	}	
+    	if (exists ($param->{winCh2comb}))
+    	 {
+    	   if ($winCombMode eq "additive")
+    	     {
+    	       $hashUnitWin = &joinChannelsUnitWin ($hashUnitWin);
+    	     }
+    	   elsif ($winCombMode eq "sign")
+    	     {
+    	       $hashUnitWin = $hashUnitWin;
+    	     }
+    	   else
+    	     {
+    	       print STDERR "FATAL ERROR: winCombMode \"$winCombMode\" provided is unknown\n";
+    	       die;  
+    	     }    	       	 
+    	 }
+    	 
+    	$hashUnitWin = $hashUnitWin;
+    	    	
+  	  #In this case, no sliding window, discrete intervals, the $hashUnitWin it is directly the output  	    	
+      if ($winStepSize == $winSize)
+        {
+          $hashWin = $hashUnitWin;
+        }
+      #The discrete intervals of the GCD size will be joint by the ws and in a sliding window with wss	
+      else
+        {		
+      	 $hashWin = &joinUnitWindow2winSize ($hashUnitWin, $winSize, $winStepSize, $winSize2dataWinDistro);
+        }
+        
+      if ($winCombMode eq "" || $winCombMode eq "additive") 
+    	  { 	
+         &writeWindowBedFile ($hashWin, $winFile);
+    	  }
+    	elsif ($winCombMode eq "sign")
+    	  {    	   
+    	   &writeWindowBedFileSign ($hashWin, $winFile);    	  
+    	  }    	
+  }	
 
-#Return a hash with all the values of intervals within ws of the field set in "window"
+### data2winDistro
+#Returns a hash with all the values of intervals within ws of the field set in "window"
 #hashWin will have the following structure:
 #'1' => {                                                         Cage
 #                   '1' => {                                      Channel
@@ -1517,6 +1551,7 @@ sub joinChannelsUnitWin
 	  		
 	  	return ($hJoinChUnitWin);
 	}	
+
 #Reads the channels to combine given by -winCh2comb parameter
 #12, 34 for example will means join ch 1 and 2, and 3 and 4
 sub readWinComb 
@@ -1668,7 +1703,7 @@ sub joinUnitWindow2winSize
 	}
 
 #This function writes bedGraph format window file	
-sub writeWindowBedPhile
+sub writeWindowBedFile
 	{
 		my $h = shift;
 		my $winFile = shift;
@@ -1694,12 +1729,12 @@ sub writeWindowBedPhile
 	  								
     					my $file = $winFile."cage".$c."ch".$nature.$chN.".bedGraph";
     				
-      					my $F= new FileHandle;
-      				
-				      	vfopen ($F, ">$file");
-				      				
-				      	#Add track line specifications for the genome browser
-				      	#link to field info http://genome.ucsc.edu/goldenPath/help/customTrack.html#TRACK
+    					my $F= new FileHandle;
+    				
+			      	vfopen ($F, ">$file");
+			      				
+			      	#Add track line specifications for the genome browser
+			      	#link to field info http://genome.ucsc.edu/goldenPath/help/customTrack.html#TRACK
 				    	print $F "track ";
 				    	print $F "type=$type ";	    				
 				    	print $F "name=", "\"cage ", $c, "\;", "ch", $nature, "\"", " ";
@@ -1723,11 +1758,174 @@ sub writeWindowBedPhile
 				    		}
 				    	
 				    	close ($F);
-	      				print STDERR "      Results of cumulative window for $winParam of cage $c, channel $chN, nature $nature in: $file\n";
+	      			print STDERR "      Results of cumulative window for $winParam of cage $c, channel $chN, nature $nature in: $file\n";
 	  				}
 	  		}
 	}
-	
+
+#This function plots channels set to combine by -winCh2comb as intervals of same range
+#but different sign	
+sub writeWindowBedFileSign
+	{	
+	  my $h = shift;
+		my $winFile = shift;
+		my $winParam = $param->{window};
+			
+		my $hUnitWin = shift;
+		my ($hChComb) = {};
+		my ($hJoinChUnitWin) = {};
+				
+		my ($comb, $i);
+		
+    my ($negativeSW) = &setSignChannels ($h);
+		
+		my $i = 0;
+		my ($chr, $startInt, $endInt, $acuValue);
+		
+		#Defines the initial display mode of the annotation track. Values for display_mode include: 0 - hide, 1 - dense, 2 - full, 3 - pack, and 4 - squish
+		my $viewLimits = $param -> {winViewLim}? $param -> {winViewLim} : "0.5";
+  	my $visibility = "full";#by the moment hardcoded in future it might be a parameter
+  	my $color = "200,100,0";
+  	my $altColor = "0,100,200";
+  	my $priority = "20";
+  	my $type = "bedGraph";	
+    	
+  	foreach my $c (sort ({$a<=>$b} keys(%$h)))
+  		{	
+  			foreach my $chN (sort ({$a<=>$b} keys(%{$h->{$c}})))
+  				{	  		
+  					  					
+  					if (exists ($negativeSW->{$chN}))
+  					 {
+  					   my $chNNegative = $negativeSW->{$chN};
+  					   my $aryData = $h->{$c}{$chN}{data};
+  					   my $aryDataNegative = $h->{$c}{$chNNegative}{data};
+  					   my $nature = $h->{$c}{$chN}{Nature};
+  					   my $natureNegative = $h->{$c}{$chNNegative}{Nature};
+  					   
+  					   my $file = $winFile."cage".$c."ch".$nature.$natureNegative.$chN.$chNNegative.".bedGraph";
+  				
+    					 my $F= new FileHandle;
+    				
+			      	 vfopen ($F, ">$file");
+			      				
+			      	 #Add track line specifications for the genome browser
+			      	 #link to field info http://genome.ucsc.edu/goldenPath/help/customTrack.html#TRACK
+			    	   print $F "track ";
+			    	   print $F "type=$type ";	    				
+    		    	 print $F "name=", "\"cage ", $c, "\;", "ch", $nature, $natureNegative, "\"", " ";
+    		    	 print $F "description=", "\"cage ", $c, "\;", $nature, $natureNegative, "\"", " ";
+    		    	 print $F "visibility=", $visibility, " ";
+    		    	 if ($viewLimits ne "auto") {print $F "viewLimits=", $viewLimits, " ";} 
+    		    	 print $F "color=", $color, " ";
+    		    	 print $F "altcolor=", $altColor, " ";
+    		    	 print $F "priority=", $priority, " ";
+    		    	 print $F "\n";
+			    	   
+			    	   my $NInt = (scalar (@$aryData) => scalar (@$aryDataNegative))? scalar (@$aryData) : scalar (@$aryDataNegative);  
+			    	   
+			    	   for ($i = 0; $i < $NInt; $i++)
+			    		   {
+			    		     if (exists ($aryData->[$i]))
+			    		       {			    		     
+			    		         my $hItem = $aryData->[$i];			    			       
+			    			       $chr = $hItem->{'chr'};
+			    			       $startInt = $hItem->{'startInt'};
+			    			       $endInt = $hItem->{'endInt'};
+			    			       $acuValue = $hItem->{'acuValue'}; 
+			    			       print $F "$chr\t$startInt\t$endInt\t$acuValue\n";
+			    		       }
+			    		     if (exists ($aryDataNegative->[$i]))
+			    		       {			    		     
+			    		         my $hItem = $aryDataNegative->[$i];			    			       
+			    			       $chr = $hItem->{'chr'};
+			    			       $startInt = $hItem->{'startInt'};
+			    			       $endInt = $hItem->{'endInt'};
+			    			       $acuValue = -$hItem->{'acuValue'}; 
+			    			       print $F "$chr\t$startInt\t$endInt\t$acuValue\n";
+			    		       }
+			    		         
+			    		   }
+			    	
+			    	   close ($F);
+      				 print STDERR "      Results of cumulative window for $winParam of cage $c, channel $chN, nature $nature in: $file\n";
+  					 }
+  				  else
+  				    {
+  				      next;
+  				    }
+  				}
+  		}
+	  			  							
+	}
+
+#Function sets which channels are going to be plot as negative values. 
+#The general criteria is for food:channels are set to positive if they contain SC 
+#                        for liquid: channels are set to positive if they contain Water 
+#                        if they have the same nature then the 1st is positive and the 2nd negative   
+sub setSignChannels
+		{
+		  my $h = shift;
+		  my $hChComb = &readWinComb ();
+		  my $comb;
+		  my $natures = {}; 		  
+		  my $negativeSW = {};
+		  
+		  foreach my $c (sort ({$a<=>$b} keys(%$h)))
+  		  {	
+  			 foreach my $chN (sort ({$a<=>$b} keys(%{$h->{$c}})))
+  			   {		  		
+  				    $natures->{$chN} = $h->{$c}{$chN}{Nature};	  					
+  				 }
+  			 last;	
+  		  }
+  					   
+		  foreach $comb (keys (%$hChComb))
+	  				{	  					
+	  					if ( exists ($hChComb->{$comb}{"1"}) && exists ($hChComb->{$comb}{"2"}) && exists ($hChComb->{$comb}{"3"}) && exists ($hChComb->{$comb}{"4"})
+	  					     ||exists ($hChComb->{$comb}{"1"}) && exists ($hChComb->{$comb}{"3"}) || exists ($hChComb->{$comb}{"1"}) && exists ($hChComb->{$comb}{"4"}) 
+	  						   || exists ($hChComb->{$comb}{"2"}) && exists ($hChComb->{$comb}{"3"}) || exists ($hChComb->{$comb}{"2"}) && exists ($hChComb->{$comb}{"4"}))	  							
+	  					  {
+	  					    print STDERR "FATAL ERROR: -winCombMode does not allow this channel combination $param -> {winCh2comb}\n"; 
+	  					  } 
+	  					
+	  					elsif (exists ($hChComb->{$comb}{"1"}) && exists ($hChComb->{$comb}{"2"})) 
+	  						{	  							
+	  							
+	  							if ($natures->{"1"} eq "water") 
+	  							  {
+	  							    $negativeSW->{"1"} = 2;
+	  							  }
+	  							elsif ($natures->{"2"} eq "water")
+	  							  {	  							    
+	  							    $negativeSW->{"2"} = 1;
+	  							  }  
+	  							else
+	  							  {
+	  							    $negativeSW->{"1"} = 2;
+	  							  }   
+	  						}
+	  						
+	  					elsif (exists ($hChComb->{$comb}{"3"}) && exists ($hChComb->{$comb}{"4"}))
+	  					  {
+	  					    if ($natures->{"3"} eq "food_sc") 
+	  							  {
+	  							    $negativeSW->{"3"} = 4;
+	  							  }
+	  							elsif ($natures->{"4"} eq "food_sc")
+	  							  {	  							    
+	  							    $negativeSW->{"4"} = 3;
+	  							  }
+	  							else
+	  							  {
+	  							   $negativeSW->{"3"} = 4;	  							  
+	  							  } 
+	  					  }
+	  				}
+	  				
+	   return ($negativeSW);
+		}
+		
 sub splitAry 
 	{
 		my $ary = shift;
