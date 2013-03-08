@@ -1431,11 +1431,13 @@ sub data2winDistro
 	  					$endInt = $winSize;
 	  					
 	  					#Getting the nature of the channel (food_SC, fat_food, ...) for file name
-	    				foreach my $t (sort (keys (%{$d->{$c}})))
+	  					#We inspect the hash in a reverse way because some files start with habituation phase, both food channels have food_sc
+	    				foreach my $t (sort ({$b<=>$a} keys (%{$d->{$c}})))	    				
       						{      							      								
       							if ($d->{$c}{$t}{Channel} eq $ch)
       								{
       									$nature = $d->{$c}{$t}{Nature};       									      									  									      												
+      									print "$nature------------\n";
       									last;		
       								}
       							else
@@ -1444,7 +1446,7 @@ sub data2winDistro
       								}	
       						}
       												
-						my @aryCh; #An ary for each channel
+						  my @aryCh; #An ary for each channel
 	    					
 	  					foreach my $t (sort (keys (%{$d->{$c}})))
       						{   
@@ -1793,11 +1795,10 @@ sub writeWindowBedFileSign
   	foreach my $c (sort ({$a<=>$b} keys(%$h)))
   		{	
   			foreach my $chN (sort ({$a<=>$b} keys(%{$h->{$c}})))
-  				{	  		
-  					  					
-  					if (exists ($negativeSW->{$chN}))
+  				{	  		  					  						
+  					if (exists ($negativeSW->{$c}{$chN}))
   					 {
-  					   my $chNNegative = $negativeSW->{$chN};
+  					   my $chNNegative = $negativeSW->{$c}{$chN};
   					   my $aryData = $h->{$c}{$chN}{data};
   					   my $aryDataNegative = $h->{$c}{$chNNegative}{data};
   					   my $nature = $h->{$c}{$chN}{Nature};
@@ -1870,14 +1871,15 @@ sub setSignChannels
 		  my $comb;
 		  my $natures = {}; 		  
 		  my $negativeSW = {};
+		  my $positiveNature = "";
 		  
 		  foreach my $c (sort ({$a<=>$b} keys(%$h)))
   		  {	
   			 foreach my $chN (sort ({$a<=>$b} keys(%{$h->{$c}})))
   			   {		  		
-  				    $natures->{$chN} = $h->{$c}{$chN}{Nature};	  					
+  				    $natures->{$c}{$chN} = $h->{$c}{$chN}{Nature};  				    	  					
   				 }
-  			 last;	
+  			 next;  			 	
   		  }
   					   
 		  foreach $comb (keys (%$hChComb))
@@ -1892,40 +1894,54 @@ sub setSignChannels
 	  					elsif (exists ($hChComb->{$comb}{"1"}) && exists ($hChComb->{$comb}{"2"})) 
 	  						{	  							
 	  							
-	  							if ($natures->{"1"} eq "water") 
-	  							  {
-	  							    $negativeSW->{"1"} = 2;
-	  							  }
-	  							elsif ($natures->{"2"} eq "water")
-	  							  {	  							    
-	  							    $negativeSW->{"2"} = 1;
-	  							  }  
-	  							else
-	  							  {
-	  							    $negativeSW->{"1"} = 2;
-	  							  }   
-	  						}
-	  						
+	  							#$negativeSW = &setNegativeCh ($ch1, $ch2, $positiveNature, $hashNatures);
+	  							$positiveNature = "water";
+	  							$negativeSW = &setNegativeCH ("1", "2", $positiveNature, $natures, $negativeSW);	  								  						
+	  						}	
+	  							 	  							  					
 	  					elsif (exists ($hChComb->{$comb}{"3"}) && exists ($hChComb->{$comb}{"4"}))
 	  					  {
-	  					    if ($natures->{"3"} eq "food_sc") 
-	  							  {
-	  							    $negativeSW->{"3"} = 4;
-	  							  }
-	  							elsif ($natures->{"4"} eq "food_sc")
-	  							  {	  							    
-	  							    $negativeSW->{"4"} = 3;
-	  							  }
-	  							else
-	  							  {
-	  							   $negativeSW->{"3"} = 4;	  							  
-	  							  } 
+	  					    $positiveNature = "food_sc";
+	  					    $negativeSW = &setNegativeCH ("3", "4", $positiveNature, $natures, $negativeSW);	  					    	  					   
 	  					  }
 	  				}
 	  				
 	   return ($negativeSW);
 		}
-		
+
+#This function gets a nature from which values will be positive bars inside bedgraph file
+#search this nature and if it founds it the other channel is set to negative
+#Right now if both channels have the same nature first occurrence set to positive and
+#second to negative, I might also change this and in this case set a flag to cumulate
+#this values in the same track depending of how clear are figures
+sub setNegativeCH
+  {
+    my $ch1 = shift;
+    my $ch2 = shift;
+    my $positiveNature = shift;
+    my $hashNatures = shift;
+    my $negativeSW = shift;
+    
+    foreach my $c (sort ({$a<=>$b} keys (%$hashNatures)))
+      {
+        if ($hashNatures->{$ch1} eq $positiveNature) 
+  	      {
+  	        $negativeSW->{$c}{$ch1} = $ch2;
+  	      }
+  	    elsif ($hashNatures->{$c}{$ch2} eq $positiveNature)
+  	      {	  							    
+  	        $negativeSW->{$c}{$ch2} = $ch1;
+  	      }
+  	    #it might be that both channels contain different things  
+  	    else
+  	      {
+  	        $negativeSW->{$c}{$ch1} = $ch2;
+  	      }     		                    
+      }
+      
+    return ($negativeSW);
+  }		
+  
 sub splitAry 
 	{
 		my $ary = shift;
