@@ -1436,8 +1436,7 @@ sub data2winDistro
       						{      							      								
       							if ($d->{$c}{$t}{Channel} eq $ch)
       								{
-      									$nature = $d->{$c}{$t}{Nature};       									      									  									      												
-      									print "$nature------------\n";
+      									$nature = $d->{$c}{$t}{Nature};       									      									  									      												      									
       									last;		
       								}
       							else
@@ -1752,11 +1751,13 @@ sub writeWindowBedFile
 				    		{
 				    			my $hItem = $aryData->[$i];
 				    			
+				    			$acuValue = $hItem->{'acuValue'};				    							    		
+				    			
 				    			$chr = $hItem->{'chr'};
 				    			$startInt = $hItem->{'startInt'};
 				    			$endInt = $hItem->{'endInt'};
-				    			$acuValue = $hItem->{'acuValue'}; 
-				    			print $F "$chr\t$startInt\t$endInt\t$acuValue\n";
+				    			 
+				    			if ($acuValue == 0) {print $F "$chr\t$startInt\t$endInt\t$acuValue\n";}
 				    		}
 				    	
 				    	close ($F);
@@ -1834,7 +1835,7 @@ sub writeWindowBedFileSign
 			    			       $startInt = $hItem->{'startInt'};
 			    			       $endInt = $hItem->{'endInt'};
 			    			       $acuValue = $hItem->{'acuValue'}; 
-			    			       print $F "$chr\t$startInt\t$endInt\t$acuValue\n";
+			    			       if ($acuValue != 0) {print $F "$chr\t$startInt\t$endInt\t$acuValue\n";}
 			    		       }
 			    		     if (exists ($aryDataNegative->[$i]))
 			    		       {			    		     
@@ -1843,7 +1844,7 @@ sub writeWindowBedFileSign
 			    			       $startInt = $hItem->{'startInt'};
 			    			       $endInt = $hItem->{'endInt'};
 			    			       $acuValue = -$hItem->{'acuValue'}; 
-			    			       print $F "$chr\t$startInt\t$endInt\t$acuValue\n";
+			    			       if ($acuValue != 0) {print $F "$chr\t$startInt\t$endInt\t$acuValue\n";}
 			    		       }
 			    		         
 			    		   }
