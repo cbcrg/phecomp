@@ -51,7 +51,9 @@ if ($#ARGV ==-1)
     print "   ................................Int: '34' combine channels 3 and 4.\n";
     print "  -winCombMode  <mode>.............Mode: 'additive' values of the channels add in single intervals, default value\n";
     print "   ................................Mode: 'sign' values of the channels are combined in a track, one channel as negative and the other as positive\n";    
-    print "  -winViewLim   <int>..............Int: This option set the browser maximun to be shown in bedGraph window files.\n";      
+    print "  -winViewLim   <int>..............Int: This option set the browser maximun to be shown in bedGraph window files.\n";
+    print "  -winCage2comb <> ..............   <>:  Combine values of all cages by group\n";
+    print "  -caseGroup    <mode> ............Mode:  'even/odd' Defines which is the case group\n";
     print "  -outGenome    <file>.............Value: name of the genome file from \"-create chr\"\n";    
     print "  -outCytoband  <file>.............Value: name of cytoband like file from \"-generate cytobandFile\"\n";
     print "  -outPhaseBed  <file>.............Value: name of phases bed file from \"-generate phase2bed\"\n";
@@ -568,6 +570,9 @@ sub check_parameters
     $rp->{winViewLim} = 1;   
     $rp->{allFiles} = 1;
     $rp->{outdata} = 1;
+    $rp->{winCage2comb} = 1;
+    $rp->{caseGroup} = 1;
+    
     
     foreach my $k (keys (%$p))
       {
@@ -1309,6 +1314,7 @@ sub data2win
     	my $winSize = exists ($param->{ws})? $param->{ws} : 1800; #by default win 30 minuts in seconds    	
     	my $winStepSize = exists ($param->{wss})? $param->{wss} : 300; #by default win 5 minuts in seconds
     	my $winCombMode = (exists ($param->{winCh2comb}) && !exists ($param->{winCombMode}))? "additive" : $param->{winCombMode};     	    	    	       
+    	my $winBindCageCase = (exists ($param->{winCage2comb}) && !exists ($param->{caseGroup}))? "even" : $param->{caseGroup};     	    	    	       
     	
     	#our $param->{winCh2comb} = (!exists ($param->{winCh2comb}) && exists ($param->{winCombMode}))? "12,34" : $param->{winCh2comb}; 
     	if (!exists ($param->{winCh2comb}) && exists ($param->{winCombMode}))
@@ -1379,6 +1385,11 @@ sub data2win
         {		
       	 $hashWin = &joinUnitWindow2winSize ($hashUnitWin, $winSize, $winStepSize, $winSize2dataWinDistro);
         }
+      
+      if (exists ($param->{winCage2comb}))
+        {
+          $hashWin = &joinCages ($hashWin);
+        }  
         
       if ($winCombMode eq "" || $winCombMode eq "additive") 
     	  {     	    	
@@ -1766,6 +1777,55 @@ sub writeWindowBedFile
 	  				}
 	  		}
 	}
+
+sub joinCages
+  {
+    my $h = shift;		
+		my $caseGroup = $param->{caseGroup};
+		my $bindCageH = {};
+		my $hashAryCh = {};
+		my ($group, $i);
+		my @aryJoinCh;
+
+		foreach my $c (sort ({$a<=>$b} keys (%$h)))
+	  		{	  		  	  		  
+	  		 if ($caseGroup eq "even" && $c % 2 == 0)  {$group = "case"}
+	  		 if ($caseGroup eq "even" && $c % 2 != 0) {$group = "control"}
+	  		 if ($caseGroup eq "odd" && $c % 2 == 0) {$group = "control"}
+	  		 if ($caseGroup eq "odd" && $c % 2 != 0) {$group ="case"}  
+	  		   		   					       
+	  		 foreach my $chN (sort ({$a<=>$b} keys(%{$h->{$c}})))
+	  		   {
+	  		     my $data1 = ($h->{$c}{$chN}{data});
+  		       my $data2 = ($bindCageH->{$group}{$chN}{data});
+  		       my @aryJoinCh;
+  		        		         		      
+  		       for($i = 0; $i < scalar (@$data1)-1; $i++)  
+  			       {
+  				       my $h1 = $data1->[$i];
+  				       my $h2 = $data2->[$i];
+  				       my $hJoin = {};
+
+  				       foreach my $key (keys (%$h1))
+  					       {    					         					            					      
+  					         if ($key =~ /acuValue/)
+  							       {  							         
+  							         $hJoin->{$key} = $h1->{$key} + $h2->{$key}; 
+  							       }
+  						        else 
+  							       {
+  								      $hJoin->{$key} = $h1->{$key};
+  							       }	    					        
+  					       }  				        
+  				        push (@aryJoinCh, $hJoin);  				          				      
+  			       }
+  			       
+  			       delete ($bindCageH->{$group}{$chN}{data});
+  			       $bindCageH->{$group}{$chN}{data} = \@aryJoinCh;  		          		      
+	  				}
+	  		}
+	  		return ($bindCageH);
+  }
 
 #This function plots channels set to combine by -winCh2comb as intervals of same range
 #but different sign	
