@@ -1335,10 +1335,10 @@ sub data2win
     		
     	#hashUnitWin will be a hash with data divided in intervals of size equal to the greater common divisor between ws and wss
     	elsif ($winSize > $winStepSize)
-			 {   			    						
-    	   $winSize2dataWinDistro = &euclideanAlgGCD ($winSize, $winStepSize);     			  			
-				 $hashUnitWin = &data2winDistro ($d, $param, $winSize2dataWinDistro);							
-			 }
+			{   			    						
+    	        $winSize2dataWinDistro = &euclideanAlgGCD ($winSize, $winStepSize);     			  			
+				$hashUnitWin = &data2winDistro ($d, $param, $winSize2dataWinDistro);							
+			}
     	else
     		{
     			print STDERR "FATAL ERROR: window size should be equal or greater than window step size\n";
@@ -1355,6 +1355,7 @@ sub data2win
     	     {
     	       $hashUnitWin = &joinChannelsUnitWin ($hashUnitWin);
     	     }
+    	   #If parameter is sign no channels have to be joined, channels are discriminated by sign  
     	   elsif ($winCombMode eq "sign")
     	     {
     	       $hashUnitWin = $hashUnitWin;
@@ -1366,7 +1367,7 @@ sub data2win
     	     }    	       	 
     	 }
     	 
-    	$hashUnitWin = $hashUnitWin;
+      $hashUnitWin = $hashUnitWin;
     	    	
   	  #In this case, no sliding window, discrete intervals, the $hashUnitWin it is directly the output  	    	
       if ($winStepSize == $winSize)
@@ -1381,7 +1382,7 @@ sub data2win
         
       if ($winCombMode eq "" || $winCombMode eq "additive") 
     	  { 	
-         &writeWindowBedFile ($hashWin, $winFile);
+           &writeWindowBedFile ($hashWin, $winFile);
     	  }
     	elsif ($winCombMode eq "sign")
     	  {    	   
