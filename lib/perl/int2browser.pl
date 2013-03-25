@@ -1350,7 +1350,13 @@ sub data2win
     			print STDERR "FATAL ERROR: window size should be equal or greater than window step size\n";
     			die; 
     		}  
-    	    	
+    	
+    	#Joining all intervals of the same group (case/control)
+    	if (exists ($param->{winCage2comb}))
+        {
+          $hashUnitWin = &joinCages ($hashUnitWin);
+        }
+      print Dumper ($hashUnitWin);      	
     	#Combining channels if the parameter  winCh2comb is set
     	#here it is possible to use unionBedGraphs a bedtools tool to combine hashUnitWin first I should write bedGraph temp files first
     	#http://seqanswers.com/forums/showthread.php?t=6424
@@ -1383,13 +1389,10 @@ sub data2win
       #The discrete intervals of the GCD size will be joint by the ws and in a sliding window with wss	
       else
         {		
-      	 $hashWin = &joinUnitWindow2winSize ($hashUnitWin, $winSize, $winStepSize, $winSize2dataWinDistro);
+      	  $hashWin = &joinUnitWindow2winSize ($hashUnitWin, $winSize, $winStepSize, $winSize2dataWinDistro);
         }
       
-      if (exists ($param->{winCage2comb}))
-        {
-          $hashWin = &joinCages ($hashWin);
-        }  
+        
         
       if ($winCombMode eq "" || $winCombMode eq "additive") 
     	  {     	    	
@@ -1397,7 +1400,7 @@ sub data2win
     	  }
     	elsif ($winCombMode eq "sign")
     	  {    	   
-    	   &writeWindowBedFileSign ($hashWin, $winFile);    	  
+    	     &writeWindowBedFileSign ($hashWin, $winFile);    	  
     	  }    	
   }	
 
