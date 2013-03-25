@@ -1367,7 +1367,7 @@ sub data2win
     	     }    	       	 
     	 }
     	 
-      $hashUnitWin = $hashUnitWin;
+      #$hashUnitWin = $hashUnitWin;
     	    	
   	  #In this case, no sliding window, discrete intervals, the $hashUnitWin it is directly the output  	    	
       if ($winStepSize == $winSize)
@@ -1381,7 +1381,7 @@ sub data2win
         }
         
       if ($winCombMode eq "" || $winCombMode eq "additive") 
-    	  { 	
+    	  {     	    	
            &writeWindowBedFile ($hashWin, $winFile);
     	  }
     	elsif ($winCombMode eq "sign")
@@ -1758,7 +1758,7 @@ sub writeWindowBedFile
 				    			$startInt = $hItem->{'startInt'};
 				    			$endInt = $hItem->{'endInt'};
 				    			 
-				    			if ($acuValue == 0) {print $F "$chr\t$startInt\t$endInt\t$acuValue\n";}
+				    			if ($acuValue > 0) {print $F "$chr\t$startInt\t$endInt\t$acuValue\n";}
 				    		}
 				    	
 				    	close ($F);
