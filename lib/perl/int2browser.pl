@@ -1356,8 +1356,8 @@ sub data2win
         {
           $hashUnitWin = &joinCages ($hashUnitWin);
         }
-      print Dumper ($hashUnitWin);      	
-    	#Combining channels if the parameter  winCh2comb is set
+      
+      #Combining channels if the parameter  winCh2comb is set
     	#here it is possible to use unionBedGraphs a bedtools tool to combine hashUnitWin first I should write bedGraph temp files first
     	#http://seqanswers.com/forums/showthread.php?t=6424
     	#the hash could be dump into a temp bedGraph file, and a bedGraph file could be easily read into a hash   
