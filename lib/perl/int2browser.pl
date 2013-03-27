@@ -105,6 +105,12 @@ $colorsSingleTone -> {"food_fat"} = "0,128,0";
 
 $param = &process_param (@ARGV);
 
+#This parameter is set to separate water into water1 and water2 and all repeated channels so joinCages works correctly
+if (exists ($param->{winCage2comb})) 
+  {    
+    $diffCh = 1;    
+  }
+  
 #Reads the data
 $d = &readData ($d, $param);
 
@@ -631,7 +637,6 @@ sub changeDayPhases2cytobandLikeFile
     #Searching the first change to light phase taking place in the data
     $secAfterLastMidnight = $start % (3600 * 24);                
    
-    #print $start, "\n";die;#del
     if ($secAfterLastMidnight > (3600 * $iniLightPh))
       {
       	#As the start is after the change to light, we calculate unix midnight, add seconds until change to light and we add a whole day
@@ -722,7 +727,6 @@ sub changeDayPhases2bedLikeFile
     #Searching the first change to light phase taking place in the data
     $secAfterLastMidnight = $start % (3600 * 24);                
    
-    #print $start, "\n";die;#del
     if ($secAfterLastMidnight > (3600 * $iniLightPh))
       {
       	#As the start is after the change to light, we calculate unix midnight, add seconds until change to light and we add a whole day
@@ -1356,7 +1360,7 @@ sub data2win
         {
           $hashUnitWin = &joinCages ($hashUnitWin);
         }
-      
+     
       #Combining channels if the parameter  winCh2comb is set
     	#here it is possible to use unionBedGraphs a bedtools tool to combine hashUnitWin first I should write bedGraph temp files first
     	#http://seqanswers.com/forums/showthread.php?t=6424
@@ -1391,8 +1395,6 @@ sub data2win
         {		
       	  $hashWin = &joinUnitWindow2winSize ($hashUnitWin, $winSize, $winStepSize, $winSize2dataWinDistro);
         }
-      
-        
         
       if ($winCombMode eq "" || $winCombMode eq "additive") 
     	  {     	    	
@@ -1789,7 +1791,25 @@ sub joinCages
 		my $hashAryCh = {};
 		my ($group, $i);
 		my @aryJoinCh;
-
+    my $hashNatureChN = {};
+    
+    foreach my $c (sort ({$a<=>$b} keys (%$h)))
+	  		{	  	
+	  		 
+         if ($caseGroup eq "even" && $c % 2 == 0)  {$group = "case"}
+	  		 if ($caseGroup eq "even" && $c % 2 != 0) {$group = "control"}
+	  		 if ($caseGroup eq "odd" && $c % 2 == 0) {$group = "control"}
+	  		 if ($caseGroup eq "odd" && $c % 2 != 0) {$group ="case"}
+	  		  	  	  		  	  		   	  		   		   					     
+	  		 foreach my $chN (sort ({$a<=>$b} keys(%{$h->{$c}})))
+	  		   {
+	  		     my $nature = $h->{$c}{$chN}{Nature};
+	  		     if ($nature =~ /food_cd/) {$nature = "food_cd"}
+	  		     if ($nature =~ /food_sc/ && $group eq "case") {$nature = "food_sc"}	  		     
+	  		     $hashNatureChN->{$group}{$nature} = $chN; 
+	  		   }
+	  		}
+	  		     
 		foreach my $c (sort ({$a<=>$b} keys (%$h)))
 	  		{	  		  	  		  
 	  		 if ($caseGroup eq "even" && $c % 2 == 0)  {$group = "case"}
@@ -1800,10 +1820,26 @@ sub joinCages
 	  		 foreach my $chN (sort ({$a<=>$b} keys(%{$h->{$c}})))
 	  		   {
 	  		     my $data1 = ($h->{$c}{$chN}{data});
-  		       my $data2 = ($bindCageH->{$group}{$chN}{data});
+	  		     
+	  		     #I check the nature and keep it as key so that data of same nature goes together
+	  		     #at the end I reference back the natures to channel number
+	  		     #In the case of free choice I don't want to separate into food_cd_3 and food_cd_4 that's why I join them
+	  		     #by the same nature. The channel number of course it corresponds to the last cage but it is not important
+	  		     #as channel number keeps changing from 3 to 4
+	  		     my $nature = $h->{$c}{$chN}{Nature};
+	  		     
+	  		     if ($nature =~ /food_cd/) {$nature = "food_cd"}
+	  		     if ($nature =~ /food_sc/ && $group eq "case") {$nature = "food_sc"}
+	  		     
+	  		     #my $data2 = ($bindCageH->{$group}{$chN}{data});
+  		       my $data2;  		       
+  		       my $data2 = ($bindCageH->{$group}{$nature}{data});
   		       my @aryJoinCh;
   		        		         		      
-  		       for($i = 0; $i < scalar (@$data1)-1; $i++)  
+  		       #for($i = 0; $i < scalar (@$data1)-1; $i++)
+  		       my $culo = scalar (@$data1);
+  		       
+  		       for($i = 0; $i < scalar (@$data1); $i++)    			         
   			       {
   				       my $h1 = $data1->[$i];
   				       my $h2 = $data2->[$i];
@@ -1823,11 +1859,32 @@ sub joinCages
   				        push (@aryJoinCh, $hJoin);  				          				      
   			       }
   			       
-  			       delete ($bindCageH->{$group}{$chN}{data});
-  			       $bindCageH->{$group}{$chN}{data} = \@aryJoinCh;  		          		      
+#  			       delete ($bindCageH->{$group}{$chN}{data});
+#              delete ($bindCageH->{$group}{$nature}{data});
+
+#  			       $bindCageH->{$group}{$chN}{data} = \@aryJoinCh;
+  			       $bindCageH->{$group}{$nature}{data} = \@aryJoinCh;
+  			       
+               $bindCageH->{$group}{$nature}{Nature} = $nature;
+
 	  				}
 	  		}
-	  		return ($bindCageH);
+	  		
+	  		my $newBindCageH = {};
+	  		
+	  		foreach my $g (sort ({$a<=>$b} keys (%$bindCageH)))
+	  		 {
+	  		   foreach my $n (sort ({$a<=>$b} keys(%{$bindCageH->{$g}})))
+	  		     {
+	  		       
+	  		       my $num = $hashNatureChN->{$g}{$n};
+	  		       $newBindCageH->{$g}{$num} = $bindCageH->{$g}{$n}
+	  		     }
+	  		 }
+	  		
+	  		#return ($bindCageH);	  		
+	  		return ($newBindCageH) ;
+	  		
   }
 
 #This function plots channels set to combine by -winCh2comb as intervals of same range
