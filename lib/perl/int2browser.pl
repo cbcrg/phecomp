@@ -26,9 +26,9 @@ if ($#ARGV ==-1)
     print "****************** Flags      **************************\n";
     print "  -data  <file1 file2.. >.........File: input data from file(s).\n";
     print "  -convert       <mode> ...........Mode: 'int2bed' convert an intervals file (raw data) into a bed file\n";
- 	  print "  -convertMode   <mode> ...........Mode: 'singleCh2track' each channel in the raw data converted into a single track bed file\n";
- 	  print "  .................................Mode: 'allFoodCh2track' food channels combined into the same track bed file\n"; 
- 	  print "  .................................Mode: 'allCh2track' food and drink channels combined into the same track bed file\n";  											  	
+ 	print "  -convertMode   <mode> ...........Mode: 'singleCh2track' each channel in the raw data converted into a single track bed file\n";
+ 	print "  .................................Mode: 'allFoodCh2track' food channels combined into the same track bed file\n"; 
+ 	print "  .................................Mode: 'allCh2track' food and drink channels combined into the same track bed file\n";  											  	
     print "  -outBed        <file> ...........File:  name of the output Bed file containning the resulting tracks.\n";
     print "  -create        <file> ...........Mode: 'chr' produces a chromosome to be load as a genome with the length of the experiment in seconds\n";    
     #Deprecated
@@ -606,46 +606,14 @@ sub changeDayPhases2cytobandLikeFile
     #By the moment I set the delta phase to 12 in case the phases are not symetric then I should see how to further implement the code
     my $deltaPh = 12; # = $A->{deltaPh}; my deltaPhTwo = 24 - $deltaPh;  
     
-    my ($a,$b, $start, $end, $delta, $secAfterLastMidnight, $firstPhLightChange, $day, $file); 
-    my $time={};
+    #my ($a,$b, $start, $end, $delta, $secAfterLastMidnight, $firstPhLightChange, $day, $file);
+    my ($a, $b, $day, $file, $start, $end, $firstPhLightChange);  
     
     $start=$end=-1;
     
     #Traversing all intervals to set initial and end time
     ($start, $end) = &firstAndLastTime ($d, $param);
-      
-    if (!$ph) {$ph="lightDark"; $delta = 3600*12;}    
-    elsif ($ph eq "lightDark") {$delta = 3600*12;}
-    elsif ($ph eq "day") {$delta = 3600*24;}
-    
-    if (!$iniLightPh)
-      {
-        $iniLightPh = 6;
-        print STDERR "WARNING: Beginning of the light phase has been set to 8:00 AM as you didn't provide any info (iniLight)\n\n";
-      }
-    elsif ($iniLightPh !~ /^\d+$/) 
-      {
-        $iniLightPh = 6;
-        print STDERR "WARNING: Beginning of the light phase has been set to 6:00 AM GMT (8:00 spanish summer time) as the value provided by iniLight: $iniLightPh is not a number\n\n";
-      }
-    elsif ($iniLightPh < 1 || $iniLightPh > 24)
-      {
-        $iniLightPh = 6;
-        print STDERR "WARNING: Beginning of the light phase has been set to 6:00 AM GMT (8:00 spanish summer time) as the value provided by iniLight: $iniLightPh is not in the correct range\n\n";
-      }
-    
-    #Searching the first change to light phase taking place in the data
-    $secAfterLastMidnight = $start % (3600 * 24);                
-   
-    if ($secAfterLastMidnight > (3600 * $iniLightPh))
-      {
-      	#As the start is after the change to light, we calculate unix midnight, add seconds until change to light and we add a whole day
-        $firstPhLightChange =  $start - $secAfterLastMidnight  + ($iniLightPh * 3600) + (24 * 3600);    
-      }
-    else 
-      {
-        $firstPhLightChange =  $start - $secAfterLastMidnight  + ($iniLightPh * 3600);
-      }
+    $firstPhLightChange = &getFirstChange2LightPh ($d, $param, $start, $end);
     
     #opening the file
     $file = $outCytobandFile."_cytoBand".".txt";
@@ -696,46 +664,13 @@ sub changeDayPhases2bedLikeFile
     #By the moment I set the delta phase to 12 in case the phases are not symetric then I should see how to further implement the code
     my $deltaPh = 12; # = $A->{deltaPh}; my deltaPhTwo = 24 - $deltaPh;  
     
-    my ($a,$b, $start, $end, $delta, $secAfterLastMidnight, $firstPhLightChange, $day, $file); 
-    my $time={};
-    
+    my ($a, $b, $day, $file, $start, $end, $firstPhLightChange); 
+
     $start=$end=-1;
     
     #Traversing all intervals to set initial and end time
     ($start, $end) = &firstAndLastTime ($d, $param);
-      
-    if (!$ph) {$ph="lightDark"; $delta = 3600*12;}    
-    elsif ($ph eq "lightDark") {$delta = 3600*12;}
-    elsif ($ph eq "day") {$delta = 3600*24;}
-    
-    if (!$iniLightPh)
-      {
-        $iniLightPh = 6;
-        print STDERR "WARNING: Beginning of the light phase has been set to 8:00 AM as you didn't provide any info (iniLight)\n\n";
-      }
-    elsif ($iniLightPh !~ /^\d+$/) 
-      {
-        $iniLightPh = 6;
-        print STDERR "WARNING: Beginning of the light phase has been set to 6:00 AM GMT (8:00 spanish summer time) as the value provided by iniLight: $iniLightPh is not a number\n\n";
-      }
-    elsif ($iniLightPh < 1 || $iniLightPh > 24)
-      {
-        $iniLightPh = 6;
-        print STDERR "WARNING: Beginning of the light phase has been set to 6:00 AM GMT (8:00 spanish summer time) as the value provided by iniLight: $iniLightPh is not in the correct range\n\n";
-      }
-    
-    #Searching the first change to light phase taking place in the data
-    $secAfterLastMidnight = $start % (3600 * 24);                
-   
-    if ($secAfterLastMidnight > (3600 * $iniLightPh))
-      {
-      	#As the start is after the change to light, we calculate unix midnight, add seconds until change to light and we add a whole day
-        $firstPhLightChange =  $start - $secAfterLastMidnight  + ($iniLightPh * 3600) + (24 * 3600);    
-      }
-    else 
-      {
-        $firstPhLightChange =  $start - $secAfterLastMidnight  + ($iniLightPh * 3600);
-      }
+    $firstPhLightChange = &getFirstChange2LightPh ($d, $param, $start, $end);
     
     #opening the file
     $file = $outBedPhFile."_Phase".".bed";
@@ -782,6 +717,56 @@ sub changeDayPhases2bedLikeFile
    	printf "      Bed like file with day phases in: $file\n";
   }
 
+sub getFirstChange2LightPh
+  {
+    my $d = shift;
+    my $param = shift;
+    my $start = shift;
+    my $end = shift;
+    my $ph = $param->{phase};
+    my $iniLightPh = $param->{iniLight};
+    
+    my ($delta, $secAfterLastMidnight, $firstPhLightChange); 
+           
+    #Traversing all intervals to set initial and end time
+    ($start, $end) = &firstAndLastTime ($d, $param);
+    
+    if (!$ph) {$ph="lightDark"; $delta = 3600*12;}    
+    elsif ($ph eq "lightDark") {$delta = 3600*12;}
+    elsif ($ph eq "day") {$delta = 3600*24;}
+    
+    if (!$iniLightPh)
+      {
+        $iniLightPh = 6;
+        print STDERR "WARNING: Beginning of the light phase has been set to 8:00 AM as you didn't provide any info (iniLight)\n\n";
+      }
+    elsif ($iniLightPh !~ /^\d+$/) 
+      {
+        $iniLightPh = 6;
+        print STDERR "WARNING: Beginning of the light phase has been set to 6:00 AM GMT (8:00 spanish summer time) as the value provided by iniLight: $iniLightPh is not a number\n\n";
+      }
+    elsif ($iniLightPh < 1 || $iniLightPh > 24)
+      {
+        $iniLightPh = 6;
+        print STDERR "WARNING: Beginning of the light phase has been set to 6:00 AM GMT (8:00 spanish summer time) as the value provided by iniLight: $iniLightPh is not in the correct range\n\n";
+      }
+    
+    #Searching the first change to light phase taking place in the data
+    $secAfterLastMidnight = $start % (3600 * 24);                
+   
+    if ($secAfterLastMidnight > (3600 * $iniLightPh))
+      {
+      	#As the start is after the change to light, we calculate unix midnight, add seconds until change to light and we add a whole day
+        $firstPhLightChange =  $start - $secAfterLastMidnight  + ($iniLightPh * 3600) + (24 * 3600);    
+      }
+    else 
+      {
+        $firstPhLightChange =  $start - $secAfterLastMidnight  + ($iniLightPh * 3600);
+      }
+      
+    return ($firstPhLightChange);
+          
+  }	
 #Function to generate a file displaying tick marks each period of time selected
 sub timeDiv2bedFile
 	{
@@ -835,7 +820,7 @@ sub timeDiv2bedFile
 	    print $F "\n";
 	    close ($F);
 	}    	
-	
+  
 sub fromInt2chromosome
 	{
 		my $d = shift;
@@ -1882,7 +1867,8 @@ sub joinCages
 	  		     }
 	  		 }
 	  		
-	  		#return ($bindCageH);	  		
+	  		#return ($bindCageH);
+	  		print Dumper ($newBindCageH);	  		
 	  		return ($newBindCageH) ;
 	  		
   }
