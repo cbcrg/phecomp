@@ -26,9 +26,9 @@ if ($#ARGV ==-1)
     print "****************** Flags      **************************\n";
     print "  -data  <file1 file2.. >.........File: input data from file(s).\n";
     print "  -convert       <mode> ...........Mode: 'int2bed' convert an intervals file (raw data) into a bed file\n";
- 	print "  -convertMode   <mode> ...........Mode: 'singleCh2track' each channel in the raw data converted into a single track bed file\n";
- 	print "  .................................Mode: 'allFoodCh2track' food channels combined into the same track bed file\n"; 
- 	print "  .................................Mode: 'allCh2track' food and drink channels combined into the same track bed file\n";  											  	
+ 	  print "  -convertMode   <mode> ...........Mode: 'singleCh2track' each channel in the raw data converted into a single track bed file\n";
+ 	  print "  .................................Mode: 'allFoodCh2track' food channels combined into the same track bed file\n"; 
+ 	  print "  .................................Mode: 'allCh2track' food and drink channels combined into the same track bed file\n";  											  	
     print "  -outBed        <file> ...........File:  name of the output Bed file containning the resulting tracks.\n";
     print "  -create        <file> ...........Mode: 'chr' produces a chromosome to be load as a genome with the length of the experiment in seconds\n";    
     #Deprecated
@@ -53,6 +53,9 @@ if ($#ARGV ==-1)
     print "   ................................Mode: 'sign' values of the channels are combined in a track, one channel as negative and the other as positive\n";    
     print "  -winViewLim   <int>..............Int: This option set the browser maximun to be shown in bedGraph window files.\n";
     print "  -winCage2comb <> ..............   <>:  Combine values of all cages by group\n";
+    print "  -winJoinPhase <> ................Mode:  'mean/all' Combine all values of the same phase,\n"; 
+    print "                                          If mode is set to 'all' all values of the same time fraction are added otherwise by default the mean value is given.\n";
+    print "  -winJoinPhFormat <> .............Mode:  'bedGraph/table' 'table' result is given in a tabulated format otherwise by default output is a bedGraph file.\n";  
     print "  -caseGroup    <mode> ............Mode:  'even/odd' Defines which is the case group\n";
     print "  -outGenome    <file>.............Value: name of the genome file from \"-create chr\"\n";    
     print "  -outCytoband  <file>.............Value: name of cytoband like file from \"-generate cytobandFile\"\n";
@@ -578,7 +581,8 @@ sub check_parameters
     $rp->{outdata} = 1;
     $rp->{winCage2comb} = 1;
     $rp->{caseGroup} = 1;
-    
+    $rp->{winJoinPhase} = 1;
+    $rp->{winJoinPhFormat} = 1;
     
     foreach my $k (keys (%$p))
       {
@@ -1304,6 +1308,7 @@ sub data2win
     	my $winStepSize = exists ($param->{wss})? $param->{wss} : 300; #by default win 5 minuts in seconds
     	my $winCombMode = (exists ($param->{winCh2comb}) && !exists ($param->{winCombMode}))? "additive" : $param->{winCombMode};     	    	    	       
     	my $winBindCageCase = (exists ($param->{winCage2comb}) && !exists ($param->{caseGroup}))? "even" : $param->{caseGroup};     	    	    	       
+    	my $winBind = (exists ($param->{winCage2comb}) && !exists ($param->{caseGroup}))? "even" : $param->{caseGroup};     	    	    	       
     	
     	#our $param->{winCh2comb} = (!exists ($param->{winCh2comb}) && exists ($param->{winCombMode}))? "12,34" : $param->{winCh2comb}; 
     	if (!exists ($param->{winCh2comb}) && exists ($param->{winCombMode}))
@@ -1331,7 +1336,7 @@ sub data2win
     	#hashUnitWin will be a hash with data divided in intervals of size equal to the greater common divisor between ws and wss
     	elsif ($winSize > $winStepSize)
 			{   			    						
-    	        $winSize2dataWinDistro = &euclideanAlgGCD ($winSize, $winStepSize);     			  			
+    	  $winSize2dataWinDistro = &euclideanAlgGCD ($winSize, $winStepSize);     			  			
 				$hashUnitWin = &data2winDistro ($d, $param, $winSize2dataWinDistro);							
 			}
     	else
@@ -1380,7 +1385,12 @@ sub data2win
         {		
       	  $hashWin = &joinUnitWindow2winSize ($hashUnitWin, $winSize, $winStepSize, $winSize2dataWinDistro);
         }
-        
+      
+      if (exists ($param->{winJoinPhase}))
+        {                   
+          $hashWin = &joinByPhase ($hashWin, $param);
+        } 
+         
       if ($winCombMode eq "" || $winCombMode eq "additive") 
     	  {     	    	
            &writeWindowBedFile ($hashWin, $winFile);
@@ -1822,7 +1832,7 @@ sub joinCages
   		       my @aryJoinCh;
   		        		         		      
   		       #for($i = 0; $i < scalar (@$data1)-1; $i++)
-  		       my $culo = scalar (@$data1);
+  		       my $sc = scalar (@$data1);
   		       
   		       for($i = 0; $i < scalar (@$data1); $i++)    			         
   			       {
@@ -1868,11 +1878,215 @@ sub joinCages
 	  		 }
 	  		
 	  		#return ($bindCageH);
-	  		print Dumper ($newBindCageH);	  		
+	  		#print Dumper ($newBindCageH);	  		
 	  		return ($newBindCageH) ;
 	  		
   }
 
+#Join all the values belonging to the same time frame of the dark or light phase
+#The length of the interval depends on win size as the input is the data already in windows
+sub joinByPhase
+  {
+    my $d = shift;
+    my $param = shift;
+    
+    my $deltaPh = 12;
+    
+    my ($start, $end, $firstPhLightChange, $startTimePh, $phase, $i); 
+    my $hPhaseBoundaries = {};
+    $start=$end=-1;
+    
+    #Traversing all intervals to set initial and end time
+    ($start, $end) = &firstAndLastTime ($d, $param);
+    $firstPhLightChange = &getFirstChange2LightPh ($d, $param, $start, $end);
+    
+    $i = 1;
+    
+    #is start more than 12 hours before first change to light phases? -> then start is occurring during the previous light phase     
+    if ($start < ($firstPhLightChange - ($deltaPh * 3600)))
+    	{
+    	  $hPhaseBoundaries->{$i}{start} = $start - $start;
+    	  $hPhaseBoundaries->{$i}{end} = $firstPhLightChange -($deltaPh * 3600) - $start;
+    	  $hPhaseBoundaries->{$i}{phase} = "light";
+    	  $i = $i + 1; 
+    	  $hPhaseBoundaries->{$i}{start} = $firstPhLightChange -($deltaPh * 3600) - $start + 1;
+    	  $hPhaseBoundaries->{$i}{end} = $firstPhLightChange - $start;
+    	  $hPhaseBoundaries->{$i}{phase} = "dark";
+    	  
+    	  $startTimePh = $firstPhLightChange - $start + 1;
+    	  $phase = "light"; 
+    	}
+    else 
+    	{
+    	  $hPhaseBoundaries->{$i}{start} = $start - $start;
+    	  $hPhaseBoundaries->{$i}{end} = $firstPhLightChange - $start;    	  
+    	  $hPhaseBoundaries->{$i}{phase} = "dark";  
+    	  
+    	  $startTimePh = $firstPhLightChange - $start;
+    	  $phase = "light";     		
+    	}	
+
+    my ($hPh, $hCount) = {};
+    my $nextStartTimePh = "";
+    
+    foreach my $c (sort ({$a<=>$b} keys(%$d)))
+  		{	
+  			foreach my $chN (sort ({$a<=>$b} keys(%{$d->{$c}})))
+  		    {	  		  					  						  					
+  			    my $data = $d->{$c}{$chN}{data};  			   
+  			    my $nature = $d->{$c}{$chN}{Nature};
+  			   
+
+            my $indexHash = {};
+            my $periodBefore1stPh = "TRUE";
+            my @aryJoinPh;
+            
+            $indexHash->{light} = 1;
+            $indexHash->{dark} = 1;
+            $nextStartTimePh = $startTimePh; 
+             
+            for ($i = 0; $i < scalar (@$data)-1; $i++)    			         
+  		       {
+  		         my $h1 = $data->[$i];
+  		         my $t = $h1->{endInt};  			         
+  		           			         
+  		         #I jump all the intervals before the first entry from the beginning of the file into a light phase at 8:00
+  		         if ($periodBefore1stPh eq "TRUE" && $t < $startTimePh)
+  		           {   			             			            
+  		             next;
+  		           }
+  		         #While time it is inside the same phase I keep adding the values to the hash    			         
+  		         elsif ($t > $nextStartTimePh && $t <= $nextStartTimePh + $deltaPh * 3600)  			          
+  		           {  			            
+  		             $periodBefore1stPh = "FALSE";
+  		             
+  		             $hPh->{$c}{$chN."::".$nature}{$phase}{$indexHash->{$phase}}{value} += $h1->{acuValue};
+  		             $hPh->{$c}{$chN."::".$nature}{$phase}{$indexHash->{$phase}}{count}++;
+  		             $indexHash->{$phase}++; 
+  		           }
+  		         elsif ($t > $nextStartTimePh + $deltaPh * 3600)
+  		           {
+  		             $phase = ($phase eq "light")? "dark" : "light";
+  		             $indexHash->{$phase} = 1;
+                 			               			          
+  		             $hPh->{$c}{$chN."::".$nature}{$phase}{$indexHash->{$phase}}{value} += $h1->{acuValue};
+  		             $hPh->{$c}{$chN."::".$nature}{$phase}{$indexHash->{$phase}}{count}++;
+  		             $nextStartTimePh = $nextStartTimePh + $deltaPh * 3600;
+  		             $indexHash->{$phase}++;		             
+  		           }
+  		       }
+  		    } 
+  		}  
+  		        
+    $hPh = &hashPh2hashWin ($hPh);
+    
+    if ($param->{winJoinPhFormat} eq "table")
+      {          
+        &hashPh2tblFile ($hPh);                            
+        die;
+      }
+    else 
+      {
+        return ($hPh);
+      }             
+  }
+
+#Reformat the output of joinByPhase to a hash useful for default printing function of data2win (writeWindowBedFile and writeWindowBedFileSign)
+sub hashPh2hashWin
+  {
+    my $hPh = shift;
+    my $winSize = exists ($param->{ws})? $param->{ws} : 1800;
+    my $hWin = {};
+    
+    foreach my $c (sort ({$a<=>$b} keys(%$hPh)))
+  		{	
+  		  foreach my $chN (sort ({$a<=>$b} keys(%{$hPh->{$c}})))
+  		    {
+  		      my ($natureN, $natureName);
+  		      ($natureN, $natureName) = split ("::", $chN);
+  		      
+  		      foreach my $ph (sort ({$a<=>$b} keys(%{$hPh->{$c}{$chN}})))
+  		        {
+  		          my $startInt = 1;
+  		          my $endInt = 1800;
+  		          my @aryCh;
+  		          
+  		          foreach my $int (sort ({$a<=>$b} keys(%{$hPh->{$c}{$chN}{$ph}})))
+  		            {
+  		              
+  		              my $intH = {};
+  		              $intH->{'startInt'} = $startInt;
+  		              $intH->{'endInt'} =  $endInt;
+  		              $intH->{'chr'} = "chr1";
+  		              if ($param->{winJoinPhase} eq "all")
+  		                {
+  		                  $intH->{'acuValue'} = $hPh->{$c}{$chN}{$ph}{$int}{'value'};
+  		                }
+  		              else
+  		                {   
+  		                  $intH->{'acuValue'} = $hPh->{$c}{$chN}{$ph}{$int}{'value'} / $hPh->{$c}{$chN}{$ph}{$int}{'count'} ;
+  		                }
+  		              push (@aryCh, $intH);
+  		              
+  		              $startInt += $winSize;
+  		              $endInt += $winSize;     
+  		            }
+  		          
+  		          $hWin->{$c.$ph}{$natureN}{Nature} = $natureName;
+  		          $hWin->{$c.$ph}{$natureN}{data} = \@aryCh;  		                 
+  		        } 
+  		      #$natureName = 	
+  		    }
+  		}
+  	return ($hWin);	
+
+  }
+
+#Outputs a file with all the values belonging to the same interval of the dark or light phase
+#comming from joinByPhase() function
+sub hashPh2tblFile
+  {
+    my $hPh = shift;
+		my $winFile = $param -> {winFile}? $param -> {winFile} : "tablePhases";
+		my $winParam = $param->{window};
+		
+		my $i = 0;
+		my ($intRange, $acuValue);
+		
+		my $file = $winFile.".tbl";
+    my $F= new FileHandle;
+	  vfopen ($F, ">$file");
+  	
+  	print $F "intRange\tcage\tnature\tvalue\n";	
+    
+    foreach my $c (sort ({$a<=>$b} keys(%$hPh)))
+      {	
+        foreach my $chN (sort ({$a<=>$b} keys(%{$hPh->{$c}})))
+          {
+            my $nature = $hPh->{$c}{Nature};
+            print "$nature\t";
+            
+            my $nature = $hPh->{$c}{$chN}{Nature};
+  					my $aryData = $hPh->{$c}{$chN}{data}; 
+  								  										    	
+			    	for ($i = 0; $i < scalar (@$aryData); $i++)
+			    		{
+			    			my $hItem = $aryData->[$i];
+			    			
+			    			$acuValue = $hItem->{'acuValue'};				    							    		
+			    			
+			    			#$chr = $hItem->{'chr'};
+			    			$intRange = $hItem->{'startInt'}."-".$hItem->{'endInt'};
+			    			
+			    			 
+			    		  print $F "$intRange\t$c\t$nature\t$acuValue\n";
+			    		}			    				    	                      
+          }
+      }
+    close ($F);
+    print STDERR "      Table with values by phase intervals inside: $file\n";
+  }
+    
 #This function plots channels set to combine by -winCh2comb as intervals of same range
 #but different sign	
 sub writeWindowBedFileSign
