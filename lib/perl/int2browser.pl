@@ -1708,7 +1708,7 @@ sub joinUnitWindow2winSize
 				  			}
 	  					
 	  					$hR->{$c}{$ch}{data} = \@aryJoinWin ;
-						$hR->{$c}{$ch}{Nature} = $hashUnitWin->{$c}{$ch}{Nature} ;	
+						  $hR->{$c}{$ch}{Nature} = $hashUnitWin->{$c}{$ch}{Nature} ;	
 	  					
 	  				}
 	  		}
@@ -2057,7 +2057,7 @@ sub hashPh2tblFile
     my $F= new FileHandle;
 	  vfopen ($F, ">$file");
   	
-  	print $F "intRange\tcage\tnature\tvalue\n";	
+  	print $F "intN\tintRange\tcage\tnature\tvalue\n";	
     
     foreach my $c (sort ({$a<=>$b} keys(%$hPh)))
       {	
@@ -2078,8 +2078,8 @@ sub hashPh2tblFile
 			    			#$chr = $hItem->{'chr'};
 			    			$intRange = $hItem->{'startInt'}."-".$hItem->{'endInt'};
 			    			
-			    			 
-			    		  print $F "$intRange\t$c\t$nature\t$acuValue\n";
+			    			my $n = $i + 1; 
+			    		  print $F "$n\t$intRange\t$c\t$nature\t$acuValue\n";
 			    		}			    				    	                      
           }
       }
