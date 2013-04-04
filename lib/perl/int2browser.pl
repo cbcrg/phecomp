@@ -619,6 +619,8 @@ sub changeDayPhases2cytobandLikeFile
     
     #Traversing all intervals to set initial and end time
     ($start, $end) = &firstAndLastTime ($d, $param);
+    print "###### start->$start end-->$end\n";#del
+    die;#del
     $firstPhLightChange = &getFirstChange2LightPh ($d, $param, $start, $end);
     
     #opening the file
@@ -1889,7 +1891,7 @@ sub joinCages
 #The length of the interval depends on win size as the input is the data already in windows
 sub joinByPhase
   {
-    my $d = shift;
+    my $dWin = shift;
     my $param = shift;
     
     my $deltaPh = 12;
@@ -1898,8 +1900,10 @@ sub joinByPhase
     my $hPhaseBoundaries = {};
     $start=$end=-1;
     
-    #Traversing all intervals to set initial and end time
+    #Traversing all intervals to set initial and end time   
     ($start, $end) = &firstAndLastTime ($d, $param);
+    #print "###### start->$start end-->$end\n";#del
+    #die;#del
     $firstPhLightChange = &getFirstChange2LightPh ($d, $param, $start, $end);
     
     $i = 1;
@@ -1915,30 +1919,29 @@ sub joinByPhase
     	  $hPhaseBoundaries->{$i}{end} = $firstPhLightChange - $start;
     	  $hPhaseBoundaries->{$i}{phase} = "dark";
     	  
-    	  $startTimePh = $firstPhLightChange - $start + 1;
+    	  $startTimePh = $firstPhLightChange - $start;
     	  $phase = "light"; 
     	}
     else 
     	{
     	  $hPhaseBoundaries->{$i}{start} = $start - $start;
     	  $hPhaseBoundaries->{$i}{end} = $firstPhLightChange - $start;    	  
-    	  $hPhaseBoundaries->{$i}{phase} = "dark";  
-    	  
+    	  $hPhaseBoundaries->{$i}{phase} = "dark";      	  
     	  $startTimePh = $firstPhLightChange - $start;
     	  $phase = "light";     		
     	}	
-
+    #print "$firstPhLightChange ===== start->$start\n";#del
     my ($hPh, $hCount) = {};
     my $nextStartTimePh = "";
     
-    foreach my $c (sort ({$a<=>$b} keys(%$d)))
+    #print "$startTimePh\n";#del
+    foreach my $c (sort ({$a<=>$b} keys(%$dWin)))
   		{	
-  			foreach my $chN (sort ({$a<=>$b} keys(%{$d->{$c}})))
+  			foreach my $chN (sort ({$a<=>$b} keys(%{$dWin->{$c}})))
   		    {	  		  					  						  					
-  			    my $data = $d->{$c}{$chN}{data};  			   
-  			    my $nature = $d->{$c}{$chN}{Nature};
+  			    my $data = $dWin->{$c}{$chN}{data};  			   
+  			    my $nature = $dWin->{$c}{$chN}{Nature};
   			   
-
             my $indexHash = {};
             my $periodBefore1stPh = "TRUE";
             my @aryJoinPh;
@@ -1968,9 +1971,10 @@ sub joinByPhase
   		           }
   		         elsif ($t > $nextStartTimePh + $deltaPh * 3600)
   		           {
+  		             print "$indexHash->{$phase}; $phase----\t";
   		             $phase = ($phase eq "light")? "dark" : "light";
   		             $indexHash->{$phase} = 1;
-                 			               			          
+                 	 print "$phase\n";		               			          
   		             $hPh->{$c}{$chN."::".$nature}{$phase}{$indexHash->{$phase}}{value} += $h1->{acuValue};
   		             $hPh->{$c}{$chN."::".$nature}{$phase}{$indexHash->{$phase}}{count}++;
   		             $nextStartTimePh = $nextStartTimePh + $deltaPh * 3600;
@@ -1979,7 +1983,7 @@ sub joinByPhase
   		       }
   		    } 
   		}  
-  		        
+  	#print Dumper ($hPh);	        
     $hPh = &hashPh2hashWin ($hPh);
     
     if ($param->{winJoinPhFormat} eq "table")
