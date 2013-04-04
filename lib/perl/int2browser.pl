@@ -1312,7 +1312,7 @@ sub data2win
     	my $winStepSize = exists ($param->{wss})? $param->{wss} : 300; #by default win 5 minuts in seconds
     	my $winCombMode = (exists ($param->{winCh2comb}) && !exists ($param->{winCombMode}))? "additive" : $param->{winCombMode};     	    	    	       
     	my $winBindCageCase = (exists ($param->{winCage2comb}) && !exists ($param->{caseGroup}))? "even" : $param->{caseGroup};     	    	    	       
-    	my $winBind = (exists ($param->{winCage2comb}) && !exists ($param->{caseGroup}))? "even" : $param->{caseGroup};     	    	    	       
+    	#my $winBind = (exists ($param->{winCage2comb}) && !exists ($param->{caseGroup}))? "even" : $param->{caseGroup};     	    	    	       
     	
     	#our $param->{winCh2comb} = (!exists ($param->{winCh2comb}) && exists ($param->{winCombMode}))? "12,34" : $param->{winCh2comb}; 
     	if (!exists ($param->{winCh2comb}) && exists ($param->{winCombMode}))
@@ -1352,7 +1352,7 @@ sub data2win
     	#Joining all intervals of the same group (case/control)
     	if (exists ($param->{winCage2comb}))
         {
-          $hashUnitWin = &joinCages ($hashUnitWin);
+          $hashUnitWin = &joinCages ($hashUnitWin, $winBindCageCase);
         }
      
       #Combining channels if the parameter  winCh2comb is set
@@ -1785,7 +1785,8 @@ sub writeWindowBedFile
 sub joinCages
   {
     my $h = shift;		
-		my $caseGroup = $param->{caseGroup};
+		#my $caseGroup = $param->{caseGroup};
+		my $caseGroup = shift;
 		my $bindCageH = {};
 		my $hashAryCh = {};
 		my ($group, $i);
