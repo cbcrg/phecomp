@@ -619,8 +619,7 @@ sub changeDayPhases2cytobandLikeFile
     
     #Traversing all intervals to set initial and end time
     ($start, $end) = &firstAndLastTime ($d, $param);
-    print "###### start->$start end-->$end\n";#del
-    die;#del
+    
     $firstPhLightChange = &getFirstChange2LightPh ($d, $param, $start, $end);
     
     #opening the file
