@@ -1059,10 +1059,10 @@ sub data2tempDiv
         $d = data2phase ($d,$A);
       }
     
-#    elsif (exists ($A->{'join'}))
-#      {
-#        $d = joinPeriodPhase ($d,$A);
-#      }
+    elsif (exists ($A->{'join'}))
+      {
+        $d = joinPeriodPhase ($d,$A);
+      }
       
     else
       {
@@ -1094,7 +1094,7 @@ sub joinPeriodPhase
     	  {     	    
     	    $period = $d->{$c}{$t}{period};
     	    $phase = $d->{$c}{$t}{phase};
-    	    $d->{$c}{$t}{period} = $period.$phase;
+    	    $d->{$c}{$t}{period} = $period."_".$phase;
     	  }
       }
      
@@ -1203,12 +1203,13 @@ sub data2phase
     #only phase (Light/dark) annotation  
     else 
       {
-        #Time points before first light phase change are annotated here    
+        #Time points before first light phase change are annotated here
+        #12 hours of dark phase before first change to light phase    
         for ($a=$firstPhLightChange -($deltaPh * 3600); $a < $firstPhLightChange; $a++)
           {
             $time->{$a}="dark";         
           }
-        
+        #12hours of light preceding dark phase anotated just above
         for ($a=$firstPhLightChange -(24 * 3600); $a < $firstPhLightChange -($deltaPh * 3600); $a++)
           {
             $time->{$a}="Light";         
@@ -1239,7 +1240,8 @@ sub data2phase
 	   foreach my $t (sort(keys (%{$d->{$c}})))
 	     {
 	       my $phase=$time->{$t};
-	       $d->{$c}{$t}{period}=$time->{$t};
+	       #$d->{$c}{$t}{period}=$time->{$t};
+	       $d->{$c}{$t}{phase}=$time->{$t};
 	     }
       }
     
