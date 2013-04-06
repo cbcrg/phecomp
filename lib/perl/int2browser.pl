@@ -1352,8 +1352,9 @@ sub data2win
     	if (exists ($param->{winCage2comb}))
         {
           $hashUnitWin = &joinCages ($hashUnitWin, $winBindCageCase);
+          #print Dumper ($hashUnitWin); #del
         }
-     
+      
       #Combining channels if the parameter  winCh2comb is set
     	#here it is possible to use unionBedGraphs a bedtools tool to combine hashUnitWin first I should write bedGraph temp files first
     	#http://seqanswers.com/forums/showthread.php?t=6424
@@ -1804,7 +1805,7 @@ sub joinCages
 	  		   {
 	  		     my $nature = $h->{$c}{$chN}{Nature};
 	  		     if ($nature =~ /food_cd/) {$nature = "food_cd"}
-	  		     if ($nature =~ /food_sc/ && $group eq "case") {$nature = "food_sc"}	  		     
+	  		     #if ($nature =~ /food_sc/ && $group eq "case") {$nature = "food_sc"}	  #cambio para dev phase		     
 	  		     $hashNatureChN->{$group}{$nature} = $chN; 
 	  		   }
 	  		}
@@ -1828,7 +1829,7 @@ sub joinCages
 	  		     my $nature = $h->{$c}{$chN}{Nature};
 	  		     
 	  		     if ($nature =~ /food_cd/) {$nature = "food_cd"}
-	  		     if ($nature =~ /food_sc/ && $group eq "case") {$nature = "food_sc"}
+	  		     #if ($nature =~ /food_sc/ && $group eq "case") {$nature = "food_sc"}#cambio para dev phase
 	  		     
 	  		     #my $data2 = ($bindCageH->{$group}{$chN}{data});
   		       my $data2;  		       
@@ -2123,7 +2124,7 @@ sub writeWindowBedFileSign
   	foreach my $c (sort ({$a<=>$b} keys(%$h)))
   		{	
   			foreach my $chN (sort ({$a<=>$b} keys(%{$h->{$c}})))
-  				{	  		  					  						
+  				{	  				   		  					  						
   					if (exists ($negativeSW->{$c}{$chN}))
   					 {
   					   my $chNNegative = $negativeSW->{$c}{$chN};
@@ -2249,15 +2250,17 @@ sub setNegativeCH
     my $positiveNature = shift;
     my $hashNatures = shift;
     my $negativeSW = shift;
-    
+        
     foreach my $c (sort ({$a<=>$b} keys (%$hashNatures)))
       {
-        if ($hashNatures->{$ch1} eq $positiveNature) 
-  	      {
+        my $v =$hashNatures->{$c}{$ch1} ; 
+        
+        if ($hashNatures->{$c}{$ch1} eq $positiveNature) 
+  	      {  	        
   	        $negativeSW->{$c}{$ch1} = $ch2;
   	      }
   	    elsif ($hashNatures->{$c}{$ch2} eq $positiveNature)
-  	      {	  							    
+  	      {	  	  	        					   
   	        $negativeSW->{$c}{$ch2} = $ch1;
   	      }
   	    #it might be that both channels contain different things  
