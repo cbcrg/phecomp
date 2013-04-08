@@ -1434,6 +1434,7 @@ sub data2winDistro
     	my $hashWin = {};
     	 
     	($start, $end) = &firstAndLastTime ($d, $param);
+    	#print STDERR "start is $start\n";#del
     	
     	foreach my $c (sort ({$a<=>$b} keys(%$d)))
 	  		{
@@ -2099,6 +2100,7 @@ sub hashPh2tblFile
 sub writeWindowBedFileSign
 	{	
 	  my $h = shift;
+	  #print Dumper ($h);die;
 		my $winFile = shift;
 		my $winParam = $param->{window};
 			
@@ -2151,9 +2153,9 @@ sub writeWindowBedFileSign
     		    	 print $F "altcolor=", $altColor, " ";
     		    	 print $F "priority=", $priority, " ";
     		    	 print $F "\n";
-			    	   
-			    	   my $NInt = (scalar (@$aryData) => scalar (@$aryDataNegative))? scalar (@$aryData) : scalar (@$aryDataNegative);  
-			    	   
+			    	     
+			    	   my $NInt = (scalar (@$aryData) >= scalar (@$aryDataNegative))? scalar (@$aryData) : scalar (@$aryDataNegative);
+
 			    	   for ($i = 0; $i < $NInt; $i++)
 			    		   {
 			    		     if (exists ($aryData->[$i]))
