@@ -1916,9 +1916,10 @@ sub joinByPhase
     
     #Traversing all intervals to set initial and end time   
     ($start, $end) = &firstAndLastTime ($d, $param);
-    #print "###### start->$start end-->$end\n";#del
-    #die;#del
+    
     $firstPhLightChange = &getFirstChange2LightPh ($d, $param, $start, $end);
+    #print "###### start->$start end-->$end   first change to light --> $firstPhLightChange\n";#del
+    #die;#del
     
     $i = 1;
     
@@ -1977,23 +1978,17 @@ sub joinByPhase
   		         #While time it is inside the same phase I keep adding the values to the hash    			         
   		         elsif ($t > $nextStartTimePh && $t <= $nextStartTimePh + $deltaPh * 3600)  			          
   		           {  			            
-  		             $periodBefore1stPh = "FALSE";
-  		             print "current phase is $phase\n";
+  		             $periodBefore1stPh = "FALSE";  		             
   		             $hPh->{$c}{$chN."::".$nature}{$phase}{$indexHash->{$phase}}{value} += $h1->{acuValue};
-  		             $hPh->{$c}{$chN."::".$nature}{$phase}{$indexHash->{$phase}}{count}++;
-  		             my $currValue = $hPh->{$c}{$chN."::".$nature}{$phase}{$indexHash->{$phase}}{value};
-  		             print "cage: $c\tChannel: $nature---------------- $currValue\n";
+  		             $hPh->{$c}{$chN."::".$nature}{$phase}{$indexHash->{$phase}}{count}++;  		           
   		             $indexHash->{$phase}++; 
   		           }
   		         elsif ($t > $nextStartTimePh + $deltaPh * 3600)
-  		           {
-  		             print "$indexHash->{$phase}; $phase----\t";
+  		           {  		             
   		             $phase = ($phase eq "light")? "dark" : "light";
   		             $indexHash->{$phase} = 1;
                  	 print "$phase\n";		               			          
-  		             $hPh->{$c}{$chN."::".$nature}{$phase}{$indexHash->{$phase}}{value} += $h1->{acuValue};
-  		             my $currValue = $hPh->{$c}{$chN."::".$nature}{$phase}{$indexHash->{$phase}}{value};
-  		             print "cage: $c\tChannel: $nature---------------- $currValue\n";
+  		             $hPh->{$c}{$chN."::".$nature}{$phase}{$indexHash->{$phase}}{value} += $h1->{acuValue};  		             
   		             
   		             $hPh->{$c}{$chN."::".$nature}{$phase}{$indexHash->{$phase}}{count}++;
   		             $nextStartTimePh = $nextStartTimePh + $deltaPh * 3600;
