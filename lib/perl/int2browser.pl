@@ -1817,7 +1817,7 @@ sub joinCages
 	  		 if ($caseGroup eq "even" && $c % 2 != 0) {$group = "control"}
 	  		 if ($caseGroup eq "odd" && $c % 2 == 0) {$group = "control"}
 	  		 if ($caseGroup eq "odd" && $c % 2 != 0) {$group ="case"}  
-	  		   		   					       
+	  		 	   					       
 	  		 foreach my $chN (sort ({$a<=>$b} keys(%{$h->{$c}})))
 	  		   {
 	  		     my $data1 = ($h->{$c}{$chN}{data});
@@ -1833,14 +1833,26 @@ sub joinCages
 	  		     #if ($nature =~ /food_sc/ && $group eq "case") {$nature = "food_sc"}#cambio para dev phase
 	  		     
 	  		     #my $data2 = ($bindCageH->{$group}{$chN}{data});
-  		       my $data2;  		       
+  		       my ($data2, $NInt, $NIntBind, $NIntCurr) = 0;  		       
   		       my $data2 = ($bindCageH->{$group}{$nature}{data});
   		       my @aryJoinCh;
-  		        		         		      
-  		       #for($i = 0; $i < scalar (@$data1)-1; $i++)
-  		       my $sc = scalar (@$data1);
   		       
-  		       for($i = 0; $i < scalar (@$data1); $i++)    			         
+  		       my $NIntCurr = scalar (@$data1);
+  		       
+  		       if (defined (@$data2)) 
+  		        {
+  		         $NIntBind = scalar (@$data2);
+  		        }
+  		       else 
+  		        {
+  		          $NIntBind = 0;
+  		        } 
+  		       
+  		       $NInt = ($NIntCurr >= $NIntBind) ? $NIntCurr : $NIntBind; 
+  		                       		     
+#  		       for($i = 0; $i < scalar (@$data1)-1; $i++)
+#  		       for($i = 0; $i < scalar (@$data1); $i++)            
+  		       for($i = 0; $i < $NInt; $i++)  		           			         
   			       {
   				       my $h1 = $data1->[$i];
   				       my $h2 = $data2->[$i];
