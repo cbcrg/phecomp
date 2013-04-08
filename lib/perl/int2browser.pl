@@ -1806,7 +1806,7 @@ sub joinCages
 	  		   {
 	  		     my $nature = $h->{$c}{$chN}{Nature};
 	  		     if ($nature =~ /food_cd/) {$nature = "food_cd"}
-	  		     #if ($nature =~ /food_sc/ && $group eq "case") {$nature = "food_sc"}	  #cambio para dev phase		     
+	  		     if ($nature =~ /food_sc/ && $group eq "case") {$nature = "food_sc"}	  #cambio para dev phase		     
 	  		     $hashNatureChN->{$group}{$nature} = $chN; 
 	  		   }
 	  		}
@@ -1830,7 +1830,7 @@ sub joinCages
 	  		     my $nature = $h->{$c}{$chN}{Nature};
 	  		     
 	  		     if ($nature =~ /food_cd/) {$nature = "food_cd"}
-	  		     #if ($nature =~ /food_sc/ && $group eq "case") {$nature = "food_sc"}#cambio para dev phase
+	  		     if ($nature =~ /food_sc/ && $group eq "case") {$nature = "food_sc"}#cambio para dev phase
 	  		     
 	  		     #my $data2 = ($bindCageH->{$group}{$chN}{data});
   		       my ($data2, $NInt, $NIntBind, $NIntCurr) = 0;  		       
@@ -1884,7 +1884,7 @@ sub joinCages
 	  		}
 	  		
 	  		my $newBindCageH = {};
-	  		
+	  			  		
 	  		foreach my $g (sort ({$a<=>$b} keys (%$bindCageH)))
 	  		 {
 	  		   foreach my $n (sort ({$a<=>$b} keys(%{$bindCageH->{$g}})))
@@ -1959,7 +1959,7 @@ sub joinByPhase
             my $indexHash = {};
             my $periodBefore1stPh = "TRUE";
             my @aryJoinPh;
-            
+            $phase = "light"; #I always start at light phase 8 AM
             $indexHash->{light} = 1;
             $indexHash->{dark} = 1;
             $nextStartTimePh = $startTimePh; 
@@ -1978,9 +1978,11 @@ sub joinByPhase
   		         elsif ($t > $nextStartTimePh && $t <= $nextStartTimePh + $deltaPh * 3600)  			          
   		           {  			            
   		             $periodBefore1stPh = "FALSE";
-  		             
+  		             print "current phase is $phase\n";
   		             $hPh->{$c}{$chN."::".$nature}{$phase}{$indexHash->{$phase}}{value} += $h1->{acuValue};
   		             $hPh->{$c}{$chN."::".$nature}{$phase}{$indexHash->{$phase}}{count}++;
+  		             my $currValue = $hPh->{$c}{$chN."::".$nature}{$phase}{$indexHash->{$phase}}{value};
+  		             print "cage: $c\tChannel: $nature---------------- $currValue\n";
   		             $indexHash->{$phase}++; 
   		           }
   		         elsif ($t > $nextStartTimePh + $deltaPh * 3600)
@@ -1990,6 +1992,9 @@ sub joinByPhase
   		             $indexHash->{$phase} = 1;
                  	 print "$phase\n";		               			          
   		             $hPh->{$c}{$chN."::".$nature}{$phase}{$indexHash->{$phase}}{value} += $h1->{acuValue};
+  		             my $currValue = $hPh->{$c}{$chN."::".$nature}{$phase}{$indexHash->{$phase}}{value};
+  		             print "cage: $c\tChannel: $nature---------------- $currValue\n";
+  		             
   		             $hPh->{$c}{$chN."::".$nature}{$phase}{$indexHash->{$phase}}{count}++;
   		             $nextStartTimePh = $nextStartTimePh + $deltaPh * 3600;
   		             $indexHash->{$phase}++;		             
