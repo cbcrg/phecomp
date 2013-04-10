@@ -9,7 +9,7 @@
 ### -period period <mode>          -> Mode: day/ week/ eleven/ month                                ###
 ###                  phase  <mode> -> Mode: phase / phasePeriod                                     ###
 ###                                   Annotation of phase only light and dark or phase and period   ###
-###                                   (day 1, day 2, ...)                                           ###
+###                                   (day_1_light, day_1_dark, day_2_light, ...)                   ###
 ###                  iniLight <n>  -> A single digit for the starting time of the light phase, on   ###
 ###                                   GMT TIME!!! By default is 6 which corresponds to 8:00 AM in   ###
 ###                                   Spanish summer time                                           ###
@@ -1240,8 +1240,8 @@ sub data2phase
 	   foreach my $t (sort(keys (%{$d->{$c}})))
 	     {
 	       my $phase=$time->{$t};
-	       #$d->{$c}{$t}{period}=$time->{$t};
-	       $d->{$c}{$t}{phase}=$time->{$t};
+	       #$d->{$c}{$t}{period}=$time->{$t};#phase kept in period field
+	       $d->{$c}{$t}{phase}=$time->{$t}; #phase kept in phase field so that it could be join with period
 	     }
       }
     
@@ -1821,7 +1821,7 @@ sub data2display_period_stat
       	             $S->{$c}{$ch}{CountInterTime}++;
       	           }
       	       }
-      	     
+      	          	     
       	     $S->{$c}{$ch}{Duration}+=$d->{$c}{$t}{Duration};      	     
       	     #$dP->{$c}{$t}{Duration} = $d->{$c}{$t}{Duration};      	    
       	     $S->{$c}{$ch}{Value}+=$d->{$c}{$t}{Value};
