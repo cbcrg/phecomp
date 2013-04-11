@@ -1821,7 +1821,14 @@ sub data2display_period_stat
       	             $S->{$c}{$ch}{CountInterTime}++;
       	           }
       	       }
-      	          	     
+      	     
+      	     else 
+      	       {
+      	         $S->{$c}{$ch}{InterTime}=0;
+      	         $S->{$c}{$ch}{CountInterTime}++;      	          
+      	       }
+      	     
+      	           	     
       	     $S->{$c}{$ch}{Duration}+=$d->{$c}{$t}{Duration};      	     
       	     #$dP->{$c}{$t}{Duration} = $d->{$c}{$t}{Duration};      	    
       	     $S->{$c}{$ch}{Value}+=$d->{$c}{$t}{Value};
@@ -1902,7 +1909,13 @@ sub data2display_period_stat
 	         foreach my $ch (sort (keys(%{$S->{$c}})))
 	           {
 		          my $count=$S->{$c}{$ch}{Count};
-		          my $countInterTime=$S->{$c}{$ch}{CountInterTime};		 
+		          my $countInterTime=$S->{$c}{$ch}{CountInterTime};
+		          
+		          if ($count == 1) {
+		                            $S->{$c}{$ch}{InterTime} = 0;
+		                            $S->{$c}{$ch}{CountInterTime} = 0;
+		                            $countInterTime = 1;		                            
+		                           }		 
 		          print "$A->{period}\t$c\t$ch\t$duration\t$tot\t";
 		          
 		          #foreach field
@@ -1920,7 +1933,8 @@ sub data2display_period_stat
 		              	   
 		              	   if ($f eq "InterTime")
 			                 {
-			                   $S->{$c}{$ch}{$f}/=$countInterTime;
+			                   $S->{$c}{$ch}{$f}/=$countInterTime;			                   
+			                   #print "$S->{$c}{$ch}{$f}+++++++++\n";#del
 			                 }
 			               else
 			                 {  	
@@ -1929,6 +1943,7 @@ sub data2display_period_stat
 		                }
 		              if ($f ne "velocity")
 		                {
+		                 if ($f eq "InterTime" && !exists ($S->{$c}{$ch}{$f})) {print "does not exist\n";}#del 
 			               printf "%6.2f\t",$S->{$c}{$ch}{$f};
 		                }  
 		              else 
