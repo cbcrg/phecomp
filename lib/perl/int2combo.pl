@@ -7,10 +7,10 @@
 ### -diffChannel                   -> When this option is set channels with the same type of food   ###
 ###                                   but in different dispensers are differentiated (eg w1, w2)    ###  
 ### -period period <mode>          -> Mode: day/ week/ eleven/ month                                ###
-###                  phase  <mode> -> Mode: phase / phasePeriod                                     ###
+###         phase  <mode>          -> Mode: phase / phasePeriod                                     ###
 ###                                   Annotation of phase only light and dark or phase and period   ###
 ###                                   (day_1_light, day_1_dark, day_2_light, ...)                   ###
-###                  iniLight <n>  -> A single digit for the starting time of the light phase, on   ###
+###         iniLight <n>           -> A single digit for the starting time of the light phase, on   ###
 ###                                   GMT TIME!!! By default is 6 which corresponds to 8:00 AM in   ###
 ###                                   Spanish summer time                                           ###
 ### -winLogodd win <n>             -> Sliding window of logodd using length of period n             ###
@@ -1911,11 +1911,13 @@ sub data2display_period_stat
 		          my $count=$S->{$c}{$ch}{Count};
 		          my $countInterTime=$S->{$c}{$ch}{CountInterTime};
 		          
-		          if ($count == 1) {
-		                            $S->{$c}{$ch}{InterTime} = 0;
-		                            $S->{$c}{$ch}{CountInterTime} = 0;
-		                            $countInterTime = 1;		                            
-		                           }		 
+		          if ($count == 1) 
+		            {
+                  $S->{$c}{$ch}{InterTime} = 0;
+                  $S->{$c}{$ch}{CountInterTime} = 0;
+                  $countInterTime = 1;	
+                  print STDERR "WARNING: Number of intervals during period $A->{period} of channel $ch is 1, thus intermeal intervals are set to 0\n";	                            
+		            }		 
 		          print "$A->{period}\t$c\t$ch\t$duration\t$tot\t";
 		          
 		          #foreach field
@@ -1933,8 +1935,7 @@ sub data2display_period_stat
 		              	   
 		              	   if ($f eq "InterTime")
 			                 {
-			                   $S->{$c}{$ch}{$f}/=$countInterTime;			                   
-			                   #print "$S->{$c}{$ch}{$f}+++++++++\n";#del
+			                   $S->{$c}{$ch}{$f}/=$countInterTime;			                   			                  
 			                 }
 			               else
 			                 {  	
@@ -1942,8 +1943,7 @@ sub data2display_period_stat
 			                 }
 		                }
 		              if ($f ne "velocity")
-		                {
-		                 if ($f eq "InterTime" && !exists ($S->{$c}{$ch}{$f})) {print "does not exist\n";}#del 
+		                {		                 
 			               printf "%6.2f\t",$S->{$c}{$ch}{$f};
 		                }  
 		              else 
