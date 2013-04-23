@@ -2356,7 +2356,8 @@ sub setAllOptions
 		$param->{timeDivision} = 1;
 		$param->{files2bed} = 1;
 		$param->{phase2bed} = 1;
-		$param->{window} = "Value" ;
+		#$param->{window} = "Value" ;
+		$param->{window} = exists ($param->{window})? $param->{window} : "Value";
 		$param->{ws} = "1800" ;
 		$param->{wss} = "1800" ;
 				
