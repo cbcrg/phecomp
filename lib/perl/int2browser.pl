@@ -2069,7 +2069,7 @@ sub hashPh2tblFile
     my $hPh = shift;
 		my $winFile = $param -> {winFile}? $param -> {winFile} : "tablePhases";
 		my $winParam = $param->{window};
-		
+		my $groupedCages = exists ($param->{winCage2comb})? 1 : 0;
 		my $i = 0;
 		my ($intRange, $acuValue);
 		
@@ -2077,14 +2077,15 @@ sub hashPh2tblFile
     my $F= new FileHandle;
 	  vfopen ($F, ">$file");
   	
-  	print $F "intN\tintRange\tcage\tnature\tvalue\n";	
+  	if ($groupedCages) {print $F "intN\tintRange\tcage\tnature\tvalue\n";}
+  	else {print $F "intN\tintRange\tcage\tphase\tnature\tvalue\n";}	
     
     foreach my $c (sort ({$a<=>$b} keys(%$hPh)))
       {	
         foreach my $chN (sort ({$a<=>$b} keys(%{$hPh->{$c}})))
           {
             my $nature = $hPh->{$c}{Nature};
-            print "$nature\t";
+            #print "$nature\n";
             
             my $nature = $hPh->{$c}{$chN}{Nature};
   					my $aryData = $hPh->{$c}{$chN}{data}; 
@@ -2098,8 +2099,17 @@ sub hashPh2tblFile
 			    			#$chr = $hItem->{'chr'};
 			    			$intRange = $hItem->{'startInt'}."-".$hItem->{'endInt'};
 			    			
-			    			my $n = $i + 1; 
-			    		  print $F "$n\t$intRange\t$c\t$nature\t$acuValue\n";
+			    			my $n = $i + 1;
+			    			
+			    			if ($groupedCages)
+			    			  { 
+			    		     print $F "$n\t$intRange\t$c\t$nature\t$acuValue\n";
+			    			  }
+			    			else
+			    			  {			    			    
+			    			    $c =~ m/^(\d+)([a-z]+)$/;			    			      
+			    			    print $F "$n\t$intRange\t$1\t$2\t$nature\t$acuValue\n";
+			    			  }  
 			    		}			    				    	                      
           }
       }
