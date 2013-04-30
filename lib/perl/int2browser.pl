@@ -1910,8 +1910,7 @@ sub joinByPhase
   {
     my $dWin = shift;
     my $param = shift;
-    my %culo = %{$dWin->{1}};
-
+    
     my $deltaPh = 12;
     my $winSize = exists ($param->{ws})? $param->{ws} : 1800;
     
