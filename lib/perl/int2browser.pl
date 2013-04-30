@@ -1910,8 +1910,10 @@ sub joinByPhase
   {
     my $dWin = shift;
     my $param = shift;
-    
+    my %culo = %{$dWin->{1}};
+
     my $deltaPh = 12;
+    my $winSize = exists ($param->{ws})? $param->{ws} : 1800;
     
     my ($start, $end, $firstPhLightChange, $startTimePh, $phase, $i); 
     my $hPhaseBoundaries = {};
@@ -1921,38 +1923,14 @@ sub joinByPhase
     ($start, $end) = &firstAndLastTime ($d, $param);
     
     $firstPhLightChange = &getFirstChange2LightPh ($d, $param, $start, $end);
-    #print "###### start->$start end-->$end   first change to light --> $firstPhLightChange\n";#del
-    #die;#del
     
     $i = 1;
-    
-    #is start more than 12 hours before first change to light phases? -> then start is occurring during the previous light phase     
-    if ($start < ($firstPhLightChange - ($deltaPh * 3600)))
-    	{
-    	  $hPhaseBoundaries->{$i}{start} = $start - $start;
-    	  $hPhaseBoundaries->{$i}{end} = $firstPhLightChange -($deltaPh * 3600) - $start;
-    	  $hPhaseBoundaries->{$i}{phase} = "light";
-    	  $i = $i + 1; 
-    	  $hPhaseBoundaries->{$i}{start} = $firstPhLightChange -($deltaPh * 3600) - $start + 1;
-    	  $hPhaseBoundaries->{$i}{end} = $firstPhLightChange - $start;
-    	  $hPhaseBoundaries->{$i}{phase} = "dark";
-    	  
-    	  $startTimePh = $firstPhLightChange - $start;
-    	  $phase = "light"; 
-    	}
-    else 
-    	{
-    	  $hPhaseBoundaries->{$i}{start} = $start - $start;
-    	  $hPhaseBoundaries->{$i}{end} = $firstPhLightChange - $start;    	  
-    	  $hPhaseBoundaries->{$i}{phase} = "dark";      	  
-    	  $startTimePh = $firstPhLightChange - $start;
-    	  $phase = "light";     		
-    	}	
-    #print "$firstPhLightChange ===== start->$start\n";#del
+    $startTimePh = $firstPhLightChange - $start;
+    $phase = "light"; #I always start at light phase 8 AM
+
     my ($hPh, $hCount) = {};
     my $nextStartTimePh = "";
-    
-    #print "$startTimePh\n";#del
+
     foreach my $c (sort ({$a<=>$b} keys(%$dWin)))
   		{	
   			foreach my $chN (sort ({$a<=>$b} keys(%{$dWin->{$c}})))
@@ -1963,7 +1941,7 @@ sub joinByPhase
             my $indexHash = {};
             my $periodBefore1stPh = "TRUE";
             my @aryJoinPh;
-            $phase = "light"; #I always start at light phase 8 AM
+            
             $indexHash->{light} = 1;
             $indexHash->{dark} = 1;
             $nextStartTimePh = $startTimePh; 
@@ -1973,24 +1951,62 @@ sub joinByPhase
   		         my $h1 = $data->[$i];
   		         my $t = $h1->{endInt};  			         
   		           			         
-  		         #I jump all the intervals before the first entry from the beginning of the file into a light phase at 8:00
+  		         #In the previous version all intervals before the first entry from the beginning of the file into a light phase at 8:00 where skipped
+  		         #Here they are considered
   		         if ($periodBefore1stPh eq "TRUE" && $t < $startTimePh)
-  		           {   			             			            
-  		             next;
+  		           { 
+  		             #Windows belonging to the previous not complete light phase (eg from file starting 10:00 to 20:00) 
+  		             if ($t <  ($startTimePh - $deltaPh * 3600) && $t >  ($startTimePh - $deltaPh * 3600 * 2))
+  		              {  		               
+  		                my $indexIntBefore = 3600 * 24 / $winSize + 1;  		                
+  		                my $time = 0;
+  		                
+  		                for ($time = $startTimePh; $t <  $time; $time = $time - $winSize)
+  		                  {  		                    
+  		                    $indexIntBefore--;
+  		                  }
+  		                  
+  		                 #print "LIGHT ---- $chN.\"::\".$nature $indexIntBefore   ------  $time \n";#del  		                 
+  		                 $hPh->{$c}{$chN."::".$nature}{light}{$indexIntBefore}{value} += $h1->{acuValue};
+  		                 $hPh->{$c}{$chN."::".$nature}{light}{$indexIntBefore}{count}++;
+  		              }
+  		              
+  		             #Windows belonging to dark phase just before first transition to light phase ocurring inside the file   		             
+  		             elsif ($t >  ($startTimePh - $deltaPh * 3600) && $t <  $startTimePh)
+  		              {
+  		                my $indexIntBefore = 3600 * 24 / $winSize / 2 + 1;
+  		                my $time = 0;
+  		                
+  		                for ($time = $startTimePh; $t <  $time; $time = $time - $winSize)
+  		                  {  		                    
+  		                    $indexIntBefore--;
+  		                  }
+  		                  
+  		                 #print "DARK ---- $chN.\"::\".$nature ---- $indexIntBefore   ------  $time \n";#del
+  		                 $hPh->{$c}{$chN."::".$nature}{dark}{$indexIntBefore}{value} += $h1->{acuValue};
+  		                 $hPh->{$c}{$chN."::".$nature}{dark}{$indexIntBefore}{count}++;
+  		              }
+  		              
+  		             else 
+  		              {
+  		                print STDERR "[FATAL] Impossible to asign day phase to interval occuring before first transition to light phase\n";
+  		                die;
+  		              }
   		           }
+  		           
   		         #While time it is inside the same phase I keep adding the values to the hash    			         
   		         elsif ($t > $nextStartTimePh && $t <= $nextStartTimePh + $deltaPh * 3600)  			          
-  		           {  			            
+  		           { 
   		             $periodBefore1stPh = "FALSE";  		             
   		             $hPh->{$c}{$chN."::".$nature}{$phase}{$indexHash->{$phase}}{value} += $h1->{acuValue};
   		             $hPh->{$c}{$chN."::".$nature}{$phase}{$indexHash->{$phase}}{count}++;  		           
   		             $indexHash->{$phase}++; 
   		           }
   		         elsif ($t > $nextStartTimePh + $deltaPh * 3600)
-  		           {  		             
-  		             $phase = ($phase eq "light")? "dark" : "light";
+  		           {  		  		                          
+  		             $phase = ($phase eq "light")? "dark" : "light";  		             
   		             $indexHash->{$phase} = 1;
-                 	 print "$phase\n";		               			          
+                 	 #print "$phase\n";		               			          
   		             $hPh->{$c}{$chN."::".$nature}{$phase}{$indexHash->{$phase}}{value} += $h1->{acuValue};  		             
   		             
   		             $hPh->{$c}{$chN."::".$nature}{$phase}{$indexHash->{$phase}}{count}++;
@@ -2000,8 +2016,8 @@ sub joinByPhase
   		       }
   		    } 
   		}  
-  	#print Dumper ($hPh);	        
-    $hPh = &hashPh2hashWin ($hPh);
+  		
+  	$hPh = &hashPh2hashWin ($hPh);
     
     if ($param->{winJoinPhFormat} eq "table")
       {          
@@ -2013,6 +2029,120 @@ sub joinByPhase
         return ($hPh);
       }             
   }
+  
+##Old version of the function before taking into account intervals occurring before first entry into light phase inside the file
+#sub joinByPhase
+#  {
+#    my $dWin = shift;
+#    my $param = shift;
+#    my %culo = %{$dWin->{1}};
+#    #print Dumper (%culo);die;#del
+#    my $deltaPh = 12;
+#    
+#    my ($start, $end, $firstPhLightChange, $startTimePh, $phase, $i); 
+#    my $hPhaseBoundaries = {};
+#    $start=$end=-1;
+#    
+#    #Traversing all intervals to set initial and end time   
+#    ($start, $end) = &firstAndLastTime ($d, $param);
+#    
+#    $firstPhLightChange = &getFirstChange2LightPh ($d, $param, $start, $end);
+#    #print "###### start->$start end-->$end   first change to light --> $firstPhLightChange\n";#del
+#    #die;#del
+#    
+#    $i = 1;
+#    
+#    #is start more than 12 hours before first change to light phases? -> then start is occurring during the previous light phase     
+#    if ($start < ($firstPhLightChange - ($deltaPh * 3600)))
+#    	{
+#    	  $hPhaseBoundaries->{$i}{start} = $start - $start;
+#    	  $hPhaseBoundaries->{$i}{end} = $firstPhLightChange -($deltaPh * 3600) - $start;
+#    	  $hPhaseBoundaries->{$i}{phase} = "light";
+#    	  $i = $i + 1; 
+#    	  $hPhaseBoundaries->{$i}{start} = $firstPhLightChange -($deltaPh * 3600) - $start + 1;
+#    	  $hPhaseBoundaries->{$i}{end} = $firstPhLightChange - $start;
+#    	  $hPhaseBoundaries->{$i}{phase} = "dark";
+#    	  
+#    	  $startTimePh = $firstPhLightChange - $start;
+#    	  $phase = "light"; 
+#    	}
+#    else 
+#    	{
+#    	  $hPhaseBoundaries->{$i}{start} = $start - $start;
+#    	  $hPhaseBoundaries->{$i}{end} = $firstPhLightChange - $start;    	  
+#    	  $hPhaseBoundaries->{$i}{phase} = "dark";      	  
+#    	  $startTimePh = $firstPhLightChange - $start;
+#    	  $phase = "light";     		
+#    	}	
+#    #print "$firstPhLightChange ===== start->$start\n";#del
+#    my ($hPh, $hCount) = {};
+#    my $nextStartTimePh = "";
+#    
+#    #print "$startTimePh\n";#del
+#    #die;#del
+#    foreach my $c (sort ({$a<=>$b} keys(%$dWin)))
+#  		{	
+#  			foreach my $chN (sort ({$a<=>$b} keys(%{$dWin->{$c}})))
+#  		    {	  		  					  						  					
+#  			    my $data = $dWin->{$c}{$chN}{data};  			   
+#  			    my $nature = $dWin->{$c}{$chN}{Nature};
+#  			   
+#            my $indexHash = {};
+#            my $periodBefore1stPh = "TRUE";
+#            my @aryJoinPh;
+#            $phase = "light"; #I always start at light phase 8 AM
+#            $indexHash->{light} = 1;
+#            $indexHash->{dark} = 1;
+#            $nextStartTimePh = $startTimePh; 
+#             
+#            for ($i = 0; $i < scalar (@$data)-1; $i++)    			         
+#  		       {
+#  		         my $h1 = $data->[$i];
+#  		         my $t = $h1->{endInt};  			         
+#  		           			         
+#  		         #I jump all the intervals before the first entry from the beginning of the file into a light phase at 8:00
+#  		         if ($periodBefore1stPh eq "TRUE" && $t < $startTimePh)
+#  		           { 
+#  		             if ($nature eq "food_sc_3") {print "next--------------$t\n";}  			             			            
+#  		             next;
+#  		           }
+#  		         #While time it is inside the same phase I keep adding the values to the hash    			         
+#  		         elsif ($t > $nextStartTimePh && $t <= $nextStartTimePh + $deltaPh * 3600)  			          
+#  		           { 
+#  		             if ($nature eq "food_sc_3") {print "same phase $phase--------$t\n";}  			            
+#  		             $periodBefore1stPh = "FALSE";  		             
+#  		             $hPh->{$c}{$chN."::".$nature}{$phase}{$indexHash->{$phase}}{value} += $h1->{acuValue};
+#  		             $hPh->{$c}{$chN."::".$nature}{$phase}{$indexHash->{$phase}}{count}++;  		           
+#  		             $indexHash->{$phase}++; 
+#  		           }
+#  		         elsif ($t > $nextStartTimePh + $deltaPh * 3600)
+#  		           {  		  		                          
+#  		             $phase = ($phase eq "light")? "dark" : "light";
+#  		             if ($nature eq "food_sc_3") {print "change of phase $phase--------$t-----$h1->{acuValue}\n";}
+#  		             $indexHash->{$phase} = 1;
+#                 	 print "$phase\n";		               			          
+#  		             $hPh->{$c}{$chN."::".$nature}{$phase}{$indexHash->{$phase}}{value} += $h1->{acuValue};  		             
+#  		             
+#  		             $hPh->{$c}{$chN."::".$nature}{$phase}{$indexHash->{$phase}}{count}++;
+#  		             $nextStartTimePh = $nextStartTimePh + $deltaPh * 3600;
+#  		             $indexHash->{$phase}++;		             
+#  		           }
+#  		       }
+#  		    } 
+#  		}  
+#  	print Dumper ($hPh);	        
+#    $hPh = &hashPh2hashWin ($hPh);
+#    
+#    if ($param->{winJoinPhFormat} eq "table")
+#      {          
+#        &hashPh2tblFile ($hPh);                            
+#        die;
+#      }
+#    else 
+#      {
+#        return ($hPh);
+#      }             
+#  }
 
 #Reformat the output of joinByPhase to a hash useful for default printing function of data2win (writeWindowBedFile and writeWindowBedFileSign)
 sub hashPh2hashWin
