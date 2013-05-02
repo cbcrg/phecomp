@@ -2034,8 +2034,6 @@ sub joinByPhase
 #  {
 #    my $dWin = shift;
 #    my $param = shift;
-#    my %culo = %{$dWin->{1}};
-#    #print Dumper (%culo);die;#del
 #    my $deltaPh = 12;
 #    
 #    my ($start, $end, $firstPhLightChange, $startTimePh, $phase, $i); 
@@ -2199,15 +2197,15 @@ sub hashPh2hashWin
 sub hashPh2tblFile
   {
     my $hPh = shift;
-		my $winFile = $param -> {winFile}? $param -> {winFile} : "tablePhases";
-		my $winParam = $param->{window};
-		my $groupedCages = exists ($param->{winCage2comb})? 1 : 0;
-		my $i = 0;
-		my ($intRange, $acuValue);
-		
-		my $file = $winFile.".tbl";
+	my $winFile = $param -> {winFile}? $param -> {winFile} : "tablePhases";
+	my $winParam = $param->{window};
+	my $groupedCages = exists ($param->{winCage2comb})? 1 : 0;
+	my $i = 0;
+	my ($intRange, $acuValue);
+	
+	my $file = $winFile.".tbl";
     my $F= new FileHandle;
-	  vfopen ($F, ">$file");
+	vfopen ($F, ">$file");
   	
   	if ($groupedCages) {print $F "intN\tintRange\tcage\tnature\tvalue\n";}
   	else {print $F "intN\tintRange\tcage\tphase\tnature\tvalue\n";}	
@@ -2216,33 +2214,35 @@ sub hashPh2tblFile
       {	
         foreach my $chN (sort ({$a<=>$b} keys(%{$hPh->{$c}})))
           {
-            my $nature = $hPh->{$c}{Nature};
+            #my $nature = $hPh->{$c}{Nature};
             #print "$nature\n";
             
             my $nature = $hPh->{$c}{$chN}{Nature};
-  					my $aryData = $hPh->{$c}{$chN}{data}; 
-  								  										    	
-			    	for ($i = 0; $i < scalar (@$aryData); $i++)
-			    		{
-			    			my $hItem = $aryData->[$i];
-			    			
-			    			$acuValue = $hItem->{'acuValue'};				    							    		
-			    			
-			    			#$chr = $hItem->{'chr'};
-			    			$intRange = $hItem->{'startInt'}."-".$hItem->{'endInt'};
-			    			
-			    			my $n = $i + 1;
-			    			
-			    			if ($groupedCages)
-			    			  { 
-			    		     print $F "$n\t$intRange\t$c\t$nature\t$acuValue\n";
-			    			  }
-			    			else
-			    			  {			    			    
-			    			    $c =~ m/^(\d+)([a-z]+)$/;			    			      
-			    			    print $F "$n\t$intRange\t$1\t$2\t$nature\t$acuValue\n";
-			    			  }  
-			    		}			    				    	                      
+		    my $aryData = $hPh->{$c}{$chN}{data}; 
+							  										    	
+	    	for ($i = 0; $i < scalar (@$aryData); $i++)
+	    		{
+	    			my $hItem = $aryData->[$i];
+	    			
+	    			$acuValue = $hItem->{'acuValue'};				    							    		
+	    			
+	    			#$chr = $hItem->{'chr'};
+	    			$intRange = $hItem->{'startInt'}."-".$hItem->{'endInt'};
+	    			
+	    			my $n = $i + 1;
+	    			
+	    			#Cages grouped by case control have a single field for phase and group (eg case_dark)
+	    			if ($groupedCages)
+	    			  { 
+	    		        print $F "$n\t$intRange\t$c\t$nature\t$acuValue\n";
+	    			  }
+	    			#Individual cages have two fields one for cage and one for field  
+	    			else
+	    			  {			    			    
+	    			    $c =~ m/^(\d+)([a-z]+)$/;			    			      
+	    			    print $F "$n\t$intRange\t$1\t$2\t$nature\t$acuValue\n";
+	    			  }  
+	    		}			    				    	                      
           }
       }
     close ($F);
