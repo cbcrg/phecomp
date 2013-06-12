@@ -56,7 +56,8 @@ if ($#ARGV ==-1)
     print "  -winCage2comb <> ..................<>:  Combine values of all cages by group\n";
     print "  -winJoinPhase <> ................Mode:  'mean/all' Combine all values of the same phase,\n"; 
     print "                                          If mode is set to 'all' all values of the same time fraction are added otherwise by default the mean value is given.\n";
-    print "  -winJoinPhFormat <> .............Mode:  'bedGraph/table' 'table' result is given in a tabulated format otherwise by default output is a bedGraph file.\n";  
+    print "  -winJoinPhFormat <> .............Mode:  'bedGraph/table' 'table' result is given in a tabulated format otherwise by default output is a bedGraph file.\n";
+    print "  -zeroValues   <mode> ........... Mode:  'T' or 'F' By default set to T, if it is set to T windows with value 0 are exclosed from the file\n";  
     print "  -caseGroup    <mode> ............Mode:  'even/odd' Defines which is the case group\n";
     print "  -splitCh         <> ................<>: Split channels of the same nature on the corresponding to the feeder number (water_1, water_2).\n";
     print "                                          Set by default by \"-winCage2comb\" otherwise joinCages will not work correctly\n";
@@ -588,6 +589,7 @@ sub check_parameters
     $rp->{winJoinPhase} = 1;
     $rp->{winJoinPhFormat} = 1;
     $rp->{splitCh} = 1;
+    $rp->{zeroValues} = 1;
     
     foreach my $k (keys (%$p))
       {
@@ -1743,6 +1745,7 @@ sub writeWindowBedFile
 		my $h = shift;
 		my $winFile = shift;
 		my $winParam = $param->{window};
+		my $zerosOut = $param->{zeroValues}? $param->{zeroValues} : "T"; 
 		
 		my $i = 0;
 		my ($chr, $startInt, $endInt, $acuValue);
@@ -1790,9 +1793,24 @@ sub writeWindowBedFile
 				    			$chr = $hItem->{'chr'};
 				    			$startInt = $hItem->{'startInt'};
 				    			$endInt = $hItem->{'endInt'};
+				    			
+				    			#print $F "$chr\t$startInt\t$endInt\t$acuValue\n";
 				    			 
-#				    			if ($acuValue > 0) {print $F "$chr\t$startInt\t$endInt\t$acuValue\n";}
-				    			print $F "$chr\t$startInt\t$endInt\t$acuValue\n";
+				    			if ($zerosOut ne "F") 
+				    			 {
+				    			   print $F "$chr\t$startInt\t$endInt\t$acuValue\n";
+				    			 }
+				    			else 
+				    			 {
+				    			   if ($acuValue > 0)
+				    			     {
+				    			       print $F "$chr\t$startInt\t$endInt\t$acuValue\n";
+				    			     }
+				    			   else
+				    			     {
+				    			       ;
+				    			     }
+				    			 }				    							    							    		
 				    		}
 				    	
 				    	close ($F);
@@ -2272,6 +2290,7 @@ sub writeWindowBedFileSign
 	  #print Dumper ($h);die;
 		my $winFile = shift;
 		my $winParam = $param->{window};
+		my $zerosOut = $param->{zeroValues}? $param->{zeroValues} : "T";
 			
 		my $hUnitWin = shift;
 		my ($hChComb) = {};
@@ -2333,8 +2352,24 @@ sub writeWindowBedFileSign
 			    			       $chr = $hItem->{'chr'};
 			    			       $startInt = $hItem->{'startInt'};
 			    			       $endInt = $hItem->{'endInt'};
-			    			       $acuValue = $hItem->{'acuValue'}; 
-			    			       if ($acuValue != 0) {print $F "$chr\t$startInt\t$endInt\t$acuValue\n";}
+			    			       $acuValue = $hItem->{'acuValue'};
+			    			       
+			    			       if ($zerosOut ne "F") 
+				    			       {
+				    			         print $F "$chr\t$startInt\t$endInt\t$acuValue\n";
+				    			       }
+				    			     else 
+				    			       {
+				    			         if ($acuValue != 0)
+				    			           {
+				    			             print $F "$chr\t$startInt\t$endInt\t$acuValue\n";
+				    			           }
+				    			         else
+				    			           {
+				    			             ;
+				    			           }
+				    			       }
+				    			       				    			       
 			    		       }
 			    		     if (exists ($aryDataNegative->[$i]))
 			    		       {			    		     
@@ -2343,7 +2378,22 @@ sub writeWindowBedFileSign
 			    			       $startInt = $hItem->{'startInt'};
 			    			       $endInt = $hItem->{'endInt'};
 			    			       $acuValue = -$hItem->{'acuValue'}; 
-			    			       if ($acuValue != 0) {print $F "$chr\t$startInt\t$endInt\t$acuValue\n";}
+			    			       
+			    			       if ($zerosOut ne "F") 
+				    			       {
+				    			         print $F "$chr\t$startInt\t$endInt\t$acuValue\n";
+				    			       }
+				    			     else 
+				    			       {
+				    			         if ($acuValue != 0)
+				    			           {
+				    			             print $F "$chr\t$startInt\t$endInt\t$acuValue\n";
+				    			           }
+				    			         else
+				    			           {
+				    			             ;
+				    			           }
+				    			       }
 			    		       }
 			    		         
 			    		   }
