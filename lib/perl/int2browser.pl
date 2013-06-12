@@ -1476,18 +1476,32 @@ sub data2winDistro
       									#Intervals smaller than first time
       									if ($newT > $endInt)
       										{
+      										  #I can find several intervals before the first reaching the first time with signal
       											while ($endInt < $newT)
       												{      													
-														my $h = {};
+														    my $h = {};
 														
-														$h->{"chr"} = "chr1";
-														$h->{"startInt"} = $startInt;
-														$h->{"endInt"} = $endInt;
-														$h->{"acuValue"} = $acuValue;
+														    $h->{"chr"} = "chr1";
+														    $h->{"startInt"} = $startInt;
+														    $h->{"endInt"} = $endInt;
+														    
+														    if ($winMode eq "binary" && $acuValue != 0) 
+														      {
+														        print "---$acuValue\n";
+														        $h->{"acuValue"} = 1;
+														      }
+														    elsif ($winMode eq "binary" && $acuValue == 0)
+														      {
+														        $h->{"acuValue"} = 0;
+														      }
+														    else
+														      {    
+														        $h->{"acuValue"} = $acuValue;
+														      }
 														
-														push (@aryCh, $h);
+														    push (@aryCh, $h);
       													
-      													if ($winMode eq "discrete") {$acuValue = 0;}
+      													if ($winMode eq "discrete" || $winMode eq "binary") {$acuValue = 0;}
       													
       													$startInt += $winSize;
       													$endInt += $winSize;
@@ -1777,7 +1791,8 @@ sub writeWindowBedFile
 				    			$startInt = $hItem->{'startInt'};
 				    			$endInt = $hItem->{'endInt'};
 				    			 
-				    			if ($acuValue > 0) {print $F "$chr\t$startInt\t$endInt\t$acuValue\n";}
+#				    			if ($acuValue > 0) {print $F "$chr\t$startInt\t$endInt\t$acuValue\n";}
+				    			print $F "$chr\t$startInt\t$endInt\t$acuValue\n";
 				    		}
 				    	
 				    	close ($F);
