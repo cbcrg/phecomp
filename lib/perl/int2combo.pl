@@ -878,7 +878,7 @@ sub zfilter_data
 #	  
 #	  print "$nature D new: $stat->{$nature}{Duration}{avg}, $stat->{$nature}{Duration}{sd} V: $stat->{$nature}{Value}{avg}, $stat->{$nature}{Value}{sd}\n";
 	}
-      die;
+      #die;
       foreach my $c (keys (%$d))
        {
 	 foreach my $t (keys (%{$d->{$c}}))
@@ -1743,7 +1743,7 @@ sub data2stat
 	       {
 	         if ($A->{labels} eq "compulse")
 	           {
-	             print "period\tcage\tchannel\tduration_period\trec_period\tN_meals\tN_inter_Meals\tDuration\tAvg_Duration\tTotal_Intermeal_Duration\tAvg_Intermeal_Duration\tTotal_Intake\tAvg_Intake\tRate\n";
+	             print "period\tcage\tchannel\tduration_period\trec_period\tNumber\tN_inter_Meals\tDuration\tAvg_Duration\tTotal_Intermeal_Duration\tAvg_Intermeal_Duration\tTotal_Intake\tAvg_Intake\tRate\n";
 	           }
 	         else
 	           {
