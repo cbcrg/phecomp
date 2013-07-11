@@ -1319,7 +1319,9 @@ sub data2win
     	my $winCombMode = (exists ($param->{winCh2comb}) && !exists ($param->{winCombMode}))? "additive" : $param->{winCombMode};     	    	    	       
     	my $winBindCageCase = (exists ($param->{winCage2comb}) && !exists ($param->{caseGroup}))? "even" : $param->{caseGroup};     	    	    	       
     	#my $winBind = (exists ($param->{winCage2comb}) && !exists ($param->{caseGroup}))? "even" : $param->{caseGroup};     	    	    	       
-    	my $winFormat = exists ($param->{winFormat})? $param->{winFormat} : "bedGraph"; #by default bedGraph 
+    	my $winFormat = exists ($param->{winFormat})? $param->{winFormat} : "bedGraph"; #by default bedGraph
+    	my $winMode = $param -> {winMode}? $param -> {winMode} : "discrete";
+    	  
     	#our $param->{winCh2comb} = (!exists ($param->{winCh2comb}) && exists ($param->{winCombMode}))? "12,34" : $param->{winCh2comb}; 
     	if (!exists ($param->{winCh2comb}) && exists ($param->{winCombMode}))
     	 {
@@ -1402,22 +1404,23 @@ sub data2win
           $hashWin = &joinByPhase ($hashWin, $param);
         } 
          
-      if ($winFormat eq "bedGraph")
+      if ($winMode eq "binary")
+          {
+            &writeWindowBinary ($hashWin, $winFile);
+          }  
+      elsif ($winFormat eq "bedGraph")
         {
           if ($winCombMode eq "" || $winCombMode eq "additive") 
     	     {     	    	
             #print Dumper ($hashWin);#del
             &writeWindowBedFile ($hashWin, $winFile);
     	     }
-    	   elsif ($winCombMode eq "sign")
+    	    elsif ($winCombMode eq "sign")
     	     {    	   
     	       &writeWindowBedFileSign ($hashWin, $winFile);    	  
-    	     }
-        }
-       elsif ($winFormat eq "rhmm")
-        {
-          &writeWindowForRHMM ($hashWin, $winFile);
-        }    	       
+    	     }    	    
+        }      
+  	       
   }	
 
 
@@ -1832,33 +1835,84 @@ sub writeWindowBedFile
 #This function dump the data into rhmm format
 #  #d;1;Nindex;field;x;bin;NBin
 
-sub writeWindowForRHMM 
+sub writeWindowBinary 
   {
     my $h = shift;
     my $winFile = shift;
     my $i = 0;
+    my $file = ""; 
     my ($chr, $startInt, $endInt, $acuValue, $bin);
     my $zerosOut = $param->{zeroValues}? $param->{zeroValues} : "T";
     my $winParam = $param->{window};
     my $winMode = $param -> {winMode}? $param -> {winMode} : "discrete"; #by default discrete
+    my $winFormat = exists ($param->{winFormat})? $param->{winFormat} : "bedGraph"; #by default bedGraph
+    my $natures = {};
     
+#    foreach my $c (sort ({$a<=>$b} keys(%$h)))
+#		  {	
+#			 foreach my $chN (sort ({$a<=>$b} keys(%{$h->{$c}})))
+#			   {		  		
+#				    $natures->{$chN} = $h->{$c}{$chN}{Nature};  				    	  					
+#				 }
+#			 next;  			 	
+#		  }
+#		  
+#  	print Dumper ($natures);
+#  	die;	  
+#    my $file = $winFile."cage".$c."ch".$nature.$chN.".hmm";
+#    print $F "#comment;Format: int2rhmm.01";
+#		print $F "\n";
+##				    	
+				    	
     foreach my $c (sort ({$a<=>$b} keys(%$h)))
 	  		{	
 	  			foreach my $chN (sort ({$a<=>$b} keys(%{$h->{$c}})))
 	  				{	  		
 	  					my $nature = $h->{$c}{$chN}{Nature};
 	  					my $aryData = $h->{$c}{$chN}{data}; 
-	  								
-    					my $file = $winFile."cage".$c."ch".$nature.$chN.".hmm";
-    				
+	  					
+	  					if ($winFormat eq "rhmm")
+                {			
+    					    $file = $winFile."cage".$c."ch".$nature.$chN.".hmm";    					   
+                }
+              elsif ($winFormat eq "bedGraph")
+                {
+                  $file = $winFile."cage".$c."ch".$nature.$chN.".bedGraph";    				
+                }   
+    					
     					my $F= new FileHandle;
-    				
-			      	vfopen ($F, ">$file");
-			      	
-			      	#Type of file
-			      	print $F "#comment;Format: int2rhmm.01";
-				    	print $F "\n";
-				    				
+    					vfopen ($F, ">$file");
+				    	
+				    	if ($winFormat eq "rhmm")
+                {			
+    			      	#Type of file
+    			      	print $F "#comment;Format: int2rhmm.01";
+    				    	print $F "\n";
+                }
+              elsif ($winFormat eq "bedGraph")
+                {
+
+			      	    #Type of file
+			      	    #Defines the initial display mode of the annotation track. Values for display_mode include: 0 - hide, 1 - dense, 2 - full, 3 - pack, and 4 - squish
+		              my $viewLimits = $param -> {winViewLim}? $param -> {winViewLim} : "0.5";
+                	my $visibility = "full";#by the moment hardcoded in future it might be a parameter
+                	my $color = "200,100,0";
+                	my $altColor = "0,100,200";
+                	my $priority = "20";
+                	my $type = "bedGraph";
+                	
+			      	    print $F "track ";
+				    	    print $F "type=$type ";	    				
+    				    	print $F "name=", "\"cage ", $c, "\;", "ch", $nature, "\"", " ";
+    				    	print $F "description=", "\"cage ", $c, "\;", $nature, "\"", " ";
+    				    	print $F "visibility=", $visibility, " ";
+    				    	if ($viewLimits ne "auto") {print $F "viewLimits=", $viewLimits, " ";} 
+    				    	print $F "color=", $color, " ";
+    				    	print $F "altcolor=", $altColor, " ";
+    				    	print $F "priority=", $priority, " ";
+    				    	print $F "\n";
+                }  
+                			
 			      	#First header, always tagged by #h
 #				    	print $F "#h;field;$winParam";
 #				    	print $F "\n";
@@ -1885,14 +1939,36 @@ sub writeWindowForRHMM
 							      {    
 							        $bin = $acuValue;
 							      }
-
-				    			print $F "#d;1;$i;$winParam;$acuValue;bin;$bin\n";				    					    							    							    		
+                  
+                  if ($winFormat eq "rhmm")
+                    {
+				    			   print $F "#d;1;$i;$winParam;$acuValue;bin;$bin\n";
+                    }
+                  elsif ($winFormat eq "bedGraph")
+                    {                                                                                       
+                      if ($zerosOut ne "F") 
+				    			     {
+				    			       print $F "$chr\t$startInt\t$endInt\t$bin\n";
+				    			     }
+				    			   else 
+				    			     {
+				    			       if ($acuValue > 0)
+				    			         {
+				    			           print $F "$chr\t$startInt\t$endInt\t$bin\n";
+				    			         }
+				    			       else
+				    			         {
+				    			           ;
+				    			         }
+				    			     }	
+                    }			    					    							    							    		
 				    		}
 				    	
 				    	close ($F);
 	      			print STDERR "      Results of cumulative window for $winParam of cage $c, channel $chN, nature $nature in: $file\n";
 	  				}
 	  		}
+	  	
   }
   
 sub joinCages
