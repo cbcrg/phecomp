@@ -1942,7 +1942,7 @@ sub writeWindowBinary
                   
                   if ($winFormat eq "rhmm")
                     {
-				    			   print $F "#d;1;$i;$winParam;$acuValue;bin;$bin\n";
+				    			   print $F "#d;1;$i;$winParam;$acuValue;bin;$bin;winS;$startInt;winE;$endInt\n";
                     }
                   elsif ($winFormat eq "bedGraph")
                     {                                                                                       
