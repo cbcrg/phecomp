@@ -2466,7 +2466,8 @@ sub writeWindowBedFileSign
   	foreach my $c (sort ({$a<=>$b} keys(%$h)))
   		{	
   			foreach my $chN (sort ({$a<=>$b} keys(%{$h->{$c}})))
-  				{	  				   		  					  						
+  				{	
+#  				  print Dumper   		($negativeSW);die;		   		  					  						
   					if (exists ($negativeSW->{$c}{$chN}))
   					 {
   					   my $chNNegative = $negativeSW->{$c}{$chN};
