@@ -931,7 +931,10 @@ sub fromLengthFiles2bed
 	      					}
 	  				}
 	  				  			
-	  			print $F "chr1", "\t", $start-$globalStart, "\t", $end-$globalStart, "\t", $f, "\t", $score, "\t", "+","\t",$start-$globalStart, "\t", $end-$globalStart, ,"\t", $color, "\n";
+	  			$f =~ /^.*\/(.*)/; #getting just the name of the file
+	  			my $fName = $1;
+	    		  			
+	  			print $F "chr1", "\t", $start-$globalStart, "\t", $end-$globalStart, "\t", $fName, "\t", $score, "\t", "+","\t",$start-$globalStart, "\t", $end-$globalStart, ,"\t", $color, "\n";
 	  			#$score = ($score == 0)? 1000 : 0;
 	  			$color = ($color eq "255,0,0")? "255,215,0" : "255,0,0";
 	    	}
