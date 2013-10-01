@@ -1985,19 +1985,25 @@ sub joinCages
 		my @aryJoinCh;
     my $hashNatureChN = {};
     
+    my $freeChoice = &checkForFoodDif2SC ($h);
+    
     foreach my $c (sort ({$a<=>$b} keys (%$h)))
 	  		{	  	
 	  		 
          if ($caseGroup eq "even" && $c % 2 == 0)  {$group = "case"}
 	  		 if ($caseGroup eq "even" && $c % 2 != 0) {$group = "control"}
 	  		 if ($caseGroup eq "odd" && $c % 2 == 0) {$group = "control"}
-	  		 if ($caseGroup eq "odd" && $c % 2 != 0) {$group ="case"}
-	  		  	  	  		  	  		   	  		   		   					     
+	  		 if ($caseGroup eq "odd" && $c % 2 != 0) {$group ="case"}	  		 
+	  		   	  	  		  	  		   	  		   		   					     
 	  		 foreach my $chN (sort ({$a<=>$b} keys(%{$h->{$c}})))
 	  		   {
 	  		     my $nature = $h->{$c}{$chN}{Nature};
 	  		     if ($nature =~ /food_cd/) {$nature = "food_cd"}
-	  		     if ($nature =~ /food_sc/ && $group eq "case") {$nature = "food_sc"}	  #cambio para dev phase		     
+	  		     #This has to be commented manually before depending if the files are from the habituation or development 
+	  		     #phase now is checked by the function &checkForFoodDif2Sc
+#	  		     if ($nature =~ /food_sc/ && $group eq "case") {$nature = "food_sc"}	  #cambio para dev phase
+             if ($nature =~ /food_sc/ && $group eq "case" && $freeChoice == 1 ) {$nature = "food_sc"}
+		     
 	  		     $hashNatureChN->{$group}{$nature} = $chN; 
 	  		   }
 	  		}
@@ -2021,7 +2027,8 @@ sub joinCages
 	  		     my $nature = $h->{$c}{$chN}{Nature};
 	  		     
 	  		     if ($nature =~ /food_cd/) {$nature = "food_cd"}
-	  		     if ($nature =~ /food_sc/ && $group eq "case") {$nature = "food_sc"}#cambio para dev phase
+#	  		     if ($nature =~ /food_sc/ && $group eq "case") {$nature = "food_sc"}#cambio para dev phase
+	  		     if ($nature =~ /food_sc/ && $group eq "case" && $freeChoice == 1 ) {$nature = "food_sc"}
 	  		     
 	  		     #my $data2 = ($bindCageH->{$group}{$chN}{data});
   		       my ($data2, $NInt, $NIntBind, $NIntCurr) = 0;  		       
@@ -2087,7 +2094,7 @@ sub joinCages
 	  		 }
 	  		
 	  		#return ($bindCageH);
-	  		#print Dumper ($newBindCageH);	  		
+#	  		print Dumper ($newBindCageH);	  		
 	  		return ($newBindCageH) ;
 	  		
   }
@@ -2232,8 +2239,6 @@ sub joinByPhase
     ($start, $end) = &firstAndLastTime ($d, $param);
     
     $firstPhLightChange = &getFirstChange2LightPh ($d, $param, $start, $end);
-    #print "###### start->$start end-->$end   first change to light --> $firstPhLightChange\n";#del
-    #die;#del
     
     $i = 1;
     
@@ -2259,12 +2264,10 @@ sub joinByPhase
     	  $startTimePh = $firstPhLightChange - $start;
     	  $phase = "light";     		
     	}	
-    #print "$firstPhLightChange ===== start->$start\n";#del
+    
     my ($hPh, $hCount) = {};
     my $nextStartTimePh = "";
-    
-    #print "$startTimePh\n";#del
-    #die;#del
+
     foreach my $c (sort ({$a<=>$b} keys(%$dWin)))
   		{	
   			foreach my $chN (sort ({$a<=>$b} keys(%{$dWin->{$c}})))
@@ -2469,13 +2472,12 @@ sub writeWindowBedFileSign
   	foreach my $c (sort ({$a<=>$b} keys(%$h)))
   		{	
   			foreach my $chN (sort ({$a<=>$b} keys(%{$h->{$c}})))
-  				{	
-#  				  print Dumper   		($negativeSW);die;		   		  					  						
+  				{					  						
   					if (exists ($negativeSW->{$c}{$chN}))
   					 {
   					   my $chNNegative = $negativeSW->{$c}{$chN};
   					   my $aryData = $h->{$c}{$chN}{data};
-  					   my $aryDataNegative = $h->{$c}{$chNNegative}{data};
+  					   my $aryDataNegative = $h->{$c}{$chNNegative}{'data'};
   					   my $nature = $h->{$c}{$chN}{Nature};
   					   my $natureNegative = $h->{$c}{$chNNegative}{Nature};
   					   
@@ -2497,8 +2499,11 @@ sub writeWindowBedFileSign
     		    	 print $F "altcolor=", $altColor, " ";
     		    	 print $F "priority=", $priority, " ";
     		    	 print $F "\n";
-			    	     
-			    	   my $NInt = (scalar (@$aryData) >= scalar (@$aryDataNegative))? scalar (@$aryData) : scalar (@$aryDataNegative);
+			    	   
+			    	   my $s1 = scalar (@$aryData);
+			    	   my $s2 = scalar (@$aryDataNegative);
+
+			    	   my $NInt = ($s1 >= $s2)? $s1 : $s2;
 
 			    	   for ($i = 0; $i < $NInt; $i++)
 			    		   {
@@ -2768,4 +2773,28 @@ sub euclideanAlgGCD
 
     	return ($b);
 	}
-	  
+
+sub checkForFoodDif2SC
+    {
+      my $h = shift;
+      my $hashCh = {};
+      
+      foreach my $c (sort ({$a<=>$b} keys (%$h)))
+  		 {	
+  		   foreach my $chN (sort ({$a<=>$b} keys(%{$h->{$c}})))
+  		     {
+  		       my $nature = $h->{$c}{$chN}{Nature};	  
+  		       		       
+  		       if ($nature eq "food_cd" || $nature eq "food_fat") 
+  		         {  		           
+  		           return (1);
+  		         }
+  		       else
+  		         {
+  		           next;
+  		         }  	  		       
+  		     }  
+  		 }
+  		 return (0);
+    }
+    
