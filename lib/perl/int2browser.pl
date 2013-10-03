@@ -25,52 +25,53 @@ if ($#ARGV ==-1)
     	   -outTimeDiv <name of file> -allFiles <mode> -outdata <file or no>\n";
     print "****************** Flags      **************************\n";
     print "  -data  <file1 file2.. >..........File: input data from file(s).\n";
-    print "  -convert       <mode> ...........Mode: 'int2bed' convert an intervals file (raw data) into a bed file\n";
- 	  print "  -convertMode   <mode> ...........Mode: 'singleCh2track' each channel in the raw data converted into a single track bed file\n";
- 	  print "  .................................Mode: 'allFoodCh2track' food channels combined into the same track bed file\n"; 
- 	  print "  .................................Mode: 'allCh2track' food and drink channels combined into the same track bed file\n";  											  	
-    print "  -outBed        <file> ...........File:  name of the output Bed file containning the resulting tracks.\n";
-    print "  -create        <file> ...........Mode: 'chr' produces a chromosome to be load as a genome with the length of the experiment in seconds\n";    
+    print "  -convert        <mode> ...........Mode: 'int2bed' convert an intervals file (raw data) into a bed file\n";
+ 	  print "  -convertMode    <mode> ...........Mode: 'singleCh2track' each channel in the raw data converted into a single track bed file\n";
+ 	  print "  ..................................Mode: 'allFoodCh2track' food channels combined into the same track bed file\n"; 
+ 	  print "  ..................................Mode: 'allCh2track' food and drink channels combined into the same track bed file\n";  											  	
+    print "  -outBed         <file> ...........File:  name of the output Bed file containning the resulting tracks.\n";
+    print "  -create         <file> ...........Mode: 'chr' produces a chromosome to be load as a genome with the length of the experiment in seconds\n";    
     #Deprecated
-    #print "  -generate     <mode> ...........Mode: 'cytobandFile' produces a cytoband like file with bands corresponding to light/dark phases\n";
-    #print "  ................................Mode: 'phase2bed' produces a track with intervals corresponding to light/dark phases in a bed file\n";
-    #print "  ................................Mode: 'timeDivision' produces a track with ticks showing a temporal division, by default 1 hour, different time separation provided with -period parameter\n";
-    print "	 -cytobandFile <int> ..............Int: '1' produces a cytoband like file with bands corresponding to light/dark phases\n";
-    print "	 -phase2bed    <int> ..............Int: '1' produces a track with intervals corresponding to light/dark phases in a bed file\n";
-    print "	 -timeDivision <int> ..............Int: '1' 'timeDivision' produces a track with ticks showing a temporal division, by default 1 hour, different time separation provided with -period parameter\n";    
-    print "  -period       <int>...............Int: time in hours.\n";
-    print "  -window       <parameter>........Parameter: 'Value',... This option slides a window along data calculating the values of the parameter inside this window.\n";
+    #print "  -generate      <mode> ...........Mode: 'cytobandFile' produces a cytoband like file with bands corresponding to light/dark phases\n";
+    #print "  .................................Mode: 'phase2bed' produces a track with intervals corresponding to light/dark phases in a bed file\n";
+    #print "  .................................Mode: 'timeDivision' produces a track with ticks showing a temporal division, by default 1 hour, different time separation provided with -period parameter\n";
+    print "	 -cytobandFile  <int> ..............Int: '1' produces a cytoband like file with bands corresponding to light/dark phases\n";
+    print "	 -phase2bed     <int> ..............Int: '1' produces a track with intervals corresponding to light/dark phases in a bed file\n";
+    print "	 -timeDivision  <int> ..............Int: '1' 'timeDivision' produces a track with ticks showing a temporal division, by default 1 hour, different time separation provided with -period parameter\n";    
+    print "  -period        <int>...............Int: time in hours.\n";
+    print "  -window        <parameter>........Parameter: 'Value',... This option slides a window along data calculating the values of the parameter inside this window.\n";
     #Deprecated we can specify this using the same ws and wss
     #print "  -winMode      <mode>.............Mode: 'cumulative', 'discrete' The values of the window are summed up along the time or not.\n";
-    print "  -winMode      <mode>.............Mode: 'binary' format the data in a binary way, 1 in presence of data or 0 in absence.\n";    
-    print "  -ws           <int>...............Int: Duration of the window in seconds, by default 1800 seconds, 30 min.\n"; 
-    print "  -wss          <int>...............Int: Duration of the window in seconds, by default 300 seconds, 5 min.\n";        
-    print "  -iniLight     <int>...............Int: Starting of light phase in winter is 7 GMT+1 -> 8 in summer is 6 GMT+2 -> 8. By default 6.\n";
-    print "  -winFile      <file>..............File: Set a prefix for all files generated by window.\n";
-    print "  -winFormat    <mode>..............Mode: 'bedGraph' sets the output format bedGraph\n";
-    print "  ..................................Mode: 'rhmm sets de output format to rhmm'\n";
-    print "  -winCh2comb   <int>...............Int: '1234' combine all channels.\n";
-    print "   .................................Int: '12,34' channels 1 and 2, 3 and 4.\n";    
-    print "   .................................Int: '12' combine channels 1 and 2\n";
-    print "   .................................Int: '34' combine channels 3 and 4.\n";
-    print "  -winCombMode  <mode>.............Mode: 'additive' values of the channels add in single intervals, default value\n";
-    print "   ................................Mode: 'sign' values of the channels are combined in a track, one channel as negative and the other as positive\n";    
-    print "  -winViewLim   <int>...............Int: This option set the browser maximun to be shown in bedGraph window files.\n";
-    print "  -winCage2comb <> ..................<>:  Combine values of all cages by group\n";
-    print "  -winJoinPhase <> ................Mode:  'mean/all' Combine all values of the same phase,\n"; 
+    print "  -winMode       <mode>.............Mode: 'binary' format the data in a binary way, 1 in presence of data or 0 in absence.\n";    
+    print "  -ws            <int>...............Int: Duration of the window in seconds, by default 1800 seconds, 30 min.\n"; 
+    print "  -wss           <int>...............Int: Duration of the window in seconds, by default 300 seconds, 5 min.\n";        
+    print "  -iniLight      <int>...............Int: Starting of light phase in winter is 7 GMT+1 -> 8 in summer is 6 GMT+2 -> 8. By default 6.\n";
+    print "  -winFile       <file>..............File: Set a prefix for all files generated by window.\n";
+    print "  -winFormat     <mode>..............Mode: 'bedGraph' sets the output format bedGraph\n";
+    print "  ...................................Mode: 'rhmm sets de output format to rhmm'\n";
+    print "  -winCh2comb    <int>...............Int: '1234' combine all channels.\n";
+    print "   ..................................Int: '12,34' channels 1 and 2, 3 and 4.\n";    
+    print "   ..................................Int: '12' combine channels 1 and 2\n";
+    print "   ..................................Int: '34' combine channels 3 and 4.\n";
+    print "  -winCombMode   <mode>.............Mode: 'additive' values of the channels add in single intervals, default value\n";
+    print "   .................................Mode: 'sign' values of the channels are combined in a track, one channel as negative and the other as positive\n";    
+    print "  -winViewLim    <int>...............Int: This option set the browser maximun to be shown in bedGraph window files.\n";
+    print "  -winCage2comb  <> ..................<>:  Combine values of all cages by group\n";
+    print "  -winJoinPhase  <> ................Mode:  'mean/all' Combine all values of the same phase,\n"; 
     print "                                          If mode is set to 'all' all values of the same time fraction are added otherwise by default the mean value is given.\n";
-    print "  -winJoinPhFormat <> .............Mode:  'bedGraph/table' 'table' result is given in a tabulated format otherwise by default output is a bedGraph file.\n";
-    print "  -zeroValues   <mode> ........... Mode:  'T' or 'F' By default set to T, if it is set to T windows with value 0 are exclosed from the file\n";  
-    print "  -caseGroup    <mode> ............Mode:  'even/odd' Defines which is the case group\n";
+    print "  -winJoinPhFormat<> .............Mode:  'bedGraph/table' 'table' result is given in a tabulated format otherwise by default output is a bedGraph file.\n";
+    print "  -zeroValues    <mode> ........... Mode:  'T' or 'F' By default set to T, if it is set to T windows with value 0 are exclosed from the file\n";  
+    print "  -caseGroup     <mode> ............Mode:  'even/odd' Defines which is the case group\n";
     print "  -splitCh         <> ................<>: Split channels of the same nature on the corresponding to the feeder number (water_1, water_2).\n";
     print "                                          Set by default by \"-winCage2comb\" otherwise joinCages will not work correctly\n";
-    print "  -outGenome    <file>.............Value: name of the genome file from \"-create chr\"\n";    
-    print "  -outCytoband  <file>.............Value: name of cytoband like file from \"-generate cytobandFile\"\n";
-    print "  -outPhaseBed  <file>.............Value: name of phases bed file from \"-generate phase2bed\"\n";
-    print "  -outTimeDiv   <file>.............Value: name of temporal division bed file (ticks) from \"-generate timeDivision\"\n";
-    print "  -allFiles     <mode>.............Mode:  'genomeBrowser' Produces without setting other parameters a bed file from intervals, a chr to load as a genome and a bed files with the intervals .\n";
-    print "  -outdata      <mode>.............Mode: 'no'  Intervals files are not generated or show in standard output\n";
-    print "  -out          <file>.............File:  name of output files if parameters for each type of file were not given.\n";
+    print "  -outGenome     <file>.............Value: name of the genome file from \"-create chr\"\n";    
+    print "  -outCytoband   <file>.............Value: name of cytoband like file from \"-generate cytobandFile\"\n";
+    print "  -outPhaseBed   <file>.............Value: name of phases bed file from \"-generate phase2bed\"\n";
+    print "  -outTimeDiv    <file>.............Value: name of temporal division bed file (ticks) from \"-generate timeDivision\"\n";
+    print "  -hmmField2read <mode>.............Mode: 'bin' Default value, bin extracted from the rhmm file\n";
+    print "  -allFiles      <mode>.............Mode:  'genomeBrowser' Produces without setting other parameters a bed file from intervals, a chr to load as a genome and a bed files with the intervals .\n";
+    print "  -outdata       <mode>.............Mode: 'no'  Intervals files are not generated or show in standard output\n";
+    print "  -out           <file>.............File:  name of output files if parameters for each type of file were not given.\n";
     print "****************** Data Format **************************\n";
     print "  Raw Data\n";
     
@@ -192,52 +193,7 @@ if ($d && $param->{outdata} ne "no")
     &display_data ($d, $param); 
   }
 
-sub hmm2bedGraph 
-  {
-    my $d = shift;
-    my $winFile = "developFile";
-    my $field2extract = "bin";
-    my $winParam = $param -> {window}? $param->{window} : "Value";
-    #Defines the initial display mode of the annotation track. Values for display_mode include: 0 - hide, 1 - dense, 2 - full, 3 - pack, and 4 - squish
-		my $viewLimits = $param -> {winViewLim}? $param -> {winViewLim} : "0.5";
-    my $visibility = "full";#by the moment hardcoded in future it might be a parameter
-    my $color = "200,100,0";
-    my $altColor = "0,100,200";
-    my $priority = "20";
-    my $type = "bedGraph";
-    my ($chr, $startInt, $endInt, $id, $value, $score, $chN);
 
-    $chr = "chr1";
-        
-    foreach my $c (sort ({$a<=>$b}keys(%$d)))
-      {
-        my $file = $winFile."cage".$c."field_".$field2extract.".bedGraph";    				
-    		my $F= new FileHandle;    				
-			  vfopen ($F, ">$file");
-			  
-			  print $F "track ";
-	    	print $F "type=$type ";	    				
-	    	print $F "name=", "\"cage ", $c, "\;", "ch", "\"", " ";
-	    	print $F "description=", "\"cage ", $c, "\;", "\"", " ";
-	    	print $F "visibility=", $visibility, " ";
-	    	if ($viewLimits ne "auto") {print $F "viewLimits=", $viewLimits, " ";} 
-	    	print $F "color=", $color, " ";
-	    	print $F "altcolor=", $altColor, " ";
-	    	print $F "priority=", $priority, " ";
-	    	print $F "\n";
-	    	 
-        foreach my $i (sort {$a<=>$b}keys (%{$d->{$c}}))
-      	 {          		    	
-		    	$startInt = $d->{$c}{$i}{'winS'};
-		    	$endInt = $d->{$c}{$i}{'winE'}; 
-		    	$value = $d->{$c}{$i}{$field2extract};
-
-		    	print $F "$chr\t$startInt\t$endInt\t$value\n";		
-      	 }
-      	 
-        close ($F);
-      }     
-  } 
    
 sub readData 
   
@@ -413,6 +369,56 @@ sub parse_data
     return $data;
   }
 
+# Extract the information of a hash read from a hmm file in readData () into a bedGraph file with value to be shown specified
+# in parameter hmmField2extract (by default bin) 
+sub hmm2bedGraph 
+  {
+    my $d = shift;
+    my $winFile = "developFile";
+    my $field2extract = $param -> {hmmField2extract}? $param->{hmmField2extract} : "bin";
+   
+    #Defines the initial display mode of the annotation track. Values for display_mode include: 0 - hide, 1 - dense, 2 - full, 3 - pack, and 4 - squish
+		my $viewLimits = $param -> {winViewLim}? $param -> {winViewLim} : "0.5";
+    my $visibility = "full";#by the moment hardcoded in future it might be a parameter
+    my $color = "200,100,0";
+    my $altColor = "0,100,200";
+    my $priority = "20";
+    my $type = "bedGraph";
+    my ($chr, $startInt, $endInt, $id, $value, $score, $chN);
+
+    $chr = "chr1";
+        
+    foreach my $c (sort ({$a<=>$b}keys(%$d)))
+      {
+        my $file = $winFile."cage".$c."field_".$field2extract.".bedGraph";    				
+    		my $F= new FileHandle;    				
+			  vfopen ($F, ">$file");
+			  
+			  print $F "track ";
+	    	print $F "type=$type ";	    				
+	    	print $F "name=", "\"cage ", $c, "\;", "ch", "\"", " ";
+	    	print $F "description=", "\"cage ", $c, "\;", "\"", " ";
+	    	print $F "visibility=", $visibility, " ";
+	    	if ($viewLimits ne "auto") {print $F "viewLimits=", $viewLimits, " ";} 
+	    	print $F "color=", $color, " ";
+	    	print $F "altcolor=", $altColor, " ";
+	    	print $F "priority=", $priority, " ";
+	    	print $F "\n";
+	    	 
+        foreach my $i (sort {$a<=>$b}keys (%{$d->{$c}}))
+      	 {          		    	
+		    	$startInt = $d->{$c}{$i}{'startInt'};
+		    	$endInt = $d->{$c}{$i}{'startInt'}; 
+		    	$value = $d->{$c}{$i}{$field2extract};
+
+		    	print $F "$chr\t$startInt\t$endInt\t$value\n";		
+      	 }
+      	 
+        close ($F);
+        print STDERR "      File hmm correctly converted into bedGraph extracting field $field2extract!\n";
+      }     
+  } 
+  
 sub display_data
   {
     my $d=shift;
@@ -705,6 +711,7 @@ sub check_parameters
     $rp->{winJoinPhFormat} = 1;
     $rp->{splitCh} = 1;
     $rp->{zeroValues} = 1;
+    $rp->{hmmField2extract} = 1;
     
     foreach my $k (keys (%$p))
       {
@@ -2058,7 +2065,7 @@ sub writeWindowBinary
                   
                   if ($winFormat eq "rhmm")
                     {
-				    			   print $F "#d;1;$i;$winParam;$acuValue;bin;$bin;winS;$startInt;winE;$endInt\n";
+				    			   print $F "#d;1;$i;$winParam;$acuValue;bin;$bin;startInt;$startInt;endInt;$endInt\n";
                     }
                   elsif ($winFormat eq "bedGraph")
                     {                                                                                       
