@@ -167,7 +167,7 @@ if ($d && $param->{convert} eq "int2bed")
   {  	
     &int2bed ($d, $param);
   }
-elsif ($d && $param->{convert} eq "int2bed")
+elsif ($d && $param->{convert} eq "hmm2bedGraph")
   {
     &hmm2bedGraph ($d, $param);
   }   
@@ -195,7 +195,48 @@ if ($d && $param->{outdata} ne "no")
 sub hmm2bedGraph 
   {
     my $d = shift;
-      
+    my $winFile = "developFile";
+    my $field2extract = "bin";
+    my $winParam = $param -> {window}? $param->{window} : "Value";
+    #Defines the initial display mode of the annotation track. Values for display_mode include: 0 - hide, 1 - dense, 2 - full, 3 - pack, and 4 - squish
+		my $viewLimits = $param -> {winViewLim}? $param -> {winViewLim} : "0.5";
+    my $visibility = "full";#by the moment hardcoded in future it might be a parameter
+    my $color = "200,100,0";
+    my $altColor = "0,100,200";
+    my $priority = "20";
+    my $type = "bedGraph";
+    my ($chr, $startInt, $endInt, $id, $value, $score, $chN);
+
+    $chr = "chr1";
+        
+    foreach my $c (sort ({$a<=>$b}keys(%$d)))
+      {
+        my $file = $winFile."cage".$c."field_".$field2extract.".bedGraph";    				
+    		my $F= new FileHandle;    				
+			  vfopen ($F, ">$file");
+			  
+			  print $F "track ";
+	    	print $F "type=$type ";	    				
+	    	print $F "name=", "\"cage ", $c, "\;", "ch", "\"", " ";
+	    	print $F "description=", "\"cage ", $c, "\;", "\"", " ";
+	    	print $F "visibility=", $visibility, " ";
+	    	if ($viewLimits ne "auto") {print $F "viewLimits=", $viewLimits, " ";} 
+	    	print $F "color=", $color, " ";
+	    	print $F "altcolor=", $altColor, " ";
+	    	print $F "priority=", $priority, " ";
+	    	print $F "\n";
+	    	 
+        foreach my $i (sort {$a<=>$b}keys (%{$d->{$c}}))
+      	 {          		    	
+		    	$startInt = $d->{$c}{$i}{'winS'};
+		    	$endInt = $d->{$c}{$i}{'winE'}; 
+		    	$value = $d->{$c}{$i}{$field2extract};
+
+		    	print $F "$chr\t$startInt\t$endInt\t$value\n";		
+      	 }
+      	 
+        close ($F);
+      }     
   } 
    
 sub readData 
@@ -204,7 +245,7 @@ sub readData
     my $d = shift;
     my $p = shift;
     
-    if ($p->{data}) 
+    if ($p->{data} && ($param->{convert} ne "hmm2bedGraph")) 
       {
         my @fl=split (/\s+/, $p->{data});
                 
@@ -221,9 +262,69 @@ sub readData
             		exit(1);
             	}
           }
+        }
+        
+      elsif ($p->{data} && ($param->{convert} eq "hmm2bedGraph"))
+        {
+          my @fl=split (/\s+/, $p->{data});
+          
+          foreach my $ff (@fl)
+            {
+              if ( -e $ff) 
+                {                                    
+#                  return undump_data ($ff,$d);
+                  $d= undump_data ($ff, $d);                
+                }
+             
+              else 
+            	 {
+            		  print STDERR "\nERROR: $ff does not exist [FATAL]\n";
+            		  exit(1);
+            	 }
+              
+            }  
+#          print Dumper $d;
+#          print STDERR "CULO________________\n";die;
         }  
+        
+#      print Dumper $d;  
       return ($d);
   }
+
+sub undump_data
+  {
+	 my $file=shift;
+	 my $d=shift;
+	 my $F= new FileHandle;
+	 my $internalID;
+	
+	 if (!$d){$d={};}
+	 vfopen ($F, $file);
+
+	 while (<$F>)
+	   {
+	     my $l=$_;
+	   
+	     chomp($l);
+	     if ( $l=~/#d/)
+        {
+		      my @v=($l=~/([^;]+)/g);
+		      shift @v;	
+		      my $exp=shift (@v);
+		      my $record=shift(@v);
+		      $internalID+=1;
+		      
+		      for (my $a=0; $a<=$#v; $a+=2)
+		        {
+		          $d->{$exp}{$internalID}{$v[$a]}=$v[$a+1];
+		        }
+		        
+		      $d->{$exp}{$internalID}{externalID}=$record; 
+	      }
+	   }
+	 close ($F);
+	 return $d;
+  }  
   
 sub parse_data
   {
