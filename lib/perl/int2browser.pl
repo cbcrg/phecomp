@@ -2141,7 +2141,7 @@ sub writeWindowBinarySingleHmmFile
 	  		 my $nature = $h->{$c}{$chN}{Nature};
 	  		 my $aryData = $h->{$c}{$chN}{data}; 
 	  			
-	  		 print $F "#d;1;$totalIndex;fileRecId;$i;$winParam;0;bin;BEGIN;startInt;0;endInt;0\n";
+	  		 print $F "#d;1;$totalIndex;fileRecId;$i;cage;$c;chN;$chN;nature;$nature;$winParam;0;bin;BEGIN;startInt;0;endInt;0\n";
 	  		  
 			 	 $totalIndex++;
 			 	 		
@@ -2169,12 +2169,12 @@ sub writeWindowBinarySingleHmmFile
   			      }
   			      
             my $n = $i+1; 			                            
-    			  print $F "#d;1;$totalIndex;fileRecId;$n;$winParam;$acuValue;bin;$bin;startInt;$startInt;endInt;$endInt\n";
+    			  print $F "#d;1;$totalIndex;fileRecId;$n;cage;$c;chN;$chN;nature;$nature;$winParam;$acuValue;bin;$bin;startInt;$startInt;endInt;$endInt\n";
     			  $totalIndex++;             					    							    							    		
 	    		 }
 	    		 
 	    		 my $n = $i+2; 
-	    		 print $F "#d;1;$totalIndex;fileRecId;$n;$winParam;0;bin;END;startInt;0;endInt;0\n";				    					    		       
+	    		 print $F "#d;1;$totalIndex;fileRecId;$n;cage;$c;chN;$chN;nature;$nature;$winParam;0;bin;END;startInt;0;endInt;0\n";				    					    		       
 	  	  }
 	  	  
 	   }
