@@ -170,6 +170,7 @@ if ($d && $param->{convert} eq "int2bed")
   }
 elsif ($d && $param->{convert} eq "hmm2bedGraph")
   {
+    print Dumper ($d);   
     &hmm2bedGraph ($d, $param);
   }   
   
@@ -192,8 +193,6 @@ if ($d && $param->{outdata} ne "no")
   {  
     &display_data ($d, $param); 
   }
-
-
    
 sub readData 
   
@@ -237,19 +236,15 @@ sub readData
             		  print STDERR "\nERROR: $ff does not exist [FATAL]\n";
             		  exit(1);
             	 }
-              
             }  
-#          print Dumper $d;
-#          print STDERR "CULO________________\n";die;
-        }  
-        
-#      print Dumper $d;  
+        }        
       return ($d);
   }
 
 sub undump_data
   {
 	 my $file=shift;
+#	 print "------$file---------\n"; 
 	 my $d=shift;
 	 my $F= new FileHandle;
 	 my $internalID;
@@ -265,20 +260,24 @@ sub undump_data
 	     if ( $l=~/#d/)
         {
 		      my @v=($l=~/([^;]+)/g);
+#		      print Dumper (@v);
 		      shift @v;	
 		      my $exp=shift (@v);
+#		      print STDERR "========$exp\n";
 		      my $record=shift(@v);
 		      $internalID+=1;
 		      
 		      for (my $a=0; $a<=$#v; $a+=2)
 		        {
-		          $d->{$exp}{$internalID}{$v[$a]}=$v[$a+1];
+		          $d->{$file}{$internalID}{$v[$a]}=$v[$a+1];
 		        }
 		        
-		      $d->{$exp}{$internalID}{externalID}=$record; 
+		      $d->{$file}{$internalID}{externalID}=$record; 
 	      }
 	   }
 	 close ($F);
+#	 print Dumper ($d);
+#	 die;
 	 return $d;
   }  
   
@@ -387,12 +386,20 @@ sub hmm2bedGraph
     my ($chr, $startInt, $endInt, $id, $value, $score, $chN);
 
     $chr = "chr1";
-        
+    ### ALL FILES IN ONE WITH BEGIN AND END
+    ### hacer en la opcion a hmm begin end, con el nombre del archivo que debe identificar la cage para que se pueda saber a cual corresponde
+    ### Aqui recoger el begin y el end y cada vez que los haya crear un archivo diferente
+    my $file = $winFile."field_".$field2extract.".devBedGraph";
+#    print STDERR "winfile----$winFile\tfield2extract----$field2extract\n";die;#del    				
+    my $F= new FileHandle;    				
+	  vfopen ($F, ">$file");
+    
+            
     foreach my $c (sort ({$a<=>$b}keys(%$d)))
       {
-        my $file = $winFile."cage".$c."field_".$field2extract.".bedGraph";    				
-    		my $F= new FileHandle;    				
-			  vfopen ($F, ">$file");
+#        my $file = $winFile."cage".$c."field_".$field2extract.".devBedGraph";    				
+#    		my $F= new FileHandle;    				
+#			  vfopen ($F, ">$file");
 			  
 			  print $F "track ";
 	    	print $F "type=$type ";	    				
@@ -412,11 +419,10 @@ sub hmm2bedGraph
 		    	$value = $d->{$c}{$i}{$field2extract};
 
 		    	print $F "$chr\t$startInt\t$endInt\t$value\n";		
-      	 }
-      	 
-        close ($F);
-        print STDERR "      File hmm correctly converted into bedGraph extracting field $field2extract!\n";
-      }     
+      	 }      	        
+      }  
+      close ($F);
+      print STDERR "      File hmm correctly converted into bedGraph extracting field $field2extract!\n";   
   } 
   
 sub display_data
@@ -712,6 +718,7 @@ sub check_parameters
     $rp->{splitCh} = 1;
     $rp->{zeroValues} = 1;
     $rp->{hmmField2extract} = 1;
+    $rp->{rhmmFile} = 1;
     
     foreach my $k (keys (%$p))
       {
@@ -1444,6 +1451,7 @@ sub data2win
     	#my $winBind = (exists ($param->{winCage2comb}) && !exists ($param->{caseGroup}))? "even" : $param->{caseGroup};     	    	    	       
     	my $winFormat = exists ($param->{winFormat})? $param->{winFormat} : "bedGraph"; #by default bedGraph
     	my $winMode = $param -> {winMode}? $param -> {winMode} : "discrete";
+    	my $rhmmFile = exists ($param->{rhmmFile})? $param->{rhmmFile} : "multiple"; #by default multiple
     	  
     	#our $param->{winCh2comb} = (!exists ($param->{winCh2comb}) && exists ($param->{winCombMode}))? "12,34" : $param->{winCh2comb}; 
     	if (!exists ($param->{winCh2comb}) && exists ($param->{winCombMode}))
@@ -1528,14 +1536,21 @@ sub data2win
         } 
          
       if ($winMode eq "binary")
-          {
-            &writeWindowBinary ($hashWin, $winFile);
+          { 
+            if ($rhmmFile eq "multiple")
+              {
+                &writeWindowBinary ($hashWin, $winFile);
+              }
+            else 
+              {
+                # All cages in a single rhmm file so I can feed rhmm in a single step		
+                &writeWindowBinarySingleHmmFile ($hashWin, $winFile);
+              }
           }  
       elsif ($winFormat eq "bedGraph")
         {
           if ($winCombMode eq "" || $winCombMode eq "additive") 
     	     {     	    	
-            #print Dumper ($hashWin);#del
             &writeWindowBedFile ($hashWin, $winFile);
     	     }
     	    elsif ($winCombMode eq "sign")
@@ -1968,7 +1983,7 @@ sub writeWindowBinary
     my $zerosOut = $param->{zeroValues}? $param->{zeroValues} : "T";
     my $winParam = $param->{window};
     my $winMode = $param -> {winMode}? $param -> {winMode} : "discrete"; #by default discrete
-    my $winFormat = exists ($param->{winFormat})? $param->{winFormat} : "bedGraph"; #by default bedGraph
+    my $winFormat = exists ($param->{winFormat})? $param->{winFormat} : "bedGraph"; #by default bedGraph        
     my $natures = {};
     
 #    foreach my $c (sort ({$a<=>$b} keys(%$h)))
@@ -1986,7 +2001,7 @@ sub writeWindowBinary
 #    print $F "#comment;Format: int2rhmm.01";
 #		print $F "\n";
 ##				    	
-				    	
+				                		    	
     foreach my $c (sort ({$a<=>$b} keys(%$h)))
 	  		{	
 	  			foreach my $chN (sort ({$a<=>$b} keys(%{$h->{$c}})))
@@ -1996,7 +2011,7 @@ sub writeWindowBinary
 	  					
 	  					if ($winFormat eq "rhmm")
                 {			
-    					    $file = $winFile."cage".$c."ch".$nature.$chN.".hmm";    					   
+    					    $file = $winFile."cage".$c."ch".$nature.$chN.".hmm";#    					   
                 }
               elsif ($winFormat eq "bedGraph")
                 {
@@ -2093,7 +2108,78 @@ sub writeWindowBinary
 	  		}
 	  	
   }
-  
+
+#This function writes the binning of the data in a single rhmm file with all cages and channels in a single file   
+sub writeWindowBinarySingleHmmFile 
+  {
+    my $h = shift;
+    my $winFile = shift;
+    my $i = 0;
+    my $file = ""; 
+    my ($chr, $startInt, $endInt, $acuValue, $bin);
+    my $zerosOut = $param->{zeroValues}? $param->{zeroValues} : "T";
+    my $winParam = $param->{window};
+    my $winMode = $param -> {winMode}? $param -> {winMode} : "discrete"; #by default discrete
+    my $winFormat = exists ($param->{winFormat})? $param->{winFormat} : "bedGraph"; #by default bedGraph        
+    my $natures = {};
+    my $totalIndex = 0;
+    
+    $file = $winFile.".hmm";
+    my $F= new FileHandle;
+    vfopen ($F, ">$file");
+    
+    print $F "#comment;Format: int2rhmm.01";
+    print $F "\n";
+    
+    
+    foreach my $c (sort ({$a<=>$b} keys(%$h)))
+	   {	
+	     foreach my $chN (sort ({$a<=>$b} keys(%{$h->{$c}})))
+	  	  {	  		
+	  		 my $nature = $h->{$c}{$chN}{Nature};
+	  		 my $aryData = $h->{$c}{$chN}{data}; 
+	  			
+	  		 print $F "#d;1;$totalIndex;fileRecId;$i;$winParam;0;bin;BEGIN;startInt;0;endInt;0\n";
+	  		  
+			 	 $totalIndex++;
+			 	 		
+				 for ($i = 0; $i < scalar (@$aryData); $i++)
+	         {
+	    	    my $hItem = $aryData->[$i];
+	    			
+	    		  $acuValue = $hItem->{'acuValue'};				    							    		
+	    			
+      			$chr = $hItem->{'chr'};
+      			$startInt = $hItem->{'startInt'};
+      			$endInt = $hItem->{'endInt'};
+  	    			
+      			if ($winMode eq "binary" && $acuValue != 0) 
+  			      {														        
+  			        $bin = 1;
+  			      }
+  			    elsif ($winMode eq "binary" && $acuValue == 0)
+  			      {
+  			        $bin = 0;
+  			      }
+  			    else
+  			      {    
+  			        $bin = $acuValue;
+  			      }
+  			      
+            my $n = $i+1; 			                            
+    			  print $F "#d;1;$totalIndex;fileRecId;$n;$winParam;$acuValue;bin;$bin;startInt;$startInt;endInt;$endInt\n";
+    			  $totalIndex++;             					    							    							    		
+	    		 }
+	    		 
+	    		 my $n = $i+2; 
+	    		 print $F "#d;1;$totalIndex;fileRecId;$n;$winParam;0;bin;END;startInt;0;endInt;0\n";				    					    		       
+	  	  }
+	  	  
+	   }
+	  print STDERR "      Results of cumulative window in: $file\n";		
+	  close ($F);    
+  } 
+    
 sub joinCages
   {
     my $h = shift;		
