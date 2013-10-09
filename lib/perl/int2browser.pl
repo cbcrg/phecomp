@@ -172,7 +172,7 @@ if ($d && $param->{convert} eq "int2bed")
   }
 elsif ($d && $param->{convert} eq "hmm2bedGraph")
   {
-    print Dumper ($d);   
+#    print Dumper ($d);#tag1590   
     &hmm2bedGraph ($d, $param);
   }   
   
@@ -377,7 +377,8 @@ sub hmm2bedGraph
     my $d = shift;
     my $winFile = "developFile";
     my $field2extract = $param -> {hmmField2extract}? $param->{hmmField2extract} : "bin";
-   
+    my $winFile = $param -> {winFile}? $param -> {winFile} : "DEVFile";
+
     #Defines the initial display mode of the annotation track. Values for display_mode include: 0 - hide, 1 - dense, 2 - full, 3 - pack, and 4 - squish
 		my $viewLimits = $param -> {winViewLim}? $param -> {winViewLim} : "0.5";
     my $visibility = "full";#by the moment hardcoded in future it might be a parameter
@@ -385,46 +386,52 @@ sub hmm2bedGraph
     my $altColor = "0,100,200";
     my $priority = "20";
     my $type = "bedGraph";
-    my ($chr, $startInt, $endInt, $id, $value, $score, $chN);
+    my ($chr, $startInt, $endInt, $id, $value, $score, $chN, $file, $F);
 
     $chr = "chr1";
-    ### ALL FILES IN ONE WITH BEGIN AND END
-    ### hacer en la opcion a hmm begin end, con el nombre del archivo que debe identificar la cage para que se pueda saber a cual corresponde
-    ### Aqui recoger el begin y el end y cada vez que los haya crear un archivo diferente
-    my $file = $winFile."field_".$field2extract.".devBedGraph";
-#    print STDERR "winfile----$winFile\tfield2extract----$field2extract\n";die;#del    				
-    my $F= new FileHandle;    				
-	  vfopen ($F, ">$file");
-    
-            
+   
     foreach my $c (sort ({$a<=>$b}keys(%$d)))
-      {
-#        my $file = $winFile."cage".$c."field_".$field2extract.".devBedGraph";    				
-#    		my $F= new FileHandle;    				
-#			  vfopen ($F, ">$file");
-			  
-			  print $F "track ";
-	    	print $F "type=$type ";	    				
-	    	print $F "name=", "\"cage ", $c, "\;", "ch", "\"", " ";
-	    	print $F "description=", "\"cage ", $c, "\;", "\"", " ";
-	    	print $F "visibility=", $visibility, " ";
-	    	if ($viewLimits ne "auto") {print $F "viewLimits=", $viewLimits, " ";} 
-	    	print $F "color=", $color, " ";
-	    	print $F "altcolor=", $altColor, " ";
-	    	print $F "priority=", $priority, " ";
-	    	print $F "\n";
-	    	 
+      {	    	 
         foreach my $i (sort {$a<=>$b}keys (%{$d->{$c}}))
-      	 {          		    	
-		    	$startInt = $d->{$c}{$i}{'startInt'};
-		    	$endInt = $d->{$c}{$i}{'startInt'}; 
-		    	$value = $d->{$c}{$i}{$field2extract};
+      	 {      	  
+      	  if ($d->{$c}{$i}{'bin'} eq "BEGIN") 
+      	   {
+      	     my $chN = $d->{$c}{$i}{'chN'};
+      	     my $nature = $d->{$c}{$i}{'nature'};
+      	     my $cage = $d->{$c}{$i}{'cage'};
+      	     
+      	     $file = $winFile."cage".$cage."ch".$nature.$chN.$field2extract.".devBedGraph";
+      	     $F= new FileHandle;
+      	     vfopen ($F, ">$file");
+      	     
+      	     print $F "track ";
+      	     print $F "type=$type ";	    				
+      	     print $F "name=", "\"cage ", $c, "\;", "ch", "\"", " ";
+      	     print $F "description=", "\"cage ", $c, "\;", "\"", " ";
+      	     print $F "visibility=", $visibility, " ";      	     
+      	     if ($viewLimits ne "auto") {print $F "viewLimits=", $viewLimits, " ";} 
+      	     print $F "color=", $color, " ";
+      	     print $F "altcolor=", $altColor, " ";
+      	     print $F "priority=", $priority, " ";
+      	     print $F "\n";
+      	     next;
+      	   }
 
+      	  if ($d->{$c}{$i}{'bin'} eq "END") 
+      	   {
+      	     print STDERR "      File hmm correctly converted into bedGraph extracting field $file!\n";        	     
+      	     close ($F);         
+      	     next;
+      	   } 
+      	              		    	
+		    	$startInt = $d->{$c}{$i}{'startInt'};
+		    	$endInt = $d->{$c}{$i}{'endInt'}; 
+		    	$value = $d->{$c}{$i}{$field2extract};
+          $value =~ s/ST:://;
 		    	print $F "$chr\t$startInt\t$endInt\t$value\n";		
-      	 }      	        
-      }  
-      close ($F);
-      print STDERR "      File hmm correctly converted into bedGraph extracting field $field2extract!\n";   
+      	 }
+      	   	        
+      }          
   } 
   
 sub display_data
