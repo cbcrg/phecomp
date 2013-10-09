@@ -171,8 +171,7 @@ if ($d && $param->{convert} eq "int2bed")
     &int2bed ($d, $param);
   }
 elsif ($d && $param->{convert} eq "hmm2bedGraph")
-  {
-#    print Dumper ($d);#tag1590   
+  {  
     &hmm2bedGraph ($d, $param);
   }   
   
@@ -246,7 +245,7 @@ sub readData
 sub undump_data
   {
 	 my $file=shift;
-#	 print "------$file---------\n"; 
+
 	 my $d=shift;
 	 my $F= new FileHandle;
 	 my $internalID;
@@ -262,10 +261,9 @@ sub undump_data
 	     if ( $l=~/#d/)
         {
 		      my @v=($l=~/([^;]+)/g);
-#		      print Dumper (@v);
 		      shift @v;	
 		      my $exp=shift (@v);
-#		      print STDERR "========$exp\n";
+
 		      my $record=shift(@v);
 		      $internalID+=1;
 		      
@@ -278,8 +276,7 @@ sub undump_data
 	      }
 	   }
 	 close ($F);
-#	 print Dumper ($d);
-#	 die;
+
 	 return $d;
   }  
   
@@ -1116,8 +1113,6 @@ sub int2bed
     	
     	($start, $end) = &firstAndLastTime ($d, $param);
     	
-    	#print $start, "\t", $end, "\n";#del
-    	
     	if ($convertMode eq "singleCh2track")
     		{    		
     			&int2bedSingleCh2track ($d, $param, $start, $end);
@@ -1501,7 +1496,6 @@ sub data2win
     	if (exists ($param->{winCage2comb}))
         {
           $hashUnitWin = &joinCages ($hashUnitWin, $winBindCageCase);
-          #print Dumper ($hashUnitWin); #del
         }
       
       #Combining channels if the parameter  winCh2comb is set
@@ -1600,7 +1594,6 @@ sub data2winDistro
     	my $hashWin = {};
     	 
     	($start, $end) = &firstAndLastTime ($d, $param);
-    	#print STDERR "start is $start\n";#del
     	
     	foreach my $c (sort ({$a<=>$b} keys(%$d)))
 	  		{
@@ -2308,8 +2301,7 @@ sub joinCages
 	  		     }
 	  		 }
 	  		
-	  		#return ($bindCageH);
-#	  		print Dumper ($newBindCageH);	  		
+	  		#return ($bindCageH);	  		
 	  		return ($newBindCageH) ;
 	  		
   }
@@ -2533,7 +2525,7 @@ sub joinByPhase
   		       }
   		    } 
   		}  
-  	#print Dumper ($hPh);	        
+  		      
     $hPh = &hashPh2hashWin ($hPh);
     
     if ($param->{winJoinPhFormat} eq "table")
@@ -2660,7 +2652,6 @@ sub hashPh2tblFile
 sub writeWindowBedFileSign
 	{	
 	  my $h = shift;
-	  #print Dumper ($h);die;
 		my $winFile = shift;
 		my $winParam = $param->{window};
 		my $zerosOut = $param->{zeroValues}? $param->{zeroValues} : "T";
