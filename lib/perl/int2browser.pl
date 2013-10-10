@@ -397,7 +397,7 @@ sub hmm2bedGraph
       	     my $nature = $d->{$c}{$i}{'nature'};
       	     my $cage = $d->{$c}{$i}{'cage'};
       	     
-      	     $file = $winFile."cage".$cage."ch".$nature.$chN.$field2extract.".devBedGraph";
+      	     $file = $winFile."cage".$cage."ch".$nature.$chN.$field2extract.".bedGraph";
       	     $F= new FileHandle;
       	     vfopen ($F, ">$file");
       	     
