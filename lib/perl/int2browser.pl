@@ -403,8 +403,8 @@ sub hmm2bedGraph
       	     
       	     print $F "track ";
       	     print $F "type=$type ";	    				
-      	     print $F "name=", "\"cage ", $c, "\;", "ch", "\"", " ";
-      	     print $F "description=", "\"cage ", $c, "\;", "\"", " ";
+      	     print $F "name=", "\"cage ", $cage, "\;", "ch", "\"", " ";
+      	     print $F "description=", "\"cage ", $cage, "\;", "\"", " ";
       	     print $F "visibility=", $visibility, " ";      	     
       	     if ($viewLimits ne "auto") {print $F "viewLimits=", $viewLimits, " ";} 
       	     print $F "color=", $color, " ";
