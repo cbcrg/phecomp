@@ -396,6 +396,7 @@ sub hmm2bedGraph
       	     my $chN = $d->{$c}{$i}{'chN'};
       	     my $nature = $d->{$c}{$i}{'nature'};
       	     my $cage = $d->{$c}{$i}{'cage'};
+      	     $cage = sprintf( "%02d", $cage); #igv orders first cage11 than 1, so I change for 01
       	     
       	     $file = $winFile."cage".$cage."ch".$nature.$chN.$field2extract.".bedGraph";
       	     $F= new FileHandle;
@@ -766,7 +767,7 @@ sub changeDayPhases2cytobandLikeFile
     $file = $outCytobandFile."_cytoBand".".txt";
     
     my $F= new FileHandle;
-	vfopen ($F, ">$file");
+	  vfopen ($F, ">$file");
 	
     #is start more than 12 hours before first change to light phases? -> then start is occurring during the previous light phase     
     if ($start < ($firstPhLightChange - ($deltaPh * 3600)))
@@ -823,7 +824,7 @@ sub changeDayPhases2bedLikeFile
     $file = $outBedPhFile."_Phase".".bed";
     
     my $F= new FileHandle;
-	vfopen ($F, ">$file");
+	  vfopen ($F, ">$file");
 	
 	print $F "track name=\"Day phases\" description=\"Track annotating the dark and light phase of the experiment\" visibility=2 color=0,0,255 useScore=1 priority=user\n";
 	
@@ -940,12 +941,12 @@ sub timeDiv2bedFile
     	$file = $outTimeDivFile."TimeDiv.bed";
 	    
     	my $F= new FileHandle;
-		vfopen ($F, ">$file");
+		  vfopen ($F, ">$file");
 		
-		#Add track line specifications for the genome browser
-      	#link to field info http://genome.ucsc.edu/goldenPath/help/customTrack.html#TRACK
-      	$visibility = 2;#by the moment hardcoded in future it might be a parameter
-      	$priority = "user"; #from higher to low priority "user", "map", "genes", "rna", "regulation", "compGeno"
+		  #Add track line specifications for the genome browser
+      #link to field info http://genome.ucsc.edu/goldenPath/help/customTrack.html#TRACK
+      $visibility = 2;#by the moment hardcoded in future it might be a parameter
+      $priority = "user"; #from higher to low priority "user", "map", "genes", "rna", "regulation", "compGeno"
       	
     	print $F "track name=", "\"ticks each $period sec\"", " ";
     	print $F "description=", "\"Blue ticks every $period seconds\" ";
@@ -1167,8 +1168,9 @@ sub int2bedSingleCh2track
       									next;
       								}	
       						}
-      							    				
-	    				my $file = $bedName."cage".$c."ch".$nature.$chN.".bed";
+      						
+      				my $cage = sprintf( "%02d", $c); #igv orders first cage11 than 1, so I change for 01			    				
+	    				my $file = $bedName."cage".$cage."ch".$nature.$chN.".bed";
 	    				
 	      				my $F= new FileHandle;
 	      				
@@ -1223,9 +1225,11 @@ sub int2bedAllFoodCh2track
     	    		   		   
     	foreach my $c (sort ({$a<=>$b} keys(%$d)))
 	  		{
+	  		  my $cage = sprintf( "%02d", $c); #igv orders first cage11 than 1, so I change for 01
+	  		  
 	  			#Two files open one for drink annotations and a second one for food annotations
-		    	#Drink file
-		    	my $Dfile = $bedName."cage".$c."Drink.bed";
+		    	#Drink file		    	
+		    	my $Dfile = $bedName."cage".$cage."Drink.bed";
 			   	my $FD= new FileHandle;
 			   	vfopen ($FD, ">$Dfile");			   	
 	      		
@@ -1240,7 +1244,7 @@ sub int2bedAllFoodCh2track
     			print $FD "\n";	
     					
 			   	#Food File
-			   	my $Ffile = $bedName."cage".$c."Food.bed";
+			   	my $Ffile = $bedName."cage".$cage."Food.bed";
 			   	my $FF= new FileHandle;
 			   	vfopen ($FF, ">$Ffile");
 			   	print $FF "track ";
@@ -1917,8 +1921,9 @@ sub writeWindowBedFile
 	  				{	  		
 	  					my $nature = $h->{$c}{$chN}{Nature};
 	  					my $aryData = $h->{$c}{$chN}{data}; 
-	  								
-    					my $file = $winFile."cage".$c."ch".$nature.$chN.".bedGraph";
+	  					
+	  					my $cage = sprintf( "%02d", $c); #igv orders first cage11 than 1, so I change for 01			
+    					my $file = $winFile."cage".$cage."ch".$nature.$chN.".bedGraph";
     				
     					my $F= new FileHandle;
     				
@@ -2010,14 +2015,15 @@ sub writeWindowBinary
 	  				{	  		
 	  					my $nature = $h->{$c}{$chN}{Nature};
 	  					my $aryData = $h->{$c}{$chN}{data}; 
+	  					my $cage = sprintf( "%02d", $c); #igv orders first cage11 than 1, so I change for 01
 	  					
 	  					if ($winFormat eq "rhmm")
-                {			
-    					    $file = $winFile."cage".$c."ch".$nature.$chN.".hmm";#    					   
+                {                  			
+    					    $file = $winFile."cage".$cage."ch".$nature.$chN.".hmm";#    					   
                 }
               elsif ($winFormat eq "bedGraph")
                 {
-                  $file = $winFile."cage".$c."ch".$nature.$chN.".bedGraph";    				
+                  $file = $winFile."cage".$cage."ch".$nature.$chN.".bedGraph";    				
                 }   
     					
     					my $F= new FileHandle;
@@ -2687,7 +2693,8 @@ sub writeWindowBedFileSign
   					   my $nature = $h->{$c}{$chN}{Nature};
   					   my $natureNegative = $h->{$c}{$chNNegative}{Nature};
   					   
-  					   my $file = $winFile."cage".$c."ch".$nature.$natureNegative.$chN.$chNNegative.".bedGraph";
+  					   my $cage = sprintf( "%02d", $c); #igv orders first cage11 than 1, so I change for 01
+  					   my $file = $winFile."cage".$cage."ch".$nature.$natureNegative.$chN.$chNNegative.".bedGraph";
   				
     					 my $F= new FileHandle;
     				
