@@ -1721,6 +1721,8 @@ sub joinChannelsUnitWin
 	  						{
 	  							
 	  							$hJoinChUnitWin = &combine2Ch ($hUnitWin, $hJoinChUnitWin, $c, 1, 2);	  							
+	  							print STDERR "$c----\n";
+	  							print Dumper ($hJoinChUnitWin);die; #tag2del
 	  							
 	  							if (exists ($hChComb->{$comb}{"3"}) && exists ($hChComb->{$comb}{"4"}))
 	  								{	  									
@@ -1795,7 +1797,7 @@ sub combine2Ch
   		my $data2 = ($hUnitWin->{$c}{$ch2}{data});
   		my @aryJoinCh;
   								  								  						
-  		for($i = 0; $i < scalar (@$data1)-1; $i++)  
+  		for($i = 0; $i < scalar (@$data1); $i++)  
   			{
   				my $h1 = $data1->[$i];
   				my $h2 = $data2->[$i];
