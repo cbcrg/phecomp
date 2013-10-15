@@ -1721,8 +1721,6 @@ sub joinChannelsUnitWin
 	  						{
 	  							
 	  							$hJoinChUnitWin = &combine2Ch ($hUnitWin, $hJoinChUnitWin, $c, 1, 2);	  							
-	  							print STDERR "$c----\n";
-	  							print Dumper ($hJoinChUnitWin);die; #tag2del
 	  							
 	  							if (exists ($hChComb->{$comb}{"3"}) && exists ($hChComb->{$comb}{"4"}))
 	  								{	  									
@@ -1782,7 +1780,7 @@ sub readWinComb
 #$SwDelHash switch will tell if the resulting hash has to be initialized before adding any information of it not
 sub combine2Ch
 	{
-		my $hUnitWin = shift;
+    my $hUnitWin = shift;
 		my $hJoinChUnitWin = shift;
 		my $c =  shift;
 		my $ch1 = shift;
@@ -1796,11 +1794,17 @@ sub combine2Ch
   		my $data1 = ($hUnitWin->{$c}{$ch1}{data});
   		my $data2 = ($hUnitWin->{$c}{$ch2}{data});
   		my @aryJoinCh;
-  								  								  						
-  		for($i = 0; $i < scalar (@$data1); $i++)  
+  		
+  		#I look which channel contains more items this way if first channel is not the bigger one I do not lose data
+  		my $items = scalar (@$data1) > scalar (@$data2) ? scalar (@$data1) : scalar (@$data2);
+  		my $longestAry = scalar (@$data1) > scalar (@$data2) ? $data1 : $data2;
+  							  								  						
+#  		for($i = 0; $i < scalar (@$data1); $i++)  
+      for($i = 0; $i < $items; $i++)  
   			{
   				my $h1 = $data1->[$i];
   				my $h2 = $data2->[$i];
+  				my $longestH = $longestAry->[$i];  
   				my $hJoin = {};
   				
   				#At the end of the intervals if one channel has signal for more time the program dies, change by a warning
@@ -1808,11 +1812,12 @@ sub combine2Ch
   					{  						
   						my $t = $h1->{startInt};
   						my $t2 = $h2->{startInt};	
-  						print STDERR "Warning: Problem while joining the channels, intervals are not the same $t----$t2\n";
+  						print STDERR "Warning: Problem while joining the channels, one channel has more items than the other $t----$t2\n";
 #  						die;
   					}
   									
-  				foreach my $key (keys (%$h1))
+#  				foreach my $key (keys (%$h1))
+  				foreach my $key (keys (%$longestH))
   					{
   						if ($key =~ /acuValue/)
   							{
@@ -1820,7 +1825,8 @@ sub combine2Ch
   							}
   						else 
   							{
-  								$hJoin->{$key} = $h1->{$key};
+#  								$hJoin->{$key} = $h1->{$key};
+                  $hJoin->{$key} = $longestH->{$key}; 
   							}	  												  																						
   					}
   										
