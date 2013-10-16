@@ -26,6 +26,9 @@
 ###           consecutive <mode>   -> Mode: dispenser/nature                                        ###
 ###                                   Dispenser will calculate the intermeal intervals between      ###
 ###                                   feeders, nature between types of food (food_sc, food_fat)     ###
+### -compulse <>                   -> Join consecutive intervals that have a separation of time     ###
+###                                   smaller than 120 seconds like compulse does.                  ###
+###                                   Join intervals comming from the same channel, not nature      ###
 #######################################################################################################
 
 use HTTP::Date;
@@ -68,6 +71,13 @@ my @commands=split (/\-+/,$cl);
 
 $d=parse_data ($file);
 
+#This options joins the intervals as compulse
+#If they are separated less than 
+if ($cl =~ s/-compulse//) 
+  {    
+    $d = &joinByTimeSep ($d);    
+  }
+  
 foreach my $c (@commands)
   {
     
@@ -83,15 +93,21 @@ sub run_instruction
     my $sep = '\s+';
     
     $A=string2hash ($c, $A, $sep);
-	
+    
 	#Calculate interinterval time
 	if ($c=~/^annotate/)
 	 {
 	   $d = &annotate($d, $A);
 	 }
-	 
+	  elsif ($c=~/^join/)
+	    {
+#	     $d = &joinByTimeSep ($d,$A);
+#	     print Dumper ($d);#del
+	    }
+	   
     elsif ($c=~/^tag/) 
       {	
+        #print Dumper ($d);#del
 	     $d=tag($d, $A);
       }     
       
@@ -606,7 +622,216 @@ sub annotate
       
     return ($d); 
   }
+
+#Joins intervals in the same event (eg meal) if they are followed by less than a given threshold $minSep
+#now is a hardcoded it might be an input parameter
+sub joinByTimeSep
+  {
+    my $d = shift;
+    my $A = shift;
+    my ($pT, $cStartT, $pEndT, $interMealTime, $nature) = -1;
+    my $HpEndT = {};
+    my $HpT = {};
+    my $HfirstCage = {};
+    my $cOcurr = {};
+    
+    my $HfirstStartL = {};
+    my $HfirstStartT = {};
+    my $Hfirstlinen = {};    
+    my $HfirstT = {};
+    my $HfirstEndT = {};
+    my $Hvalue = {};                    
+    my $newD = {};
+    my $index = 1;
+    my $countTwo = 1;
+    #This variable sets whether we want to use Nature (food_fat, food_sc, ...) or "Channel" (intake 1, intake 2,...)
+    #second option will consider only individual channel for time between meals calculation 
+    my $dispenserOpt = "Channel";
+     
+    foreach my $ch (keys (%$channelH))
+ 	    {
+        $HfirstCage->{$ch} = 1;
+      }
+                
+    my $firstCage = 1;
+    my $firstJoined = {};
+    
+    #interInterval between all type of events or only meals (all/meals)   
+    my $field = $A->{interInterval};
+    #minimum separation to consider that the intervals are different meals and thus that the between interval time should be calculated    
+#    my $minSep = $A->{timeJoin};
+    my $minSep = 120;
+           
+    foreach my $c (sort ({$a<=>$b}keys (%$d)))
+      {        
+        
+        foreach my $ch (keys (%$channelH))
+        	{
+        		$HpEndT->{$ch} = -1;
+#        		$firstJoined->{$nature} = 0;
+        		$Hvalue->{$nature} = 0;
+        	}
+        	
+        foreach my $t (sort ({$a<=>$b}keys (%{$d->{$c}})))
+          {                                    
+          	$nature = $d->{$c}{$t}{$dispenserOpt};           
+            print STDERR "$nature\n";            
+            
+            #First occurrence 
+            if ($HfirstCage->{$nature} == 1)
+              {
+                $HfirstCage->{$nature} = 0;
+                
+                $HpEndT->{$nature} = $d->{$c}{$t}{EndT};
+                
+                $HfirstStartL->{$nature} = $d->{$c}{$t}{'StartL'};
+                $HfirstStartT->{$nature} = $d->{$c}{$t}{'StartT'};
+                $Hfirstlinen->{$nature} = $d->{$c}{$t}{'linen'};
+                $Hvalue->{$nature} = $Hvalue->{$nature} + $d->{$c}{$t}{'Value'};
+                $HfirstT->{$nature} = $t;
+                
+                $HpT->{$nature} = $t;                                          
+                next;
+              }
+            
+            #First occurrence of a channel  
+            elsif ($HpEndT->{$nature} == -1)
+              {                                                                         
+                $HfirstCage->{$nature} = 0;
+                
+                $HpEndT->{$nature} = $d->{$c}{$t}{EndT};
+                
+                $HfirstStartL->{$nature} = $d->{$c}{$t}{'StartL'};
+                $HfirstStartT->{$nature} = $d->{$c}{$t}{'StartT'};
+                $Hfirstlinen->{$nature} = $d->{$c}{$t}{'linen'};
+                $Hvalue->{$nature} = $Hvalue->{$nature} + $d->{$c}{$t}{'Value'};
+                $HfirstT->{$nature} = $t;
+                
+#                $cOcurr->{$nature} = $c;                               
+                next;
+              }	
+                          
+            elsif ($d->{$c}{$t}{Channel} =~ m/Intake(\s)+[1-4]/)
+              {                                       
+                $cStartT = $d->{$c}{$t}{StartT};
+                $pEndT = $HpEndT->{$nature};
+                $pT = $HpT->{$nature};
+                
+                $interMealTime = $cStartT - $pEndT;                               
+                                                        
+                #Overlaps are annotated as NA
+                if ($interMealTime <= 0) 
+                  {
+                    print STDERR "WARNING: COLL ---- currentStart $cStartT\tprevious End$pEndT\t$interMealTime\n";
+                    die; #No deberia pasar nunca porque son del mismo channel... casi nunca XD
+                    #$d->{$c}{$pT}{InterTime} = $interMealTime."COLL";                       
+                    $d->{$c}{$pT}{InterTime} = "COLL";
+                  }
+
+                elsif ($interMealTime <= $minSep) 
+                  {
+                    my $fT = $HfirstT->{$nature};
+                    # print STDERR "$interMealTime he passat per aqui ----- $fT------------ $minSep\n";
+                    #The end values I have always to update
+                    $HpT->{$nature} = $t;
+                    $HpEndT->{$nature} = $d->{$c}{$t}{EndT};
+                    $Hvalue->{$nature} = $Hvalue->{$nature} + $d->{$c}{$t}{'Value'};
+                    
+
+                        
+                        $HpEndT->{$nature} = $d->{$c}{$t}{EndT};
+#                        $firstJoined->{$nature} = 0;
+                        $countTwo++;
+                     next;                    
+                  }  
+                else
+                  { 
+                     
+#            'CAGE' => '1',
+#            'StartL' => '135',
+#            'StartT' => '1240566816',
+#            'Type' => '1',
+#            'EndT' => '1240566816',
+#            'File' => '20090424.mtb',
+#            'Duration' => 0,
+#            'SlotI' => '3',
+#            'Value' => '0',
+#            'Nature' => 'food_sc',
+#            'period' => '1',
+#            'linen' => 375,
+#            'Index' => '1',
+#            'Channel' => 'Intake 3',
+#            'Caption' => 'Food 1',
+#            'Velocity' => 0,
+#            'EndL' => '135',
+#            'Name' => 'SC'
+
+#                    $d->{$c}{$pT}{InterTime} = $interMealTime;
+          
+                    my $fT = $HfirstT->{$nature};
+                    # print STDERR "$interMealTime he passat per mes gran de 2 min ----- $fT-------$Hvalue->{$nature}----- $minSep\n";
+                    $newD->{$c}{$fT}{'CAGE'} = $d->{$c}{$t}{'CAGE'};
+                    $newD->{$c}{$fT}{'StartL'} = $HfirstStartL->{$nature};
+                    $newD->{$c}{$fT}{'StartT'} = $HfirstStartT->{$nature};
+                    $newD->{$c}{$fT}{'Type'} = $d->{$c}{$t}{'Type'};
+                    $newD->{$c}{$fT}{'EndT'} = $HpEndT->{$nature};
+                    $newD->{$c}{$fT}{'File'} = $d->{$c}{$t}{'File'};
+                    $newD->{$c}{$fT}{'Duration'} = $HpEndT->{$nature} - $HfirstStartT->{$nature};
+                    $newD->{$c}{$fT}{'SlotI'} = $d->{$c}{$t}{'SlotI'};
+                    $newD->{$c}{$fT}{'Value'} = $Hvalue->{$nature} + $d->{$c}{$HpEndT->{$nature}}{'Value'};
+                    $newD->{$c}{$fT}{'Nature'} = $d->{$c}{$t}{'Nature'};
+                    $newD->{$c}{$fT}{'period'} = $d->{$c}{$t}{'period'};
+                    $newD->{$c}{$fT}{'linen'} = $Hfirstlinen ->{$nature};
+                    $newD->{$c}{$fT}{'Index'} = $index;
+                    $newD->{$c}{$fT}{'Channel'} = $d->{$c}{$t}{'Channel'};
+                    $newD->{$c}{$fT}{'Caption'} = $d->{$c}{$t}{'Caption'};
+                    
+                    if ($HpEndT->{$nature} == $HfirstStartT->{$nature}) 
+                      {
+                        $newD->{$c}{$fT}{'Velocity'}  = 0;
+                        print STDERR "WARNING: Velocity set to zero because starting time and end time when joinning the intervals were the same\n";
+                      }
+                    else {$newD->{$c}{$fT}{'Velocity'} = ($Hvalue->{$nature} + $d->{$c}{$HpEndT->{$nature}}{'Value'}) / ($HpEndT->{$nature} - $HfirstStartT->{$nature});}
+                    
+                    $newD->{$c}{$fT}{'EndL'} = $d->{$c}{$t}{'EndL'};
+                    $newD->{$c}{$fT}{'Name'} = $d->{$c}{$t}{'Name'};
+                    
+                    $HfirstStartL->{$nature} = $d->{$c}{$t}{'StartL'};
+                    $HfirstStartT->{$nature} = $d->{$c}{$t}{'StartT'};
+                    $Hfirstlinen->{$nature} = $d->{$c}{$t}{'linen'};
+                    $Hvalue->{$nature} = $d->{$c}{$t}{'Value'};
+                    print STDERR "........ $Hvalue->{$nature}\n"; 
+                    $HfirstT->{$nature} = $t;
+                    
+                    $HpEndT->{$nature} = $d->{$c}{$t}{EndT};
+                        
+#                    $Hvalue->{$nature} = 0;
+                    $firstJoined->{$nature} = 1;
+                    $index ++;
+                  }
+                  
+                $HpT->{$nature} = $t;
+                $HpEndT->{$nature} = $d->{$c}{$t}{EndT};
+                $cOcurr->{$nature} = $c;  
+              }
+              
+            else
+              {                
+                print STDERR "FATAL ERROR: Cage $c\t$t\t$d->{$c}{$t}{Channel} not recognized by annotate option\n";
+                die;
+              }    
+          }
+      } 
+
+#    print Dumper ($newD);
+
+    print STDERR "Total intervals after intermeal joinning $index---------- $countTwo\n";
+    
+    $d = $newD;
+    return ($d); 
+  }
   
+      
   #  #Filter data
 #    $data=&filter_data ($data,"Value","float","rm",-9999999,$T);
 #    $data=&filter_overlap ($data, $dup);
@@ -727,7 +952,10 @@ sub channel2Nature
 			  	$Nature = $nat;
 			  }
 			  
-			else {$Nature="drink";}
+			else {
+			       #$Nature="drink";
+             $Nature="water";
+			     }
 		
 			if ($Nature eq "food")
 			  {
