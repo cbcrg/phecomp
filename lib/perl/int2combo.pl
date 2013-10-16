@@ -93,18 +93,22 @@ sub run_instruction
     my $sep = '\s+';
     
     $A=string2hash ($c, $A, $sep);
+  
+  #Filters the beginning of the file, sometimes data is degradated
+  #una opcion con las horas que quiero eliminar desde el principio
+  #Mirar primera ocurrencia del archivo para todas las jaulas como en int2browser
+  #Luego ir recorriendo recogiendo el time y poniendo un tag a los que son del periodo escogido
+  #Por œltimo a–adir una opci—n para borrar si queremos estos intervalos
+  if ($c=~/^iniFileTag/)
+   {
+    $d = &tagIniFile ($d, $A);  
+   }
     
 	#Calculate interinterval time
-	if ($c=~/^annotate/)
+  elsif ($c=~/^annotate/)
 	 {
 	   $d = &annotate($d, $A);
-	 }
-	  elsif ($c=~/^join/)
-	    {
-#	     $d = &joinByTimeSep ($d,$A);
-#	     print Dumper ($d);#del
-	    }
-	   
+	 }     	   
     elsif ($c=~/^tag/) 
       {	
         #print Dumper ($d);#del
@@ -134,7 +138,10 @@ sub run_instruction
       {
 	$d=filter_data ($d,$A);
       }
-    
+    elsif ($c=~/^iniFilter/)
+      {
+	     $d = filterIniFile ($d,$A);
+      }
     elsif ($c=~/^coll/)
       {
 	$d = coll ($d,$A);
@@ -4716,3 +4723,98 @@ sub anot2nature
          die;
 		
 	}
+	
+sub tagIniFile
+  {
+    my $d = shift;
+    my $A = shift;
+    my ($start,$end); 
+    my $time2tag = $A->{time2tag};
+     
+    #Get first time of the file parsing all cages
+    ($start, $end) = &firstAndLastTime ($d);
+#    print STDERR "$start----\n";#tag2del
+    
+    $time2tag += $start;
+#    print STDERR "$time2tag----\n"; #tag2del
+    
+    foreach my $c (sort ({$a<=>$b}keys (%$d)))
+      {          
+        foreach my $t (sort ({$a<=>$b}keys (%{$d->{$c}})))
+          {
+            my $cstart = $d->{$c}{$t}{StartT};
+            
+            if ($cstart != $t)
+              {
+                print STDERR "FATAL ERROR: indexing time and startTime of interval differ--------$cstart  ------ $t\n";die;
+              }
+            else
+              {
+                if ($t < $time2tag)
+                  {
+                    $d->{$c}{$t}{iniFile} = 1;
+                  }
+                else
+                  {
+                    $d->{$c}{$t}{iniFile} = 0;                  
+                  }   
+              }                  
+          }
+      } 
+    return ($d);     
+  }	
+  
+sub firstAndLastTime
+	{
+		my $d = shift;  	
+  	
+  	my ($start, $end);
+  	
+  	$start=$end=-1;
+    	
+		foreach my $c (sort(keys (%$d)))
+	   {
+	     foreach my $t (sort(keys (%{$d->{$c}})))
+	    	 {	    	    
+	    	  my $cstart = $d->{$c}{$t}{StartT};
+	    	  my $cend = $d->{$c}{$t}{EndT};
+	    	    
+	    	  if ($start==-1 || $start>$cstart){$start=$cstart;}
+	    	  if ($end==-1    || $end<$cend){$end=$cend;}
+	    	 }
+	    }
+	      
+		return ($start, $end);	  
+	}
+	
+#Filter intervals tags with iniFile
+sub filterIniFile
+   {
+     my $d=shift;
+     my $A=shift;
+#     my $action=$A->{action};
+     my $action="rm";
+    
+     my $tot=0;
+     my $n=0;
+     my $defined;
+     
+     if (!$action){$action="keep";}
+     
+     foreach my $c (sort(keys (%$d)))
+       {
+	       foreach my $t (sort(keys (%{$d->{$c}})))
+	         {
+	           $n++;
+	           my $mark = $d->{$c}{$t}{iniFile};
+#	           print STDERR "$mark--------\n";
+	           if ($mark==1 && $action eq "rm"){delete($d->{$c}{$t}); $tot++;}
+	           elsif ($mark==0 && $action eq "keep"){delete($d->{$c}{$t}); $tot++;}
+	         }
+       }
+       
+     print STDERR "\nInitial values of file Filtered: Removed $tot values out of $n\n";
+     delete ($A->{action});#it should always be specified, if not problems with action option of BIT 
+     return untag ($d);###Look at this
+   }	
+	
