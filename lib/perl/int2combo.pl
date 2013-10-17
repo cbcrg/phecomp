@@ -4732,7 +4732,7 @@ sub tagIniFile
   {
     my $d = shift;
     my $A = shift; 
-    my $time2tag = $A->{time2tag};
+    my $time2tag = $A->{time2tag} * 3600; #time is given in hours in the command line  
     my $time2filter = 0;
     my $fileH = &retrieveFiles($d);
            
@@ -4789,7 +4789,6 @@ sub retrieveFiles
             else {$fileH->{$file}=1;}            
           }
       }
-    print Dumper ($fileH);
     return ($fileH);    
   }
   
