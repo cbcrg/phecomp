@@ -4726,69 +4726,94 @@ sub anot2nature
          die;
 		
 	}
-
-#Tag all intervals that are between the first time in file and the time2tag	
+  
+#Tag all intervals that are between the first time in file and the time2tag for each mtb file	
 sub tagIniFile
   {
     my $d = shift;
-    my $A = shift;
-    my ($start,$end); 
+    my $A = shift; 
     my $time2tag = $A->{time2tag};
-     
-    #Get first time of the file parsing all cages
-    ($start, $end) = &firstAndLastTime ($d);
-    
-    $time2tag += $start;
-    print STDERR "INFO: First time in file is $start, all intervals until $time2tag will be tag\n";
-    
+    my $time2filter = 0;
+    my $fileH = &retrieveFiles($d);
+           
+    foreach my $file (sort ({$a cmp $b}keys (%$fileH)))
+      {
+        #Get first time of the file parsing all cages
+        my $start = &firstTimeFile ($d, $file);
+        
+        $time2filter = $start + $time2tag;
+        print STDERR "INFO: First time in file is $start, all intervals until $time2filter will be tag\n";
+         
+        foreach my $c (sort ({$a<=>$b}keys (%$d)))
+          {          
+            foreach my $t (sort ({$a<=>$b}keys (%{$d->{$c}})))
+              {                                   
+                my $cFile =  $d->{$c}{$t}{File};
+                my $cstart = $d->{$c}{$t}{StartT};
+                
+                if ($cFile ne $file) {next;}                                          
+                                
+                if ($cstart != $t)
+                  {
+                    print STDERR "FATAL ERROR: indexing time and startTime of interval differ--------$cstart  ------ $t\n";die;
+                  }
+                else
+                  {
+                    if ($t < $time2filter)
+                      {
+                        $d->{$c}{$t}{iniFile} = 1;                   
+                      }
+                    else
+                      {
+                        $d->{$c}{$t}{iniFile} = 0;                                     
+                      }   
+                  }                                                             
+              }
+          }     
+      }
+    return ($d);     
+  }	
+
+#Get the list of mtb files inside the intervals file
+sub retrieveFiles
+  {
+    my $d = shift;
+    my$fileH = {};
+   
     foreach my $c (sort ({$a<=>$b}keys (%$d)))
       {          
         foreach my $t (sort ({$a<=>$b}keys (%{$d->{$c}})))
           {
-            my $cstart = $d->{$c}{$t}{StartT};
-            
-            if ($cstart != $t)
-              {
-                print STDERR "FATAL ERROR: indexing time and startTime of interval differ--------$cstart  ------ $t\n";die;
-              }
-            else
-              {
-                if ($t < $time2tag)
-                  {
-                    $d->{$c}{$t}{iniFile} = 1;
-                  }
-                else
-                  {
-                    $d->{$c}{$t}{iniFile} = 0;                  
-                  }   
-              }                  
+            my $file = $d->{$c}{$t}{File}; 
+            if (exists ($fileH->{$file})) {next;}
+            else {$fileH->{$file}=1;}            
           }
-      } 
-    return ($d);     
-  }	
-
+      }
+    print Dumper ($fileH);
+    return ($fileH);    
+  }
+  
 #Search for the time of the first interval in the int file and the last one  
-sub firstAndLastTime
+sub firstTimeFile
 	{
 		my $d = shift;  	
-  	
-  	my ($start, $end);
-  	
-  	$start=$end=-1;
-    	
+  	my $f = shift;
+  	my $start = -1;
+  		
 		foreach my $c (sort(keys (%$d)))
 	   {
 	     foreach my $t (sort(keys (%{$d->{$c}})))
-	    	 {	    	    
+	    	 {
+	    	  my $cf = $d->{$c}{$t}{File};
+	    	  if ($cf ne $f) {next;}
+	    	    	    	    
 	    	  my $cstart = $d->{$c}{$t}{StartT};
-	    	  my $cend = $d->{$c}{$t}{EndT};
 	    	    
 	    	  if ($start==-1 || $start>$cstart){$start=$cstart;}
-	    	  if ($end==-1    || $end<$cend){$end=$cend;}
 	    	 }
 	    }
 	      
-		return ($start, $end);	  
+		return ($start);	  
 	}
 	
 #Filter intervals tags with iniFile
