@@ -29,6 +29,10 @@
 ### -compulse <>                   -> Join consecutive intervals that have a separation of time     ###
 ###                                   smaller than 120 seconds like compulse does.                  ###
 ###                                   Join intervals comming from the same channel, not nature      ###
+### -iniFileTag time2tag <t>       -> Tag all the intervals (tag=""iniFile") that occurr before the ###
+###                                   in the time interval between first interval and time          ###
+###                                   specified by t                                                ###
+### -iniFilter <>                  -> Filters out every interval tag with "iniFile"                 ###
 #######################################################################################################
 
 use HTTP::Date;
@@ -93,28 +97,27 @@ sub run_instruction
     my $sep = '\s+';
     
     $A=string2hash ($c, $A, $sep);
-  
-  #Filters the beginning of the file, sometimes data is degradated
-  #una opcion con las horas que quiero eliminar desde el principio
-  #Mirar primera ocurrencia del archivo para todas las jaulas como en int2browser
-  #Luego ir recorriendo recogiendo el time y poniendo un tag a los que son del periodo escogido
-  #Por œltimo a–adir una opci—n para borrar si queremos estos intervalos
-  if ($c=~/^iniFileTag/)
-   {
-    $d = &tagIniFile ($d, $A);  
-   }
     
-	#Calculate interinterval time
-  elsif ($c=~/^annotate/)
-	 {
-	   $d = &annotate($d, $A);
-	 }     	   
+    #Calculate interinterval time  
+    if ($c=~/^annotate/)
+	   {
+	     $d = &annotate($d, $A);
+	   }    	   
     elsif ($c=~/^tag/) 
-      {	
-        #print Dumper ($d);#del
+     {	
+       #print Dumper ($d);#del
 	     $d=tag($d, $A);
-      }     
-      
+     }  
+    #Filters the beginning of the file, sometimes data is degradated
+    #una opcion con las horas que quiero eliminar desde el principio
+    #Mirar primera ocurrencia del archivo para todas las jaulas como en int2browser
+    #Luego ir recorriendo recogiendo el time y poniendo un tag a los que son del periodo escogido
+    #Por œltimo a–adir una opci—n para borrar si queremos estos intervalos
+    elsif ($c=~/^iniFileTag/)
+    {
+      $d = &tagIniFile ($d, $A);  
+    }      	   
+             
 #    option to rename cage 6 from 13 to 18          
 #    elsif ($c=~/^rename/)
 #      {
@@ -4723,7 +4726,8 @@ sub anot2nature
          die;
 		
 	}
-	
+
+#Tag all intervals that are between the first time in file and the time2tag	
 sub tagIniFile
   {
     my $d = shift;
@@ -4733,10 +4737,9 @@ sub tagIniFile
      
     #Get first time of the file parsing all cages
     ($start, $end) = &firstAndLastTime ($d);
-#    print STDERR "$start----\n";#tag2del
     
     $time2tag += $start;
-#    print STDERR "$time2tag----\n"; #tag2del
+    print STDERR "INFO: First time in file is $start, all intervals until $time2tag will be tag\n";
     
     foreach my $c (sort ({$a<=>$b}keys (%$d)))
       {          
@@ -4763,7 +4766,8 @@ sub tagIniFile
       } 
     return ($d);     
   }	
-  
+
+#Search for the time of the first interval in the int file and the last one  
 sub firstAndLastTime
 	{
 		my $d = shift;  	
@@ -4807,7 +4811,7 @@ sub filterIniFile
 	         {
 	           $n++;
 	           my $mark = $d->{$c}{$t}{iniFile};
-#	           print STDERR "$mark--------\n";
+	           
 	           if ($mark==1 && $action eq "rm"){delete($d->{$c}{$t}); $tot++;}
 	           elsif ($mark==0 && $action eq "keep"){delete($d->{$c}{$t}); $tot++;}
 	         }
@@ -4815,6 +4819,21 @@ sub filterIniFile
        
      print STDERR "\nInitial values of file Filtered: Removed $tot values out of $n\n";
      delete ($A->{action});#it should always be specified, if not problems with action option of BIT 
-     return untag ($d);###Look at this
+     return untagIniFile ($d);
    }	
-	
+
+#This function might be include in untag with a variable for setting iniFile or tag field for deletion	
+sub untagIniFile
+  {
+    my $d=shift;
+    foreach my $c (keys (%$d))
+      {
+	     foreach my $t (keys (%{$d->{$c}}))
+	       {
+	         delete ($d->{$c}{$t}{iniFile});
+	       }
+       }
+       
+#    $TAG=0;
+    return $d;
+  }	
