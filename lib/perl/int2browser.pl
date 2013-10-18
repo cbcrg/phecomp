@@ -42,7 +42,8 @@ if ($#ARGV ==-1)
     print "  -window        <parameter>........Parameter: 'Value',... This option slides a window along data calculating the values of the parameter inside this window.\n";
     #Deprecated we can specify this using the same ws and wss
     #print "  -winMode      <mode>.............Mode: 'cumulative', 'discrete' The values of the window are summed up along the time or not.\n";
-    print "  -winMode       <mode>.............Mode: 'binning' format the data in a binary way, 1 in presence of data or 0 in absence.\n";    
+    print "  -winMode       <mode>.............Mode: 'binning' format the data in bins depending the chriteria set in binMode, by default -binMode is set to binary\n";
+    print "  -binMode       <mode>.............Mode: 'binary' presence of event in window 1, absence 0.\n";    
     print "  -ws            <int>...............Int: Duration of the window in seconds, by default 1800 seconds, 30 min.\n"; 
     print "  -wss           <int>...............Int: Duration of the window in seconds, by default 300 seconds, 5 min.\n";        
     print "  -iniLight      <int>...............Int: Starting of light phase in winter is 7 GMT+1 -> 8 in summer is 6 GMT+2 -> 8. By default 6.\n";
@@ -726,6 +727,7 @@ sub check_parameters
     $rp->{zeroValues} = 1;
     $rp->{hmmField2extract} = 1;
     $rp->{rhmmFile} = 1;
+    $rp->{binMode} = 1;
     
     foreach my $k (keys (%$p))
       {
@@ -1460,7 +1462,7 @@ sub data2win
     	my $winFormat = exists ($param->{winFormat})? $param->{winFormat} : "bedGraph"; #by default bedGraph
     	my $winMode = $param -> {winMode}? $param -> {winMode} : "discrete";
     	my $rhmmFile = exists ($param->{rhmmFile})? $param->{rhmmFile} : "multiple"; #by default multiple
-    	  
+    	my $binMode  = exists ($param->{binMode})? $param->{binMode} : "binary"; #by default multiple   
     	#our $param->{winCh2comb} = (!exists ($param->{winCh2comb}) && exists ($param->{winCombMode}))? "12,34" : $param->{winCh2comb}; 
     	if (!exists ($param->{winCh2comb}) && exists ($param->{winCombMode}))
     	 {
@@ -1542,7 +1544,7 @@ sub data2win
           $hashWin = &joinByPhase ($hashWin, $param);
         } 
          
-      if ($winMode eq "binning")
+      if ($winMode eq "binning" && $binMode eq "binary")
           { 
             if ($rhmmFile eq "multiple")
               {
@@ -1553,7 +1555,7 @@ sub data2win
                 # All cages in a single rhmm file so I can feed rhmm in a single step		
                 &writeWindowBinarySingleHmmFile ($hashWin, $winFile);
               }
-          }  
+          }            
       elsif ($winFormat eq "bedGraph")
         {
           if ($winCombMode eq "" || $winCombMode eq "additive") 
