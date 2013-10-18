@@ -42,7 +42,7 @@ if ($#ARGV ==-1)
     print "  -window        <parameter>........Parameter: 'Value',... This option slides a window along data calculating the values of the parameter inside this window.\n";
     #Deprecated we can specify this using the same ws and wss
     #print "  -winMode      <mode>.............Mode: 'cumulative', 'discrete' The values of the window are summed up along the time or not.\n";
-    print "  -winMode       <mode>.............Mode: 'binary' format the data in a binary way, 1 in presence of data or 0 in absence.\n";    
+    print "  -winMode       <mode>.............Mode: 'binning' format the data in a binary way, 1 in presence of data or 0 in absence.\n";    
     print "  -ws            <int>...............Int: Duration of the window in seconds, by default 1800 seconds, 30 min.\n"; 
     print "  -wss           <int>...............Int: Duration of the window in seconds, by default 300 seconds, 5 min.\n";        
     print "  -iniLight      <int>...............Int: Starting of light phase in winter is 7 GMT+1 -> 8 in summer is 6 GMT+2 -> 8. By default 6.\n";
@@ -1542,7 +1542,7 @@ sub data2win
           $hashWin = &joinByPhase ($hashWin, $param);
         } 
          
-      if ($winMode eq "binary")
+      if ($winMode eq "binning")
           { 
             if ($rhmmFile eq "multiple")
               {
@@ -1645,11 +1645,11 @@ sub data2winDistro
 														    $h->{"startInt"} = $startInt;
 														    $h->{"endInt"} = $endInt;
 														    
-#														    if ($winMode eq "binary" && $acuValue != 0) 
+#														    if ($winMode eq "binning" && $acuValue != 0) 
 #														      {														        
 #														        $h->{"acuValue"} = 1;
 #														      }
-#														    elsif ($winMode eq "binary" && $acuValue == 0)
+#														    elsif ($winMode eq "binning" && $acuValue == 0)
 #														      {
 #														        $h->{"acuValue"} = 0;
 #														      }
@@ -1660,7 +1660,7 @@ sub data2winDistro
 														
 														    push (@aryCh, $h);
       													
-      													if ($winMode eq "discrete" || $winMode eq "binary") {$acuValue = 0;}
+      													if ($winMode eq "discrete" || $winMode eq "binning") {$acuValue = 0;}
       													
       													$startInt += $winSize;
       													$endInt += $winSize;
@@ -2081,11 +2081,11 @@ sub writeWindowBinary
 				    			$startInt = $hItem->{'startInt'};
 				    			$endInt = $hItem->{'endInt'};
 				    			
-				    			if ($winMode eq "binary" && $acuValue != 0) 
+				    			if ($winMode eq "binning" && $acuValue != 0) 
 							      {														        
 							        $bin = 1;
 							      }
-							    elsif ($winMode eq "binary" && $acuValue == 0)
+							    elsif ($winMode eq "binning" && $acuValue == 0)
 							      {
 							        $bin = 0;
 							      }
@@ -2169,11 +2169,11 @@ sub writeWindowBinarySingleHmmFile
       			$startInt = $hItem->{'startInt'};
       			$endInt = $hItem->{'endInt'};
   	    			
-      			if ($winMode eq "binary" && $acuValue != 0) 
+      			if ($winMode eq "binning" && $acuValue != 0) 
   			      {														        
   			        $bin = 1;
   			      }
-  			    elsif ($winMode eq "binary" && $acuValue == 0)
+  			    elsif ($winMode eq "binning" && $acuValue == 0)
   			      {
   			        $bin = 0;
   			      }
