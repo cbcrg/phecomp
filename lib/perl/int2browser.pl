@@ -43,7 +43,8 @@ if ($#ARGV ==-1)
     #Deprecated we can specify this using the same ws and wss
     #print "  -winMode      <mode>.............Mode: 'cumulative', 'discrete' The values of the window are summed up along the time or not.\n";
     print "  -winMode       <mode>.............Mode: 'binning' format the data in bins depending the chriteria set in binMode, by default -binMode is set to binary\n";
-    print "  -binMode       <mode>.............Mode: 'binary' presence of event in window 1, absence 0.\n";    
+    print "  -binMode       <mode>.............Mode: 'binary' presence of event in window 1, absence 0.\n";
+    print "  ..................................Mode: 'four' absence of event in window 0, presence of events, water -> 1, food->2, both->3\n";    
     print "  -ws            <int>...............Int: Duration of the window in seconds, by default 1800 seconds, 30 min.\n"; 
     print "  -wss           <int>...............Int: Duration of the window in seconds, by default 300 seconds, 5 min.\n";        
     print "  -iniLight      <int>...............Int: Starting of light phase in winter is 7 GMT+1 -> 8 in summer is 6 GMT+2 -> 8. By default 6.\n";
