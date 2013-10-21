@@ -1462,7 +1462,7 @@ sub data2win
     	#my $winBind = (exists ($param->{winCage2comb}) && !exists ($param->{caseGroup}))? "even" : $param->{caseGroup};     	    	    	       
     	my $winFormat = exists ($param->{winFormat})? $param->{winFormat} : "bedGraph"; #by default bedGraph
     	my $winMode = $param -> {winMode}? $param -> {winMode} : "discrete";
-    	my $rhmmFile = exists ($param->{rhmmFile})? $param->{rhmmFile} : "multiple"; #by default multiple
+    	my $rhmmFile = exists ($param->{rhmmFile})? $param->{rhmmFile} : "single"; #by default single
     	my $binMode  = exists ($param->{binMode})? $param->{binMode} : "binary"; #by default multiple   
     	#our $param->{winCh2comb} = (!exists ($param->{winCh2comb}) && exists ($param->{winCombMode}))? "12,34" : $param->{winCh2comb}; 
     	if (!exists ($param->{winCh2comb}) && exists ($param->{winCombMode}))
@@ -1561,12 +1561,15 @@ sub data2win
         {
           if ($rhmmFile eq "multiple")
               {
-                &writeWindowBinning ($hashWin, $winFile);
+#                &writeWindowBinning ($hashWin, $winFile);
+#                &writeWindowBinningSingleHmmFile ($hashWin, $winFile);
+                print STDERR "To be developed-----------\n";die;
               }
             else 
               {                
                 # All cages in a single rhmm file so I can feed rhmm in a single step		
-                &writeWindowBinningSingleHmmFile ($hashWin, $winFile);
+#                &writeWindowBinningSingleHmmFile ($hashWin, $winFile);
+                &writeWindowBinning ($hashWin, $winFile);
               }
         }                
       elsif ($winFormat eq "bedGraph")
