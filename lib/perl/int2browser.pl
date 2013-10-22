@@ -1560,23 +1560,20 @@ sub data2win
       elsif ($winMode eq "binning" && $binMode eq "four")
         {
           if ($rhmmFile eq "multiple")
-              {
-#                &writeWindowBinning ($hashWin, $winFile);
-#                &writeWindowBinningSingleHmmFile ($hashWin, $winFile);
-                print STDERR "To be developed-----------\n";die;
+              {               
+                &writeWindowBinning ($hashWin, $winFile);
+               
               }
             else 
               {                
-                # All cages in a single rhmm file so I can feed rhmm in a single step		
-#                &writeWindowBinningSingleHmmFile ($hashWin, $winFile);
-                &writeWindowBinning ($hashWin, $winFile);
+                &writeWindowBinningSingleHmmFile ($hashWin, $winFile);
               }
         }                
       elsif ($winFormat eq "bedGraph")
         {          
           if ($winCombMode eq "" || $winCombMode eq "additive") 
     	     {     	    	
-            &writeWindowBedFile ($hashWin, $winFile);
+             &writeWindowBedFile ($hashWin, $winFile);
     	     }
     	    elsif ($winCombMode eq "sign")
     	     {    	   
@@ -2008,8 +2005,10 @@ sub writeWindowBedFile
 	  		}
 	}
 
-#This function dump the data into rhmm format
+#This function dump the data into rhmm format or bedGraph
 #  #d;1;Nindex;field;x;bin;NBin
+#Multiple files one for each cage
+#Very simple binning just 1 to event ocurrence and 0 for not ocurrence
 sub writeWindowBinary 
   {
     my $h = shift;
@@ -2154,6 +2153,7 @@ sub writeWindowBinary
 # 1 for presence of water 
 # 2 for presence of food
 # 3 for presence of water and food at the same time
+# Generates a file for each cage and channel (channels have been sometimes previously joined)
 sub writeWindowBinning 
   {
     my $h = shift;
@@ -2372,7 +2372,171 @@ sub bin
       }
     return ($hWithBin);
   }  
-  
+
+#This function takes hash that has been previously combined in a hash with food and water separated by setting "-winCh2comb 12,34 -winCombMode additive"
+#and calls bin function so that I get a 1 for water and a 2 for food presence, 0 for absece. 
+#Once this is performed calls &combine2Ch that combines binning in an cumulative manner.
+#This way I end up with a binning of:
+# 0 for absence of event
+# 1 for presence of water 
+# 2 for presence of food
+# 3 for presence of water and food at the same time
+# One rhmm file with all the cages, this way I can directly feed rhmm.pl
+sub writeWindowBinningSingleHmmFile 
+  {
+    my $h = shift;
+    my $winFile = shift;
+    my $i = 0;
+    my $file = ""; 
+    my ($chr, $startInt, $endInt, $acuValue, $bin);
+    my $zerosOut = $param->{zeroValues}? $param->{zeroValues} : "T";
+    my $winParam = $param->{window};
+    my $winMode = $param -> {winMode}? $param -> {winMode} : "discrete"; #by default discrete    	
+    my $binMode = $param -> {binMode}? $param -> {binMode} : "four"; #by default binary
+    my $winFormat = exists ($param->{winFormat})? $param->{winFormat} : "bedGraph"; #by default bedGraph
+    my $totalIndex = 0;        
+#    my $natures = {};
+    my $binH = {};
+    my $binFourH = {};
+          
+    $file = $winFile.".hmm";
+    my $F= new FileHandle;
+    vfopen ($F, ">$file");
+    
+    print $F "#comment;Format: int2rhmm.01";
+    print $F "\n";
+        
+    foreach my $c (sort ({$a<=>$b} keys(%$h)))
+		  {	
+		   my $number = keys(%{$h->{$c}});
+		   		   		   
+		   if ($binMode eq "four" && $number == 2) 
+		    {
+		      ;
+		    }
+		   else 
+		    {
+		      print STDERR "FATAL ERROR: **** -binMode is set to four and -winCh2comb is not set to 12,34; number of keys: $binMode $number\n";
+		      die;
+		    }
+		    
+		   last; 			 	
+		  }
+		
+		$binH = &bin ($h);
+
+    foreach my $c (sort ({$a<=>$b} keys (%$binH)))
+	   {	  				  								  	   	  								
+  		 $binFourH = &combine2Ch ($binH, $binH, $c, 12, 34, "TRUE");	  									
+	   }	  								  								  								  							  						  							
+				  	    					                		    
+    foreach my $c (sort ({$a<=>$b} keys(%$binFourH)))
+	   {	
+	     foreach my $chN (sort ({$a<=>$b} keys(%{$binFourH->{$c}})))
+	  	  {	  		
+	  		 my $nature = $binFourH->{$c}{$chN}{Nature};
+  			 my $aryData = $binFourH->{$c}{$chN}{data}; 
+  			 my $cage = sprintf( "%02d", $c); #igv orders first cage11 than 1, so I change for 01
+  			 
+#  			 my $nature = $h->{$c}{$chN}{Nature};
+#	  		 my $aryData = $h->{$c}{$chN}{data}; 
+	  			
+	  		 print $F "#d;1;$totalIndex;fileRecId;$i;cage;$c;chN;$chN;nature;$nature;$winParam;0;bin;BEGIN;startInt;0;endInt;0\n";
+	  		  
+			 	 $totalIndex++;
+			 	 	
+#  			 if ($winFormat eq "rhmm")
+#          {                  			
+#  				  $file = $winFile."cage".$cage."ch".$nature.$chN.".hmm";#    					   
+#          }
+#         elsif ($winFormat eq "bedGraph")
+#          {
+#            $file = $winFile."cage".$cage."ch".$nature.$chN.".bedGraph";    				
+#          }   
+#    					
+#				 my $F= new FileHandle;
+#				 vfopen ($F, ">$file");
+#		    	
+#		     if ($winFormat eq "rhmm")
+#          {			
+#			     #Type of file
+#			     print $F "#comment;Format: int2rhmm.01";
+#				   print $F "\n";
+#          }
+#         elsif ($winFormat eq "bedGraph")
+#          {
+#
+#      	    #Type of file
+#      	    #Defines the initial display mode of the annotation track. Values for display_mode include: 0 - hide, 1 - dense, 2 - full, 3 - pack, and 4 - squish
+#            my $viewLimits = $param -> {winViewLim}? $param -> {winViewLim} : "0.5";
+#          	my $visibility = "full";#by the moment hardcoded in future it might be a parameter
+#          	my $color = "200,100,0";
+#          	my $altColor = "0,100,200";
+#          	my $priority = "20";
+#          	my $type = "bedGraph";
+#          	
+#      	    print $F "track ";
+#      	    print $F "type=$type ";	    				
+#  		    	print $F "name=", "\"cage ", $c, "\;", "ch", $nature, "\"", " ";
+#  		    	print $F "description=", "\"cage ", $c, "\;", $nature, "\"", " ";
+#  		    	print $F "visibility=", $visibility, " ";
+#  		    	if ($viewLimits ne "auto") {print $F "viewLimits=", $viewLimits, " ";} 
+#  		    	print $F "color=", $color, " ";
+#  		    	print $F "altcolor=", $altColor, " ";
+#  		    	print $F "priority=", $priority, " ";
+#  		    	print $F "\n";
+#          }  
+                							    	
+	    	for ($i = 0; $i < scalar (@$aryData); $i++)
+	    		{
+	    			my $hItem = $aryData->[$i];
+	    			
+	    			$acuValue = $hItem->{'acuValue'};				    							    		
+	    			
+	    			$chr = $hItem->{'chr'};
+	    			$startInt = $hItem->{'startInt'};
+	    			$endInt = $hItem->{'endInt'};
+	    			$bin = $hItem->{'bin'};	    	
+            
+                                                     
+#            if ($winFormat eq "rhmm")
+#              {
+#	    			   print $F "#d;1;$i;$winParam;$acuValue;bin;$bin;startInt;$startInt;endInt;$endInt\n";
+#              }
+#            elsif ($winFormat eq "bedGraph")
+#              {                                                                                       
+#                if ($zerosOut ne "F") 
+#	    			     {
+#	    			       print $F "$chr\t$startInt\t$endInt\t$bin\n";
+#	    			     }
+#	    			   else 
+#	    			     {
+#	    			       if ($acuValue > 0)
+#	    			         {
+#	    			           print $F "$chr\t$startInt\t$endInt\t$bin\n";
+#	    			         }
+#	    			       else
+#	    			         {
+#	    			           ;
+#	    			         }
+#	    			     }	
+#              }	
+            my $n = $i+1; 			                            
+    			  print $F "#d;1;$totalIndex;fileRecId;$n;cage;$c;chN;$chN;nature;$nature;$winParam;$acuValue;bin;$bin;startInt;$startInt;endInt;$endInt\n";
+    			  $totalIndex++;		    					    							    							    		
+	    		}
+				 
+				 my $n = $i+2; 
+	    	 print $F "#d;1;$totalIndex;fileRecId;$n;cage;$c;chN;$chN;nature;$nature;$winParam;0;bin;END;startInt;0;endInt;0\n";   	
+#				 close ($F);
+#	       print STDERR "      Results of cumulative window for $winParam of cage $c, channel $chN, nature $nature in: $file\n";
+	  	}
+	  }
+	  close ($F);
+	  print STDERR "      Results of cumulative window in: $file\n";		
+	   	
+  }
+   
 #This function writes the binning of the data in a single rhmm file with all cages and channels in a single file   
 sub writeWindowBinarySingleHmmFile 
   {
