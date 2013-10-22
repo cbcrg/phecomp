@@ -1463,7 +1463,7 @@ sub data2win
     	my $winFormat = exists ($param->{winFormat})? $param->{winFormat} : "bedGraph"; #by default bedGraph
     	my $winMode = $param -> {winMode}? $param -> {winMode} : "discrete";
     	my $rhmmFile = exists ($param->{rhmmFile})? $param->{rhmmFile} : "single"; #by default single
-    	my $binMode  = exists ($param->{binMode})? $param->{binMode} : "binary"; #by default multiple   
+    	my $binMode  = exists ($param->{binMode})? $param->{binMode} : "binary"; #by default binary   
     	#our $param->{winCh2comb} = (!exists ($param->{winCh2comb}) && exists ($param->{winCombMode}))? "12,34" : $param->{winCh2comb}; 
     	if (!exists ($param->{winCh2comb}) && exists ($param->{winCombMode}))
     	 {
@@ -1544,29 +1544,47 @@ sub data2win
         {                   
           $hashWin = &joinByPhase ($hashWin, $param);
         } 
-         
+              
       if ($winMode eq "binning" && $binMode eq "binary")
-          {                     
+          {                                 
             if ($rhmmFile eq "multiple")
-              {
+              {                
                 &writeWindowBinary ($hashWin, $winFile);
               }
-            else 
-              {                
+            elsif ($winFormat eq "rhmm" && $rhmmFile eq "single") 
+              {                                
                 # All cages in a single rhmm file so I can feed rhmm in a single step		
                 &writeWindowBinarySingleHmmFile ($hashWin, $winFile);
               }
-          }
-      elsif ($winMode eq "binning" && $binMode eq "four")
-        {
-          if ($rhmmFile eq "multiple")
-              {               
-                &writeWindowBinning ($hashWin, $winFile);
-               
+            elsif ($winFormat eq "bedGraph" && $rhmmFile eq "single")
+              {
+                print STDERR "FATAL ERROR: Sorry, combination of options winFormat bedGraph and rhmmFile single is not supported yet\n"; 
+                die;
               }
             else 
-              {                
+              {
+                print STDERR "FATAL ERROR: Unknown optios for winMode \"$winMode\" and binMode \"$binMode\"\n"; 
+              }    
+          }
+      elsif ($winMode eq "binning" && $binMode eq "four")
+        {         
+          if ($rhmmFile eq "multiple")
+              {                              
+                &writeWindowBinning ($hashWin, $winFile);               
+              }
+            elsif ($winFormat eq "rhmm" && $rhmmFile eq "single") 
+              {                                
                 &writeWindowBinningSingleHmmFile ($hashWin, $winFile);
+              }
+            elsif ($winFormat eq "bedGraph" && $rhmmFile eq "single")
+              {
+                print STDERR "FATAL ERROR: Sorry, combination of options winFormat bedGraph and rhmmFile single is not supported yet\n";
+                die; 
+              }
+            else 
+              {
+                print STDERR "FATAL ERROR: Unknown optios for winMode \"$winMode\" and binMode \"$binMode\"\n";
+                die; 
               }
         }                
       elsif ($winFormat eq "bedGraph")
