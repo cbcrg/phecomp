@@ -2385,9 +2385,10 @@ sub bin
 	  				}
 	  			
           $hWithBin->{$c}{$chN}{data} = \@aryHash;
-	  		  $hWithBin->{$c}{$chN}{nature} = $nature;  
+	  		  $hWithBin->{$c}{$chN}{Nature} = $nature;  
 	  		}	  			  			  		    
       }
+    
     return ($hWithBin);
   }  
 
