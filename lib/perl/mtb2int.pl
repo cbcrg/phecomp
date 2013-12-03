@@ -1158,14 +1158,17 @@ sub tacStamp2string_C
         if (!-e "$dateFile")
           {
             print STDERR "FATAL ERROR: tac2pos is Not properly installed use act option instead!\n";
-            die;
+            # die;
+            $date = "NoTacFile";
           }
-        
-        open ($F, "$dateFile") or die "tac2pos has not correctly returned the file date of: $file\n";
-      
-        $date=<$F>;
-        close ($F);
-        unlink ($dateFile);
+        else
+          {
+            open ($F, "$dateFile") or die "tac2pos has not correctly returned the file date of: $file\n";
+          
+            $date=<$F>;
+            close ($F);
+            unlink ($dateFile);
+          }
       }
     
     return ($date);    
