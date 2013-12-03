@@ -344,7 +344,7 @@ int printHeader (FILE *fd, char * name)
 	if (count != fileHeader.size)
 	{
 		fprintf (stderr, "ERROR: Annotated file (%i) size does not match real file size (%i)!\n", fileHeader.size, count);//chivato
-		exit (EXIT_FAILURE);
+//		exit (EXIT_FAILURE);
 	}
 
 	//fprintf (stderr, "Size until end of file: %i \n", count);//chivato
