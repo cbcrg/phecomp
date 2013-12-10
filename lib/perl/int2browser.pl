@@ -384,13 +384,15 @@ sub hmm2bedGraph
     # along the sequence
     if ($field2extract eq "bpost_score")
       {
-        if (exists ($param -> {binPost})) 
+        if (exists ($param -> {stPost})) 
           {
             foreach my $c (sort ({$a<=>$b}keys(%$d)))
               {	    	 
                 foreach my $i (sort {$a<=>$b}keys (%{$d->{$c}}))
-          	     {      	  
-          	       if ($d->{$c}{$i}{'bin'} eq  $param -> {binPost}) {last;}          	       
+          	     {   
+          	       my $postState = $d->{$c}{$i}{'posterior'}; 
+          	       $postState =~ s/ST:://;   	  
+          	       if ($postState eq  $param -> {stPost}) {last;}          	       
           	     }
               }
           }
@@ -400,17 +402,19 @@ sub hmm2bedGraph
 #            foreach my $c (sort ({$a<=>$b}keys(%$d)))
 #              {	    	 
 #                foreach my $i (sort {$a<=>$b}keys (%{$d->{$c}}))
-#          	     {      	  
-#          	       if ($d->{$c}{$i}{'bin'} eq "BEGIN"||$d->{$c}{$i}{'bin'} eq "END") {next;}
+#          	     { 
+#                  my $postState = $d->{$c}{$i}{'posterior'}; 
+#          	       $postState =~ s/ST:://;     	  
+#          	       if ($postState eq "BEGIN"|| $postState eq "END") {next;}
 #          	       else 
 #          	         {
-#          	           $param -> {binPost} = $d->{$c}{$i}{'bin'};
+#          	           $param -> {stPost} = $postState;
 #          	           print STDERR "Brooks was here\n";
 #          	           last;
 #          	         }
 #          	     }
 #              }
-            print STDERR "\n****ERROR: bpost_score needs binPost option [FATAL]***\n";
+            print STDERR "\n****ERROR: bpost_score needs stPost option [FATAL]***\n";
             die;
           }
       }
@@ -465,18 +469,21 @@ sub hmm2bedGraph
       	              		    	
 		    	$startInt = $d->{$c}{$i}{'startInt'};
 		    	$endInt = $d->{$c}{$i}{'endInt'}; 
-		    	 
+		    	
+		    	my $postSt = $d->{$c}{$i}{'posterior'};
+		    	$postSt =~ s/ST:://;
+		    	  
 		    	if ($field2extract ne "bpost_score")
 		    	 { 
 		    	   $value = $d->{$c}{$i}{$field2extract};
 		    	 }
 		    	else
 		    	 {
-		    	   if ($d->{$c}{$i}{'bin'} eq $param -> {binPost}) {$value = $d->{$c}{$i}{$field2extract};}
+		    	   if ($postSt eq $param -> {stPost}) {$value = $d->{$c}{$i}{$field2extract};}
 		    	   else {$value = 1 - $d->{$c}{$i}{$field2extract};}  
 		    	 } 
 		    	 
-          $value =~ s/ST:://;
+		    	$value =~ s/ST:://;           
 		    	print $F "$chr\t$startInt\t$endInt\t$value\n";		
       	 }
       	   	        
@@ -778,7 +785,7 @@ sub check_parameters
     $rp->{hmmField2extract} = 1;
     $rp->{rhmmFile} = 1;
     $rp->{binMode} = 1;
-    $rp->{binPost} = 1;
+    $rp->{stPost} = 1;
     
     foreach my $k (keys (%$p))
       {
