@@ -382,24 +382,38 @@ sub hmm2bedGraph
     
     # posterior probability correspond to the assigned bin in the decoding, but probably we want to extract the proba for a single bin
     # along the sequence
-#    if ($field2extract eq "bpost_score")
-#      {
-#        $param -> {binPost}? $param->{binPost} : "1";
-#        
-#        foreach my $c (sort ({$a<=>$b}keys(%$d)))
-#          {	    	 
-#            foreach my $i (sort {$a<=>$b}keys (%{$d->{$c}}))
-#      	     {      	  
-#      	       if ($d->{$c}{$i}{'bin'} eq "BEGIN"||$d->{$c}{$i}{'bin'} eq "END") {next;}
-#      	       else 
-#      	         {
-#      	           $param -> {binPost} = $d->{$c}{$i}{'bin'};
-#      	           print STDERR "Brooks was here\n";
-#      	           last;
-#      	         }
-#      	     }
-#          }
-#      }
+    if ($field2extract eq "bpost_score")
+      {
+        if (exists ($param -> {binPost})) 
+          {
+            foreach my $c (sort ({$a<=>$b}keys(%$d)))
+              {	    	 
+                foreach my $i (sort {$a<=>$b}keys (%{$d->{$c}}))
+          	     {      	  
+          	       if ($d->{$c}{$i}{'bin'} eq  $param -> {binPost}) {last;}          	       
+          	     }
+              }
+          }
+        else
+          {
+#            # Set the first bin occurrence as the bin to show posterior probability
+#            foreach my $c (sort ({$a<=>$b}keys(%$d)))
+#              {	    	 
+#                foreach my $i (sort {$a<=>$b}keys (%{$d->{$c}}))
+#          	     {      	  
+#          	       if ($d->{$c}{$i}{'bin'} eq "BEGIN"||$d->{$c}{$i}{'bin'} eq "END") {next;}
+#          	       else 
+#          	         {
+#          	           $param -> {binPost} = $d->{$c}{$i}{'bin'};
+#          	           print STDERR "Brooks was here\n";
+#          	           last;
+#          	         }
+#          	     }
+#              }
+            print STDERR "\n****ERROR: bpost_score needs binPost option [FATAL]***\n";
+            die;
+          }
+      }
       
     my $winFile = $param -> {winFile}? $param -> {winFile} : "DEVFile";
 
@@ -413,7 +427,7 @@ sub hmm2bedGraph
     my ($chr, $startInt, $endInt, $id, $value, $score, $chN, $file, $F);
 
     $chr = "chr1";
-   
+        
     foreach my $c (sort ({$a<=>$b}keys(%$d)))
       {	    	 
         foreach my $i (sort {$a<=>$b}keys (%{$d->{$c}}))
@@ -451,7 +465,17 @@ sub hmm2bedGraph
       	              		    	
 		    	$startInt = $d->{$c}{$i}{'startInt'};
 		    	$endInt = $d->{$c}{$i}{'endInt'}; 
-		    	$value = $d->{$c}{$i}{$field2extract};
+		    	 
+		    	if ($field2extract ne "bpost_score")
+		    	 { 
+		    	   $value = $d->{$c}{$i}{$field2extract};
+		    	 }
+		    	else
+		    	 {
+		    	   if ($d->{$c}{$i}{'bin'} eq $param -> {binPost}) {$value = $d->{$c}{$i}{$field2extract};}
+		    	   else {$value = 1 - $d->{$c}{$i}{$field2extract};}  
+		    	 } 
+		    	 
           $value =~ s/ST:://;
 		    	print $F "$chr\t$startInt\t$endInt\t$value\n";		
       	 }
@@ -754,6 +778,7 @@ sub check_parameters
     $rp->{hmmField2extract} = 1;
     $rp->{rhmmFile} = 1;
     $rp->{binMode} = 1;
+    $rp->{binPost} = 1;
     
     foreach my $k (keys (%$p))
       {
