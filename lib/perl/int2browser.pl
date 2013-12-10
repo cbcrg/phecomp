@@ -72,7 +72,7 @@ if ($#ARGV ==-1)
     print "  -outCytoband   <file>.............Value: name of cytoband like file from \"-generate cytobandFile\"\n";
     print "  -outPhaseBed   <file>.............Value: name of phases bed file from \"-generate phase2bed\"\n";
     print "  -outTimeDiv    <file>.............Value: name of temporal division bed file (ticks) from \"-generate timeDivision\"\n";
-    print "  -hmmField2read <mode>.............Mode: 'bin' Default value, bin extracted from the rhmm file\n";
+    print "  -hmmField2extract <mode>.............Mode: 'bin' Default value, bin extracted from the rhmm file\n";
     print "  -allFiles      <mode>.............Mode:  'genomeBrowser' Produces without setting other parameters a bed file from intervals, a chr to load as a genome and a bed files with the intervals .\n";
     print "  -outdata       <mode>.............Mode: 'no'  Intervals files are not generated or show in standard output\n";
     print "  -out           <file>.............File:  name of output files if parameters for each type of file were not given.\n";
@@ -107,14 +107,17 @@ $colorsGrad ->{"drink"} = [@blueGradient];
 $colorsGrad -> {"food"} = [@blackGradient];
 $colorsGrad -> {"food_sc"} = [@blackGradient];
 $colorsGrad -> {"food_cd"} = [@redGradient];
-$colorsGrad -> {"food_fat"} = [@greenGradient];
+#$colorsGrad -> {"food_fat"} = [@greenGradient];
+$colorsGrad -> {"food_fat"} = [@redGradient];
 
 our $colorsSingleTone = {};
 $colorsSingleTone -> {"water"} = "0,0,255";
 $colorsSingleTone -> {"drink"} = "0,0,255";
 $colorsSingleTone -> {"food_sc"} = "0,0,0";
 $colorsSingleTone -> {"food_cd"} = "255,0,0";
-$colorsSingleTone -> {"food_fat"} = "0,128,0";
+#$colorsSingleTone -> {"food_fat"} = "0,128,0";
+$colorsSingleTone -> {"food_fat"} = "255,0,0";
+
 
 @channel = ("Intake 1", "Intake 2", "Intake 3", "Intake 4");
 
@@ -376,6 +379,28 @@ sub hmm2bedGraph
     my $d = shift;
     my $winFile = "developFile";
     my $field2extract = $param -> {hmmField2extract}? $param->{hmmField2extract} : "bin";
+    
+    # posterior probability correspond to the assigned bin in the decoding, but probably we want to extract the proba for a single bin
+    # along the sequence
+#    if ($field2extract eq "bpost_score")
+#      {
+#        $param -> {binPost}? $param->{binPost} : "1";
+#        
+#        foreach my $c (sort ({$a<=>$b}keys(%$d)))
+#          {	    	 
+#            foreach my $i (sort {$a<=>$b}keys (%{$d->{$c}}))
+#      	     {      	  
+#      	       if ($d->{$c}{$i}{'bin'} eq "BEGIN"||$d->{$c}{$i}{'bin'} eq "END") {next;}
+#      	       else 
+#      	         {
+#      	           $param -> {binPost} = $d->{$c}{$i}{'bin'};
+#      	           print STDERR "Brooks was here\n";
+#      	           last;
+#      	         }
+#      	     }
+#          }
+#      }
+      
     my $winFile = $param -> {winFile}? $param -> {winFile} : "DEVFile";
 
     #Defines the initial display mode of the annotation track. Values for display_mode include: 0 - hide, 1 - dense, 2 - full, 3 - pack, and 4 - squish
