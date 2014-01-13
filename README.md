@@ -1,4 +1,4 @@
 phecomp
 =======
 
-<short project description>
+Behavioral HMM

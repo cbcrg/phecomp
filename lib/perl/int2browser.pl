@@ -1458,12 +1458,12 @@ sub natureValue2color
 #      						{   
 #      							if ($d->{$c}{$t}{Channel} eq $ch)
 #      								{
-#      									my $newT = $t-$start;
+#      									my $relIniTime = $t-$start;
 #      									
 #      									#Intervals smaller than first time
-#      									if ($newT > $endInt)
+#      									if ($relIniTime > $endInt)
 #      										{
-#      											while ($endInt < $newT)
+#      											while ($endInt < $relIniTime)
 #      												{
 #      													print $F "chr1\t$startInt\t$endInt\t$acuValue\n";
 #      													if ($winMode eq "discrete") {$acuValue = 0;}
@@ -1475,7 +1475,7 @@ sub natureValue2color
 #      											$acuValue = $acuValue + $d->{$c}{$t}{$winParam};      											        										
 #      										}
 #      									
-#      									elsif ($newT => $startInt && $newT <= $endInt)
+#      									elsif ($relIniTime => $startInt && $relIniTime <= $endInt)
 #      										{
 #      											my $ccc = $d->{$c}{$t}{$winParam};      											    										
 #      											$acuValue = $acuValue + $d->{$c}{$t}{$winParam};      											       										
@@ -1677,19 +1677,21 @@ sub data2win
 #                                           'chr' => 'chr1',
 #                                           'acuValue' => 0
 #                                         },
-
 sub data2winDistro 
 	{
 		my $d = shift;
     	my $param = shift;
     	my $winSize = shift;
     	
-  		my ($start, $end, $startInt, $winIndex, $startInt, $endInt, $chN, $ch, $acuValue, $nature);
+  		my ($start, $end, $startInt, $winIndex, $endInt, $chN, $ch, $acuValue, $nature);
+    	my $counterT = 0;
+    	my $counter = 0;
+    	my $counter1sec = 0;
     	
   		#Checking parameteres if empty setting default
   		my $winParam = $param -> {window}? $param->{window} : "Value"; 
     	my $winMode = $param -> {winMode}? $param -> {winMode} : "discrete"; #by default discrete
-    	
+    
     	my $hashWin = {};
     	 
     	($start, $end) = &firstAndLastTime ($d, $param);
@@ -1720,59 +1722,149 @@ sub data2winDistro
       								}	
       						}
       												
-						  my @aryCh; #An ary for each channel
+						my @aryCh; #An ary for each channel
+	    				my $remainInt = {};
+	    				my $overlapValue = 0;
 	    					
 	  					foreach my $t (sort (keys (%{$d->{$c}})))
       						{   
       							if ($d->{$c}{$t}{Channel} eq $ch)
-      								{
-      									my $newT = $t-$start;
-      									
-      									#Intervals smaller than first time
-      									if ($newT > $endInt)
+      								{         																		
+      									my $relIniTime = $t - $start;#absolute UNIX time to relative time      									
+      									my $relEndTime = $d->{$c}{$t}{EndT} - $start;      									
+
+      									if ($relIniTime > $endInt)
       										{
-      										  #I can find several intervals before the first reaching the first time with signal
-      											while ($endInt < $newT)
+      											#I should fill several empty intervals before reaching the first interval with signal      										  
+      											while ($endInt < $relIniTime)
       												{      													
-														    my $h = {};
-														
-														    $h->{"chr"} = "chr1";
-														    $h->{"startInt"} = $startInt;
-														    $h->{"endInt"} = $endInt;
-														    
-#														    if ($winMode eq "binning" && $acuValue != 0) 
-#														      {														        
-#														        $h->{"acuValue"} = 1;
-#														      }
-#														    elsif ($winMode eq "binning" && $acuValue == 0)
-#														      {
-#														        $h->{"acuValue"} = 0;
-#														      }
-#														    else
-#														      {    
-														        $h->{"acuValue"} = $acuValue;
-#														      }
-														
-														    push (@aryCh, $h);
+													    my $h = {};
+													
+													    $h->{"chr"} = "chr1";
+													    $h->{"startInt"} = $startInt;
+													    $h->{"endInt"} = $endInt;
+													    $h->{"acuValue"} = $acuValue;
+ 														print STDERR "acuValue = $acuValue\n";#del
+													    push (@aryCh, $h);
       													
+      													
+      														
       													if ($winMode eq "discrete" || $winMode eq "binning") {$acuValue = 0;}
-      													
+      													      													      													
       													$startInt += $winSize;
       													$endInt += $winSize;
+      													print STDERR "Setting end Int to $endInt\n";#del
+      													
+      													if (exists ($remainInt->{'Channel'}))  
+      														{      															
+      									    					my $weightedInt2 = 0;
+																
+																if ($remainInt->{'end'} <= $endInt)
+      																{         																	
+      																	$weightedInt2 = 1;
+      																	$weightedInt2 *= $remainInt->{'value'};
+      																	    																	
+      																	if ($relIniTime => $startInt && $relIniTime <= $endInt)
+      																		{
+      																			print STDERR "THAT should be the case    $relIniTime => $startInt && $relIniTime <= $endInt\n";
+      																			      																			      																			      																			      																			     																			      																			
+		      																	#####################		
+		      																			
+		      																	if ($relEndTime <= $endInt)
+		      																		{								      													
+										      											$remainInt = {};
+										      										}  
+		      																			
+										      									else
+										      										{   								      									    			
+								      									    			my $timesWin = ($relEndTime-$endInt)/$winSize;								      									    										      									    									      									    										      									    		
+								      									    			my $weightedInt2 = ($endInt - $relIniTime) / ($relEndTime - $relIniTime);
+								      									    			print STDERR "@@@ $d->{$c}{$t}{$winParam} * $weightedInt2 =";#del
+								      									    			$weightedInt2 *= $d->{$c}{$t}{$winParam};								      									    			
+								      									    		 	$acuValue += $weightedInt2;								      									    		 								      									    		
+								      									    			$remainInt->{'start'} =  $endInt+1;
+								      									    			$remainInt->{'end'} = $relEndTime;
+								      									    			
+								      									    			#It can be that the remaining time is just one second
+								      									    			if ($remainInt->{'start'} == $remainInt->{'end'}) 
+								      									    				{
+								      									    					$remainInt->{'end'} += 1;
+								      									    					$counter1sec++;
+								      									    				}      									    			      									    		
+								      									    			
+								      									    			$remainInt->{'value'} = $d->{$c}{$t}{$winParam} - $weightedInt2;
+								      									    			$remainInt->{'Channel'} = $ch;
+										      									    }
+      																			
+      																			#####################	     																			      																			      																			
+      																		}
+      																	else 
+      																		{
+      																			$remainInt = {};
+      																		}    																	      															      									    							
+      									    							
+      																}
+      															else
+      																{      																	
+																		$weightedInt2 = ($endInt - $remainInt->{'start'}) / ($remainInt->{'end'} - $remainInt->{'start'});
+																		$weightedInt2 *= $remainInt->{'value'}; 
+																		
+																		$remainInt->{'start'} =  $endInt+1;
+      									    							$remainInt->{'end'} = $remainInt->{'end'};
+      									    			
+      									    							#It can be that the remaining time is just one second
+				      									    			if ($remainInt->{'start'} == $remainInt->{'end'}) 
+				      									    				{
+				      									    					$remainInt->{'end'} += 1;
+				      									    					$counter1sec++;
+				      									    				}      									    			      									    		
+      									    			
+      									    							$remainInt->{'value'} = $remainInt->{'value'} - $weightedInt2;
+      									    							$remainInt->{'Channel'} = $ch;      																	
+      																}
+      																
+																$acuValue += $weightedInt2;
+      															$d->{$c}{$t}{$winParam} = 0;	
+      														}
       											      													
       												}
       											
+      											#First value to occur inside a window is stored
+      											print STDERR "has been here --------- $acuValue = $acuValue + $d->{$c}{$t}{$winParam}\n";
       											$acuValue = $acuValue + $d->{$c}{$t}{$winParam};      											        										
       										}
       									
-      									elsif ($newT => $startInt && $newT <= $endInt)
-      										{
-      											my $ccc = $d->{$c}{$t}{$winParam};
-      											    											
-      											$acuValue = $acuValue + $d->{$c}{$t}{$winParam};
-      											       											
+      									elsif ($relIniTime => $startInt && $relIniTime <= $endInt)      									
+      										{      											
+      											$counterT++;
+      											
+      											if ($relEndTime <= $endInt)
+      												{      													  
+      													my $ccc = $d->{$c}{$t}{$winParam};      											    											
+      													$acuValue = $acuValue + $d->{$c}{$t}{$winParam};
+      												}  
+      											else
+      									    		{         									    			   									    	
+      									    			my $timesWin = ($relEndTime-$endInt)/$winSize;
+      									    			if ($timesWin > 1) {$counter++;}       									    			
+      									    			
+      									    			my $weightedInt = ($endInt - $relIniTime) / ($relEndTime - $relIniTime);      									    			
+      									    			$weightedInt *= $d->{$c}{$t}{$winParam};
+      									    			$acuValue = $acuValue + $weightedInt;
+      									    		       									    			
+      									    			$remainInt->{'start'} =  $endInt+1;
+      									    			$remainInt->{'end'} = $relEndTime;
+
+      									    			if ($remainInt->{'start'} == $remainInt->{'end'}) 
+      									    				{
+      									    					$remainInt->{'end'} += 1;
+      									    					$counter1sec++;
+      									    				}      									    			      									    		
+      									    			
+      									    			$remainInt->{'value'} = $d->{$c}{$t}{$winParam} - $weightedInt;
+      									    			$remainInt->{'Channel'} = $ch;
+      									    		}									
       										}
-      									
       									else
       										{      											
       											print STDERR "FATAL ERROR: Something went wrong";
@@ -1782,8 +1874,7 @@ sub data2winDistro
       							else
       								{
       									next;
-      								}
-      							      							   							      								      							      							
+      								}   							      							   							      								      							      							
       						}
 
 						$hashWin->{$c}{$chN}{data} = \@aryCh ;
@@ -1791,7 +1882,8 @@ sub data2winDistro
 	  				}
 	  				 			      					
       		}
-      		      		
+      		#print STDERR "$counterT---$counter\n"; #del
+      		#print STDERR "$counter1sec\n";#die; #del
       		return ($hashWin);      		
 	} 
 
