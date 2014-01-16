@@ -1,4 +1,4 @@
 phecomp
 =======
 
-Behavioral HMM
+Longitudinal analysis of behavioral longitudinal data
