@@ -1678,266 +1678,6 @@ sub data2win
 #                                           'acuValue' => 0
 #                                         },
 #test commit
-sub data2winDistro2 
-	{
-		my $d = shift;
-    	my $param = shift;
-    	my $winSize = shift;
-    	
-  		my ($start, $end, $startInt, $winIndex, $endInt, $chN, $ch, $acuValue, $nature);
-    	my $counterT = 0;
-    	my $counter = 0;
-    	my $counter1sec = 0;
-    	
-  		#Checking parameteres if empty setting default
-  		my $winParam = $param -> {window}? $param->{window} : "Value"; 
-    	my $winMode = $param -> {winMode}? $param -> {winMode} : "discrete"; #by default discrete
-    
-    	my $hashWin = {};
-    	 
-    	($start, $end) = &firstAndLastTime ($d, $param);
-    	
-    	foreach my $c (sort ({$a<=>$b} keys(%$d)))
-	  		{
-	  					  			
-	  			foreach my $ch (@channel)
-	  				{	  					
-	  					$ch =~ m/(\d)/;
-	    				$chN = $1;	  					
-	  					$acuValue = 0;
-	  					$startInt = 1;
-	  					$endInt = $winSize;
-	  					
-	  					#Getting the nature of the channel (food_SC, fat_food, ...) for file name
-	  					#We inspect the hash in a reverse way because some files start with habituation phase, both food channels have food_sc
-	    				foreach my $t (sort ({$b<=>$a} keys (%{$d->{$c}})))	    				
-      						{      							      								
-      							if ($d->{$c}{$t}{Channel} eq $ch)
-      								{
-      									$nature = $d->{$c}{$t}{Nature};       									      									  									      												      									
-      									last;		
-      								}
-      							else
-      								{
-      									next;
-      								}	
-      						}
-      												
-						my @aryCh; #An ary for each channel
-	    				my $remainInt = {};
-	    				my $overlapValue = 0;
-	    					
-	  					foreach my $t (sort (keys (%{$d->{$c}})))
-      						{   
-      							if ($d->{$c}{$t}{Channel} eq $ch)
-      								{         																		
-      									my $relIniTime = $t - $start;#absolute UNIX time to relative time      									
-      									my $relEndTime = $d->{$c}{$t}{EndT} - $start;      									
-										
-										print STDERR "11111 $relIniTime > $endInt && $relEndTime <= $endInt+$winSize\n";#del
-										
-#      									if ($relIniTime > $endInt)
-      									if ($relIniTime > $endInt)
-      										{
-#      											$relEndTime <= ($endInt + $winSize)
-      											
-      											#I should fill several empty intervals before reaching the first interval with signal      										  
-      											while ($endInt < $relIniTime)
-      												{      													
-													    my $h = {};
-													
-													    $h->{"chr"} = "chr1";
-													    $h->{"startInt"} = $startInt;
-													    $h->{"endInt"} = $endInt;
-													    $h->{"acuValue"} = $acuValue;
- 														print STDERR "$startInt\t$endInt\t$acuValue\n\n\n";#del
-													    push (@aryCh, $h);
-      													
-      													
-      														
-      													if ($winMode eq "discrete" || $winMode eq "binning") {$acuValue = 0;}
-      													      													      													
-      													$startInt += $winSize;
-      													$endInt += $winSize;
-      													print STDERR "Setting end Int to $endInt\n";#del
-      													print STDERR "remain value is $remainInt->{'value'}\n";
-      													
-      													if (exists ($remainInt->{'Channel'}))  
-      														{   
-      															print STDERR "????? remainInt->{'end'} $remainInt->{'end'}*********** \n";   															
-      									    					my $weightedInt2 = 0;
-																
-																if ($remainInt->{'end'} <= $endInt)
-      																{         																	
-      																	$weightedInt2 = 1;
-      																	$weightedInt2 *= $remainInt->{'value'};
-      																	    																	
-      																	if ($relIniTime => $startInt && $relIniTime <= $endInt)
-      																		{
-      																			print STDERR "THAT should be the case    $relIniTime => $startInt && $relIniTime <= $endInt\n";
-      																			      																			      																			      																			      																			     																			      																			
-		      																	#####################		
-		      																			
-		      																	if ($relEndTime <= $endInt)
-		      																		{	
-		      																			print STDERR "1 To remaintInt to 0 here\n";							      													
-										      											$remainInt = {};
-										      										}  
-		      																			
-										      									else
-										      										{   								      									    			
-								      									    			my $timesWin = ($relEndTime-$endInt)/$winSize;								      									    										      									    									      									    										      									    		
-								      									    			my $weightedInt2 = ($endInt - $relIniTime) / ($relEndTime - $relIniTime);
-								      									    			print STDERR "@@@ $d->{$c}{$t}{$winParam} * $weightedInt2 =";#del
-								      									    			$weightedInt2 *= $d->{$c}{$t}{$winParam};
-								      									    			print STDERR "@@@@@@@@@ $weightedInt2\n";								      									    			
-								      									    		 	$acuValue += $weightedInt2;								      									    		 								      									    		
-								      									    			$remainInt->{'start'} =  $endInt+1;
-								      									    			$remainInt->{'end'} = $relEndTime;
-								      									    			
-								      									    			#It can be that the remaining time is just one second
-								      									    			if ($remainInt->{'start'} == $remainInt->{'end'}) 
-								      									    				{
-								      									    					$remainInt->{'end'} += 1;
-								      									    					$counter1sec++;
-								      									    				}      									    			      									    		
-								      									    			
-								      									    			$remainInt->{'value'} = $d->{$c}{$t}{$winParam} - $weightedInt2;
-								      									    			print STDERR "@@@@@@@@@ remainInt->{'value'} = $remainInt->{'value'}\n";
-								      									    			$remainInt->{'Channel'} = $ch;
-										      									    }
-										      									print STDERR "@@@@@@@@@ $acuValue\n";
-      																			#$acuValue += $weightedInt2;
-      																			print STDERR "@@@@@@@@@ $acuValue\n";
-      																			#####################	     																			      																			      																			
-      																		}
-      																	else 
-      																		{
-      																			print STDERR "2 To remaintInt to 0 here\n";	
-      																			$remainInt = {};
-      																		}    																	      															      									    							
-      									    							print STDERR "2@@@@@@@@ remainInt->{'value'} = $remainInt->{'value'}\n";
-      																}
-      															else
-      																{      																	
-																		$weightedInt2 = ($endInt - $remainInt->{'start'}) / ($remainInt->{'end'} - $remainInt->{'start'});
-																		$weightedInt2 *= $remainInt->{'value'}; 
-																		
-																		$remainInt->{'start'} =  $endInt+1;
-      									    							$remainInt->{'end'} = $remainInt->{'end'};
-      									    			
-      									    							#It can be that the remaining time is just one second
-				      									    			if ($remainInt->{'start'} == $remainInt->{'end'}) 
-				      									    				{
-				      									    					$remainInt->{'end'} += 1;
-				      									    					$counter1sec++;
-				      									    				}      									    			      									    		
-      									    			
-      									    							$remainInt->{'value'} = $remainInt->{'value'} - $weightedInt2;
-      									    							$remainInt->{'Channel'} = $ch;      																	
-      																}
-      																
-																$acuValue += $weightedInt2;
-																print STDERR "@@@@@@@@@ $acuValue\n";
-      															$d->{$c}{$t}{$winParam} = 0;	
-      														}
-      											      													
-      												}
-      											
-      											#First value to occur inside a window is stored
-      											print STDERR "has been here --------- $acuValue = $acuValue + $d->{$c}{$t}{$winParam}\n";
-      											if ($relEndTime <= $endInt)
-      											{
-      												$acuValue = $acuValue + $d->{$c}{$t}{$winParam};
-      											}
-      											else
-#      											@@@@@@@@
-      											{
-      													# my $timesWin = ($relEndTime-$endInt)/$winSize;
-      													print STDERR "666666  ($endInt - $relIniTime) / ($relEndTime - $relIniTime) \n";
-      									    	    	# if ($timesWin > 1) {$counter++;}       									    			
-      									    			
-      									    			my $weightedInt = ($endInt - $relIniTime) / ($relEndTime - $relIniTime);
-      									    			#print STDERR "666666 $weightedInt\n";      									    			
-      									    			$weightedInt *= $d->{$c}{$t}{$winParam};
-      									    			#print STDERR "777777 $d->{$c}{$t}{$winParam}\n";
-      									    			#print STDERR "888888 $weightedInt\n";
-      									    			print STDERR "$acuValue + $weightedInt 00000\n";
-      									    			$acuValue = $acuValue + $weightedInt;
-      									    		    print STDERR "1 acuvalue should be the fraction $acuValue\n";
-      									    		       									    			
-      									    			$remainInt->{'start'} =  $endInt+1;
-      									    			$remainInt->{'end'} = $relEndTime;
-
-      									    			if ($remainInt->{'start'} == $remainInt->{'end'}) 
-      									    				{
-      									    					$remainInt->{'end'} += 1;
-      									    					$counter1sec++;
-      									    				}      									    			      									    		
-      									    			print STDERR "9999 $d->{$c}{$t}{$winParam}\n";
-      									    			$remainInt->{'value'} = $d->{$c}{$t}{$winParam} - $weightedInt;
-      									    			$remainInt->{'Channel'} = $ch;
-      									    			print STDERR "acuvalue should be the fraction $acuValue\n"; 
-      											}
-#      											@@@@@@@@@
-      											      											        										
-      										}
-      									
-      									elsif ($relIniTime => $startInt)
-#      									elsif ($relIniTime => $startInt && $relIniTime <= $endInt)      									
-      										{   
-      											print STDERR "elseif &&&&& $relIniTime => $startInt\n";   											
-      											$counterT++;
-      											
-      											if ($relEndTime <= $endInt)
-      												{      													  
-      													my $ccc = $d->{$c}{$t}{$winParam};      											    											
-      													$acuValue = $acuValue + $d->{$c}{$t}{$winParam};
-      												}  
-      											else
-      									    		{  
-      									    			print STDERR "THAT shiiiiiiiiiiiiiiit   $relIniTime > $endInt\n";       									    			   									    	
-      									    			my $timesWin = ($relEndTime-$endInt)/$winSize;
-      									    			if ($timesWin > 1) {$counter++;}       									    			
-      									    			
-      									    			my $weightedInt = ($endInt - $relIniTime) / ($relEndTime - $relIniTime);      									    			
-      									    			$weightedInt *= $d->{$c}{$t}{$winParam};
-      									    			$acuValue = $acuValue + $weightedInt;
-      									    		       									    			
-      									    			$remainInt->{'start'} =  $endInt+1;
-      									    			$remainInt->{'end'} = $relEndTime;
-
-      									    			if ($remainInt->{'start'} == $remainInt->{'end'}) 
-      									    				{
-      									    					$remainInt->{'end'} += 1;
-      									    					$counter1sec++;
-      									    				}      									    			      									    		
-      									    			
-      									    			$remainInt->{'value'} = $d->{$c}{$t}{$winParam} - $weightedInt;
-      									    			$remainInt->{'Channel'} = $ch;
-      									    		}									
-      										}
-      									else
-      										{      											
-      											print STDERR "FATAL ERROR: Something went wrong";
-      											die;      											
-      										}		
-      								}
-      							else
-      								{
-      									next;
-      								}   							      							   							      								      							      							
-      						}
-
-						$hashWin->{$c}{$chN}{data} = \@aryCh ;
-						$hashWin->{$c}{$chN}{Nature} = $nature ;
-	  				}
-	  				 			      					
-      		}
-      		#print STDERR "$counterT---$counter\n"; #del
-      		#print STDERR "$counter1sec\n";#die; #del
-      		return ($hashWin);      		
-	} 
 
 sub data2winDistro 
 	{
@@ -1959,7 +1699,8 @@ sub data2winDistro
 	  		{
 	  					  			
 	  			foreach my $ch (@channel)
-	  				{	  					
+	  				{	
+	  					print "<<<<<<<<<< $ch\n\n\n";  					
 	  					$ch =~ m/(\d)/;
 	    				$chN = $1;	  					
 	  					$acuValue = 0;
@@ -1989,11 +1730,9 @@ sub data2winDistro
       							if ($d->{$c}{$t}{Channel} eq $ch)
       								{
       									my $relIniTime = $t - $start;#absolute UNIX time to relative time
-      									print STDERR "$relIniTime ssss\n";      									
+      									      									
       									my $relEndTime = $d->{$c}{$t}{EndT} - $start;
-      									print STDERR "$relEndTime endtime\n";
-#      									my $newT = $t-$start;
-      									
+      							      									
       									#Intervals smaller than first time      									
       									if ($relIniTime > $endInt)
 #      									if ($newT > $endInt)#oldVer
@@ -2032,28 +1771,29 @@ sub data2winDistro
 														my $endNew = $relEndTime;
 														
 #														for (my $i = $startInt; $i<$endInt; $i=$i+$winSize)
-														for ($start; $start<$relEndTime; $start=$start+$winSize)	
-															{
-#																print STDERR "in the for start= $start end= $endNew value=$value\n";
-																print STDERR "First weightedInt ===== ($end - $startNew ) / ($endNew - $startNew)\n";
-																my $weightedInt = ($end - $startNew) / ($endNew - $startNew);      									    			
+														for ($start; $start<=$relEndTime; $start=$start+$winSize)	
+															{															
+																if ($end == $startNew) {$end += 1;}
+																#### AQUI esta la cosa ahora el +1 o nocambia al problema al principio o al final
+																my $weightedInt = ($end - $startNew) / ($endNew - $startNew);
+																print STDERR "ooooo00000000 $weightedInt \n";      									    			
       									    					$weightedInt *= $value;
-#      									    					$acuValue = $acuValue + $weightedInt;
-																#print STDERR "33333333 $weightedInt $value $HCrossInt->{$start} + $weightedInt\n";
-#																print STDERR "saved value $HCrossInt->{$start} + $weightedInt\n";
+#      									    					
       									    					$HCrossInt->{$start} = $HCrossInt->{$start} + $weightedInt;
-      									    					#print STDERR "HCrossInt->{$start} = $HCrossInt->{$start}\n";
+      									    					
       									    					$startNew = $end+1;
-#      									    					print STDERR "IF ($end + $winSize) < $relEndTime)\n";
+      									    					
       									    					$value = $value - $weightedInt;
       									    					
-      									    					if (($end + $winSize) >= $relEndTime)
+      									    					if (($end + $winSize) > $relEndTime)
       									    						{
+      									    							print STDERR "la madre del cordero $value\n";
       									    							my $nextStart = $start+$winSize;
       									    							$HCrossInt->{$nextStart} = $HCrossInt->{$nextStart} + $value;
       									    							last;	
       									    						}	
-      									    					$end = $end + $winSize;     									    					
+      									    					$end = $end + $winSize;     									    
+      									    										
 															}      									    			
 														
 														print STDERR "$startInt\t$endInt\n";
@@ -2069,7 +1809,7 @@ sub data2winDistro
       									elsif ($relIniTime <= $endInt && $relIniTime => $startInt)      									   								
       										{  
       											print STDERR "elsif ($relIniTime <= $endInt && $relIniTime => $startInt)\n";       											
-      											      											
+      											print STDERR "print STDERR if ($relEndTime < $endInt) \n";										
       											if ($relEndTime <= $endInt)
       												{      													        													      											    										
       													$acuValue = $acuValue + $d->{$c}{$t}{$winParam};
@@ -2078,7 +1818,7 @@ sub data2winDistro
       									    		{
 														my $value = $d->{$c}{$t}{$winParam};
 														my $end = $endInt;
-														my $start = $startInt;
+														my $start = $startInt;														
 														my $startNew = $relIniTime;
 														my $endNew = $relEndTime;
 																																									
@@ -2088,13 +1828,11 @@ sub data2winDistro
 																print STDERR "weightedInt ===== ($end - $start +1) / ($endNew - $startNew)\n";
 																my $weightedInt = ($end - $start + 1) / ($endNew - $startNew);      									    			
       									    					$weightedInt *= $value;
-#      									    					$acuValue = $acuValue + $weightedInt;
-																#print STDERR "33333333 $weightedInt $value $HCrossInt->{$start} + $weightedInt\n";
-																print STDERR "saved value $HCrossInt->{$start} + $weightedInt\n";
+#      									    					
       									    					$HCrossInt->{$start} = $HCrossInt->{$start} + $weightedInt;
-      									    					#print STDERR "HCrossInt->{$start} = $HCrossInt->{$start}\n";
+
       									    					$startNew = $end;
-#      									    					print STDERR "IF ($end + $winSize) < $relEndTime)\n";
+
       									    					$value = $value - $weightedInt;
       									    					
       									    					if (($end + $winSize) >= $relEndTime)
@@ -2103,20 +1841,9 @@ sub data2winDistro
       									    							$HCrossInt->{$nextStart} = $HCrossInt->{$nextStart} + $value;
       									    							last;	
       									    						}
-#      									    					if (($end + $winSize) < $relEndTime)
-#      									    						{
-#      									    							$endNew = $end + $winSize;
-#      									    						}
-#      									    					else
-#      									    						{
-#      									    							$endNew = $relEndTime;      									    							
-#      									    						}	
-      									    					$end = $end + $winSize;
-#																$value = $value - $weightedInt;      									    					
+
+      									    					$end = $end + $winSize;    									    					
 															}
-####################
-
-
       									    		}       												     											      											       											
       										}
       									
