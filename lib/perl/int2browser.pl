@@ -1699,8 +1699,7 @@ sub data2winDistro
 	  		{
 	  					  			
 	  			foreach my $ch (@channel)
-	  				{	
-	  					print "<<<<<<<<<< $ch\n\n\n";  					
+	  				{		  					
 	  					$ch =~ m/(\d)/;
 	    				$chN = $1;	  					
 	  					$acuValue = 0;
@@ -1739,7 +1738,8 @@ sub data2winDistro
       										{ 
       											print STDERR "siempre paso por aqui if ($relIniTime > $endInt)\n";     										  
       										  	#I should fill several empty intervals before reaching the first interval with signal
-      										  	print STDERR "while ($endInt < $relIniTime)\n";
+      										  	
+#      										  	print STDERR "while ($endInt < $relIniTime)\n";
       										  	while ($endInt < $relIniTime)
 #      											while ($endInt < $newT)#oldVer
       												{      													
@@ -1751,7 +1751,7 @@ sub data2winDistro
 														print STDERR "value in aryCrossInt $startInt---> $HCrossInt->{$startInt}\n";
 														  
    														$h->{"acuValue"} = $acuValue + $HCrossInt->{$startInt};
-   														print STDERR "$startInt\t$endInt\t$h->{acuValue}\n\n\n";														
+#   														print STDERR "$startInt\t$endInt\t$h->{acuValue}\n\n\n";														
 														push (@aryCh, $h);
       													
       													if ($winMode eq "discrete" || $winMode eq "binning") {$acuValue = 0;}
@@ -1772,31 +1772,39 @@ sub data2winDistro
 														
 #														for (my $i = $startInt; $i<$endInt; $i=$i+$winSize)
 														for ($start; $start<=$relEndTime; $start=$start+$winSize)	
-															{															
-																if ($end == $startNew) {$end += 1;}
-																#### AQUI esta la cosa ahora el +1 o nocambia al problema al principio o al final
-																my $weightedInt = ($end - $startNew) / ($endNew - $startNew);
-																print STDERR "ooooo00000000 $weightedInt \n";      									    			
+															{					
+																my $weightedInt = 0;
+																										
+																if ($end == $startNew) 
+																	{	
+																		$weightedInt = ($end - $startNew + 1) / ($endNew - $startNew);
+#																		print STDERR "weightedInt ===== ($end - $start +1) / ($endNew - $startNew)\n"; 																																				
+																	}
+																else 
+																	{
+																		$weightedInt = ($end - $startNew) / ($endNew - $startNew);
+#																		print STDERR "^^^^^^^$end - $startNew) / ($endNew - $startNew) \n";
+																	}																
+																																																																      									    	
       									    					$weightedInt *= $value;
+#      									    					print STDERR "ooooo weightedInt =  $weightedInt    ---- Value = $value\n";
 #      									    					
       									    					$HCrossInt->{$start} = $HCrossInt->{$start} + $weightedInt;
       									    					
-      									    					$startNew = $end+1;
+      									    					$startNew = $end;
+      									    					### I remove $startNew = $end + 1 => I might have problems in other cases
       									    					
       									    					$value = $value - $weightedInt;
       									    					
       									    					if (($end + $winSize) > $relEndTime)
-      									    						{
-      									    							print STDERR "la madre del cordero $value\n";
+      									    						{      									    							
       									    							my $nextStart = $start+$winSize;
       									    							$HCrossInt->{$nextStart} = $HCrossInt->{$nextStart} + $value;
       									    							last;	
       									    						}	
-      									    					$end = $end + $winSize;     									    
-      									    										
-															}      									    			
-														
-														print STDERR "$startInt\t$endInt\n";
+      									    						
+      									    					$end = $end + $winSize;     									          									    							
+															}      									    																														
 													}
 												else
 													{
@@ -1808,11 +1816,12 @@ sub data2winDistro
       									
       									elsif ($relIniTime <= $endInt && $relIniTime => $startInt)      									   								
       										{  
-      											print STDERR "elsif ($relIniTime <= $endInt && $relIniTime => $startInt)\n";       											
-      											print STDERR "print STDERR if ($relEndTime < $endInt) \n";										
+#      											print STDERR "elsif ($relIniTime <= $endInt && $relIniTime => $startInt)\n";       											
+#      											print STDERR "print STDERR if ($relEndTime < $endInt) \n";
+      																					
       											if ($relEndTime <= $endInt)
-      												{      													        													      											    										
-      													$acuValue = $acuValue + $d->{$c}{$t}{$winParam};
+      												{      				      																				        													      											    									
+      													$acuValue = $acuValue + $d->{$c}{$t}{$winParam};									        													      											    										      													
       												}
       											else
       									    		{
@@ -1823,10 +1832,19 @@ sub data2winDistro
 														my $endNew = $relEndTime;
 																																									
 														for ($start; $start<$relEndTime; $start=$start+$winSize)	
-															{
-																print STDERR "in the for start= $start end= $endNew value=$value\n";
-																print STDERR "weightedInt ===== ($end - $start +1) / ($endNew - $startNew)\n";
-																my $weightedInt = ($end - $start + 1) / ($endNew - $startNew);      									    			
+															{																
+																my $weightedInt = ($end - $startNew + 1) / ($endNew - $startNew);
+																my $weightedInt = 0;
+																
+																if ($end == $startNew) 
+																	{	
+																		$weightedInt = ($end - $startNew + 1) / ($endNew - $startNew);																																																		
+																	}
+																else 
+																	{
+																		$weightedInt = ($end - $startNew) / ($endNew - $startNew);
+																	}
+																	      									    			
       									    					$weightedInt *= $value;
 #      									    					
       									    					$HCrossInt->{$start} = $HCrossInt->{$start} + $weightedInt;
@@ -1842,7 +1860,7 @@ sub data2winDistro
       									    							last;	
       									    						}
 
-      									    					$end = $end + $winSize;    									    					
+      									    					$end = $end + $winSize;      									    					   									    				
 															}
       									    		}       												     											      											       											
       										}
