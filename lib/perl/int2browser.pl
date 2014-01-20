@@ -1735,10 +1735,8 @@ sub data2winDistro
       									#Intervals smaller than first time      									
       									if ($relIniTime > $endInt)
 #      									if ($newT > $endInt)#oldVer
-      										{ 
-      											print STDERR "siempre paso por aqui if ($relIniTime > $endInt)\n";     										  
-      										  	#I should fill several empty intervals before reaching the first interval with signal
-      										  	
+      										{     										  
+      										  	#I should fill several empty intervals before reaching the first interval with signal      										  	
 #      										  	print STDERR "while ($endInt < $relIniTime)\n";
       										  	while ($endInt < $relIniTime)
 #      											while ($endInt < $newT)#oldVer
@@ -1748,7 +1746,7 @@ sub data2winDistro
 													    $h->{"chr"} = "chr1";
 													    $h->{"startInt"} = $startInt;
 													    $h->{"endInt"} = $endInt;
-														print STDERR "value in aryCrossInt $startInt---> $HCrossInt->{$startInt}\n";
+#														print STDERR "value in aryCrossInt $startInt---> $HCrossInt->{$startInt}\n";
 														  
    														$h->{"acuValue"} = $acuValue + $HCrossInt->{$startInt};
 #   														print STDERR "$startInt\t$endInt\t$h->{acuValue}\n\n\n";														
@@ -1763,7 +1761,7 @@ sub data2winDistro
       											
       											if ($relEndTime > $endInt) 
 													{
-														print STDERR "StartInt = $startInt\tEndInt = $endInt\trelIniTime = $relIniTime\trelEndTime = $relEndTime\n";
+#														print STDERR "StartInt = $startInt\tEndInt = $endInt\trelIniTime = $relIniTime\trelEndTime = $relEndTime\n";
 														my $value = $d->{$c}{$t}{$winParam};
 														my $end = $endInt;
 														my $start = $startInt;
