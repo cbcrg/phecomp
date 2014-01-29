@@ -659,7 +659,7 @@ sub joinByTimeSep
     my $dispenserOpt = "Channel";
      
     foreach my $ch (keys (%$channelH))
- 	    {
+ 	  {
         $HfirstCage->{$ch} = 1;
       }
                 
@@ -732,8 +732,7 @@ sub joinByTimeSep
                 #Overlaps are annotated as NA
                 if ($interMealTime <= 0) 
                   {
-                    print STDERR "WARNING: COLL ---- currentStart $cStartT\tprevious End$pEndT\t$interMealTime\n";
-                    die; #No deberia pasar nunca porque son del mismo channel... casi nunca XD
+                    print STDERR "WARNING: COLL in the same channel ---- currentStart $cStartT\tprevious End$pEndT\t$interMealTime\n";
                     #$d->{$c}{$pT}{InterTime} = $interMealTime."COLL";                       
                     $d->{$c}{$pT}{InterTime} = "COLL";
                   }
@@ -741,7 +740,6 @@ sub joinByTimeSep
                 elsif ($interMealTime <= $minSep) 
                   {
                     my $fT = $HfirstT->{$nature};
-                    # print STDERR "$interMealTime he passat per aqui ----- $fT------------ $minSep\n";
                     #The end values I have always to update
                     $HpT->{$nature} = $t;
                     $HpEndT->{$nature} = $d->{$c}{$t}{EndT};
@@ -778,8 +776,7 @@ sub joinByTimeSep
 
 #                    $d->{$c}{$pT}{InterTime} = $interMealTime;
           
-                    my $fT = $HfirstT->{$nature};
-                    # print STDERR "$interMealTime he passat per mes gran de 2 min ----- $fT-------$Hvalue->{$nature}----- $minSep\n";
+                    my $fT = $HfirstT->{$nature};                   
                     $newD->{$c}{$fT}{'CAGE'} = $d->{$c}{$t}{'CAGE'};
                     $newD->{$c}{$fT}{'StartL'} = $HfirstStartL->{$nature};
                     $newD->{$c}{$fT}{'StartT'} = $HfirstStartT->{$nature};
@@ -809,8 +806,7 @@ sub joinByTimeSep
                     $HfirstStartL->{$nature} = $d->{$c}{$t}{'StartL'};
                     $HfirstStartT->{$nature} = $d->{$c}{$t}{'StartT'};
                     $Hfirstlinen->{$nature} = $d->{$c}{$t}{'linen'};
-                    $Hvalue->{$nature} = $d->{$c}{$t}{'Value'};
-                    print STDERR "........ $Hvalue->{$nature}\n"; 
+                    $Hvalue->{$nature} = $d->{$c}{$t}{'Value'};                     
                     $HfirstT->{$nature} = $t;
                     
                     $HpEndT->{$nature} = $d->{$c}{$t}{EndT};
@@ -833,9 +829,7 @@ sub joinByTimeSep
           }
       } 
 
-#    print Dumper ($newD);
-
-    print STDERR "Total intervals after intermeal joinning $index---------- $countTwo\n";
+    print STDERR "INFO: Total intervals after intermeal joinning $index---------- $countTwo\n";
     
     $d = $newD;
     return ($d); 
