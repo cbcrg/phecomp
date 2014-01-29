@@ -685,7 +685,7 @@ sub joinByTimeSep
         foreach my $t (sort ({$a<=>$b}keys (%{$d->{$c}})))
           {                                    
           	$nature = $d->{$c}{$t}{$dispenserOpt};           
-            print STDERR "$nature\n";            
+#            print STDERR "$nature\n";            
             
             #First occurrence 
             if ($HfirstCage->{$nature} == 1)
