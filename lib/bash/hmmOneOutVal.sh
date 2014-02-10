@@ -137,8 +137,12 @@ else
   checkCreateDir $resDir
 fi
 
-evalTbl=${resDir}"evalOneCgOut.tbl"
-echo -e "cage\tscore" > ${evalTbl}
+if [ -z "$resDir" ]
+then
+  evalTbl=${resDir}"evalOneCgOut.tbl"
+  echo -e "cage\tscore" > ${evalTbl}
+fi
+  
 
 # if [[ -z "${resDir}" || -z "${outputDir}" || -z "${path2GenBrowser}" ]]
 # then
@@ -242,8 +246,16 @@ do
     sleep 30
   done 
   
-  evalScore=`cat ${evalFile}` 
-  echo -e "$cage\t$evalScore" >> ${evalTbl}
+  evalScore=`cat ${evalFile}`
+  
+  #sino es null
+  if [[ ! -z "$run" ]]
+  then
+    echo -e "$cage\t$evalScore\t$run" >> ${evalTbl}
+  else
+    echo -e "$cage\t$evalScore" >> ${evalTbl}
+  fi
+
 done
 
 

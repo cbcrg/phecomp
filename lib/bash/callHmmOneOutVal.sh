@@ -42,18 +42,33 @@ intFile2Val="/users/cn/jespinosa/phecomp/20130610_HMM/data/intFiles/20120502_FDF
 fileAndExt=${intFile2Val##*/}
 fileName=`echo $fileAndExt | cut -d . -f1`
 
-resDir=${resDir}"${fileName}/"
-checkCreateDir ${resDir}
+resDirFile=${resDir}"${fileName}/"
+checkCreateDir ${resDirFile}
 
-export path2intFileFilt=${intFile2Val}
-export par2int2browser="value"
-export binMode=${binMode}
-export resDir=${resDir} 
-# export $path2intFileFilt 
-# export $par2int2browser
-# export $binMode
+summaryTableAllRuns=${resDirFile}"summaryTableAllRuns.tbl"
+echo -e "cage\tscore\trun" >> ${summaryTableAllRunss}
 
-${bashGitDir}hmmOneOutVal.sh 
+####### FROM HERE
+# for run in {1..30}
+for run in {1..30}
+do
+  echo "INFO: Execution of one out routine $run\n" 1>&2
+  resDirRun=${resDirFile}"run${run}/"
+  checkCreateDir $resDirRun
+  
+  export path2intFileFilt=${intFile2Val}
+  export par2int2browser="value"
+  export binMode=${binMode}
+  export resDir=${resDirRun} 
+  export evalTbl=${summaryTableAllRuns}
+  export run=${run}
+  
+  ${bashGitDir}hmmOneOutVal.sh
+   
+done
+
+
+# ${bashGitDir}hmmOneOutVal.sh 
 # > ${resDir}"hmmOneOutVal.stdout" 2> ${resDir}"hmmOneOutVal.err" 
 
 # qsub -q $typeQ,$nameQ $timeQ -cwd -o ${resDir} -e ${resDir} -v path2intFileFilt=${intFile2Val},par2int2browser="value",binMode=${binMode} ${bashGitDir}hmmOneOutVal.sh 1>&2
@@ -71,12 +86,34 @@ intFile2Val="/users/cn/jespinosa/phecomp/20130610_HMM/data/intFiles/20130130_FCS
 fileAndExt=${intFile2Val##*/}
 fileName=`echo $fileAndExt | cut -d . -f1`
 
-resDir=${resDir}"${fileName}/"
-checkCreateDir ${resDir}
+resDirFile=${resDir}"${fileName}/"
+checkCreateDir ${resDirFile}
 
-export path2intFileFilt=${intFile2Val}
-export par2int2browser="value"
-export binMode=${binMode}
-export resDir=${resDir} 
+summaryTableAllRuns=${resDirFile}"summaryTableAllRuns.tbl"
+echo -e "cage\tscore\trun" >> ${summaryTableAllRunss}
 
-${bashGitDir}hmmOneOutVal.sh 
+####### FROM HERE
+# for run in {1..30}
+for run in {1..2}
+do
+  echo "INFO: Execution of one out routine $run\n" 1>&2
+  resDirRun=${resDirFile}"run${run}/"
+  checkCreateDir $resDirRun
+  
+  export path2intFileFilt=${intFile2Val}
+  export par2int2browser="value"
+  export binMode=${binMode}
+  export resDir=${resDirRun} 
+  export evalTbl=${summaryTableAllRuns}
+  export run=${run}
+  
+  ${bashGitDir}hmmOneOutVal.sh
+  
+  
+done
+
+
+
+
+
+
