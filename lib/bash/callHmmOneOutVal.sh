@@ -32,7 +32,7 @@ defDumpDir="/users/cn/jespinosa/phecomp/20130610_HMM/"
 binMode=four
 resDir=${defDumpDir}"20130610_HMM${binMode}Signal/"
 checkCreateDir $resDir
-resDir=${resDir}"hmmOneOutVal/"
+resDir=${resDir}"hmmOneOutValSecond/"
 checkCreateDir ${resDir}
 
 ## Experiment HF May 2012
@@ -46,9 +46,9 @@ resDirFile=${resDir}"${fileName}/"
 checkCreateDir ${resDirFile}
 
 summaryTableAllRuns=${resDirFile}"summaryTableAllRuns.tbl"
-echo -e "cage\tscore\trun" >> ${summaryTableAllRunss}
+echo -e "cage\tscore\trun" > ${summaryTableAllRuns}
 
-####### FROM HERE
+###### FROM HERE
 # for run in {1..30}
 for run in {1..30}
 do
@@ -70,7 +70,7 @@ done
 
 # ${bashGitDir}hmmOneOutVal.sh 
 # > ${resDir}"hmmOneOutVal.stdout" 2> ${resDir}"hmmOneOutVal.err" 
-
+# 
 # qsub -q $typeQ,$nameQ $timeQ -cwd -o ${resDir} -e ${resDir} -v path2intFileFilt=${intFile2Val},par2int2browser="value",binMode=${binMode} ${bashGitDir}hmmOneOutVal.sh 1>&2
 #  -v iniLight=6  -v path2intFileFiltered=${intFile}
 
@@ -90,11 +90,11 @@ resDirFile=${resDir}"${fileName}/"
 checkCreateDir ${resDirFile}
 
 summaryTableAllRuns=${resDirFile}"summaryTableAllRuns.tbl"
-echo -e "cage\tscore\trun" >> ${summaryTableAllRunss}
+echo -e "cage\tscore\trun" > ${summaryTableAllRuns}
 
 ####### FROM HERE
-# for run in {1..30}
-for run in {1..2}
+for run in {1..30}
+# for run in {1..2}
 do
   echo "INFO: Execution of one out routine $run\n" 1>&2
   resDirRun=${resDirFile}"run${run}/"
