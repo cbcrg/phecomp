@@ -210,7 +210,7 @@ do
   
   errorRhmm=${resDirCage}"rhmm.err"
   
-  qsub -q $typeQ,$nameQ $timeQ -cwd -o ${pathHmmFileNocage} -e ${pathHmmFileNocage} -v hmmDataFile=${pathHmmFileNocage},hmmModelFile=${hmmModel},dumpPath=${resDirCage},rhmmOpt="${rhmmOpt}",logError=${errorRhmm} ${bashScDir}rhmmCallFromQsub.sh
+  qsub -q $typeQ,$nameQ $timeQ -cwd -o ${errorRhmm} -e ${errorRhmm} -v hmmDataFile=${pathHmmFileNocage},hmmModelFile=${hmmModel},dumpPath=${resDirCage},rhmmOpt="${rhmmOpt}",logError=${errorRhmm} ${bashScDir}rhmmCallFromQsub.sh
 done
 
 for cage in $(seq 1 1 18)
@@ -241,6 +241,9 @@ do
   resDirCage=$resDir"cage"$cage"/"
   evalFile=${resDirCage}*Cage$cage*.eval
   
+  echo -e "File to get eval value********************\n" 1>&2
+  echo -e "${evalFile}\n" 1>&2
+
   while [ ! -f ${evalFile} ]  
   do
     echo -e "Waiting for evaluation score for cage $cage\n" 1>&2	
@@ -248,7 +251,8 @@ do
   done 
   
   evalScore=`cat ${evalFile}`
-  
+
+  echo -e "eval Score is -----> ${evalScore}\n" 1>&2
   #sino es null
   if [[ ! -z "$run" ]]
   then
@@ -256,6 +260,8 @@ do
   else
     echo -e "$cage\t$evalScore" >> ${evalTbl}
   fi
+  
+  evalScore=0
 
 done
 
