@@ -218,6 +218,7 @@ do
   resDirCage=$resDir"cage"$cage"/"
   hmmModelTrainned=${resDirCage}trained*.model
   pathHmmFileCage=$resDirCage${nameHmmFile}"Cage"$cage."hmm"
+  pathHmmFileCageError=$resDirCage${nameHmmFile}"Cage"$cage."err"
   
   echo -e "INFO: evaluation of sequence of $cage will start\n" 1>&2
 
@@ -230,7 +231,7 @@ do
   rhmmEvalOpt="-evaluation sequence -output no -outmodel no"
   errorEvalRhmm=${resDirCage}"rhmmEval.err"
 
-  qsub -q $typeQ,$nameQ $timeQ -cwd -o ${resDirCage} -e ${resDirCage} -v hmmDataFile=${pathHmmFileCage} -v  hmmModelFile=${hmmModelTrainned} -v dumpPath=${resDirCage} -v rhmmOpt="${rhmmEvalOpt}" -v logError=${errorEvalRhmm} ${bashScDir}rhmmCallFromQsub.sh
+  qsub -q $typeQ,$nameQ $timeQ -cwd -o ${pathHmmFileCageError} -e ${pathHmmFileCageError} -v hmmDataFile=${pathHmmFileCage} -v  hmmModelFile=${hmmModelTrainned} -v dumpPath=${resDirCage} -v rhmmOpt="${rhmmEvalOpt}" -v logError=${errorEvalRhmm} ${bashScDir}rhmmCallFromQsub.sh
 
 done
 
