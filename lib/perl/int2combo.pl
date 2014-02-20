@@ -902,7 +902,7 @@ sub channel2Nature
 			$Name=lc ($Name);
 			$Name=~s/\s//g;
 			
-			if ((length ($Name)) == 4 && ($Name =~/(w)(w)(s)(s)/ || $Name =~/(w)(w)(c)(s)/ || $Name=~/(w)(w)(s)(c)/ || $Name=~/(w)(w)(c)(s)/ || $Name=~/(w)(w)(f)(f)/))
+			if ((length ($Name)) == 4 && ($Name =~/(w)(w)(s)(s)/ || $Name =~/(w)(w)(c)(s)/ || $Name=~/(w)(w)(s)(c)/ || $Name=~/(w)(w)(c)(s)/ || $Name=~/(w)(w)(f)(f)/ || $Name=~/(w)(w)(h)(h)/))
 			  {
 			    
 		      	if ($i==1) 
@@ -4700,7 +4700,7 @@ sub anot2nature
                       last SWITCH;
                     };
                       
-                  ($annot eq "f") && do 
+                  ($annot eq "f" || $annot eq "h") && do 
                     { 
                       return ("food_fat"); #Original before fusedSCforFDF heatMap
                       #return ("food"); #fusedSCforFDF heatMap                                              
