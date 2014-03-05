@@ -1002,9 +1002,9 @@ sub changeDayPhases2bedLikeFile
     
    	#Obtaining preceeding 8AM before first intake occurring
     $previousEightAM = $firstPhLightChange - (3600 * 24);
+    $start = $previousEightAM;
     $deltaTime = $start - $previousEightAM;
     $end += $deltaTime;
-    $start -= $deltaTime;
     	
     #opening the file
     $file = $outBedPhFile."_Phase".".bed";
