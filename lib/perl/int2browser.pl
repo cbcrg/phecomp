@@ -1307,6 +1307,15 @@ sub int2bed
     	
     	($start, $end) = &firstAndLastTime ($d, $param);
     	
+    	#Obtaining first 8AM after data starting
+		my $firstPhLightChange = &getFirstChange2LightPh ($d, $param, $start, $end);
+    	
+    	#Obtaining preceeding 8AM before first intake occurring
+    	my $previousEightAM = $firstPhLightChange - (3600 * 24);
+    	my $deltaTime = $start - $previousEightAM;
+    	$end += $deltaTime;
+    	$start = $previousEightAM;
+    	
     	if ($convertMode eq "singleCh2track")
     		{    		
     			&int2bedSingleCh2track ($d, $param, $start, $end);
