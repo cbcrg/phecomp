@@ -1113,16 +1113,24 @@ sub timeDiv2bedFile
 	    
 	    #Traversing all intervals to set initial and end time    	
     	($start, $end) = &firstAndLastTime ($d, $param);
-    	
-    	$file = $outTimeDivFile."TimeDiv.bed";
+    	#Obtaining first 8AM after data starting
+		my $firstPhLightChange = &getFirstChange2LightPh ($d, $param, $start, $end);
+
+    	#Obtaining preceeding 8AM before first intake occurring
+    	my $previousEightAM = $firstPhLightChange - (3600 * 24);
+    	my $deltaTime = $start - $previousEightAM;
+    	$end += $deltaTime;
+    	$start = $previousEightAM;
+        
+        $file = $outTimeDivFile."TimeDiv.bed";
 	    
     	my $F= new FileHandle;
-		  vfopen ($F, ">$file");
+		vfopen ($F, ">$file");
 		
-		  #Add track line specifications for the genome browser
-      #link to field info http://genome.ucsc.edu/goldenPath/help/customTrack.html#TRACK
-      $visibility = 2;#by the moment hardcoded in future it might be a parameter
-      $priority = "user"; #from higher to low priority "user", "map", "genes", "rna", "regulation", "compGeno"
+		#Add track line specifications for the genome browser
+      	#link to field info http://genome.ucsc.edu/goldenPath/help/customTrack.html#TRACK
+      	$visibility = 2;#by the moment hardcoded in future it might be a parameter
+      	$priority = "user"; #from higher to low priority "user", "map", "genes", "rna", "regulation", "compGeno"
       	
     	print $F "track name=", "\"ticks each $period sec\"", " ";
     	print $F "description=", "\"Blue ticks every $period seconds\" ";
@@ -1134,6 +1142,7 @@ sub timeDiv2bedFile
 	    $end -=$start;
 	    $i = 1;
 	    
+	    #They have a length of 5 so they are visible as ticks
 	    while ($i < $end)
 	    	{
 	    		$j = $i+5;
