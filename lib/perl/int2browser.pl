@@ -26,9 +26,9 @@ if ($#ARGV ==-1)
     print "****************** Flags      **************************\n";
     print "  -data  <file1 file2.. >..........File: input data from file(s).\n";
     print "  -convert        <mode> ...........Mode: 'int2bed' convert an intervals file (raw data) into a bed file\n";
- 	  print "  -convertMode    <mode> ...........Mode: 'singleCh2track' each channel in the raw data converted into a single track bed file\n";
- 	  print "  ..................................Mode: 'allFoodCh2track' food channels combined into the same track bed file\n"; 
- 	  print "  ..................................Mode: 'allCh2track' food and drink channels combined into the same track bed file\n";  											  	
+ 	print "  -convertMode    <mode> ...........Mode: 'singleCh2track' each channel in the raw data converted into a single track bed file\n";
+ 	print "  ..................................Mode: 'allFoodCh2track' food channels combined into the same track bed file\n"; 
+ 	print "  ..................................Mode: 'allCh2track' food and drink channels combined into the same track bed file\n";  											  	
     print "  -outBed         <file> ...........File:  name of the output Bed file containning the resulting tracks.\n";
     print "  -create         <file> ...........Mode: 'chr' produces a chromosome to be load as a genome with the length of the experiment in seconds\n";    
     #Deprecated
@@ -37,6 +37,7 @@ if ($#ARGV ==-1)
     #print "  .................................Mode: 'timeDivision' produces a track with ticks showing a temporal division, by default 1 hour, different time separation provided with -period parameter\n";
     print "	 -cytobandFile  <int> ..............Int: '1' produces a cytoband like file with bands corresponding to light/dark phases\n";
     print "	 -phase2bed     <int> ..............Int: '1' produces a track with intervals corresponding to light/dark phases in a bed file\n";
+    print "	 -files2bed     <int> ..............Int: '1' produces a bed file with the length of each int file processed\n";
     print "	 -timeDivision  <int> ..............Int: '1' 'timeDivision' produces a track with ticks showing a temporal division, by default 1 hour, different time separation provided with -period parameter\n";    
     print "  -period        <int>...............Int: time in hours.\n";
     print "  -window        <parameter>........Parameter: 'Value',... This option slides a window along data calculating the values of the parameter inside this window.\n";
@@ -903,8 +904,7 @@ sub changeDayPhases2cytobandLikeFile
    			$a = $a + 43199;
    			
    			if ($lastPhase eq "dark") {$lastPhase="light"; $colour = "gneg";}
-   			else {$lastPhase = "dark"; $colour = "gpos25";}
-   			print STDERR "$a ----- $previousEightAM----\n";
+   			else {$lastPhase = "dark"; $colour = "gpos25";}   			
    			print $F "chr1", "\t", $lastEnd-$previousEightAM, "\t", $a-$previousEightAM, "\t", $lastPhase, "\t", $colour, "\n";
    			
    			$lastEnd = $a;
