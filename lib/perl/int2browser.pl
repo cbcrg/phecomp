@@ -916,6 +916,70 @@ sub changeDayPhases2cytobandLikeFile
    	printf "      Cytoband like file in: $file\n";
   }
   
+##This function will create a bed file within which intervals correspond to division into dark/light phases of the time length of the experiment
+#sub OLDchangeDayPhases2bedLikeFile
+#  {
+#    my $d = shift;
+#    my $param = shift;
+#    my $ph = $param->{phase};
+#    my $iniLightPh = $param->{iniLight};
+#    my $outBedPhFile = $param->{outPhaseBed};
+#    #By the moment I set the delta phase to 12 in case the phases are not symetric then I should see how to further implement the code
+#    my $deltaPh = 12; # = $A->{deltaPh}; my deltaPhTwo = 24 - $deltaPh;  
+#    
+#    my ($a, $b, $day, $file, $start, $end, $firstPhLightChange); 
+#
+#    $start=$end=-1;
+#    
+#    #Traversing all intervals to set initial and end time
+#    ($start, $end) = &firstAndLastTime ($d, $param);
+#    $firstPhLightChange = &getFirstChange2LightPh ($d, $param, $start, $end);
+#    
+#    #opening the file
+#    $file = $outBedPhFile."_Phase".".bed";
+#    
+#    my $F= new FileHandle;
+#	vfopen ($F, ">$file");
+#	
+#	print $F "track name=\"Day phases\" description=\"Track annotating the dark and light phase of the experiment\" visibility=2 color=0,0,255 useScore=1 priority=user\n";
+#	
+#	#print $firstPhLightChange, "\n";
+#    
+#    #Printing the first interval
+#    #print $firstPhLightChange -($deltaPh * 3600), "\t", $start-$start;
+#    
+#    #is start more than 12 hours before first change to light phases? -> then start is occurring during the previous light phase     
+#    if ($start < ($firstPhLightChange - ($deltaPh * 3600)))
+#    	{
+#    		print $F "chr1", "\t", $start - $start, "\t", $firstPhLightChange -($deltaPh * 3600)- $start, "\t", "light", "\t", "0\n";
+#    		print $F "chr1", "\t", $firstPhLightChange -($deltaPh * 3600) - $start, "\t", $firstPhLightChange - $start, "\t", "dark", "\t", "1000\n";
+#    	}
+#    else 
+#    	{
+#    		print $F "chr1", "\t", $start - $start, "\t", $firstPhLightChange - $start, "\t", "dark", "\t", "1000\n";
+#    	}	
+#
+#    my $lastEnd = $firstPhLightChange;
+#    my $lastPhase = "dark";
+#    my $scorePhase = 1000;       
+#    	  
+#   	for ($a=$firstPhLightChange + 1; $a < $end; $a ++)
+#   		{	
+#   			$a = $a + 43199;
+#   			
+#   			if ($lastPhase eq "dark") {$lastPhase="light"; $scorePhase = 0;}
+#   			else {$lastPhase = "dark"; $scorePhase = 1000;}
+#   			
+#   			print $F "chr1", "\t", $lastEnd-$start, "\t", $a-$start, "\t", $lastPhase, "\t", $scorePhase, "\n";
+#   			
+#   			$lastEnd = $a;
+#   		}
+#   		
+#   	close ($F);
+#   		
+#   	printf "      Bed like file with day phases in: $file\n";
+#  }
+
 #This function will create a bed file within which intervals correspond to division into dark/light phases of the time length of the experiment
 sub changeDayPhases2bedLikeFile
   {
@@ -927,14 +991,22 @@ sub changeDayPhases2bedLikeFile
     #By the moment I set the delta phase to 12 in case the phases are not symetric then I should see how to further implement the code
     my $deltaPh = 12; # = $A->{deltaPh}; my deltaPhTwo = 24 - $deltaPh;  
     
-    my ($a, $b, $day, $file, $start, $end, $firstPhLightChange); 
+    my ($a, $b, $day, $file, $start, $end, $firstPhLightChange, $previousEightAM, $deltaTime); 
 
     $start=$end=-1;
     
     #Traversing all intervals to set initial and end time
     ($start, $end) = &firstAndLastTime ($d, $param);
+    #
+    #Obtaining first 8AM after data starting
     $firstPhLightChange = &getFirstChange2LightPh ($d, $param, $start, $end);
     
+   	#Obtaining preceeding 8AM before first intake occurring
+    $previousEightAM = $firstPhLightChange - (3600 * 24);
+    $deltaTime = $start - $previousEightAM;
+    $end += $deltaTime;
+    $start += $previousEightAM;
+    	
     #opening the file
     $file = $outBedPhFile."_Phase".".bed";
     
@@ -947,19 +1019,8 @@ sub changeDayPhases2bedLikeFile
     
     #Printing the first interval
     #print $firstPhLightChange -($deltaPh * 3600), "\t", $start-$start;
-    
-    #is start more than 12 hours before first change to light phases? -> then start is occurring during the previous light phase     
-    if ($start < ($firstPhLightChange - ($deltaPh * 3600)))
-    	{
-    		print $F "chr1", "\t", $start - $start, "\t", $firstPhLightChange -($deltaPh * 3600)- $start, "\t", "light", "\t", "0\n";
-    		print $F "chr1", "\t", $firstPhLightChange -($deltaPh * 3600) - $start, "\t", $firstPhLightChange - $start, "\t", "dark", "\t", "1000\n";
-    	}
-    else 
-    	{
-    		print $F "chr1", "\t", $start - $start, "\t", $firstPhLightChange - $start, "\t", "dark", "\t", "1000\n";
-    	}	
-
-    my $lastEnd = $firstPhLightChange;
+    	
+    my $lastEnd = $previousEightAM;
     my $lastPhase = "dark";
     my $scorePhase = 1000;       
     	  
@@ -1102,7 +1163,7 @@ sub fromInt2chromosome
     	$previousEightAM = $firstPhLightChange - (3600 * 24);
     	$deltaTime = $start - $previousEightAM;
     	$end += $deltaTime;
-    	$start += $previousEightAM;
+    	$start -= $deltaTime;
     	
     	#opening the file
     	$file = $outGenomeFile."Genome.fa";
