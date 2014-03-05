@@ -1197,7 +1197,16 @@ sub fromLengthFiles2bed
 	    
 	    #Traversing all intervals to set initial and end time    	
     	my ($globalStart, $globalEnd) = &firstAndLastTime ($d, $param);
-    			
+    	
+    	#Obtaining first 8AM after data starting
+   		my $firstPhLightChange = &getFirstChange2LightPh ($d, $param, $globalStart, $globalEnd);
+    
+    	#Obtaining preceeding 8AM before first intake occurring
+    	my $previousEightAM = $firstPhLightChange - (3600 * 24);
+    	my $deltaTime = $globalStart - $previousEightAM;	
+    	$globalEnd += $deltaTime;
+    	$globalStart = $previousEightAM; 
+    		
 	    foreach my $t (sort {$a<=>$b}keys (%{$d->{"1"}}))
 	    	{
 				#print "track file information\n";
@@ -1210,7 +1219,7 @@ sub fromLengthFiles2bed
 						  								
   						$intFileName = &path2fileName ($intFile);
   						$endT = $d->{"1"}{$t}{EndT};
-  						print "----- $intFileName\t$endT\n";		  										  					
+#  						print STDERR "----- $intFileName\t$endT\n";		  										  					
     					#print  "$k;$d->{$c}{$t}{$k};";		
   					} 
 				
