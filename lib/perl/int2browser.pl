@@ -803,6 +803,64 @@ sub check_parameters
     return $p;
   }
   
+#sub OLDchangeDayPhases2cytobandLikeFile
+#  {
+#    my $d = shift;
+#    my $param = shift;
+#    my $ph = $param->{phase};
+#    my $iniLightPh = $param->{iniLight};
+#    my $outCytobandFile = $param->{outCytoband};
+#    #By the moment I set the delta phase to 12 in case the phases are not symetric then I should see how to further implement the code
+#    my $deltaPh = 12; # = $A->{deltaPh}; my deltaPhTwo = 24 - $deltaPh;  
+#    
+#    #my ($a,$b, $start, $end, $delta, $secAfterLastMidnight, $firstPhLightChange, $day, $file);
+#    my ($a, $b, $day, $file, $start, $end, $firstPhLightChange);  
+#    
+#    $start=$end=-1;
+#    
+#    #Traversing all intervals to set initial and end time
+#    ($start, $end) = &firstAndLastTime ($d, $param);
+#    
+#    $firstPhLightChange = &getFirstChange2LightPh ($d, $param, $start, $end);
+#    
+#    #opening the file
+#    $file = $outCytobandFile."_cytoBand".".txt";
+#    
+#    my $F= new FileHandle;
+#	  vfopen ($F, ">$file");
+#	
+#    #is start more than 12 hours before first change to light phases? -> then start is occurring during the previous light phase     
+#    if ($start < ($firstPhLightChange - ($deltaPh * 3600)))
+#    	{
+#    		print $F "chr1", "\t", $start - $start, "\t", $firstPhLightChange -($deltaPh * 3600)- $start, "\t", "light", "\t", "gneg\n";
+#    		print $F "chr1", "\t", $firstPhLightChange -($deltaPh * 3600) - $start, "\t", $firstPhLightChange - $start, "\t", "dark", "\t", "gpos25\n";
+#    	}
+#    else 
+#    	{
+#    		print $F "chr1", "\t", $start - $start, "\t", $firstPhLightChange - $start, "\t", "dark", "\t", "gpos25\n";
+#    	}	
+#
+#    my $lastEnd = $firstPhLightChange;
+#    my $lastPhase = "dark";
+#    my $colour = "gpos25";       
+#    	  
+#   	for ($a=$firstPhLightChange + 1; $a < $end; $a ++)
+#   		{	
+#   			$a = $a + 43199;
+#   			
+#   			if ($lastPhase eq "dark") {$lastPhase="light"; $colour = "gneg";}
+#   			else {$lastPhase = "dark"; $colour = "gpos25";}
+#   			
+#   			print $F "chr1", "\t", $lastEnd-$start, "\t", $a-$start, "\t", $lastPhase, "\t", $colour, "\n";
+#   			
+#   			$lastEnd = $a;
+#   		}
+#   		
+#   	close ($F);
+#   		
+#   	printf "      Cytoband like file in: $file\n";
+#  }
+
 sub changeDayPhases2cytobandLikeFile
   {
     my $d = shift;
@@ -814,44 +872,41 @@ sub changeDayPhases2cytobandLikeFile
     my $deltaPh = 12; # = $A->{deltaPh}; my deltaPhTwo = 24 - $deltaPh;  
     
     #my ($a,$b, $start, $end, $delta, $secAfterLastMidnight, $firstPhLightChange, $day, $file);
-    my ($a, $b, $day, $file, $start, $end, $firstPhLightChange);  
+    my ($a, $b, $day, $file, $start, $end, $firstPhLightChange, $previousEightAM);  
     
     $start=$end=-1;
     
     #Traversing all intervals to set initial and end time
     ($start, $end) = &firstAndLastTime ($d, $param);
+	
+	#Obtaining first 8AM after data starting
+   	$firstPhLightChange = &getFirstChange2LightPh ($d, $param, $start, $end);
     
-    $firstPhLightChange = &getFirstChange2LightPh ($d, $param, $start, $end);
-    
+    #Obtaining preceeding 8AM before first intake occurring
+    $previousEightAM = $firstPhLightChange - (3600 * 24);
+	
+    my $deltaTime = $start - $previousEightAM;	
+    my $newEnd = $end + $deltaTime;
+     	
     #opening the file
     $file = $outCytobandFile."_cytoBand".".txt";
     
     my $F= new FileHandle;
-	  vfopen ($F, ">$file");
+	vfopen ($F, ">$file");
 	
-    #is start more than 12 hours before first change to light phases? -> then start is occurring during the previous light phase     
-    if ($start < ($firstPhLightChange - ($deltaPh * 3600)))
-    	{
-    		print $F "chr1", "\t", $start - $start, "\t", $firstPhLightChange -($deltaPh * 3600)- $start, "\t", "light", "\t", "gneg\n";
-    		print $F "chr1", "\t", $firstPhLightChange -($deltaPh * 3600) - $start, "\t", $firstPhLightChange - $start, "\t", "dark", "\t", "gpos25\n";
-    	}
-    else 
-    	{
-    		print $F "chr1", "\t", $start - $start, "\t", $firstPhLightChange - $start, "\t", "dark", "\t", "gpos25\n";
-    	}	
 
     my $lastEnd = $firstPhLightChange;
     my $lastPhase = "dark";
     my $colour = "gpos25";       
     	  
-   	for ($a=$firstPhLightChange + 1; $a < $end; $a ++)
+   	for ($a=$firstPhLightChange + 1; $a < $newEnd; $a ++)
    		{	
    			$a = $a + 43199;
    			
    			if ($lastPhase eq "dark") {$lastPhase="light"; $colour = "gneg";}
    			else {$lastPhase = "dark"; $colour = "gpos25";}
    			
-   			print $F "chr1", "\t", $lastEnd-$start, "\t", $a-$start, "\t", $lastPhase, "\t", $colour, "\n";
+   			print $F "chr1", "\t", $lastEnd-$firstPhLightChange, "\t", $a-$firstPhLightChange, "\t", $lastPhase, "\t", $colour, "\n";
    			
    			$lastEnd = $a;
    		}
@@ -860,7 +915,7 @@ sub changeDayPhases2cytobandLikeFile
    		
    	printf "      Cytoband like file in: $file\n";
   }
-
+  
 #This function will create a bed file within which intervals correspond to division into dark/light phases of the time length of the experiment
 sub changeDayPhases2bedLikeFile
   {
@@ -884,7 +939,7 @@ sub changeDayPhases2bedLikeFile
     $file = $outBedPhFile."_Phase".".bed";
     
     my $F= new FileHandle;
-	  vfopen ($F, ">$file");
+	vfopen ($F, ">$file");
 	
 	print $F "track name=\"Day phases\" description=\"Track annotating the dark and light phase of the experiment\" visibility=2 color=0,0,255 useScore=1 priority=user\n";
 	
@@ -1033,13 +1088,21 @@ sub fromInt2chromosome
 	{
 		my $d = shift;
 	    my $param = shift;
-	    my ($a,$b, $start, $end, $outGenomeFile, $file); 
-	   	my $outGenomeFile = $param->{outGenome};
+	    my ($a,$b, $start, $end, $firstPhLightChange,$previousEightAM, $deltaTime, $outGenomeFile, $file); 
+	   	$outGenomeFile = $param->{outGenome};
 	   	    
 	    $start=$end=-1;
 	    
 	    #Traversing all intervals to set initial and end time    	
     	($start, $end) = &firstAndLastTime ($d, $param);    	
+    	
+    	#Obtaining first 8AM after data starting
+    	$firstPhLightChange = &getFirstChange2LightPh ($d, $param, $start, $end);
+    	#Obtaining preceeding 8AM before first intake occurring
+    	$previousEightAM = $firstPhLightChange - (3600 * 24);
+    	$deltaTime = $start - $previousEightAM;
+    	$end += $deltaTime;
+    	$start += $previousEightAM;
     	
     	#opening the file
     	$file = $outGenomeFile."Genome.fa";
