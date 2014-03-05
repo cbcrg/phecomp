@@ -887,30 +887,29 @@ sub changeDayPhases2cytobandLikeFile
 	
     my $deltaTime = $start - $previousEightAM;	
     my $newEnd = $end + $deltaTime;
-     	
+    my $newStart = $previousEightAM; 
     #opening the file
     $file = $outCytobandFile."_cytoBand".".txt";
     
     my $F= new FileHandle;
 	vfopen ($F, ">$file");
 	
-
-    my $lastEnd = $firstPhLightChange;
+    my $lastEnd = $previousEightAM;
     my $lastPhase = "dark";
     my $colour = "gpos25";       
-    	  
-   	for ($a=$firstPhLightChange + 1; $a < $newEnd; $a ++)
+    
+   	for ($a=$newStart + 1; $a < $newEnd; $a ++)
    		{	
    			$a = $a + 43199;
    			
    			if ($lastPhase eq "dark") {$lastPhase="light"; $colour = "gneg";}
    			else {$lastPhase = "dark"; $colour = "gpos25";}
-   			
-   			print $F "chr1", "\t", $lastEnd-$firstPhLightChange, "\t", $a-$firstPhLightChange, "\t", $lastPhase, "\t", $colour, "\n";
+   			print STDERR "$a ----- $previousEightAM----\n";
+   			print $F "chr1", "\t", $lastEnd-$previousEightAM, "\t", $a-$previousEightAM, "\t", $lastPhase, "\t", $colour, "\n";
    			
    			$lastEnd = $a;
    		}
-   		
+   			  
    	close ($F);
    		
    	printf "      Cytoband like file in: $file\n";
@@ -1005,7 +1004,7 @@ sub changeDayPhases2bedLikeFile
     $previousEightAM = $firstPhLightChange - (3600 * 24);
     $deltaTime = $start - $previousEightAM;
     $end += $deltaTime;
-    $start += $previousEightAM;
+    $start -= $deltaTime;
     	
     #opening the file
     $file = $outBedPhFile."_Phase".".bed";
@@ -1024,7 +1023,8 @@ sub changeDayPhases2bedLikeFile
     my $lastPhase = "dark";
     my $scorePhase = 1000;       
     	  
-   	for ($a=$firstPhLightChange + 1; $a < $end; $a ++)
+#   	for ($a=$firstPhLightChange + 1; $a < $end; $a ++)
+	for ($a=$start + 1; $a < $end; $a ++)
    		{	
    			$a = $a + 43199;
    			
