@@ -1685,7 +1685,7 @@ sub data2winDistro
     	my $param = shift;
     	my $winSize = shift;
     	
-  		my ($start, $end, $startInt, $winIndex, $startInt, $endInt, $chN, $ch, $acuValue, $nature);
+  		my ($start, $end, $firstPhLightChange, $winIndex, $startInt, $endInt, $chN, $ch, $acuValue, $nature);
     	
   		#Checking parameteres if empty setting default
   		my $winParam = $param -> {window}? $param->{window} : "Value"; 
@@ -1694,6 +1694,10 @@ sub data2winDistro
     	my $hashWin = {};
     	 
     	($start, $end) = &firstAndLastTime ($d, $param);
+    	$firstPhLightChange = &getFirstChange2LightPh ($d, $param, $start, $end);
+    	
+    	my $previousEightAM = $firstPhLightChange - (3600 * 24);
+    	my $deltaTime = $start - $previousEightAM;
     	
     	foreach my $c (sort ({$a<=>$b} keys(%$d)))
 	  		{
@@ -1728,9 +1732,11 @@ sub data2winDistro
       						{   
       							if ($d->{$c}{$t}{Channel} eq $ch)
       								{
-      									my $relIniTime = $t - $start;#absolute UNIX time to relative time
-      									      									
-      									my $relEndTime = $d->{$c}{$t}{EndT} - $start;
+#      									my $relIniTime = $t - $start;#absolute UNIX time to relative time
+#										my $relEndTime = $d->{$c}{$t}{EndT} - $start;
+
+										my $relIniTime = $t - $start + $deltaTime;
+      									my $relEndTime = $d->{$c}{$t}{EndT} - $start + $deltaTime;
       							      									
       									#Intervals smaller than first time      									
       									if ($relIniTime > $endInt)
