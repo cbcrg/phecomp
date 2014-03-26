@@ -72,7 +72,7 @@ foreach my $c (@commands)
     $A={};
     &run_instruction ($ary_files, $A, $c); #now we first check files
   }
-die;
+exit 0;
 
 sub run_instruction
   {
