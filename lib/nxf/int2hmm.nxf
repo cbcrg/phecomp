@@ -200,7 +200,7 @@ process evalEachCage {
   """
 }
 
-resultDir = file("phecomp/20140301_oneOutValidation/resultsOneOut/20120502_FDF_hab")
+resultDir = file("$HOME/phecomp/20140301_oneOutValidation/resultsOneOut/20120502_FDF_hab")
 
 resultDir.with {
      if( !empty() ) { deleteDir() }
