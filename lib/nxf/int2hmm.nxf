@@ -200,7 +200,7 @@ process evalEachCage {
   """
 }
 
-resultDir = file("./resultsOneOut/20120502_FDF_hab")
+resultDir = file("phecomp/20140301_oneOutValidation/resultsOneOut/20120502_FDF_hab")
 
 resultDir.with {
      if( !empty() ) { deleteDir() }
@@ -284,7 +284,7 @@ process evalEachCageDev {
   """
 }
 
-resultDir = file("./resultsOneOut/20120502_FDF_dev")
+resultDir = file("phecomp/20140301_oneOutValidation/resultsOneOut/20120502_FDF_dev")
 
 resultDir.with {
      if( !empty() ) { deleteDir() }
