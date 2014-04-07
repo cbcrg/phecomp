@@ -1,0 +1,314 @@
+//params.experiment = '20120502_FDF_CRG'
+//params.exp_date = '*'
+// ./nextflow main.nxf --exp_date '20120523*'
+//./nextflow int2hmm.nxf --window 'culo'
+
+// params.in = "$HOME/phecomp/nxf_test/short.int"
+params.in = "$HOME/phecomp/processedData/20120502_FDF_CRG/intFiles/20120502_FDF_CRG_hab_filt.int"
+params.outFile = 'tblEvalOneOut.tbl'
+
+params.window = 'Value'
+windowAllowedValues = [ 'Value', 'Duration', 'Intertime', 'Velocity' ]
+window = paramCtrl (params.window, windowAllowedValues, 'Value')
+window = "-window $window"
+println "Window param is $params.window $window"
+
+params.winMode = 'binning'
+winModeAllowedValues = [ 'binning', 'discrete' ]
+println "dentro de params.winmode hay $params.winMode"
+winMode = paramCtrl (params.binMode, winModeAllowedValues, 'binning')
+
+winMode = "-winMode $winMode" 
+println "winMode param is $winMode"
+
+params.binMode = 'four'
+binModeAllowedValues = [ 'binary', 'four' ]
+binModeKey = paramCtrl (params.binMode, binModeAllowedValues, 'four')
+binMode = "-binMode $binModeKey"
+
+if (binModeKey == 'binary') {
+  path2hmmModel = "$HOME/phecomp/20130610_HMM/20130610_HMMbinarySignal/modelsHMM/ST_2_Bin_2_BEGIN_END.inmodel"
+}
+else {
+  path2hmmModel = "$HOME/phecomp/20130610_HMM/20130610_HMMfourSignal/modelsHMM/ST_2_Bin_4_BEGIN_END.inmodel"
+}
+
+binModeMap = [ "binary":"1234", "four":"12,34" ]
+winCh2comb = binModeMap[binModeKey]
+winCh2comb = "-winCh2comb $winCh2comb"
+println "winCh2comb param is $winCh2comb"
+
+params.binFileName = 'binFile.hmm' 
+binFileName = "-winFile $params.binFileName"
+println "binFileName param is $binFileName"
+
+params.winSize = '300'
+winSize = params.winSize
+assert winSize.isDouble() : "[FATAL]: winSize must be numeric now is \"$params.winSize\""
+winSize = "-ws $winSize" 
+println "WindowSize param is $winSize" 
+
+params.winStepSize = '300'
+winStepSize = params.winStepSize
+assert winStepSize.isDouble() : "[FATAL]: winStepSize must be numeric now is \"$params.winStepSize\""
+winStepSize = "-wss $winStepSize"
+println "WindowStepSize param is $winStepSize"
+
+params.winFormat = "rhmm" 
+winFileFormatAllowed = [ 'rhmm', 'bedGraph' ]
+winFileFormat = paramCtrl (params.winFormat, winFileFormatAllowed, 'bedGraph')
+winFileFormat = "-winFormat $winFileFormat"
+println "winFormat param is $winFileFormat"
+
+params.rhmmFile = "single" 
+rhmmFileTypesAllowed = [ 'single', 'multiple' ]
+rhmmFileType = paramCtrl (params.rhmmFile, rhmmFileTypesAllowed, 'single')
+rhmmFileType = "-rhmmFile $rhmmFileType"
+println "winFileType param is $rhmmFileType"
+
+params.outdata = "-outdata no"
+outdata = params.outdata
+
+params.iniLight = '6'
+iniLightAllowedValues = [ 6, 7 ]
+iniLight = paramCtrl (params.iniLight, iniLightAllowedValues, 6)
+iniLight = "-iniLight $iniLight"
+println "Window param is $params.iniLight $iniLight"
+
+params.winCombMode = 'additive'
+winCombModeAllowedValues = [ 'additive', 'sign' ]
+winCombMode = paramCtrl (params.winCombMode, winCombModeAllowedValues, 'additive')
+winCombMode = "-winCombMode $winCombMode"
+println "WinCombMode param is $winCombMode"
+
+// Concatenating options
+space = " "
+int2brOptions =  window + space + winMode + space + binMode + space + winCh2comb + space + binFileName + space + winSize + space + winStepSize + space + winFileFormat + space + rhmmFileType + space + outdata + space + iniLight + space  + winCombMode + space + "-data"
+println "options: $int2brOptions"
+
+// File to process
+homeData = "$HOME/phecomp/processedData/"
+// params.experiment = "20120502_FDF_CRG/"
+// params.file = "intFiles/20120502_FDF_CRG_hab_filt.int"
+// myPath2Intfile = "$homeData${params.experiment}${params.file}"
+// myPath2Intfile = "$HOME/phecomp/nxf_test/short.int"
+myPath2Intfile = "$HOME/phecomp/processedData/20120502_FDF_CRG/intFiles/20120502_FDF_CRG_hab_filtNoCage6.int"
+println "path: $myPath2Intfile"
+intFiles = file(myPath2Intfile)
+
+println "int2browser.pl ${int2brOptions} input" 
+
+// Creating a file with all cages binned
+process int2binFile {
+
+ input:
+ file 'input' from intFiles
+ 
+ // No tengo output ese es el problema debería dejar que se crearan y entonces recogerlos como se tenga que hacer
+ output:
+ file '*.hmm' into bin_fileAll 
+ 
+ """
+ int2browser.pl ${int2brOptions} input 
+ """
+
+}
+
+// Creating a bined file for each cage
+// Now I should make the same with all the other cages that actually were used to infer the models
+rhmmFileType = "-rhmmFile multiple"
+int2brOptMultiple =  window + space + winMode + space + binMode + space + winCh2comb + space + winSize + space + winStepSize + space + winFileFormat + space + rhmmFileType + space + outdata + space + iniLight + space  + winCombMode + space + "-data"
+println "int2browser.pl ${int2brOptMultiple} input"
+
+process int2singleCageBinFile {
+
+ input:
+ file 'input' from intFiles
+ 
+ output:
+ file '*.hmm' into bin_fileSingle
+ 
+ """
+ int2browser.pl ${int2brOptMultiple} input 
+ """
+}
+
+// I need flatten so it takes each item of the list one by one
+// Here I get the cage from the file name and I put it on the channel
+bin_fileSingleCage = bin_fileSingle.flatten().map { binSingleCage -> 
+  def pattern = binSingleCage.name =~/^cage(\d+).*$/
+  println binSingleCage.name
+  println pattern [0][1]
+  def cage = pattern[0][1]
+  [ cage, binSingleCage ]
+}
+
+// Filtering every cage from the file with all cages
+process oneOut {
+  input:
+//   each cage from (1..3)
+  each cage from (1..18)
+  file x from bin_fileAll
+  
+  output:
+  set (cage, 'oneCageOutFile') into oneCageOut
+//   println "Cage being filtered is: cage"
+  
+  """
+  cat $x | grep "comment" > filtCage > oneCageOutFile
+  cat $x | grep "#d" | grep -v "cage;${cage};" >> oneCageOutFile  
+  """
+}
+
+// Training the model with habituation file without a single cage (one out validation)
+process trainModelOneOut {
+  input:
+  set val (cage) , file ('oneCageOutFile') from oneCageOut
+  
+  output:  
+  set cage, 'trained_*.model' into trainedModels   
+  
+  """
+  rhmm.pl -model ${path2hmmModel} -out trained_${cage} -data oneCageOutFile -action bw -nrounds 10 -nit 1000 -evaluate viterbi -outdata outDecodedFile 
+  """
+}
+
+// I make a copy of this
+(trainedModels, trainedModelDev) = trainedModels.split (2)
+// Aqui lo que hago es que los dos channels se sincronicen por la cage
+// syncbinFileSingle_TrainedModel = bin_fileSingleCage.phase (trainedModels) .map { pair_a, pair_b -> pair_a << pair_b[1] }
+//Another way to perform same thing
+// chMatch = singleCageCh.phase (trainedModels) .map { pair_a, pair_b -> [ pair_a[0], pair_a[1], pair_b[1]  ] }
+
+// I evaluate all cages separated in single bined files by each of the resulting models, including the one filtered
+// For each model I have to evaluate all sequences (spread operator)
+modelEstimationData = trainedModels.spread ( bin_fileSingleCage ) 
+
+// modelEstimationData.subscribe  {  println ">>>> $it" }
+
+
+process evalEachCage {
+  input:
+  set val (cageOut) , file ('trainedModel'), val (cageEval), file ('binFileSingle') from modelEstimationData
+  
+  output:
+  set cageOut, cageEval, stdout into evalSingleCage
+
+  """
+  rhmm.pl -data ${binFileSingle} -model ${trainedModel} -evaluation sequence -output no -outmodel no 
+  cat *.eval > /dev/stdout
+  """
+}
+
+resultDir = file("./resultsOneOut/20120502_FDF_hab")
+
+resultDir.with {
+     if( !empty() ) { deleteDir() }
+     mkdirs()
+     println "Created: $resultDir"
+}
+
+myFile = resultDir.resolve (params.outFile)
+
+if( myFile.exists() ) myFile.delete()
+  
+myFile << 'cageOut\tevalCage\tscore\n'
+
+evalSingleCage.subscribe { 
+  tuple -> 
+  myFile << ( tuple [0] + "\t" + tuple [1] + "\t" + tuple [2].trim() ) << '\n' 
+}
+
+//////////////
+// Development
+
+myPath2IntfileDev = "$HOME/phecomp/processedData/20120502_FDF_CRG/intFiles/20120502_FDF_CRG_devW_1_2_filtNoCage6.int"
+println "path: $myPath2IntfileDev"
+intFilesDev = file (myPath2IntfileDev)
+
+// process int2binFileDev {
+// 
+//  input:
+//  file 'inputDev' from intFilesDev
+//  
+//  // No tengo output ese es el problema debería dejar que se crearan y entonces recogerlos como se tenga que hacer
+//  output:
+//  file '*.hmm' into bin_fileDevAll 
+//  
+//  """
+//  int2browser.pl ${int2brOptions} inputDev 
+//  """
+// 
+// }
+
+// Creating a bined file for each cage
+// Now I should make the same with all the other cages that actually were used to infer the models
+rhmmFileType = "-rhmmFile multiple"
+int2brOptMultiple =  window + space + winMode + space + binMode + space + winCh2comb + space + winSize + space + winStepSize + space + winFileFormat + space + rhmmFileType + space + outdata + space + iniLight + space  + winCombMode + space + "-data"
+
+process int2singleCageBinFileDev {
+
+ input:
+ file 'inputDev' from intFilesDev
+ 
+ output:
+ file '*.hmm' into bin_fileSingleDev
+ 
+ """
+ int2browser.pl ${int2brOptMultiple} inputDev 
+ """
+}
+
+// I need flatten so it takes each item of the list one by one
+// Here I get the cage from the file name and I put it on the channel
+bin_fileSingleCageDev = bin_fileSingleDev.flatten().map { binSingleCageDev -> 
+  def pattern = binSingleCageDev.name =~/^cage(\d+).*$/
+  println binSingleCageDev.name
+  println pattern [0][1]
+  def cage = pattern[0][1]
+  [ cage, binSingleCageDev ]
+}
+
+modelEstimationDataDev = trainedModelDev.spread ( bin_fileSingleCageDev )
+
+process evalEachCageDev {
+  input:
+  set val (cageOut2Dev) , file ('trainedModel2Dev'), val (cageEvalDev), file ('binFileSingleDev') from modelEstimationDataDev
+  
+  output:
+  set cageOut2Dev, cageEvalDev, stdout into evalSingleCageDev
+
+  """
+  rhmm.pl -data ${binFileSingleDev} -model ${trainedModel2Dev} -evaluation sequence -output no -outmodel no 
+  cat *.eval > /dev/stdout
+  """
+}
+
+resultDir = file("./resultsOneOut/20120502_FDF_dev")
+
+resultDir.with {
+     if( !empty() ) { deleteDir() }
+     mkdirs()
+     println "Created: $resultDir"
+}
+
+tblOutDev = 'tblEvalOneOutDev.tbl'
+myFileDev = resultDir.resolve (tblOutDev)
+
+if( myFileDev.exists() ) myFileDev.delete()
+  
+myFileDev << 'cageOut\tevalCage\tscore\n'
+
+evalSingleCageDev.subscribe { 
+  tuple -> 
+  myFileDev << ( tuple [0] + "\t" + tuple [1] + "\t" + tuple [2].trim() ) << '\n' 
+}
+
+
+// Functions
+def paramCtrl ( val2check, list , defValue ) {  
+  if (list.contains (val2check))
+    return val2check
+  else
+    return defValue
+ }

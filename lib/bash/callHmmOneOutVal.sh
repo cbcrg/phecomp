@@ -77,7 +77,7 @@ done
 
 resDir=${defDumpDir}"20130610_HMM${binMode}Signal/"
 checkCreateDir $resDir
-resDir=${resDir}"hmmOneOutVal/"
+resDir=${resDir}"hmmOneOutValSecond/"
 checkCreateDir ${resDir}
 
 ## Experiment Free Choice CD SC January 2013
