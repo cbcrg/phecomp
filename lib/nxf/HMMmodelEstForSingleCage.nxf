@@ -152,7 +152,7 @@ process convertDecoded {
   
 }
 
-resultDir = file("./resultsSingleCage/20120502_FDF_hab/modelsSingleCage")
+resultDir = file("$HOME/phecomp/20140301_oneOutValidation/resultsSingleCage/20120502_FDF_hab/modelsSingleCage")
 
 resultDir.with {
      if( !empty() ) { deleteDir() }
