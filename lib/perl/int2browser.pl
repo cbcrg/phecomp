@@ -2493,23 +2493,24 @@ sub writeWindowBinning
     my $natures = {};
     my $binH = {};
     my $binFourH = {};
+    my $lastRec = 0;
     
     foreach my $c (sort ({$a<=>$b} keys(%$h)))
-		  {	
-		   my $number = keys(%{$h->{$c}});
-		   		   		   
-		   if ($binMode eq "four" && $number == 2) 
-		    {
-		      ;
-		    }
-		   else 
-		    {
-		      print STDERR "FATAL ERROR: **** -binMode is set to four and -winCh2comb is not set to 12,34; number of keys: $binMode $number\n";
-		      die;
-		    }
-		    
-		   last; 			 	
-		  }
+	  {	
+	   my $number = keys(%{$h->{$c}});
+	   		   		   
+	   if ($binMode eq "four" && $number == 2) 
+	    {
+	      ;
+	    }
+	   else 
+	    {
+	      print STDERR "FATAL ERROR: **** -binMode is set to four and -winCh2comb is not set to 12,34; number of keys: $binMode $number\n";
+	      die;
+	    }
+	    
+	   last; 			 	
+	  }
 		
 		$binH = &bin ($h);
 
@@ -2571,6 +2572,7 @@ sub writeWindowBinning
                 							    	
 	    	for ($i = 0; $i < scalar (@$aryData); $i++)
 	    		{
+	    			$lastRec = $i + 1;	
 	    			my $hItem = $aryData->[$i];
 	    			
 	    			$acuValue = $hItem->{'acuValue'};				    							    		
@@ -2600,12 +2602,12 @@ sub writeWindowBinning
 	    			         }
 	    			       else
 	    			         {
-	    			           ;
+	    			           print $F "#d;1;$i;cage;$c;chN;$chN;nature;$nature;$winParam;0;bin;B;startInt;0;endInt;0\n";
 	    			         }
 	    			     }	
               }			    					    							    							    		
 	    		}
-				    	
+				 if ($winFormat eq "rhmm") {print $F "#d;1;$lastRec;cage;$c;chN;$chN;nature;$nature;$winParam;0;bin;E;startInt;0;endInt;0\n";}   	
 				 close ($F);
 	       print STDERR "      Results of cumulative window for $winParam of cage $c, channel $chN, nature $nature in: $file\n";
 	  	}
