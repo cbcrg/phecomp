@@ -437,7 +437,7 @@ sub hmm2bedGraph
       {	    	 
         foreach my $i (sort {$a<=>$b}keys (%{$d->{$c}}))
       	 {      	  
-      	  if ($d->{$c}{$i}{'bin'} eq "BEGIN") 
+      	  if ($d->{$c}{$i}{'bin'} eq "BEGIN" || $d->{$c}{$i}{'bin'} eq "B") 
       	   {
       	     my $chN = $d->{$c}{$i}{'chN'};
       	     my $nature = $d->{$c}{$i}{'nature'};
@@ -488,7 +488,9 @@ sub hmm2bedGraph
 		    	print $F "$chr\t$startInt\t$endInt\t$value\n";		
       	 }
       	   	        
-      }          
+      }
+      
+      close ($F);          
   } 
   
 sub display_data
