@@ -2541,7 +2541,7 @@ sub writeWindowBinning
 			     #Type of file
 			     print $F "#comment;Format: int2rhmm.01";
 				   print $F "\n";
-				   print $F "#d;1;0;fileRecId;0;cage;$c;chN;$chN;nature;$nature;$winParam;0;bin;BEGIN;startInt;0;endInt;0\n";	
+#				   print $F "#d;1;0;fileRecId;0;cage;$c;chN;$chN;nature;$nature;$winParam;0;bin;BEGIN;startInt;0;endInt;0\n";	
           }
          elsif ($winFormat eq "bedGraph")
           {
@@ -2581,8 +2581,8 @@ sub writeWindowBinning
             if ($winFormat eq "rhmm")
               {		   
               	 	   my $j = $i + 1; #i = 0 label as BEGIN		
-				       print $F "#d;1;$j;fileRecId;$j;cage;$c;chN;$chN;nature;$nature;$winParam;$acuValue;bin;$bin;startInt;$startInt;endInt;$endInt\n";		
-#	    			   print $F "#d;1;$i;$winParam;$acuValue;bin;$bin;startInt;$startInt;endInt;$endInt\n";
+#				       print $F "#d;1;$j;fileRecId;$j;cage;$c;chN;$chN;nature;$nature;$winParam;$acuValue;bin;$bin;startInt;$startInt;endInt;$endInt\n";		
+	    			   print $F "#d;1;$i;$winParam;$acuValue;bin;$bin;startInt;$startInt;endInt;$endInt\n";
               }
             elsif ($winFormat eq "bedGraph")
               {                                                                                       
