@@ -11,6 +11,7 @@ import os
 ## VARIABLES
 pwd = os.getcwd ()
 genomeFileExt = ".fa"
+genericNt = "N"
 parser = argparse.ArgumentParser (description = 'Script to transform behavioral data into GB readable data')
 parser.add_argument ('-i','--input', help='Input file name',required=True)
 parser.add_argument ('-o','--output',help='Output file name', required=False)
@@ -38,15 +39,18 @@ reader = csv.reader (inFile, delimiter='\t')
 headers = reader.next ()
 indexChromStart = headers.index (chromStartLab)
 indexChromEnd = headers.index (chromEndLab)
-indexChrom = headers.index (chromLab)
+
+if chromLab :
+    indexChrom = headers.index (chromLab)
+else :
+    indexChrom = -1
 
 print 'chromStart corresponding field is: %s' % (headers [indexChromStart])
-
 #def getColInd (header, label):
-  #" This function returns the "
-  #indexChromStart = headers.index (chromStartLab)
-  #indexChromEnd = headers.index (chromEndLab)
-  #print 'chromStart corresponding field is: %s' % (headers [indexChromStart])
+# " This function returns the "
+# indexChromStart = headers.index (chromStartLab)
+# indexChromEnd = headers.index (chromEndLab)
+# print 'chromStart corresponding field is: %s' % (headers [indexChromStart])
 
 dataInt = []
 
@@ -55,30 +59,32 @@ for row in reader:
 inFile.close()
 
 chromStart = []
+chromEnd = []
+chromPhases = []
+
 for row in dataInt:
     chromStart.append (int (row [indexChromStart]))
-
-chromEnd = []
-for row in dataInt:
     chromEnd.append (int (row [indexChromEnd]))
-
-
+    
+    if indexChrom != -1 :
+        chromPhases.append (row [indexChrom])
+    else:
+        chromPhases = ['chr1']
+    
 minChromStart = min (chromStart)
 maxChromEnd = max (chromEnd)
 print minChromStart
 print maxChromEnd
 
-if chrom:
-  for ch in chrom:
-    genomeFile = open (os.path.join (pwd, ch + genomeFileExt), "w")
-    genomeFile.write ("hello")
-    genomeFile.write (N * (maxChromEnd - minChromStart))
+setPhases = set (chromPhases) 
+
+# Reading phases in set of phases
+for phChr in setPhases:
+    genomeFile = open (os.path.join (pwd, phChr + genomeFileExt), "w")
+    genomeFile.write (">" + phChr + "\n")
+    genomeFile.write (genericNt * (maxChromEnd - minChromStart))
     genomeFile.close()
-
-
-
-
-
+    print ('Genome bed file created: %s' % (phChr + genomeFileExt))
 
 # Stuff that might be interesting
 #import numpy as np
