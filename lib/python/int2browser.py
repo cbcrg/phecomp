@@ -8,16 +8,20 @@ import os
 #import sys
 #print (sys.version)
 
-## Classes
+### Classes
+## fieldG --> field in genome format
+## fieldP --> correspoding field in phenome format
+
 class identity:
-    def __init__(self, field, header):
-        self.field = field
+    def __init__(self, fieldG, dictFields, header):
+        self.fieldG = fieldG        
         self.header = header
+        self.fieldB = dictFields.get (fieldG, 'None')             
     def index (self):
-        if self.field:
-            return self.header.index (self.field)
+        if self.fieldB != 'None':
+            return self.header.index (self.fieldB)
         else:
-            return -1  
+            return self.fieldB  
         
         
 ## VARIABLES
@@ -42,12 +46,20 @@ print ("Output file: %s" % args.output )
 ## One possible solution might be to read the configuration file in order to generate the command line
 
 ## I can use both things, the former if I don't have to separate into different chromosomes given a field and the later if I want
-chrom = ''
-chrom = 'phase'
-chromStart = 'StartT' 
-chromEnd = 'EndT'
-dataValue = 'Nature'
-track = 'CAGE'
+# chrom = ''
+# chrom = 'phase'
+# chromStart = 'StartT' 
+# chromEnd = 'EndT'
+# dataTypes = 'Nature'
+# dataValue = 'Value'
+# track = 'CAGE'
+
+dictId = {'chrom': 'phase', 
+          'chromStart': 'StartT',  
+          'chromEnd': 'EndT', 
+          'dataTypes': 'Nature', 
+          'dataValue': 'Value', 
+          'track': 'CAGE' }
 
 ############################################
 inFile  = open (args.input, "rb")
@@ -55,14 +67,15 @@ reader = csv.reader (inFile, delimiter='\t')
 
 headers = reader.next ()
 
-chromStartId = identity (chromStart, headers)
-chromEndId = identity (chromStart, headers)
-dataValueId = identity (chromStart, headers)
-chromStartId = identity (chromStart, headers)
-chromId = identity (chrom, headers)
-print 'My first class is working: ---- %s --- %d' % (chromStartId.field, chromStartId.index())
+chromId = identity ('chrom', dictId, headers)
+chromStartId = identity ('chromStart', dictId, headers)
+chromEndId = identity ('chromEnd', dictId, headers)
+dataTypesId = identity ('dataTypes', dictId, headers)
+dataValueId = identity ('dataValue', dictId, headers)
 
-print 'My first class is working and even better: ---- %s --- %d' % (chromId.field, chromId.index())
+print 'My first class is working: ---- %s --- %d' % (chromStartId.fieldB, chromStartId.index())
+
+print 'My first class is working and even better: ---- %s --- %d' % (chromId.fieldB, chromId.index())
      
 dataInt = []
 
@@ -83,6 +96,8 @@ for row in dataInt:
         chromPhasesData.append (row [chromId.index()])
     else:
         chromPhasesData = ['chr1']
+
+## Para cada phase tengo que hacer un chromosoma
     
 minChromStart = min (chromStartData)
 maxChromEnd = max (chromEndData)
@@ -91,7 +106,8 @@ print maxChromEnd
 
 setPhases = set (chromPhasesData) 
 
-## Reading phases in set of phases
+## Writing fasta files corresponding to chromosomes
+## One for each phases
 for phChr in setPhases:
     genomeFile = open (os.path.join (pwd, phChr + genomeFileExt), "w")
     genomeFile.write (">" + phChr + "\n")
