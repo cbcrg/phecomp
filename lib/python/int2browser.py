@@ -54,11 +54,6 @@ inFile  = open (args.input, "rb")
 reader = csv.reader (inFile, delimiter='\t')
 
 headers = reader.next ()
-## Old way to get the index, I have change to a class
-# indexChromStart = headers.index (chromStart)
-# indexChromEnd = headers.index (chromEnd)
-# indexDataValue = headers.index (dataValue)
-# indexDataValue = headers.index (dataValue)
 
 chromStartId = identity (chromStart, headers)
 chromEndId = identity (chromStart, headers)
@@ -69,19 +64,6 @@ print 'My first class is working: ---- %s --- %d' % (chromStartId.field, chromSt
 
 print 'My first class is working and even better: ---- %s --- %d' % (chromId.field, chromId.index())
      
-## Getting whether a field to consider as different chromosomes is set, for example experiment phase
-# if chrom :
-#     indexChrom = headers.index (chrom)
-# else :
-#     indexChrom = -1
-# 
-# print 'chromStart corresponding field is: %s' % (chromStartId.index)
-#def getColInd (header, label):
-# " This function returns the "
-# indexChromStart = headers.index (chromStartLab)
-# indexChromEnd = headers.index (chromEndLab)
-# print 'chromStart corresponding field is: %s' % (headers [indexChromStart])
-
 dataInt = []
 
 for row in reader:
@@ -92,7 +74,7 @@ chromStartData = []
 chromEndData = []
 chromPhasesData = []
 
-# Hacerlo sin copiar los datos mas rapido
+## Hacerlo sin copiar los datos mas rapido #del
 for row in dataInt:
     chromStartData.append (int (row [chromStartId.index()]))
     chromEndData.append (int (row [chromEndId.index ()]))
@@ -109,7 +91,7 @@ print maxChromEnd
 
 setPhases = set (chromPhasesData) 
 
-# Reading phases in set of phases
+## Reading phases in set of phases
 for phChr in setPhases:
     genomeFile = open (os.path.join (pwd, phChr + genomeFileExt), "w")
     genomeFile.write (">" + phChr + "\n")
