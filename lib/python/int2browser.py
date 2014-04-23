@@ -55,12 +55,12 @@ path = args.input
 # dataValue = 'Value'
 # track = 'CAGE'
 
-dictId = {'chrom': 'phase', 
-          'chromStart': 'StartT',  
-          'chromEnd': 'EndT', 
-          'dataTypes': 'Nature', 
-          'dataValue': 'Value', 
-          'track': 'CAGE' }
+_dict_Id = {'phase' :'chrom', 
+            'StartT' : 'chromStart',  
+            'EndT' :'chromEnd', 
+            'Nature' : 'dataTypes', 
+            'Value' : 'dataValue', 
+            'CAGE' : 'track'}
 
 ############################################
 inFile  = open (args.input, "rb")
@@ -68,15 +68,15 @@ reader = csv.reader (inFile, delimiter='\t')
 
 headers = reader.next ()
 
-chromId = identity ('chrom', dictId, headers)
-chromStartId = identity ('chromStart', dictId, headers)
-chromEndId = identity ('chromEnd', dictId, headers)
-dataTypesId = identity ('dataTypes', dictId, headers)
-dataValueId = identity ('dataValue', dictId, headers)
-
-print 'My first class is working: ---- %s --- %d' % (chromStartId.fieldB, chromStartId.index())
-
-print 'My first class is working and even better: ---- %s --- %d' % (chromId.fieldB, chromId.index())
+# chromId = identity ('chrom', _dict_Id, headers)
+# chromStartId = identity ('chromStart', _dict_Id, headers)
+# chromEndId = identity ('chromEnd', _dict_Id, headers)
+# dataTypesId = identity ('dataTypes', _dict_Id, headers)
+# dataValueId = identity ('dataValue', _dict_Id, headers)
+# 
+# print 'My first class is working: ---- %s --- %d' % (chromStartId.fieldB, chromStartId.index())
+# 
+# print 'My first class is working and even better: ---- %s --- %d' % (chromId.fieldB, chromId.index())
 
 ## I have to create a class able to keep the data and the fields
 
@@ -84,28 +84,65 @@ class intData: # if I name it as int I think is like self but with a better name
     """
     Generic class for data
     Possible thinks to implement
-    .. attribute:: header
-    """
+    .. attribute:: fieldsB 
     
+    list with the behavioral fields corresponding each column in the original file
+     
+    """
+    #le meto el diccionario entre behavior and genomic data como un parametro y por defecto le pongo el diccionario del ejemplo
     def __init__(self, path, **kwargs):
         self.path = path
         self.fieldsB = self._set_fields_b (kwargs.get ('fields'))
 #         intev.__init__(self, path, **kwargs)
+#         self.intypes = dict((k,v) for k,v in _in_types.iteritems() if k in self.fields)
+#         self.fieldsG = self._set_correspondencies ()        
+        self.fieldsG = [_dict_Id [k] for k in self.fieldsB] 
+                     
     def _set_fields_b (self, fields):
         """
-        Set fields according to the identities provided between behavioral
-        and genomic data
-        """
-        
+        Reading the behavioral fields from the header file    
+        """        
         self.inFile  = open (path, "rb")
         self.reader = csv.reader (self.inFile, delimiter='\t')
         fieldsB = self.reader.next ()
         self.inFile.close ()
         return fieldsB
-  
-intData = intData (path)
-print intData.fieldsB
+    
+    def read (self, fields=None):
+        if fields is None:
+            fields = self.fieldsG
+            indexL = range (len (self.fieldsG))
+        else:
+            try:
+                indexL = [self.fieldsG.index (f) for f in self.fieldsG]
+            except ValueError:
+                raise ValueError ("Field '%s' not in file %s." % (f, self.path))
+        
+        self.inFile  = open (path, "rb")
+        self.reader = csv.reader (self.inFile, delimiter='\t')
+        
+        for interv in self.reader:
+            yield tuple (interv [indexL[n]]
+                         for n,f in enumerate(fields))                    
+    
+    def get_min_max (self, field=None): 
+        """
+        Return the minimun and maximun of a given field
+        """
+        
+        self.fields.index ('start')
+        ilist = [self.fields.index(f) for f in fields]
+    
+    
+            
+intData = intData (path, fields = "track")
+culo = intData.read ()
 
+print intData.fieldsB
+print intData.fieldsG
+# for x in culo:
+#     print x
+    
 # class identity:
 #     def __init__(self, fieldG, dictFields, header):
 #         self.fieldG = fieldG        
@@ -118,13 +155,13 @@ print intData.fieldsB
 #             return self.fieldB  
 
 
-dataInt = []
-
-for row in reader:
-#     dataInt.append (row)
-    dataInt.append ({'chr': row [chromId.index()],
-                     'start': row [chromStartId.index ()],
-                     'end': row [chromEndId.index ()],})
+# dataInt = []
+# 
+# for row in reader:
+# #     dataInt.append (row)
+#     dataInt.append ({'chr': row [chromId.index()],
+#                      'start': row [chromStartId.index ()],
+#                      'end': row [chromEndId.index ()],})
 inFile.close()
 
 ## Getting just 
