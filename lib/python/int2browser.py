@@ -37,6 +37,7 @@ args = parser.parse_args ()
 print ("Input file: %s" % args.input )
 print ("Output file: %s" % args.output )
 
+path = args.input
 ## Input debugging file
 #cat 20120502_FDF_CRG_hab_filtSHORT.csv | sed 's/ //g' | awk '{print $1"\t"$14"\t"$6"\t"$11"\t"$16"\thabituation"}' > shortDev.integer
 
@@ -76,46 +77,93 @@ dataValueId = identity ('dataValue', dictId, headers)
 print 'My first class is working: ---- %s --- %d' % (chromStartId.fieldB, chromStartId.index())
 
 print 'My first class is working and even better: ---- %s --- %d' % (chromId.fieldB, chromId.index())
-     
+
+## I have to create a class able to keep the data and the fields
+
+class intData: # if I name it as int I think is like self but with a better name
+    """
+    Generic class for data
+    Possible thinks to implement
+    .. attribute:: header
+    """
+    
+    def __init__(self, path, **kwargs):
+        self.path = path
+        self.fieldsB = self._set_fields_b (kwargs.get ('fields'))
+#         intev.__init__(self, path, **kwargs)
+    def _set_fields_b (self, fields):
+        """
+        Set fields according to the identities provided between behavioral
+        and genomic data
+        """
+        
+        self.inFile  = open (path, "rb")
+        self.reader = csv.reader (self.inFile, delimiter='\t')
+        fieldsB = self.reader.next ()
+        self.inFile.close ()
+        return fieldsB
+  
+intData = intData (path)
+print intData.fieldsB
+
+# class identity:
+#     def __init__(self, fieldG, dictFields, header):
+#         self.fieldG = fieldG        
+#         self.header = header
+#         self.fieldB = dictFields.get (fieldG, 'None')             
+#     def index (self):
+#         if self.fieldB != 'None':
+#             return self.header.index (self.fieldB)
+#         else:
+#             return self.fieldB  
+
+
 dataInt = []
 
 for row in reader:
-    dataInt.append (row)
+#     dataInt.append (row)
+    dataInt.append ({'chr': row [chromId.index()],
+                     'start': row [chromStartId.index ()],
+                     'end': row [chromEndId.index ()],})
 inFile.close()
 
-chromStartData = []
-chromEndData = []
-chromPhasesData = []
+## Getting just 
+
+# chromStartData = []
+# chromEndData = []
+# chromPhasesData = []
 
 ## Hacerlo sin copiar los datos mas rapido #del
-for row in dataInt:
-    chromStartData.append (int (row [chromStartId.index()]))
-    chromEndData.append (int (row [chromEndId.index ()]))
+
     
-    if chromId.index() != -1 :
-        chromPhasesData.append (row [chromId.index()])
-    else:
-        chromPhasesData = ['chr1']
-
-## Para cada phase tengo que hacer un chromosoma
-    
-minChromStart = min (chromStartData)
-maxChromEnd = max (chromEndData)
-print minChromStart
-print maxChromEnd
-
-setPhases = set (chromPhasesData) 
-
-## Writing fasta files corresponding to chromosomes
-## One for each phases
-for phChr in setPhases:
-    genomeFile = open (os.path.join (pwd, phChr + genomeFileExt), "w")
-    genomeFile.write (">" + phChr + "\n")
-    genomeFile.write (genericNt * (maxChromEnd - minChromStart))
-    genomeFile.close ()
-    print ('Genome bed file created: %s' % (phChr + genomeFileExt))
-
-dataInt2 = {}
+# for row in dataInt:
+#     chromStartData.append (int (row [chromStartId.index()]))
+#     chromEndData.append (int (row [chromEndId.index ()]))
+#     
+#     if chromId.index() != -1 :
+#         chromPhasesData.append (row [chromId.index()])
+#     else:
+#         chromPhasesData = ['chr1']
+# 
+# ## Para cada phase tengo que hacer un chromosoma
+#     
+# minChromStart = min (chromStartData)
+# maxChromEnd = max (chromEndData)
+# print minChromStart
+# print maxChromEnd
+# 
+# setPhases = set (chromPhasesData) 
+# 
+# ## Writing fasta files corresponding to chromosomes
+# ## One for each phases
+# for phChr in setPhases:
+#     genomeFile = open (os.path.join (pwd, phChr + genomeFileExt), "w")
+#     genomeFile.write (">" + phChr + "\n")
+#     genomeFile.write (genericNt * (maxChromEnd - minChromStart))
+#     genomeFile.close ()
+#     print ('Genome bed file created: %s' % (phChr + genomeFileExt))
+# 
+# dataInt2 = {}
 
 # I have to generalize the nature stuff, so what I have to do is to provide as key the field that users have selected as 
 # the dataValue of bed and BedGraph files
