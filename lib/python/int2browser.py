@@ -114,35 +114,59 @@ class intData: # if I name it as int I think is like self but with a better name
             indexL = range (len (self.fieldsG))
         else:
             try:
-                indexL = [self.fieldsG.index (f) for f in self.fieldsG]
+                indexL = [self.fieldsG.index (f) for f in fields]
+                for f in self.fieldsG: 
+                    print (f)
             except ValueError:
                 raise ValueError ("Field '%s' not in file %s." % (f, self.path))
         
         self.inFile  = open (path, "rb")
         self.reader = csv.reader (self.inFile, delimiter='\t')
-        
+        print indexL
         for interv in self.reader:
             yield tuple (interv [indexL[n]]
                          for n,f in enumerate(fields))                    
     
-    def get_min_max (self, field=None): 
+    def get_min_max (self, fields=None): 
         """
-        Return the minimun and maximun of a given field
+        Return the minimun and maximun of two given fields by default set to chromStart and chromEnd
         """
+        pMinMax = [None,None]
         
-        self.fields.index ('start')
-        ilist = [self.fields.index(f) for f in fields]
-    
-    
-            
-intData = intData (path, fields = "track")
-culo = intData.read ()
+        if fields is None:
+            _f = ["chromStart","chromEnd"]
+                        
+            for row in self.read (fields=_f):
+                print row
+                if pMinMax[0] is None: pMinMax = list (row)
+                if pMinMax[0] > row[0]: pMinMax[0] = row[0]
+                if pMinMax[1] < row[1]: pMinMax[1] = row[1]
+        else:
+            if isinstance (fields,basestring): fields = [fields]
+            _f = [f for f in fields if f in self.fields]
+            if len(_f) == 0:
+                raise ValueError("Fields %s not in track: %s" % (fields, self.fields))
+            elif len(_f) != 2:
+                raise ValueError("Only two fields can be consider for get_min_max %s: %s" % (fields, self.fields))
+        
+        for row in self.read (fields=_f):
+                if pMinMax[0] is None: pMinMax = list (row)
+                if pMinMax[0] > row[0]: pMinMax[0] = row[0]
+                if pMinMax[1] < row[1]: pMinMax[1] = row[1]
+        
+        return pMinMax
+                            
+intData = intData (path)
+culo = intData.read (fields = ["chromStart","chromEnd"])
+
+print (intData.get_min_max())
 
 print intData.fieldsB
 print intData.fieldsG
-# for x in culo:
-#     print x
-    
+for x in culo:
+    print x
+
+# print (intData.get_min_max())
 # class identity:
 #     def __init__(self, fieldG, dictFields, header):
 #         self.fieldG = fieldG        
