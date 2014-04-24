@@ -107,26 +107,28 @@ class intData: # if I name it as int I think is like self but with a better name
         fieldsB = self.reader.next ()
         self.inFile.close ()
         return fieldsB
-    
+        
     def read (self, fields=None):
+        # If I don't have fields then I get all the columns of the file
         if fields is None:
             fields = self.fieldsG
             indexL = range (len (self.fieldsG))
         else:
             try:
-                indexL = [self.fieldsG.index (f) for f in fields]
-                for f in self.fieldsG: 
-                    print (f)
+                indexL = [self.fieldsG.index (f) for f in fields]                
             except ValueError:
                 raise ValueError ("Field '%s' not in file %s." % (f, self.path))
         
         self.inFile  = open (path, "rb")
         self.reader = csv.reader (self.inFile, delimiter='\t')
+        self.reader.next ()
+        
         print indexL
         for interv in self.reader:
             yield tuple (interv [indexL[n]]
                          for n,f in enumerate(fields))                    
-    
+        self.inFile.close()
+        
     def get_min_max (self, fields=None): 
         """
         Return the minimun and maximun of two given fields by default set to chromStart and chromEnd
@@ -161,10 +163,10 @@ culo = intData.read (fields = ["chromStart","chromEnd"])
 
 print (intData.get_min_max())
 
-print intData.fieldsB
-print intData.fieldsG
-for x in culo:
-    print x
+# print intData.fieldsB
+# print intData.fieldsG
+# for x in culo:
+#     print x
 
 # print (intData.get_min_max())
 # class identity:
