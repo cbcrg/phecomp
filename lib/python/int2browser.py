@@ -63,10 +63,10 @@ _dict_Id = {'phase' :'chrom',
             'CAGE' : 'track'}
 
 ############################################
-inFile  = open (args.input, "rb")
-reader = csv.reader (inFile, delimiter='\t')
+# inFile  = open (args.input, "rb")
+# reader = csv.reader (inFile, delimiter='\t')
 
-headers = reader.next ()
+# headers = reader.next ()
 
 # chromId = identity ('chrom', _dict_Id, headers)
 # chromStartId = identity ('chromStart', _dict_Id, headers)
@@ -123,7 +123,7 @@ class intData: # if I name it as int I think is like self but with a better name
         self.reader = csv.reader (self.inFile, delimiter='\t')
         self.reader.next ()
         
-        print indexL
+#         print indexL
         for interv in self.reader:
             yield tuple (interv [indexL[n]]
                          for n,f in enumerate(fields))                    
@@ -139,7 +139,7 @@ class intData: # if I name it as int I think is like self but with a better name
             _f = ["chromStart","chromEnd"]
                         
             for row in self.read (fields=_f):
-                print row
+#                 print row
                 if pMinMax[0] is None: pMinMax = list (row)
                 if pMinMax[0] > row[0]: pMinMax[0] = row[0]
                 if pMinMax[1] < row[1]: pMinMax[1] = row[1]
@@ -157,12 +157,28 @@ class intData: # if I name it as int I think is like self but with a better name
                 if pMinMax[1] < row[1]: pMinMax[1] = row[1]
         
         return pMinMax
-                            
-intData = intData (path)
-culo = intData.read (fields = ["chromStart","chromEnd"])
 
-print (intData.get_min_max())
+    def write (self, mode="w"):
+        chrom = 'chr1'
+        print pwd
+        genomeFile = open (os.path.join (pwd, chrom + genomeFileExt), "w")        
+        genomeFile.write (">" + chrom + "\n")
+        minMax = self.get_min_max ()
+        genomeFile.write (genericNt * (int (minMax[0]) - int (minMax[1])))
+        genomeFile.close ()
+        print ('Genome bed file created: %s' % (chrom + genomeFileExt))
+        
+intData = intData (path, fields = ["chromStart","chromEnd"])
 
+# print (intData.get_min_max())
+
+intData.write ()
+
+# definir una funcion interna en la cual se pueda precisar cual es el field usado para el subset, o none para ponerlo todo en un mismo archivo
+# de momento puedo crear una sencilla que lo haga todo en un solo archivo.
+
+
+# print (intDataCrop.get_min_max ())
 # print intData.fieldsB
 # print intData.fieldsG
 # for x in culo:
@@ -188,7 +204,7 @@ print (intData.get_min_max())
 #     dataInt.append ({'chr': row [chromId.index()],
 #                      'start': row [chromStartId.index ()],
 #                      'end': row [chromEndId.index ()],})
-inFile.close()
+# inFile.close()
 
 ## Getting just 
 
