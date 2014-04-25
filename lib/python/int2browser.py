@@ -18,15 +18,15 @@ class identity:
         self.header = header
         self.fieldB = dictFields.get (fieldG, 'None')             
     def index (self):
-        if self.fieldB != 'None':
+        if self.fieldB is not 'None':
             return self.header.index (self.fieldB)
         else:
             return self.fieldB  
         
         
 ## VARIABLES
-pwd = os.getcwd ()
-genomeFileExt = ".fa"
+_pwd = os.getcwd ()
+_genomeFileExt = ".fa"
 genericNt = "N"
 parser = argparse.ArgumentParser (description = 'Script to transform behavioral data into GB readable data')
 parser.add_argument ('-i','--input', help='Input file name',required=True)
@@ -97,7 +97,9 @@ class intData: # if I name it as int I think is like self but with a better name
 #         self.intypes = dict((k,v) for k,v in _in_types.iteritems() if k in self.fields)
 #         self.fieldsG = self._set_correspondencies ()        
         self.fieldsG = [_dict_Id [k] for k in self.fieldsB] 
-                     
+        self.min =  int (self.get_min_max ()[0])
+        self.max =  int (self.get_min_max (fields = ["chromStart","chromEnd"])[1])
+                    
     def _set_fields_b (self, fields):
         """
         Reading the behavioral fields from the header file    
@@ -144,35 +146,87 @@ class intData: # if I name it as int I think is like self but with a better name
                 if pMinMax[0] > row[0]: pMinMax[0] = row[0]
                 if pMinMax[1] < row[1]: pMinMax[1] = row[1]
         else:
-            if isinstance (fields,basestring): fields = [fields]
-            _f = [f for f in fields if f in self.fields]
+            if isinstance (fields, basestring): fields = [fields]
+            _f = [f for f in fields if f in self.fieldsG]
             if len(_f) == 0:
-                raise ValueError("Fields %s not in track: %s" % (fields, self.fields))
+                raise ValueError("Fields %s not in track: %s" % (fields, self.fieldsG))
             elif len(_f) != 2:
-                raise ValueError("Only two fields can be consider for get_min_max %s: %s" % (fields, self.fields))
+                raise ValueError("Only two fields can be consider for get_min_max %s: %s" % (fields, self.fieldsG))
         
         for row in self.read (fields=_f):
-                if pMinMax[0] is None: pMinMax = list (row)
+                if pMinMax[0] is None: pMinMax = list(row)
                 if pMinMax[0] > row[0]: pMinMax[0] = row[0]
                 if pMinMax[1] < row[1]: pMinMax[1] = row[1]
         
         return pMinMax
 
-    def write (self, mode="w"):
-        chrom = 'chr1'
-        print pwd
-        genomeFile = open (os.path.join (pwd, chrom + genomeFileExt), "w")        
-        genomeFile.write (">" + chrom + "\n")
-        minMax = self.get_min_max ()
-        genomeFile.write (genericNt * (int (minMax[0]) - int (minMax[1])))
-        genomeFile.close ()
-        print ('Genome bed file created: %s' % (chrom + genomeFileExt))
+    def relative_coord (self, fields2rel=None):
+        print self.fieldsG
+#         print self.fieldsG.index (fields2rel)
         
+        if fields2rel is None:
+            _f2rel = ["chromStart","chromEnd"]        
+        else:
+            if isinstance (fields2rel, basestring): fields2rel = [fields2rel]
+            _f2rel = [f for f in fields2rel if f in self.fieldsG]
+                                                             
+        try:
+            idxfields = [self.fieldsG.index(f) for f in _f2rel]                
+        except ValueError:
+            raise ValueError("Field '%s' not in file %s." % (f, self.path))
+                
+        data_r = self.read ()
+        ncol = range (len (self.fieldsG))
+
+        for row in data_r:
+            temp = []            
+            for i in ncol:
+                if i in idxfields: 
+                    temp.append(int(row [i]) - self.min + 1)
+                else:
+                    temp.append(row [i])
+                
+            yield (tuple (temp))
+                     
+    def writeChr (self, mode="w"):
+        chrom = 'chr1'
+        genomeFile = open (os.path.join (_pwd, chrom + _genomeFileExt), "w")        
+        genomeFile.write (">" + chrom + "\n")
+        print (self.max - self.min)
+        genomeFile.write (genericNt * (self.max - self.min))
+        genomeFile.close ()
+        print ('Genome fasta file created: %s' % (chrom + _genomeFileExt))
+    
+    def writeBed (self, feature="dataValue"):
+        try:
+            idxFeature = self.fieldsG.index (feature)
+            print idxFeature
+        except ValueError:
+                raise ValueError ("Field '%s' correspondence with dataValue was not set for file %s." % (feature, self.path))
+        
+        idxfields = [self.fieldsG.index ('chromStart'), self.fieldsG.index ('chromEnd'), idxFeature]
+        data_r = self.read ()
+        
+        for row in data_r:
+#             print row [4]
+            yield tuple (row [i]
+                         for i in idxfields)
+#             print row [idxFeature]
+        
+            
 intData = intData (path, fields = ["chromStart","chromEnd"])
 
 # print (intData.get_min_max())
 
-intData.write ()
+# intData.writeChr ()
+# print intData.get_min_max (fields = ["chromStart","chromEnd"])
+# intData.writeBed (feature="dataValue")
+
+
+intDataRel = intData.relative_coord (fields2rel = ["chromStart","chromEnd"])
+
+for line in intDataRel:
+     print line
 
 # definir una funcion interna en la cual se pueda precisar cual es el field usado para el subset, o none para ponerlo todo en un mismo archivo
 # de momento puedo crear una sencilla que lo haga todo en un solo archivo.
