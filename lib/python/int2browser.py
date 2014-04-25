@@ -190,7 +190,7 @@ class intData: # if I name it as int I think is like self but with a better name
                      
     def writeChr (self, mode="w"):
         chrom = 'chr1'
-        genomeFile = open (os.path.join (_pwd, chrom + _genomeFileExt), "w")        
+        genomeFile = open (os.path.join (_pwd, chrom + _genomeFileExt), mode)        
         genomeFile.write (">" + chrom + "\n")
         print (self.max - self.min)
         genomeFile.write (genericNt * (self.max - self.min))
@@ -220,14 +220,23 @@ intData = intData (path, fields = ["chromStart","chromEnd"])
 
 # intData.writeChr ()
 # print intData.get_min_max (fields = ["chromStart","chromEnd"])
-# intData.writeBed (feature="dataValue")
+intDataBed = intData.writeBed (feature="dataValue")
 
+# for line in intDataBed:
+#     for i in line:
+#         print i
 
-intDataRel = intData.relative_coord (fields2rel = ["chromStart","chromEnd"])
+for line in intDataBed:
+    for item in line:
+        print (item),  
+    print ('\n')
 
-for line in intDataRel:
-     print line
+# intDataRel = intData.relative_coord (fields2rel = ["chromStart","chromEnd"])
 
+# for line in intDataRel:
+#      print line
+
+# intDataRel.writeBed (feature="dataValue")
 # definir una funcion interna en la cual se pueda precisar cual es el field usado para el subset, o none para ponerlo todo en un mismo archivo
 # de momento puedo crear una sencilla que lo haga todo en un solo archivo.
 
