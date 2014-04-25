@@ -62,22 +62,6 @@ _dict_Id = {'phase' :'chrom',
             'Value' : 'dataValue', 
             'CAGE' : 'track'}
 
-############################################
-# inFile  = open (args.input, "rb")
-# reader = csv.reader (inFile, delimiter='\t')
-
-# headers = reader.next ()
-
-# chromId = identity ('chrom', _dict_Id, headers)
-# chromStartId = identity ('chromStart', _dict_Id, headers)
-# chromEndId = identity ('chromEnd', _dict_Id, headers)
-# dataTypesId = identity ('dataTypes', _dict_Id, headers)
-# dataValueId = identity ('dataValue', _dict_Id, headers)
-# 
-# print 'My first class is working: ---- %s --- %d' % (chromStartId.fieldB, chromStartId.index())
-# 
-# print 'My first class is working and even better: ---- %s --- %d' % (chromId.fieldB, chromId.index())
-
 ## I have to create a class able to keep the data and the fields
 
 class intData: # if I name it as int I think is like self but with a better name
@@ -92,10 +76,7 @@ class intData: # if I name it as int I think is like self but with a better name
     #le meto el diccionario entre behavior and genomic data como un parametro y por defecto le pongo el diccionario del ejemplo
     def __init__(self, path, **kwargs):
         self.path = path
-        self.fieldsB = self._set_fields_b (kwargs.get ('fields'))
-#         intev.__init__(self, path, **kwargs)
-#         self.intypes = dict((k,v) for k,v in _in_types.iteritems() if k in self.fields)
-#         self.fieldsG = self._set_correspondencies ()        
+        self.fieldsB = self._set_fields_b (kwargs.get ('fields'))        
         self.fieldsG = [_dict_Id [k] for k in self.fieldsB] 
         self.min =  int (self.get_min_max ()[0])
         self.max =  int (self.get_min_max (fields = ["chromStart","chromEnd"])[1])
@@ -124,8 +105,7 @@ class intData: # if I name it as int I think is like self but with a better name
         self.inFile  = open (path, "rb")
         self.reader = csv.reader (self.inFile, delimiter='\t')
         self.reader.next ()
-        
-#         print indexL
+
         for interv in self.reader:
             yield tuple (interv [indexL[n]]
                          for n,f in enumerate(fields))                    
@@ -208,118 +188,24 @@ class intData: # if I name it as int I think is like self but with a better name
         data_r = self.read ()
         
         for row in data_r:
-#             print row [4]
             yield tuple (row [i]
                          for i in idxfields)
-#             print row [idxFeature]
-        
-            
+
+
+##########################
+## Examples of executions 
+         
 intData = intData (path, fields = ["chromStart","chromEnd"])
 
-# print (intData.get_min_max())
 
-# intData.writeChr ()
-# print intData.get_min_max (fields = ["chromStart","chromEnd"])
+# Tengo que crear las clases de los objetos correspondientes a cada tipo de datas bed, bedgraph y si hay alguno mas
+# Tendran un metodo para hacer write que puede ser diferente segun el tipo o directamente si lo hago bien, simplemente
+# cogera las lineas y sera capaz de hacerlo con una funcion generica
 intDataBed = intData.writeBed (feature="dataValue")
-
-# for line in intDataBed:
-#     for i in line:
-#         print i
-
 for line in intDataBed:
     for item in line:
         print (item),  
     print ('\n')
-
-# intDataRel = intData.relative_coord (fields2rel = ["chromStart","chromEnd"])
-
-# for line in intDataRel:
-#      print line
-
-# intDataRel.writeBed (feature="dataValue")
-# definir una funcion interna en la cual se pueda precisar cual es el field usado para el subset, o none para ponerlo todo en un mismo archivo
-# de momento puedo crear una sencilla que lo haga todo en un solo archivo.
-
-
-# print (intDataCrop.get_min_max ())
-# print intData.fieldsB
-# print intData.fieldsG
-# for x in culo:
-#     print x
-
-# print (intData.get_min_max())
-# class identity:
-#     def __init__(self, fieldG, dictFields, header):
-#         self.fieldG = fieldG        
-#         self.header = header
-#         self.fieldB = dictFields.get (fieldG, 'None')             
-#     def index (self):
-#         if self.fieldB != 'None':
-#             return self.header.index (self.fieldB)
-#         else:
-#             return self.fieldB  
-
-
-# dataInt = []
-# 
-# for row in reader:
-# #     dataInt.append (row)
-#     dataInt.append ({'chr': row [chromId.index()],
-#                      'start': row [chromStartId.index ()],
-#                      'end': row [chromEndId.index ()],})
-# inFile.close()
-
-## Getting just 
-
-# chromStartData = []
-# chromEndData = []
-# chromPhasesData = []
-
-## Hacerlo sin copiar los datos mas rapido #del
-
-    
-# for row in dataInt:
-#     chromStartData.append (int (row [chromStartId.index()]))
-#     chromEndData.append (int (row [chromEndId.index ()]))
-#     
-#     if chromId.index() != -1 :
-#         chromPhasesData.append (row [chromId.index()])
-#     else:
-#         chromPhasesData = ['chr1']
-# 
-# ## Para cada phase tengo que hacer un chromosoma
-#     
-# minChromStart = min (chromStartData)
-# maxChromEnd = max (chromEndData)
-# print minChromStart
-# print maxChromEnd
-# 
-# setPhases = set (chromPhasesData) 
-# 
-# ## Writing fasta files corresponding to chromosomes
-# ## One for each phases
-# for phChr in setPhases:
-#     genomeFile = open (os.path.join (pwd, phChr + genomeFileExt), "w")
-#     genomeFile.write (">" + phChr + "\n")
-#     genomeFile.write (genericNt * (maxChromEnd - minChromStart))
-#     genomeFile.close ()
-#     print ('Genome bed file created: %s' % (phChr + genomeFileExt))
-# 
-# dataInt2 = {}
-
-# I have to generalize the nature stuff, so what I have to do is to provide as key the field that users have selected as 
-# the dataValue of bed and BedGraph files
-# Probably when I am more proficiency in python I should do a class by the moment I just code this
-# Whan features of the class will be like here acessing values by giving the two keys 
-#http://codereview.stackexchange.com/questions/31907/what-are-the-drawbacks-of-this-multi-key-dictionary
-# http://en.wikibooks.org/wiki/A_Beginner%27s_Python_Tutorial/Classes
-# dict [cage][nature] in my data
-
-
-# for r in dataInt:
-#     dataInt2 [dataInt [indexDataValue]] = 
-
-
 
 
 # Stuff that might be interesting
