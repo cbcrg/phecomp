@@ -78,8 +78,8 @@ class intData: # if I name it as int I think is like self but with a better name
         self.path = path
         self.fieldsB = self._set_fields_b (kwargs.get ('fields'))        
         self.fieldsG = [_dict_Id [k] for k in self.fieldsB] 
-        self.min =  int (self.get_min_max ()[0])
-        self.max =  int (self.get_min_max (fields = ["chromStart","chromEnd"])[1])
+#         self.min =  int (self.get_min_max ()[0])
+#         self.max =  int (self.get_min_max (fields = ["chromStart","chromEnd"])[1])
                     
     def _set_fields_b (self, fields):
         """
@@ -90,8 +90,11 @@ class intData: # if I name it as int I think is like self but with a better name
         fieldsB = self.reader.next ()
         self.inFile.close ()
         return fieldsB
-        
+    
     def read (self, fields=None):
+         return dataIter(self._read())
+       
+    def _read (self, fields=None):
         # If I don't have fields then I get all the columns of the file
         if fields is None:
             fields = self.fieldsG
@@ -191,21 +194,56 @@ class intData: # if I name it as int I think is like self but with a better name
             yield tuple (row [i]
                          for i in idxfields)
 
+################################################################################
+class dataIter(object):
+    def __init__(self, data, fields="culo"):
+#         if isinstance(data,(list,tuple)):
+        data = iter(data)
+        if isinstance(data,(tuple)):
+            print "culo"
+            data = iter(data)
+        if not fields:
+#             if hasattr(data, 'description'):
+#                 fields = [x[0] for x in data.description]
+#             else: raise ValueError("Must specify a 'fields' attribute for %s." % self.__str__())
+            raise ValueError("Must specify a 'fields' attribute for %s." % self.__str__())
+        self.data = data
+        self.fields = fields
+        
+    def __iter__(self):
+        return self.data
 
+    def next(self):
+        return self.data.next()
+    
 ##########################
 ## Examples of executions 
          
 intData = intData (path, fields = ["chromStart","chromEnd"])
+s = intData.read()
+for line in s:
+    print line
 
-
+# print (type (s))
+# d=iter(s)
+# n=d.next()
+# print n
+# i = dataIter(s)
+# int=i.next()
+# print int
+# if isinstance(s,(list,tuple)):
+#     print "culo"
+# else:
+#     print "pedo"    
 # Tengo que crear las clases de los objetos correspondientes a cada tipo de datas bed, bedgraph y si hay alguno mas
 # Tendran un metodo para hacer write que puede ser diferente segun el tipo o directamente si lo hago bien, simplemente
 # cogera las lineas y sera capaz de hacerlo con una funcion generica
-intDataBed = intData.writeBed (feature="dataValue")
-for line in intDataBed:
-    for item in line:
-        print (item),  
-    print ('\n')
+# intDataBed = intData.writeBed (feature="dataValue")
+# 
+# for line in intDataBed:
+#     for item in line:
+#         print (item),  
+#     print ('\n'),
 
 
 # Stuff that might be interesting
