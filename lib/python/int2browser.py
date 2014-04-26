@@ -78,8 +78,8 @@ class intData: # if I name it as int I think is like self but with a better name
         self.path = path
         self.fieldsB = self._set_fields_b (kwargs.get ('fields'))        
         self.fieldsG = [_dict_Id [k] for k in self.fieldsB] 
-#         self.min =  int (self.get_min_max ()[0])
-#         self.max =  int (self.get_min_max (fields = ["chromStart","chromEnd"])[1])
+        self.min =  int (self.get_min_max (fields = ["chromStart","chromEnd"])[0])
+        self.max =  int (self.get_min_max (fields = ["chromStart","chromEnd"])[1])
                     
     def _set_fields_b (self, fields):
         """
@@ -92,7 +92,7 @@ class intData: # if I name it as int I think is like self but with a better name
         return fieldsB
     
     def read (self, fields=None):
-         return dataIter(self._read())
+         return dataIter(self._read(fields))
        
     def _read (self, fields=None):
         # If I don't have fields then I get all the columns of the file
@@ -220,9 +220,10 @@ class dataIter(object):
 ## Examples of executions 
          
 intData = intData (path, fields = ["chromStart","chromEnd"])
-s = intData.read()
-for line in s:
-    print line
+print (intData.min)
+s = intData.read(fields = ["chromStart","chromEnd"])
+
+for line in s:  print line
 
 # print (type (s))
 # d=iter(s)
