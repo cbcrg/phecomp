@@ -119,7 +119,7 @@ class intData: # if I name it as int I think is like self but with a better name
             except ValueError:
                 raise ValueError("Field '%s' not in file %s." % (f, self.path))
     
-        return dataIter(self._read(indexL, idx_fields2rel))
+        return dataIter(self._read(indexL, idx_fields2rel), self.fieldsG)
        
     def _read(self, indexL, idx_fields2rel):
         self.inFile  = open(path, "rb")
@@ -181,24 +181,23 @@ class intData: # if I name it as int I think is like self but with a better name
         genomeFile.close()
         print('Genome fasta file created: %s' % (chrom + _genomeFileExt))
     
-    def writeBed(self, feature="dataValue"):
-        try:
-            idxFeature = self.fieldsG.index(feature)
-            print idxFeature
-        except ValueError:
-                raise ValueError("Field '%s' correspondence with dataValue was not set for file %s." % (feature, self.path))
-        
-        idxfields = [self.fieldsG.index('chromStart'), self.fieldsG.index('chromEnd'), idxFeature]
-        data_r = self.read()
-        
-        for row in data_r:
-            yield tuple(row [i]
-                         for i in idxfields)
+#     def writeBed(self, feature="dataValue"):
+#         try:
+#             idxFeature = self.fieldsG.index(feature)
+#             print idxFeature
+#         except ValueError:
+#                 raise ValueError("Field '%s' correspondence with dataValue was not set for file %s." % (feature, self.path))
+#         
+#         idxfields = [self.fieldsG.index('chromStart'), self.fieldsG.index('chromEnd'), idxFeature]
+#         data_r = self.read()
+#         
+#         for row in data_r:
+#             yield tuple(row [i]
+#                          for i in idxfields)
 
 ################################################################################
 class dataIter(object):
-    def __init__(self, data, fields="culo"):
-        print (type(data))
+    def __init__(self, data, fields=None):
         if isinstance(data,(tuple)):            
             data = iter(data)
         if not fields:
@@ -214,7 +213,47 @@ class dataIter(object):
 
     def next(self):
         return self.data.next()
+
+def write (data, mode="bed"):    
+    if not(isinstance(data, dataIter)):
+        t = type(data)
+        raise Exception("Object must be dataIter, '%s' of '%s' is not supported."%(data, t))
+   
+    _fileFields = ["chromStart", "chromEnd"] 
+    f2print = [data.fields.index(f) for f in _fileFields]
     
+    print (f2print)
+    print "culo"
+
+#     [temp_list.append(row[i]) for row in data for i in row if i in f2print]
+    for row in data.data:
+        temp_list = []
+        
+        for i in range(len(row)):
+            if i in f2print:
+#                 print row[i],
+                temp_list.append(row[i])
+#         print ('\n'),
+        
+        yield (temp_list)    
+        
+#Hay que decir a cual corresponde porque igual no estan ordenados
+# De hecho para escoger los fields ya lo podia ordenar directamnte y asi en la lista vienen ordenados 
+        
+def writeBed(self, feature="dataValue"):
+        try:
+            idxFeature = self.fieldsG.index(feature)
+            print idxFeature
+        except ValueError:
+                raise ValueError("Field '%s' correspondence with dataValue was not set for file %s." % (feature, self.path))
+        
+        idxfields = [self.fieldsG.index('chromStart'), self.fieldsG.index('chromEnd'), idxFeature]
+        data_r = self.read()
+        
+        for row in data_r:
+            yield tuple(row [i]
+                         for i in idxfields)    
+        
 ##########################
 ## Examples of executions 
          
@@ -226,8 +265,10 @@ intData = intData(path)
 s = intData.read(relative_coord=True)
 # s.relativ_coor()
 
-for line in s:  print line
-
+# for line in s:  print line
+# print (s.fields)
+s2=write(s)
+for line in s2: print line
 # print (type (s))
 # d=iter(s)
 # n=d.next()
