@@ -76,31 +76,31 @@ class intData: # if I name it as int I think is like self but with a better name
     #le meto el diccionario entre behavior and genomic data como un parametro y por defecto le pongo el diccionario del ejemplo
     def __init__(self, path, **kwargs):
         self.path = path
-        self.fieldsB = self._set_fields_b (kwargs.get ('fields'))        
+        self.fieldsB = self._set_fields_b(kwargs.get ('fields'))        
         self.fieldsG = [_dict_Id [k] for k in self.fieldsB] 
-        self.min =  int (self.get_min_max (fields = ["chromStart","chromEnd"])[0])
-        self.max =  int (self.get_min_max (fields = ["chromStart","chromEnd"])[1])
+        self.min =  int(self.get_min_max(fields = ["chromStart","chromEnd"])[0])
+        self.max =  int(self.get_min_max(fields = ["chromStart","chromEnd"])[1])
                     
-    def _set_fields_b (self, fields):
+    def _set_fields_b(self, fields):
         """
         Reading the behavioral fields from the header file    
         """        
-        self.inFile  = open (path, "rb")
-        self.reader = csv.reader (self.inFile, delimiter='\t')
-        fieldsB = self.reader.next ()
-        self.inFile.close ()
+        self.inFile  = open(path, "rb")
+        self.reader = csv.reader(self.inFile, delimiter='\t')
+        fieldsB = self.reader.next()
+        self.inFile.close()
         return fieldsB
     
-    def read (self, fields=None, relative_coord=False, fields2rel=None):
+    def read(self, fields=None, relative_coord=False, fields2rel=None):
         # If I don't have fields then I get all the columns of the file
         if fields is None:
             fields = self.fieldsG
-            indexL = range (len (self.fieldsG))
+            indexL = range(len(self.fieldsG))
         else:
             try:
-                indexL = [self.fieldsG.index (f) for f in fields]                
+                indexL = [self.fieldsG.index(f) for f in fields]                
             except ValueError:
-                raise ValueError ("Field '%s' not in file %s." % (f, self.path))
+                raise ValueError("Field '%s' not in file %s." % (f, self.path))
         
         idx_fields2rel = [10000000000000]
             
@@ -111,7 +111,7 @@ class intData: # if I name it as int I think is like self but with a better name
                 print "Iwas here"
                 _f2rel = ["chromStart","chromEnd"]        
             else:
-                if isinstance (fields2rel, basestring): fields2rel = [fields2rel]
+                if isinstance(fields2rel, basestring): fields2rel = [fields2rel]
                 _f2rel = [f for f in fields2rel if f in self.fieldsG]
                 
             try:
@@ -121,10 +121,10 @@ class intData: # if I name it as int I think is like self but with a better name
     
         return dataIter(self._read(indexL, idx_fields2rel))
        
-    def _read (self, indexL, idx_fields2rel):
-        self.inFile  = open (path, "rb")
-        self.reader = csv.reader (self.inFile, delimiter='\t')
-        self.reader.next ()
+    def _read(self, indexL, idx_fields2rel):
+        self.inFile  = open(path, "rb")
+        self.reader = csv.reader(self.inFile, delimiter='\t')
+        self.reader.next()
         
 #         ncol = range (len (self.fieldsG))
         
@@ -136,14 +136,14 @@ class intData: # if I name it as int I think is like self but with a better name
                 else:
                     temp.append(interv [i])
                 
-            yield (tuple (temp))
+            yield(tuple(temp))
             
 #         for interv in self.reader:
 #             yield tuple (interv [n]
 #                          for n in indexL)                    
         self.inFile.close()
         
-    def get_min_max (self, fields=None): 
+    def get_min_max(self, fields=None): 
         """
         Return the minimun and maximun of two given fields by default set to chromStart and chromEnd
         """
@@ -152,53 +152,53 @@ class intData: # if I name it as int I think is like self but with a better name
         if fields is None:
             _f = ["chromStart","chromEnd"]
                         
-            for row in self.read (fields=_f):
+            for row in self.read(fields=_f):
 #                 print row
-                if pMinMax[0] is None: pMinMax = list (row)
+                if pMinMax[0] is None: pMinMax = list(row)
                 if pMinMax[0] > row[0]: pMinMax[0] = row[0]
                 if pMinMax[1] < row[1]: pMinMax[1] = row[1]
         else:
-            if isinstance (fields, basestring): fields = [fields]
+            if isinstance(fields, basestring): fields = [fields]
             _f = [f for f in fields if f in self.fieldsG]
             if len(_f) == 0:
                 raise ValueError("Fields %s not in track: %s" % (fields, self.fieldsG))
             elif len(_f) != 2:
                 raise ValueError("Only two fields can be consider for get_min_max %s: %s" % (fields, self.fieldsG))
         
-        for row in self.read (fields=_f):
+        for row in self.read(fields=_f):
                 if pMinMax[0] is None: pMinMax = list(row)
                 if pMinMax[0] > row[0]: pMinMax[0] = row[0]
                 if pMinMax[1] < row[1]: pMinMax[1] = row[1]
         
         return pMinMax
                      
-    def writeChr (self, mode="w"):
+    def writeChr(self, mode="w"):
         chrom = 'chr1'
-        genomeFile = open (os.path.join (_pwd, chrom + _genomeFileExt), mode)        
-        genomeFile.write (">" + chrom + "\n")
-        print (self.max - self.min)
+        genomeFile = open(os.path.join(_pwd, chrom + _genomeFileExt), mode)        
+        genomeFile.write(">" + chrom + "\n")
+        print(self.max - self.min)
         genomeFile.write (genericNt * (self.max - self.min))
-        genomeFile.close ()
-        print ('Genome fasta file created: %s' % (chrom + _genomeFileExt))
+        genomeFile.close()
+        print('Genome fasta file created: %s' % (chrom + _genomeFileExt))
     
-    def writeBed (self, feature="dataValue"):
+    def writeBed(self, feature="dataValue"):
         try:
-            idxFeature = self.fieldsG.index (feature)
+            idxFeature = self.fieldsG.index(feature)
             print idxFeature
         except ValueError:
-                raise ValueError ("Field '%s' correspondence with dataValue was not set for file %s." % (feature, self.path))
+                raise ValueError("Field '%s' correspondence with dataValue was not set for file %s." % (feature, self.path))
         
-        idxfields = [self.fieldsG.index ('chromStart'), self.fieldsG.index ('chromEnd'), idxFeature]
-        data_r = self.read ()
+        idxfields = [self.fieldsG.index('chromStart'), self.fieldsG.index('chromEnd'), idxFeature]
+        data_r = self.read()
         
         for row in data_r:
-            yield tuple (row [i]
+            yield tuple(row [i]
                          for i in idxfields)
 
 ################################################################################
 class dataIter(object):
     def __init__(self, data, fields="culo"):
-        print (type (data))
+        print (type(data))
         if isinstance(data,(tuple)):            
             data = iter(data)
         if not fields:
@@ -218,7 +218,7 @@ class dataIter(object):
 ##########################
 ## Examples of executions 
          
-intData = intData (path)
+intData = intData(path)
 # intData2 = intData.relative_coord()
 # for line in intData2: print line
 # # print (intData.max)
