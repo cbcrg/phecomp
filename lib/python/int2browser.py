@@ -91,10 +91,7 @@ class intData: # if I name it as int I think is like self but with a better name
         self.inFile.close ()
         return fieldsB
     
-    def read (self, fields=None):
-         return dataIter(self._read(fields))
-       
-    def _read (self, fields=None):
+    def read (self, fields=None, relative_coord=False, fields2rel=None):
         # If I don't have fields then I get all the columns of the file
         if fields is None:
             fields = self.fieldsG
@@ -105,13 +102,45 @@ class intData: # if I name it as int I think is like self but with a better name
             except ValueError:
                 raise ValueError ("Field '%s' not in file %s." % (f, self.path))
         
+        idx_fields2rel = [10000000000000]
+            
+        if relative_coord:
+            print "Relative coord is true"
+            
+            if fields2rel is None:
+                print "Iwas here"
+                _f2rel = ["chromStart","chromEnd"]        
+            else:
+                if isinstance (fields2rel, basestring): fields2rel = [fields2rel]
+                _f2rel = [f for f in fields2rel if f in self.fieldsG]
+                
+            try:
+                idx_fields2rel = [self.fieldsG.index(f) for f in _f2rel]                
+            except ValueError:
+                raise ValueError("Field '%s' not in file %s." % (f, self.path))
+    
+        return dataIter(self._read(indexL, idx_fields2rel))
+       
+    def _read (self, indexL, idx_fields2rel):
         self.inFile  = open (path, "rb")
         self.reader = csv.reader (self.inFile, delimiter='\t')
         self.reader.next ()
-
+        
+#         ncol = range (len (self.fieldsG))
+        
         for interv in self.reader:
-            yield tuple (interv [indexL[n]]
-                         for n,f in enumerate(fields))                    
+            temp = []            
+            for i in indexL:
+                if i in idx_fields2rel: 
+                    temp.append(int(interv [i]) - self.min + 1)
+                else:
+                    temp.append(interv [i])
+                
+            yield (tuple (temp))
+            
+#         for interv in self.reader:
+#             yield tuple (interv [n]
+#                          for n in indexL)                    
         self.inFile.close()
         
     def get_min_max (self, fields=None): 
@@ -142,34 +171,6 @@ class intData: # if I name it as int I think is like self but with a better name
                 if pMinMax[1] < row[1]: pMinMax[1] = row[1]
         
         return pMinMax
-
-    def relative_coord (self, fields2rel=None):
-        print self.fieldsG
-#         print self.fieldsG.index (fields2rel)
-        
-        if fields2rel is None:
-            _f2rel = ["chromStart","chromEnd"]        
-        else:
-            if isinstance (fields2rel, basestring): fields2rel = [fields2rel]
-            _f2rel = [f for f in fields2rel if f in self.fieldsG]
-                                                             
-        try:
-            idxfields = [self.fieldsG.index(f) for f in _f2rel]                
-        except ValueError:
-            raise ValueError("Field '%s' not in file %s." % (f, self.path))
-                
-        data_r = self.read ()
-        ncol = range (len (self.fieldsG))
-
-        for row in data_r:
-            temp = []            
-            for i in ncol:
-                if i in idxfields: 
-                    temp.append(int(row [i]) - self.min + 1)
-                else:
-                    temp.append(row [i])
-                
-            yield (tuple (temp))
                      
     def writeChr (self, mode="w"):
         chrom = 'chr1'
@@ -197,10 +198,8 @@ class intData: # if I name it as int I think is like self but with a better name
 ################################################################################
 class dataIter(object):
     def __init__(self, data, fields="culo"):
-#         if isinstance(data,(list,tuple)):
-        data = iter(data)
-        if isinstance(data,(tuple)):
-            print "culo"
+        print (type (data))
+        if isinstance(data,(tuple)):            
             data = iter(data)
         if not fields:
 #             if hasattr(data, 'description'):
@@ -219,9 +218,13 @@ class dataIter(object):
 ##########################
 ## Examples of executions 
          
-intData = intData (path, fields = ["chromStart","chromEnd"])
-print (intData.min)
-s = intData.read(fields = ["chromStart","chromEnd"])
+intData = intData (path)
+# intData2 = intData.relative_coord()
+# for line in intData2: print line
+# # print (intData.max)
+
+s = intData.read(relative_coord=True)
+# s.relativ_coor()
 
 for line in s:  print line
 
