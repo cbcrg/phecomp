@@ -97,7 +97,7 @@ class intData: # if I name it as int I think is like self but with a better name
         self.fieldsG = [_dict_Id [k] for k in self.fieldsB] 
         self.min =  int(self.get_min_max(fields = ["chromStart","chromEnd"])[0])
         self.max =  int(self.get_min_max(fields = ["chromStart","chromEnd"])[1])
-        self.tracks =  []
+        self.tracks =  self.get_field_items (field="track")
         self.dataTypes = self.get_field_items (field="dataTypes")
                     
     def _set_fields_b(self, fields):
@@ -319,7 +319,9 @@ s = intData.read(relative_coord=True)
 # write(s)
 
 # print (intData.get_min_max(fields=["dataValue", "dataValue"]))
-print (intData.get_field_items())
+print (intData.tracks)
+print (intData.dataTypes)
+
 # s2=write(s)
 # for line in s2: print line
 # print (type (s))
