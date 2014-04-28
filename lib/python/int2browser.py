@@ -27,6 +27,7 @@ class identity:
 ## VARIABLES
 _pwd = os.getcwd ()
 _genomeFileExt = ".fa"
+_bedFileExt = ".bed"
 genericNt = "N"
 parser = argparse.ArgumentParser (description = 'Script to transform behavioral data into GB readable data')
 parser.add_argument ('-i','--input', help='Input file name',required=True)
@@ -96,6 +97,8 @@ class intData: # if I name it as int I think is like self but with a better name
         self.fieldsG = [_dict_Id [k] for k in self.fieldsB] 
         self.min =  int(self.get_min_max(fields = ["chromStart","chromEnd"])[0])
         self.max =  int(self.get_min_max(fields = ["chromStart","chromEnd"])[1])
+        self.tracks =  []
+        self.dataTypes = self.get_field_items (field="dataTypes")
                     
     def _set_fields_b(self, fields):
         """
@@ -124,7 +127,6 @@ class intData: # if I name it as int I think is like self but with a better name
             print "Relative coord is true"
             
             if fields2rel is None:
-                print "Iwas here"
                 _f2rel = ["chromStart","chromEnd"]        
             else:
                 if isinstance(fields2rel, basestring): fields2rel = [fields2rel]
@@ -141,8 +143,6 @@ class intData: # if I name it as int I think is like self but with a better name
         self.inFile  = open(path, "rb")
         self.reader = csv.reader(self.inFile, delimiter='\t')
         self.reader.next()
-        
-#         ncol = range (len (self.fieldsG))
         
         for interv in self.reader:
             temp = []            
@@ -187,29 +187,35 @@ class intData: # if I name it as int I think is like self but with a better name
                 if pMinMax[1] < row[1]: pMinMax[1] = row[1]
         
         return pMinMax
+    
+    def get_field_items(self, field="dataTypes"): 
+        """
+        Return a list with all the present data types present in the column that was set as dataTypes
+        """
+        try:
+            field in self.fieldsG                
+        except ValueError:
+            raise ValueError("Field '%s' not in file %s." % (f, self.path))
+        
+        idx_field = self.fieldsG.index (field)
+        field = [field]    
+        set_fields = set()
+        
+        for row in self.read():
+            if row[idx_field] not in set_fields:
+                set_fields.add(row[idx_field])
+                print (row[idx_field])
+                    
+        return set_fields
                      
     def writeChr(self, mode="w"):
         chrom = 'chr1'
         genomeFile = open(os.path.join(_pwd, chrom + _genomeFileExt), mode)        
         genomeFile.write(">" + chrom + "\n")
-        print(self.max - self.min)
+#         print(self.max - self.min)
         genomeFile.write (genericNt * (self.max - self.min))
         genomeFile.close()
         print('Genome fasta file created: %s' % (chrom + _genomeFileExt))
-    
-#     def writeBed(self, feature="dataValue"):
-#         try:
-#             idxFeature = self.fieldsG.index(feature)
-#             print idxFeature
-#         except ValueError:
-#                 raise ValueError("Field '%s' correspondence with dataValue was not set for file %s." % (feature, self.path))
-#         
-#         idxfields = [self.fieldsG.index('chromStart'), self.fieldsG.index('chromEnd'), idxFeature]
-#         data_r = self.read()
-#         
-#         for row in data_r:
-#             yield tuple(row [i]
-#                          for i in idxfields)
 
 ################################################################################
 class dataIter(object):
@@ -230,7 +236,7 @@ class dataIter(object):
     def next(self):
         return self.data.next()
 
-def write (data, mode="bed"):    
+def write (data, file_type="bed", mode="w"):    
     if not(isinstance(data, dataIter)):
         t = type(data)
         raise Exception("Object must be dataIter, '%s' of '%s' is not supported."%(data, t))
@@ -241,30 +247,37 @@ def write (data, mode="bed"):
     f2print = [data.fields.index(f) for f in _fileFields]
     
     print (f2print)
-    
+    track = "cage1_test"
+    bed_file = open(os.path.join(_pwd, track + _bedFileExt), mode)        
+    bed_file.write('track name="cage 1;drink" description="cage 1;drink" visibility=2 itemRgb="On" priority=20' + "\n")
     for row in data.data:         
         for i in f2print:
             if data.fields[i] == "track":
-                print ("chr%s"%row[i]),
+                bed_file.write("chr%s\t"%row[i])
             elif data.fields[i] == "chromStart":
                 thickStart = row[i]
-                print ("%s"%row[i]),
+                bed_file.write("%s\t"%row[i])
             elif data.fields[i] == "chromEnd":
                 thickEnd = row[i]
-                print ("%s"%row[i]),
+                bed_file.write("%s\t"%row[i])
             elif data.fields[i] == "dataValue":
+                bed_file.write("%s\t"%row[i])
                 for v in _intervals:
                     if float(row[i]) <= v:
-                        j = _intervals.index(v)
-                        type = row [data.fields.index("dataTypes")]
-                        color = _dict_col_grad[type][j]        
+                        j = _intervals.index(v)                        
+                        type = row [data.fields.index("dataTypes")]                        
+                        color = _dict_col_grad[type][j]
+                        break        
             else:
-                print ("%s"%row[i]),
-        print("+"),
-        print(thickStart),
-        print(thickEnd),
-        print(color), 
-        print("\n"),
+                bed_file.write("%s\t"%row[i])
+                
+        bed_file.write("+\t")
+        bed_file.write("%s\t"%thickStart)
+        bed_file.write("%s\t"%thickEnd)
+        
+        bed_file.write("%s\t"%color) 
+        bed_file.write("\n")
+    bed_file.close
                      
 #     for row in data.data:
 #         temp_list = []
@@ -289,7 +302,7 @@ def writeBed(self, feature="dataValue"):
         for row in data_r:
             yield tuple(row [i]
                          for i in idxfields)    
-        
+
 ##########################
 ## Examples of executions 
          
@@ -297,15 +310,16 @@ intData = intData(path)
 # intData2 = intData.relative_coord()
 # for line in intData2: print line
 # # print (intData.max)
-
+intData.writeChr()
 s = intData.read(relative_coord=True)
 # s.relativ_coor()
 
 # for line in s:  print line
 # print (s.fields)
-write(s)
+# write(s)
 
-print (intData.get_min_max(fields=["dataValue", "dataValue"]))
+# print (intData.get_min_max(fields=["dataValue", "dataValue"]))
+print (intData.get_field_items())
 # s2=write(s)
 # for line in s2: print line
 # print (type (s))
@@ -342,5 +356,10 @@ print (intData.get_min_max(fields=["dataValue", "dataValue"]))
 #col = df [chromStart]
 #print '------%-4s' % (col)
 
-
+#pybedtools examples
+# import pybedtools
+# x = pybedtools.BedTool('path/to/bam')
+# x.genome_coverage(bg=True, genome='hg19', split=True)\
+#     .saveas('path/to/bedgraph', trackline='track name="test track" visibility="full" type=bedGraph')
+        
 
