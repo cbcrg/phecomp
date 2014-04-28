@@ -64,6 +64,18 @@ _dict_Id = {'phase' :'chrom',
 
 _intervals = [0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 1, 1000]
 
+_black_gradient = ["226,226,226", "198,198,198", "170,170,170", "141,141,141", "113,113,113", "85,85,85", "56,56,56", "28,28,28", "0,0,0"]
+_blue_gradient = ["229,229,254", "203,203,254", "178,178,254", "152,152,254", "127,127,254", "102,102,254", "76,76,173", "51,51,162", "0,0,128"]
+_red_gradient = ["254,172,182", "254,153,162", "254,134,142", "254,115,121", "254,96,101", "254,77,81", "254,57,61", "254,38,40", "254,19,20"]
+_green_gradient = ["203,254,203", "178,254,178", "152,254,152", "127,254,127", "102,254,102", "76,254,76", "51,254,51", "0,254,0", "25,115,25"]
+
+_dict_col_grad = {
+                  'water' : _blue_gradient,
+                  'drink' : _blue_gradient,
+                  'food' : _black_gradient,
+                  'food_sc' : _black_gradient,
+                  'food_cd' : _red_gradient,
+                  'food_fat' : _red_gradient}
 
 
 ## I have to create a class able to keep the data and the fields
@@ -223,7 +235,9 @@ def write (data, mode="bed"):
         t = type(data)
         raise Exception("Object must be dataIter, '%s' of '%s' is not supported."%(data, t))
    
-    _fileFields = ["track","chromStart","chromEnd","dataValue"] 
+    _fileFields = ["track","chromStart","chromEnd","dataValue"]
+#     _bedfile_fields = ["track","chromStart","chromEnd","dataValue"] 
+     
     f2print = [data.fields.index(f) for f in _fileFields]
     
     print (f2print)
