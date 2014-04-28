@@ -235,7 +235,7 @@ def write (data, mode="bed"):
         t = type(data)
         raise Exception("Object must be dataIter, '%s' of '%s' is not supported."%(data, t))
    
-    _fileFields = ["track","chromStart","chromEnd","dataValue"]
+    _fileFields = ["track","chromStart","chromEnd","dataTypes", "dataValue"]
 #     _bedfile_fields = ["track","chromStart","chromEnd","dataValue"] 
      
     f2print = [data.fields.index(f) for f in _fileFields]
@@ -245,11 +245,25 @@ def write (data, mode="bed"):
     for row in data.data:         
         for i in f2print:
             if data.fields[i] == "track":
-                print ("chr%s"%row[i]), 
+                print ("chr%s"%row[i]),
+            elif data.fields[i] == "chromStart":
+                thickStart = row[i]
+                print ("%s"%row[i]),
+            elif data.fields[i] == "chromEnd":
+                thickEnd = row[i]
+                print ("%s"%row[i]),
+            elif data.fields[i] == "dataValue":
+                for v in _intervals:
+                    if float(row[i]) <= v:
+                        j = _intervals.index(v)
+                        type = row [data.fields.index("dataTypes")]
+                        color = _dict_col_grad[type][j]        
             else:
                 print ("%s"%row[i]),
         print("+"),
-         
+        print(thickStart),
+        print(thickEnd),
+        print(color), 
         print("\n"),
                      
 #     for row in data.data:
