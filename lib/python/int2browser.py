@@ -62,6 +62,10 @@ _dict_Id = {'phase' :'chrom',
             'Value' : 'dataValue', 
             'CAGE' : 'track'}
 
+_intervals = [0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 1, 1000]
+
+
+
 ## I have to create a class able to keep the data and the fields
 
 class intData: # if I name it as int I think is like self but with a better name
@@ -219,24 +223,28 @@ def write (data, mode="bed"):
         t = type(data)
         raise Exception("Object must be dataIter, '%s' of '%s' is not supported."%(data, t))
    
-    _fileFields = ["chromStart", "chromEnd"] 
+    _fileFields = ["track","chromStart","chromEnd","dataValue"] 
     f2print = [data.fields.index(f) for f in _fileFields]
     
     print (f2print)
-    print "culo"
-
-#     [temp_list.append(row[i]) for row in data for i in row if i in f2print]
-    for row in data.data:
-        temp_list = []
-        
-        for i in range(len(row)):
-            if i in f2print:
-#                 print row[i],
-                temp_list.append(row[i])
-#         print ('\n'),
-        
-        yield (temp_list)    
-        
+    
+    for row in data.data:         
+        for i in f2print:
+            if data.fields[i] == "track":
+                print ("chr%s"%row[i]), 
+            else:
+                print ("%s"%row[i]),
+        print("+"),
+         
+        print("\n"),
+                     
+#     for row in data.data:
+#         temp_list = []
+#           
+#         for i in f2print:
+#             temp_list.append(row[i])
+#         yield (temp_list)    
+#         
 #Hay que decir a cual corresponde porque igual no estan ordenados
 # De hecho para escoger los fields ya lo podia ordenar directamnte y asi en la lista vienen ordenados 
         
@@ -267,8 +275,11 @@ s = intData.read(relative_coord=True)
 
 # for line in s:  print line
 # print (s.fields)
-s2=write(s)
-for line in s2: print line
+write(s)
+
+print (intData.get_min_max(fields=["dataValue", "dataValue"]))
+# s2=write(s)
+# for line in s2: print line
 # print (type (s))
 # d=iter(s)
 # n=d.next()
