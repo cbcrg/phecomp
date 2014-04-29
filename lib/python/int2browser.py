@@ -99,6 +99,7 @@ class intData: # if I name it as int I think is like self but with a better name
         self.max =  int(self.get_min_max(fields = ["chromStart","chromEnd"])[1])
         self.tracks =  self.get_field_items (field="track")
         self.dataTypes = self.get_field_items (field="dataTypes")
+        self.format = "csv"
                     
     def _set_fields_b(self, fields):
         """
@@ -110,6 +111,59 @@ class intData: # if I name it as int I think is like self but with a better name
         self.inFile.close()
         return fieldsB
     
+    def convert2bed (self):
+        """
+        Transform data into a bed file if all the necessary fields present
+        """
+        #fields pass to read should be the ones of bed file
+        _bed_fields = ["track","chromStart","chromEnd","dataTypes", "dataValue"]
+        
+        #Check whether these fields are in the original otherwise raise exception
+        try:
+            idx_f = [self.fieldsG.index(f) for f in _bed_fields]                          
+        except ValueError:
+            raise ValueError("Field '%s' not in file %s." % (f, self.path))
+
+        track = "cage1_test"
+        mode = "w"
+        bed_file = open(os.path.join(_pwd, track + _bedFileExt), mode)        
+        bed_file.write('track name="cage 1;drink" description="cage 1;drink" visibility=2 itemRgb="On" priority=20' + "\n")
+        
+        for row in self.read (fields = _bed_fields):         
+            for i in idx_f:
+                if self.fieldsG[i] == "track":
+                    bed_file.write("chr%s\t"%row[i])
+                elif self.fieldsG[i] == "chromStart":
+                    thickStart = row[i]
+                    bed_file.write("%s\t"%row[i])
+                elif self.fieldsG[i] == "chromEnd":
+                    thickEnd = row[i]
+                    bed_file.write("%s\t"%row[i])
+                elif self.fieldsG[i] == "dataValue":
+                    bed_file.write("%s\t"%row[i])
+                    for v in _intervals:
+                        if float(row[i]) <= v:
+                            j = _intervals.index(v)                        
+                            type = row [self.fieldsG.index("dataTypes")]                        
+                            color = _dict_col_grad[type][j]
+                            break        
+                else:
+                    bed_file.write("%s\t"%row[i])
+                    
+            bed_file.write("+\t")
+            bed_file.write("%s\t"%thickStart)
+            bed_file.write("%s\t"%thickEnd)
+            
+            bed_file.write("%s\t"%color) 
+            bed_file.write("\n")
+            bed_file.close
+    
+#     _bedfile_fields = ["track","chromStart","chromEnd","dataValue"] 
+     
+#         f2print = [data.fields.index(f) for f in _fileFields] 
+#         read (self, )
+        
+        
     def read(self, fields=None, relative_coord=False, fields2rel=None):
         # If I don't have fields then I get all the columns of the file
         if fields is None:
@@ -279,15 +333,23 @@ def write (data, file_type="bed", mode="w"):
         bed_file.write("\n")
     bed_file.close
                      
-#     for row in data.data:
-#         temp_list = []
-#           
-#         for i in f2print:
-#             temp_list.append(row[i])
-#         yield (temp_list)    
-#         
-#Hay que decir a cual corresponde porque igual no estan ordenados
-# De hecho para escoger los fields ya lo podia ordenar directamnte y asi en la lista vienen ordenados 
+
+################################ Bed ##########################################
+
+class Bed(intData):
+    """
+    dataInt class for bed file format data
+    
+    Fields used in this application are:
+        
+         ['chr','start','end','name','score','strand',
+          'thick_start','thick_end','item_rgb']
+          
+    """
+    def __init__(self,path,**kwargs):
+        kwargs['format'] = 'bed'
+        kwargs['fields'] = ['chr','start','end','name','score','strand','thick_start','thick_end','item_rgb']
+        TextTrack.__init__(self,path,**kwargs)
         
 def writeBed(self, feature="dataValue"):
         try:
@@ -312,7 +374,8 @@ intData = intData(path)
 # # print (intData.max)
 intData.writeChr()
 s = intData.read(relative_coord=True)
-# s.relativ_coor()
+intData.convert2bed()
+
 
 # for line in s:  print line
 # print (s.fields)
