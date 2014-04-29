@@ -65,7 +65,7 @@ _dict_Id = {'phase' :'chrom',
 
 _intervals = [0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 1, 1000]
 
-_dict_out_files = {'bed' : '.bed',
+_dict_out_files = {'bed' : '_convert2bed',
                    'bedGraph': '.bedGraph'}
 _black_gradient = ["226,226,226", "198,198,198", "170,170,170", "141,141,141", "113,113,113", "85,85,85", "56,56,56", "28,28,28", "0,0,0"]
 _blue_gradient = ["229,229,254", "203,203,254", "178,178,254", "152,152,254", "127,127,254", "102,102,254", "76,76,173", "51,51,162", "0,0,128"]
@@ -219,12 +219,15 @@ class intData: # if I name it as int I think is like self but with a better name
         genomeFile.write (genericNt * (self.max - self.min))
         genomeFile.close()
         print('Genome fasta file created: %s' % (chrom + _genomeFileExt))
-
+    
+#     def convert(self, mode = None):
+#         return { 'bed': self._convert2bed, 'bedGraph': self._convert2bedGraph}.get(action, self._error)()
+          
     def convert (self, mode = None):
         if mode not in _dict_out_files: 
             raise ValueError("Mode \'%s\' not available. Possible convert() modes are %s"%(mode,', '.join(['{}'.format(m) for m in _dict_out_files.keys()])))
-        print ("culo")
-        return (self._convert2bed (self.read()))
+        
+        return { 'bed': self._convert2bed, 'bedGraph': self._convert2bedGraph}.get(mode)(self.read())  
     
     def _convert2bed (self, data_tuple):
         """
@@ -287,7 +290,13 @@ class intData: # if I name it as int I think is like self but with a better name
 #             bed_file.close
             yield(tuple(temp_list))
     _bedfile_fields = ["track","chromStart","chromEnd","dataValue"]            
-     
+
+    def _convert2bedGraph(self, data_tuple):
+        print "Sorry still not develop"
+        
+    def _error (self, data_tuple):
+        raise ValueError("culo")
+         
 ################################################################################
 class dataIter(object):
     def __init__(self, data, fields=None):
@@ -306,6 +315,10 @@ class dataIter(object):
 
     def next(self):
         return self.data.next()
+    
+    ### WRITE TIENE QUE ESTAR AQUI DE MANERA QUE TODOS LAS CLASES QUE HEREDAN BED, BEDGRAPH ETC SE PUEDA HACER EL OUTPUT A UN ARCHIVO
+#     def write(self):
+        
 
 def write (data, file_type="bed", mode="w"):    
     if not(isinstance(data, dataIter)):
