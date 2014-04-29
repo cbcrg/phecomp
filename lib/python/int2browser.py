@@ -65,6 +65,8 @@ _dict_Id = {'phase' :'chrom',
 
 _intervals = [0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 1, 1000]
 
+_dict_out_files = {'bed' : '.bed',
+                   'bedGraph': '.bedGraph'}
 _black_gradient = ["226,226,226", "198,198,198", "170,170,170", "141,141,141", "113,113,113", "85,85,85", "56,56,56", "28,28,28", "0,0,0"]
 _blue_gradient = ["229,229,254", "203,203,254", "178,178,254", "152,152,254", "127,127,254", "102,102,254", "76,76,173", "51,51,162", "0,0,128"]
 _red_gradient = ["254,172,182", "254,153,162", "254,134,142", "254,115,121", "254,96,101", "254,77,81", "254,57,61", "254,38,40", "254,19,20"]
@@ -111,6 +113,78 @@ class intData: # if I name it as int I think is like self but with a better name
         self.inFile.close()
         return fieldsB
     
+    def convert (self, mode = None):
+        if mode not in _dict_out_files: 
+            raise ValueError("Mode \'%s\' not available. Possible convert() modes are %s"%(mode,', '.join(['{}'.format(m) for m in _dict_out_files.keys()])))
+        print ("culo")
+        return (self._convert2bed (self.read()))
+    
+    def _convert2bed (self, data_tuple):
+        """
+        Transform data into a bed file if all the necessary fields present
+        """
+        print ("culo2")
+#         for row in data_tuple: 
+#             print row
+        #fields pass to read should be the ones of bed file
+        _bed_fields = ["track","chromStart","chromEnd","dataTypes", "dataValue"]         
+        #Check whether these fields are in the original otherwise raise exception
+        try:
+            idx_f = [self.fieldsG.index(f) for f in _bed_fields]                          
+        except ValueError:
+            raise ValueError("Field '%s' not in file %s." % (f, self.path))        
+         
+        ### Muy importante aqui puedo implementar las opciones de que separan en multiples bedGraph 
+        ## dependiendo del numero de dataTypes y tracks
+        track = "cage1_test"
+        mode = "w"
+        bed_file = open(os.path.join(_pwd, track + _bedFileExt), mode)        
+        bed_file.write('track name="cage 1;drink" description="cage 1;drink" visibility=2 itemRgb="On" priority=20' + "\n")
+#         
+        for row in data_tuple:
+            temp_list = [] 
+                     
+            for i in idx_f:
+                if self.fieldsG[i] == "track":
+                    temp_list.append("chr" + row[i])
+#                     bed_file.write("chr%s\t"%row[i])
+                elif self.fieldsG[i] == "chromStart":
+                    thickStart = row[i]
+#                     bed_file.write("%s\t"%row[i])
+                    temp_list.append(row[i])
+                elif self.fieldsG[i] == "chromEnd":
+                    thickEnd = row[i]
+#                     bed_file.write("%s\t"%row[i])
+                    temp_list.append(row[i])
+                elif self.fieldsG[i] == "dataValue":
+#                     bed_file.write("%s\t"%row[i])
+                    temp_list.append(row[i])
+                    for v in _intervals:
+                        if float(row[i]) <= v:
+                            j = _intervals.index(v)                        
+                            type = row [self.fieldsG.index("dataTypes")]                        
+                            color = _dict_col_grad[type][j]
+                            break        
+                else:
+#                     bed_file.write("%s\t"%row[i])
+                    temp_list.append(row[i])
+#             bed_file.write("+\t")
+            temp_list.append("+")
+#             bed_file.write("%s\t"%thickStart)
+            temp_list.append(thickStart)
+#             bed_file.write("%s\t"%thickEnd)
+            temp_list.append(thickEnd)
+#             bed_file.write("%s\t"%color)
+            temp_list.append(color) 
+#             bed_file.write("\n")
+#             bed_file.close
+            yield(tuple(temp_list))
+    _bedfile_fields = ["track","chromStart","chromEnd","dataValue"] 
+     
+#         f2print = [data.fields.index(f) for f in _fileFields] 
+#         read (self, )
+       
+           
     def convert2bed (self):
         """
         Transform data into a bed file if all the necessary fields present
@@ -123,24 +197,32 @@ class intData: # if I name it as int I think is like self but with a better name
             idx_f = [self.fieldsG.index(f) for f in _bed_fields]                          
         except ValueError:
             raise ValueError("Field '%s' not in file %s." % (f, self.path))
-
+        
+        ### Muy importante aqui puedo implementar las opciones de que separan en multiples bedGraph 
+        ## dependiendo del numero de dataTypes y tracks
         track = "cage1_test"
         mode = "w"
         bed_file = open(os.path.join(_pwd, track + _bedFileExt), mode)        
         bed_file.write('track name="cage 1;drink" description="cage 1;drink" visibility=2 itemRgb="On" priority=20' + "\n")
         
-        for row in self.read (fields = _bed_fields):         
+        for row in self.read (fields = _bed_fields):
+            temp_list = [] 
+                    
             for i in idx_f:
                 if self.fieldsG[i] == "track":
-                    bed_file.write("chr%s\t"%row[i])
+                    temp_list.append("chr" + row[i])
+#                     bed_file.write("chr%s\t"%row[i])
                 elif self.fieldsG[i] == "chromStart":
                     thickStart = row[i]
-                    bed_file.write("%s\t"%row[i])
+#                     bed_file.write("%s\t"%row[i])
+                    temp_list.append(row[i])
                 elif self.fieldsG[i] == "chromEnd":
                     thickEnd = row[i]
-                    bed_file.write("%s\t"%row[i])
+#                     bed_file.write("%s\t"%row[i])
+                    temp_list.append(row[i])
                 elif self.fieldsG[i] == "dataValue":
-                    bed_file.write("%s\t"%row[i])
+#                     bed_file.write("%s\t"%row[i])
+                    temp_list.append(row[i])
                     for v in _intervals:
                         if float(row[i]) <= v:
                             j = _intervals.index(v)                        
@@ -148,16 +230,19 @@ class intData: # if I name it as int I think is like self but with a better name
                             color = _dict_col_grad[type][j]
                             break        
                 else:
-                    bed_file.write("%s\t"%row[i])
-                    
-            bed_file.write("+\t")
-            bed_file.write("%s\t"%thickStart)
-            bed_file.write("%s\t"%thickEnd)
-            
-            bed_file.write("%s\t"%color) 
-            bed_file.write("\n")
-            bed_file.close
-    
+#                     bed_file.write("%s\t"%row[i])
+                    temp_list.append(row[i])
+#             bed_file.write("+\t")
+            temp_list.append("+")
+#             bed_file.write("%s\t"%thickStart)
+            temp_list.append(thickStart)
+#             bed_file.write("%s\t"%thickEnd)
+            temp_list.append(thickEnd)
+#             bed_file.write("%s\t"%color)
+            temp_list.append(color) 
+#             bed_file.write("\n")
+#             bed_file.close
+            yield(tuple(temp_list))
 #     _bedfile_fields = ["track","chromStart","chromEnd","dataValue"] 
      
 #         f2print = [data.fields.index(f) for f in _fileFields] 
@@ -372,18 +457,24 @@ intData = intData(path)
 # intData2 = intData.relative_coord()
 # for line in intData2: print line
 # # print (intData.max)
-intData.writeChr()
-s = intData.read(relative_coord=True)
-intData.convert2bed()
+# intData.writeChr()
+# s = intData.read(relative_coord=True)
+# print (type (s.data), type (s.fields))
+# p = intData.convert2bed()
+# # print (p)
+# for line in s.data:
+#     print line
+# 
+#     
+bed = intData.convert(mode = "bed")
 
-
-# for line in s:  print line
+for line in bed:  print line
 # print (s.fields)
 # write(s)
 
 # print (intData.get_min_max(fields=["dataValue", "dataValue"]))
-print (intData.tracks)
-print (intData.dataTypes)
+# print (intData.tracks)
+# print (intData.dataTypes)
 
 # s2=write(s)
 # for line in s2: print line
