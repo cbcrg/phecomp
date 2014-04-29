@@ -156,10 +156,7 @@ class intData: # if I name it as int I think is like self but with a better name
                     temp.append(interv [i])
                 
             yield(tuple(temp))
-            
-#         for interv in self.reader:
-#             yield tuple (interv [n]
-#                          for n in indexL)                    
+                         
         self.inFile.close()
         
     def get_min_max(self, fields=None): 
@@ -223,11 +220,12 @@ class intData: # if I name it as int I think is like self but with a better name
 #     def convert(self, mode = None):
 #         return { 'bed': self._convert2bed, 'bedGraph': self._convert2bedGraph}.get(action, self._error)()
           
-    def convert (self, mode = None):
+    def convert (self, mode = None, **kwargs):
+        kwargs['relative_coord'] = kwargs.get("relative_coord",False)
         if mode not in _dict_out_files: 
             raise ValueError("Mode \'%s\' not available. Possible convert() modes are %s"%(mode,', '.join(['{}'.format(m) for m in _dict_out_files.keys()])))
         
-        return { 'bed': self._convert2bed, 'bedGraph': self._convert2bedGraph}.get(mode)(self.read())  
+        return { 'bed': self._convert2bed, 'bedGraph': self._convert2bedGraph}.get(mode)(self.read(**kwargs))  
     
     def _convert2bed (self, data_tuple):
         """
@@ -411,9 +409,12 @@ intData = intData(path)
 #     print line
 # 
 #     
-bed = intData.convert(mode = "bed")
+bed = intData.convert(mode = "bed", relative_coord = True)
 
 for line in bed:  print line
+
+# s = intData.read(relative_coord = True, )
+
 # print (s.fields)
 # write(s)
 
