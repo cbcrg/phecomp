@@ -200,11 +200,10 @@ class intData: # if I name it as int I think is like self but with a better name
         idx_field = self.fieldsG.index (field)
         field = [field]    
         set_fields = set()
-        
+                
         for row in self.read():
-            if row[idx_field] not in set_fields:
-                set_fields.add(row[idx_field])
-                print (row[idx_field])
+#             if row[idx_field] not in set_fields: # Not needed
+            set_fields.add(row[idx_field])
                     
         return set_fields
                      
@@ -395,6 +394,7 @@ def writeBed(self, feature="dataValue"):
 ## Examples of executions 
          
 intData = intData(path)
+print (intData.get_field_items("dataTypes"))
 # intData2 = intData.relative_coord()
 # for line in intData2: print line
 # # print (intData.max)
@@ -409,7 +409,7 @@ intData = intData(path)
 #     
 bed = intData.convert(mode = "bed", relative_coord = True)
 
-for line in bed:  print line
+# for line in bed:  print line
 
 # s = intData.read(relative_coord = True, )
 
