@@ -190,7 +190,7 @@ class intData: # if I name it as int I think is like self but with a better name
     
     def get_field_items(self, field="dataTypes"): 
         """
-        Return a list with all the present data types present in the column that was set as dataTypes
+        Return a list with all the possible data types present in the column that was set as dataTypes
         """
         try:
             field in self.fieldsG                
@@ -216,24 +216,19 @@ class intData: # if I name it as int I think is like self but with a better name
         genomeFile.write (genericNt * (self.max - self.min))
         genomeFile.close()
         print('Genome fasta file created: %s' % (chrom + _genomeFileExt))
-    
-#     def convert(self, mode = None):
-#         return { 'bed': self._convert2bed, 'bedGraph': self._convert2bedGraph}.get(action, self._error)()
-          
-    def convert (self, mode = None, **kwargs):
+              
+    def convert(self, mode = None, **kwargs):
         kwargs['relative_coord'] = kwargs.get("relative_coord",False)
+        print self.fieldsG
         if mode not in _dict_out_files: 
             raise ValueError("Mode \'%s\' not available. Possible convert() modes are %s"%(mode,', '.join(['{}'.format(m) for m in _dict_out_files.keys()])))
         
-        return { 'bed': self._convert2bed, 'bedGraph': self._convert2bedGraph}.get(mode)(self.read(**kwargs))  
-    
-    def _convert2bed (self, data_tuple):
+        return Bed({ 'bed': self._convert2bed, 'bedGraph': self._convert2bedGraph}.get(mode)(self.read(**kwargs)))  
+        
+    def _convert2bed (self, data_tuple, split_dataType=False):
         """
         Transform data into a bed file if all the necessary fields present
         """
-        print ("culo2")
-#         for row in data_tuple: 
-#             print row
         #fields pass to read should be the ones of bed file
         _bed_fields = ["track","chromStart","chromEnd","dataTypes", "dataValue"]         
         #Check whether these fields are in the original otherwise raise exception
@@ -287,8 +282,11 @@ class intData: # if I name it as int I think is like self but with a better name
 #             bed_file.write("\n")
 #             bed_file.close
             yield(tuple(temp_list))
-    _bedfile_fields = ["track","chromStart","chromEnd","dataValue"]            
-
+        
+        _bedfile_fields = ["track","chromStart","chromEnd","dataValue", "culo"]            
+        self.fieldsG = _bedfile_fields
+#         return _bedfile_fields
+    
     def _convert2bedGraph(self, data_tuple):
         print "Sorry still not develop"
         
@@ -364,7 +362,7 @@ def write (data, file_type="bed", mode="w"):
 
 ################################ Bed ##########################################
 
-class Bed(intData):
+class Bed(dataIter):
     """
     dataInt class for bed file format data
     
@@ -374,10 +372,10 @@ class Bed(intData):
           'thick_start','thick_end','item_rgb']
           
     """
-    def __init__(self,path,**kwargs):
-        kwargs['format'] = 'bed'
+    def __init__(self,data,**kwargs):
+#         kwargs['format'] = 'bed'
         kwargs['fields'] = ['chr','start','end','name','score','strand','thick_start','thick_end','item_rgb']
-        TextTrack.__init__(self,path,**kwargs)
+        dataIter.__init__(self,data,**kwargs)
         
 def writeBed(self, feature="dataValue"):
         try:
