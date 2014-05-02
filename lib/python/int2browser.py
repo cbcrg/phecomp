@@ -115,7 +115,7 @@ class intData: # if I name it as int I think is like self but with a better name
         self.inFile.close()
         return fieldsB
        
-    def read(self, fields=None, relative_coord=False, fields2rel=None):
+    def read(self, fields=None, relative_coord=False, fields2rel=None, **kwargs):
         # If I don't have fields then I get all the columns of the file
         if fields is None:
             fields = self.fieldsG
@@ -197,7 +197,7 @@ class intData: # if I name it as int I think is like self but with a better name
         try:
             field in self.fieldsG                
         except ValueError:
-            raise ValueError("Field '%s' not in file %s." % (f, self.path))
+            raise ValueError("Field '%s' not in file %s." % (field, self.path))
         
         idx_field = self.fieldsG.index (field)
         field = [field]    
@@ -220,34 +220,44 @@ class intData: # if I name it as int I think is like self but with a better name
               
     def convert(self, mode = None, **kwargs):
         kwargs['relative_coord'] = kwargs.get("relative_coord",False)
+        kwargs['split_dataTypes'] = kwargs.get("split_dataTypes",False)
+        
         print self.fieldsG
         if mode not in _dict_out_files: 
             raise ValueError("Mode \'%s\' not available. Possible convert() modes are %s"%(mode,', '.join(['{}'.format(m) for m in _dict_out_files.keys()])))
         
-        dict = ({ 'bed': self._convert2bed, 'bedGraph': self._convert2bedGraph}.get(mode)(self.read(**kwargs))) 
+        dict_beds = ({ 'bed': self._convert2bed, 'bedGraph': self._convert2bedGraph}.get(mode)(self.read(**kwargs), kwargs.get('split_dataTypes'))) 
 #         return Bed({ 'bed': self._convert2bed, 'bedGraph': self._convert2bedGraph}.get(mode)(self.read(**kwargs)))  
 #             return { 'bed': self._convert2bed, 'bedGraph': self._convert2bedGraph}.get(mode)(self.read(**kwargs))
-        return (dict)
+        return (dict_beds)
     
-    def _convert2bed (self, data_tuple, split_dataType=False):
+    def _convert2bed (self, data_tuple, split_dataTypes=False):
         """
         Transform data into a bed file if all the necessary fields present
         """                        
         ### Muy importante aqui puedo implementar las opciones de que separan en multiples bedGraph 
         ## dependiendo del numero de dataTypes y tracks
+        idx_fields2split = [self.fieldsG.index("track"), self.fieldsG.index("dataTypes")] if split_dataTypes else [self.fieldsG.index("track")]
         track = "cage1_test"
         mode = "w"
         bed_file = open(os.path.join(_pwd, track + _bedFileExt), mode)        
         bed_file.write('track name="cage 1;drink" description="cage 1;drink" visibility=2 itemRgb="On" priority=20' + "\n")
-        
+#         idx_fields2split = [self.fieldsG.index("track"), self.fieldsG.index("dataTypes")]
         track_dict = {}
+        data_tuple=sorted(data_tuple,key=operator.itemgetter(*idx_fields2split))
         
-        for key,group in itertools.groupby(data_tuple,operator.itemgetter(self.fieldsG.index("track"))):
+        for key,group in itertools.groupby(data_tuple,operator.itemgetter(*idx_fields2split)):            
             track_tuple = tuple(group)
-            #Esto lo tengo que poner en otra funcion privada que cree el bed quiza lo podria sacar fuera tambien al convert
-            # el problema de sacarlo fuera es la llamada a la funcion pero puedo resolverlo quiza llamandola una por cada vez con 
-            # la misma sintaxis
-            track_dict[key]=Bed(self.track_convert2bed(track_tuple, True))
+#             track_dict[key]=Bed(self.track_convert2bed(track_tuple, True))
+#         for key,group in itertools.groupby(data_tuple,operator.itemgetter(self.fieldsG.index("track"))):
+            if not split_dataTypes and len(key)==1:
+                print (key, '_'.join(self.dataTypes))
+                track_dict[(key, '_'.join(self.dataTypes))]=Bed(self.track_convert2bed(track_tuple, True)) 
+            elif split_dataTypes and len(key)==2:                 
+                track_dict[key]=Bed(self.track_convert2bed(track_tuple, True))
+            else:    
+                raise ValueError("Key of converted dictionary needs 1 or two items %s" % (str(key)))
+            
         return track_dict
             
     def track_convert2bed (self, track, in_call=False):    
@@ -283,8 +293,8 @@ class intData: # if I name it as int I think is like self but with a better name
                     for v in _intervals:
                         if float(row[i]) <= v:
                             j = _intervals.index(v)                        
-                            type = row [self.fieldsG.index("dataTypes")]                        
-                            color = _dict_col_grad[type][j]
+                            d_type = row [self.fieldsG.index("dataTypes")]                        
+                            color = _dict_col_grad[d_type][j]
                             break        
                 else:
         #                     bed_file.write("%s\t"%row[i])
@@ -359,8 +369,8 @@ def write (data, file_type="bed", mode="w"):
                 for v in _intervals:
                     if float(row[i]) <= v:
                         j = _intervals.index(v)                        
-                        type = row [data.fields.index("dataTypes")]                        
-                        color = _dict_col_grad[type][j]
+                        d_type = row [data.fields.index("dataTypes")]                        
+                        color = _dict_col_grad[d_type][j]
                         break        
             else:
                 bed_file.write("%s\t"%row[i])
@@ -416,12 +426,19 @@ print (intData.get_field_items("dataTypes"))
 print(intData.min)
 # intData2 = intData.relative_coord()
  
-intData.convert(mode = "bed", relative_coord = True)   
-bedFiles = intData.convert(mode = "bed", relative_coord = True)
-s=intData.read()
-bedFile = intData.track_convert2bed(s)
-for line in bedFile:
-     print (line) 
+# intData.convert(mode = "bed", relative_coord = True)   
+bedFiles = intData.convert(mode = "bed", relative_coord = True, split_dataTypes=False)
+for key in bedFiles: 
+    print (key), 
+    print ("---------")
+    bedSingle = bedFiles[key]
+#     for line in bedSingle: print line
+#     
+# s=intData.read(relative_coord=True)
+
+# bedFile = intData.track_convert2bed(s)
+# for line in bedFile:    
+#     print (line) 
 
 
 
@@ -494,10 +511,15 @@ data=[(1, 'A', 'foo'),
     ('xx', 'B', 'foobar'),
     ('yy', 'B', 'foo'),
     ('yx', 'B', 'foo'),
+    (500, 'A', 'foo-bar'),
      
     (1000, 'C', 'py'),
     (200, 'C', 'foo'),
     ]
-#  
-# for key,group in itertools.groupby(data,operator.itemgetter(1,2)):
+#
+data2=sorted(data,key=operator.itemgetter(2))
+
+  
+# for key,group in itertools.groupby(data2,operator.itemgetter(1,2)):
 #     print(tuple(group))
+#     print key
