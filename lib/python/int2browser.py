@@ -335,16 +335,33 @@ class dataIter(object):
 
     def next(self):
         return self.data.next()
-    
-    ### WRITE TIENE QUE ESTAR AQUI DE MANERA QUE TODOS LAS CLASES QUE HEREDAN BED, BEDGRAPH ETC SE PUEDA HACER EL OUTPUT A UN ARCHIVO
-#     def write(self):
-        
 
+    ### WRITE TIENE QUE ESTAR AQUI DE MANERA QUE TODOS LAS CLASES QUE HEREDAN BED, BEDGRAPH ETC SE PUEDA HACER EL OUTPUT A UN ARCHIVO
+    def write(self, file_type="bed", mode="w", track=None):
+        if not(isinstance(self, dataIter)):
+            raise Exception("Not writable object, type not supported '%s'."%(type(self)))
+        
+        print self.fields
+        
+        if track is None: 
+            track = "cage1_test"
+            
+        track_file = open(os.path.join(_pwd, track + _bedFileExt), mode)
+        track_file.write('track name="cage 1;drink" description="cage 1;drink" visibility=2 itemRgb="On" priority=20' + "\n")
+        
+        for row in self.data:         
+            print ('\t'.join(str(i) for i in row))
+            track_file.write('\t'.join(str(i) for i in row))
+#                 track_file.write('  '.join('%'+str(row[i])))
+#                             bed_file.write("%s\t"%row[i])
+            track_file.write("\n")      
+        track_file.close()
+        
 def write (data, file_type="bed", mode="w"):    
     if not(isinstance(data, dataIter)):
         t = type(data)
         raise Exception("Object must be dataIter, '%s' of '%s' is not supported."%(data, t))
-   
+    
     _fileFields = ["track","chromStart","chromEnd","dataTypes", "dataValue"]
 #     _bedfile_fields = ["track","chromStart","chromEnd","dataValue"] 
      
@@ -432,6 +449,9 @@ for key in bedFiles:
     print (key), 
     print ("---------")
     bedSingle = bedFiles[key]
+    print type (bedSingle)
+    name_file='_'.join(key)
+    bedSingle.write(track=name_file)
 #     for line in bedSingle: print line
 #     
 # s=intData.read(relative_coord=True)
