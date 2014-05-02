@@ -251,7 +251,7 @@ class intData: # if I name it as int I think is like self but with a better name
 #             track_dict[key]=Bed(self.track_convert2bed(track_tuple, True))
 #         for key,group in itertools.groupby(data_tuple,operator.itemgetter(self.fieldsG.index("track"))):
             if not split_dataTypes and len(key)==1:
-                print (key, '_'.join(self.dataTypes))
+#                 print (key, '_'.join(self.dataTypes))
                 track_dict[(key, '_'.join(self.dataTypes))]=Bed(self.track_convert2bed(track_tuple, True)) 
             elif split_dataTypes and len(key)==2:                 
                 track_dict[key]=Bed(self.track_convert2bed(track_tuple, True))
@@ -341,8 +341,6 @@ class dataIter(object):
         if not(isinstance(self, dataIter)):
             raise Exception("Not writable object, type not supported '%s'."%(type(self)))
         
-        print self.fields
-        
         if track is None: 
             track = "cage1_test"
             
@@ -350,10 +348,7 @@ class dataIter(object):
         track_file.write('track name="cage 1;drink" description="cage 1;drink" visibility=2 itemRgb="On" priority=20' + "\n")
         
         for row in self.data:         
-            print ('\t'.join(str(i) for i in row))
             track_file.write('\t'.join(str(i) for i in row))
-#                 track_file.write('  '.join('%'+str(row[i])))
-#                             bed_file.write("%s\t"%row[i])
             track_file.write("\n")      
         track_file.close()
         
@@ -367,7 +362,7 @@ def write (data, file_type="bed", mode="w"):
      
     f2print = [data.fields.index(f) for f in _fileFields]
     
-    print (f2print)
+#     print (f2print)
     track = "cage1_test"
     bed_file = open(os.path.join(_pwd, track + _bedFileExt), mode)        
     bed_file.write('track name="cage 1;drink" description="cage 1;drink" visibility=2 itemRgb="On" priority=20' + "\n")
@@ -445,11 +440,11 @@ print(intData.min)
  
 # intData.convert(mode = "bed", relative_coord = True)   
 bedFiles = intData.convert(mode = "bed", relative_coord = True, split_dataTypes=False)
+
 for key in bedFiles: 
-    print (key), 
-    print ("---------")
+#     print (key), 
+#     print ("---------")
     bedSingle = bedFiles[key]
-    print type (bedSingle)
     name_file='_'.join(key)
     bedSingle.write(track=name_file)
 #     for line in bedSingle: print line
