@@ -224,20 +224,15 @@ class intData: # if I name it as int I think is like self but with a better name
         if mode not in _dict_out_files: 
             raise ValueError("Mode \'%s\' not available. Possible convert() modes are %s"%(mode,', '.join(['{}'.format(m) for m in _dict_out_files.keys()])))
         
-        return Bed({ 'bed': self._convert2bed, 'bedGraph': self._convert2bedGraph}.get(mode)(self.read(**kwargs)))  
+        dict = ({ 'bed': self._convert2bed, 'bedGraph': self._convert2bedGraph}.get(mode)(self.read(**kwargs))) 
+#         return Bed({ 'bed': self._convert2bed, 'bedGraph': self._convert2bedGraph}.get(mode)(self.read(**kwargs)))  
 #             return { 'bed': self._convert2bed, 'bedGraph': self._convert2bedGraph}.get(mode)(self.read(**kwargs))
+        return (dict['2'])
+    
     def _convert2bed (self, data_tuple, split_dataType=False):
         """
         Transform data into a bed file if all the necessary fields present
-        """
-        #fields pass to read should be the ones of bed file
-        _bed_fields = ["track","chromStart","chromEnd","dataTypes", "dataValue"]         
-        #Check whether these fields are in the original otherwise raise exception
-        try:
-            idx_f = [self.fieldsG.index(f) for f in _bed_fields]                          
-        except ValueError:
-            raise ValueError("Field '%s' not in file %s." % (f, self.path))        
-         
+        """                        
         ### Muy importante aqui puedo implementar las opciones de que separan en multiples bedGraph 
         ## dependiendo del numero de dataTypes y tracks
         track = "cage1_test"
@@ -251,51 +246,69 @@ class intData: # if I name it as int I think is like self but with a better name
 
 #             for key,group in itertools.groupby(data,operator.itemgetter(1,2)):
 #                  print(list(group))
-        for key,group in itertools.groupby(data_tuple,operator.itemgetter(self.fieldsG.index("track"))):
-            yield(tuple(group))
-            
-#         for row in data_tuple:
-#             temp_list = [] 
-#                      
-#             for i in idx_f:
-#                 if self.fieldsG[i] == "track":
-#                     temp_list.append("chr" + row[i])
-# #                     bed_file.write("chr%s\t"%row[i])
-#                 elif self.fieldsG[i] == "chromStart":
-#                     thickStart = row[i]
-# #                     bed_file.write("%s\t"%row[i])
-#                     temp_list.append(row[i])
-#                 elif self.fieldsG[i] == "chromEnd":
-#                     thickEnd = row[i]
-# #                     bed_file.write("%s\t"%row[i])
-#                     temp_list.append(row[i])
-#                 elif self.fieldsG[i] == "dataValue":
-# #                     bed_file.write("%s\t"%row[i])
-#                     temp_list.append(row[i])
-#                     for v in _intervals:
-#                         if float(row[i]) <= v:
-#                             j = _intervals.index(v)                        
-#                             type = row [self.fieldsG.index("dataTypes")]                        
-#                             color = _dict_col_grad[type][j]
-#                             break        
-#                 else:
-# #                     bed_file.write("%s\t"%row[i])
-#                     temp_list.append(row[i])
-# #             bed_file.write("+\t")
-#             temp_list.append("+")
-# #             bed_file.write("%s\t"%thickStart)
-#             temp_list.append(thickStart)
-# #             bed_file.write("%s\t"%thickEnd)
-#             temp_list.append(thickEnd)
-# #             bed_file.write("%s\t"%color)
-#             temp_list.append(color) 
-# #             bed_file.write("\n")
-# #             bed_file.close
-#             yield(tuple(temp_list))
+        track_dict = {}
         
-        _bedfile_fields = ["track","chromStart","chromEnd","dataValue", "culo"]            
-        self.fieldsG = _bedfile_fields
-#         return _bedfile_fields
+        for key,group in itertools.groupby(data_tuple,operator.itemgetter(self.fieldsG.index("track"))):
+#             yield(tuple(group)) #tuple es que tipo de estructura quiero hacer con los datos seleccionados podria ser list tambien
+#             tuple(group)
+            print ("----" + key)
+            track_tuple = tuple(group)
+#             self._track_convert2bed(track_tuple)
+            #Esto lo tengo que poner en otra funcion privada que cree el bed quiza lo podria sacar fuera tambien al convert
+            # el problema de sacarlo fuera es la llamada a la funcion pero puedo resolverlo quiza llamandola una por cada vez con 
+            # la misma sintaxis
+            track_dict[key]=Bed(self._track_convert2bed(track_tuple))
+        return track_dict
+            
+    def _track_convert2bed (self, track):    
+        #fields pass to read should be the ones of bed file
+        _bed_fields = ["track","chromStart","chromEnd","dataTypes", "dataValue"]         
+        #Check whether these fields are in the original otherwise raise exception
+        try:
+            idx_f = [self.fieldsG.index(f) for f in _bed_fields]                          
+        except ValueError:
+            raise ValueError("Field '%s' not in file %s." % (f, self.path)) 
+        
+        for row in track:
+            temp_list = [] 
+                      
+            for i in idx_f:
+                if self.fieldsG[i] == "track":
+                    temp_list.append("chr" + row[i])
+        #                     bed_file.write("chr%s\t"%row[i])
+                elif self.fieldsG[i] == "chromStart":
+                    thickStart = row[i]
+        #                     bed_file.write("%s\t"%row[i])
+                    temp_list.append(row[i])
+                elif self.fieldsG[i] == "chromEnd":
+                    thickEnd = row[i]
+        #                     bed_file.write("%s\t"%row[i])
+                    temp_list.append(row[i])
+                elif self.fieldsG[i] == "dataValue":
+        #                     bed_file.write("%s\t"%row[i])
+                    temp_list.append(row[i])
+                    for v in _intervals:
+                        if float(row[i]) <= v:
+                            j = _intervals.index(v)                        
+                            type = row [self.fieldsG.index("dataTypes")]                        
+                            color = _dict_col_grad[type][j]
+                            break        
+                else:
+        #                     bed_file.write("%s\t"%row[i])
+                    temp_list.append(row[i])
+        #             bed_file.write("+\t")
+            temp_list.append("+")
+        #             bed_file.write("%s\t"%thickStart)
+            temp_list.append(thickStart)
+        #             bed_file.write("%s\t"%thickEnd)
+            temp_list.append(thickEnd)
+        #             bed_file.write("%s\t"%color)
+            temp_list.append(color) 
+        #             bed_file.write("\n")
+        #             bed_file.close
+            yield(tuple(temp_list))
+    
+
     
     def _convert2bedGraph(self, data_tuple):
         print "Sorry still not develop"
@@ -409,6 +422,7 @@ def writeBed(self, feature="dataValue"):
          
 intData = intData(path)
 print (intData.get_field_items("dataTypes"))
+print(intData.min)
 # intData2 = intData.relative_coord()
 # for line in intData2: print line
 # # print (intData.max)
@@ -491,6 +505,6 @@ data=[(1, 'A', 'foo'),
     (1000, 'C', 'py'),
     (200, 'C', 'foo'),
     ]
- 
-for key,group in itertools.groupby(data,operator.itemgetter(1,2)):
-    print(tuple(group))
+#  
+# for key,group in itertools.groupby(data,operator.itemgetter(1,2)):
+#     print(tuple(group))
