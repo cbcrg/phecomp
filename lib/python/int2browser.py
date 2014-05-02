@@ -227,7 +227,7 @@ class intData: # if I name it as int I think is like self but with a better name
         dict = ({ 'bed': self._convert2bed, 'bedGraph': self._convert2bedGraph}.get(mode)(self.read(**kwargs))) 
 #         return Bed({ 'bed': self._convert2bed, 'bedGraph': self._convert2bedGraph}.get(mode)(self.read(**kwargs)))  
 #             return { 'bed': self._convert2bed, 'bedGraph': self._convert2bedGraph}.get(mode)(self.read(**kwargs))
-        return (dict['2'])
+        return (dict)
     
     def _convert2bed (self, data_tuple, split_dataType=False):
         """
@@ -240,34 +240,24 @@ class intData: # if I name it as int I think is like self but with a better name
         bed_file = open(os.path.join(_pwd, track + _bedFileExt), mode)        
         bed_file.write('track name="cage 1;drink" description="cage 1;drink" visibility=2 itemRgb="On" priority=20' + "\n")
         
-#         print (len(self.tracks))
-        print (self.fieldsG.index("track"))
-#         if (len(self.tracks) == 1): #LO HAGO SIEMPRE!!! TENDRE UN DICCIONARIO CON UN UNICO OBJETO O VARIOS DEPENDIENDO DE LO QUE HAYA
-
-#             for key,group in itertools.groupby(data,operator.itemgetter(1,2)):
-#                  print(list(group))
         track_dict = {}
         
         for key,group in itertools.groupby(data_tuple,operator.itemgetter(self.fieldsG.index("track"))):
-#             yield(tuple(group)) #tuple es que tipo de estructura quiero hacer con los datos seleccionados podria ser list tambien
-#             tuple(group)
-            print ("----" + key)
             track_tuple = tuple(group)
-#             self._track_convert2bed(track_tuple)
             #Esto lo tengo que poner en otra funcion privada que cree el bed quiza lo podria sacar fuera tambien al convert
             # el problema de sacarlo fuera es la llamada a la funcion pero puedo resolverlo quiza llamandola una por cada vez con 
             # la misma sintaxis
-            track_dict[key]=Bed(self._track_convert2bed(track_tuple))
+            track_dict[key]=Bed(self.track_convert2bed(track_tuple))
         return track_dict
             
-    def _track_convert2bed (self, track):    
+    def track_convert2bed (self, track):    
         #fields pass to read should be the ones of bed file
         _bed_fields = ["track","chromStart","chromEnd","dataTypes", "dataValue"]         
         #Check whether these fields are in the original otherwise raise exception
         try:
             idx_f = [self.fieldsG.index(f) for f in _bed_fields]                          
         except ValueError:
-            raise ValueError("Field '%s' not in file %s." % (f, self.path)) 
+            raise ValueError("Mandatory field for bed creation '%s' not in file %s." % (f, self.path)) 
         
         for row in track:
             temp_list = [] 
@@ -307,8 +297,6 @@ class intData: # if I name it as int I think is like self but with a better name
         #             bed_file.write("\n")
         #             bed_file.close
             yield(tuple(temp_list))
-    
-
     
     def _convert2bedGraph(self, data_tuple):
         print "Sorry still not develop"
@@ -436,9 +424,11 @@ print(intData.min)
 # 
 # 
 intData.convert(mode = "bed", relative_coord = True)   
-bed = intData.convert(mode = "bed", relative_coord = True)
-
-for line in bed:  print line
+bedFiles = intData.convert(mode = "bed", relative_coord = True)
+for key in bedFiles:
+    bed = bedFiles [key]
+    print ("bed file" + key)
+    for line in bed:  print line
 
 # s = intData.read(relative_coord = True, )
 
