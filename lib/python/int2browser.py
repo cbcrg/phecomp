@@ -247,17 +247,20 @@ class intData: # if I name it as int I think is like self but with a better name
             #Esto lo tengo que poner en otra funcion privada que cree el bed quiza lo podria sacar fuera tambien al convert
             # el problema de sacarlo fuera es la llamada a la funcion pero puedo resolverlo quiza llamandola una por cada vez con 
             # la misma sintaxis
-            track_dict[key]=Bed(self.track_convert2bed(track_tuple))
+            track_dict[key]=Bed(self.track_convert2bed(track_tuple, True))
         return track_dict
             
-    def track_convert2bed (self, track):    
+    def track_convert2bed (self, track, in_call=False):    
         #fields pass to read should be the ones of bed file
         _bed_fields = ["track","chromStart","chromEnd","dataTypes", "dataValue"]         
         #Check whether these fields are in the original otherwise raise exception
         try:
             idx_f = [self.fieldsG.index(f) for f in _bed_fields]                          
         except ValueError:
-            raise ValueError("Mandatory field for bed creation '%s' not in file %s." % (f, self.path)) 
+            raise ValueError("Mandatory field for bed creation '%s' not in file %s." % (f, self.path))
+
+        if (not in_call and len(self.tracks)  != 1):            
+            raise ValueError("Your file '%s' has more than one track, only single tracks can be converted to bed" % (self.path)) 
         
         for row in track:
             temp_list = [] 
@@ -412,23 +415,23 @@ intData = intData(path)
 print (intData.get_field_items("dataTypes"))
 print(intData.min)
 # intData2 = intData.relative_coord()
-# for line in intData2: print line
-# # print (intData.max)
-# intData.writeChr()
-# s = intData.read(relative_coord=True)
-# print (type (s.data), type (s.fields))
-# p = intData.convert2bed()
-# # print (p)
-# for line in s.data:
-#     print line
-# 
-# 
+ 
 intData.convert(mode = "bed", relative_coord = True)   
 bedFiles = intData.convert(mode = "bed", relative_coord = True)
-for key in bedFiles:
-    bed = bedFiles [key]
-    print ("bed file" + key)
-    for line in bed:  print line
+s=intData.read()
+bedFile = intData.track_convert2bed(s)
+for line in bedFile:
+     print (line) 
+
+
+
+
+
+
+# for key in bedFiles:
+#     bed = bedFiles [key]
+#     print ("bed file" + key)
+#     for line in bed:  print line
 
 # s = intData.read(relative_coord = True, )
 
