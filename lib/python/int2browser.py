@@ -226,28 +226,33 @@ class intData: # if I name it as int I think is like self but with a better name
         if mode not in _dict_out_files: 
             raise ValueError("Mode \'%s\' not available. Possible convert() modes are %s"%(mode,', '.join(['{}'.format(m) for m in _dict_out_files.keys()])))
         
-        dict_beds = ({ 'bed': self._convert2bed, 'bedGraph': self._convert2bedGraph}.get(mode)(self.read(**kwargs), kwargs.get('split_dataTypes'))) 
-#         return Bed({ 'bed': self._convert2bed, 'bedGraph': self._convert2bedGraph}.get(mode)(self.read(**kwargs)))  
-#             return { 'bed': self._convert2bed, 'bedGraph': self._convert2bedGraph}.get(mode)(self.read(**kwargs))
+#         dict_beds = ({ 'bed': self._convert2bed, 'bedGraph': self._convert2bedGraph}.get(mode)(self.read(**kwargs), kwargs.get('split_dataTypes')))
+        dict_beds = (self._convert2single_track(self.read(**kwargs), kwargs.get('split_dataTypes'), mode)) 
         return (dict_beds)
         
-    def _convert2bed (self, data_tuple, split_dataTypes=False):
+    def _convert2single_track (self, data_tuple, split_dataTypes=False, mode=None):
         """
         Transform data into a bed file if all the necessary fields present
-        """                        
+        """   
+        if mode is None:
+            mode='bed'                      
         idx_fields2split = [self.fieldsG.index("track"), self.fieldsG.index("dataTypes")] if split_dataTypes else [self.fieldsG.index("track")]
         track_dict = {}
         data_tuple=sorted(data_tuple,key=operator.itemgetter(*idx_fields2split))
         
         for key,group in itertools.groupby(data_tuple,operator.itemgetter(*idx_fields2split)):            
             track_tuple = tuple(group)
-            if not split_dataTypes and len(key)==1:
-                track_dict[(key, '_'.join(self.dataTypes))]=Bed(self.track_convert2bed(track_tuple, True)) 
-            elif split_dataTypes and len(key)==2:                 
-                track_dict[key]=Bed(self.track_convert2bed(track_tuple, True))
-            else:    
-                raise ValueError("Key of converted dictionary needs 1 or two items %s" % (str(key)))
-            
+            if mode=='bed':
+                if not split_dataTypes and len(key)==1:
+                    track_dict[(key, '_'.join(self.dataTypes))]=Bed(self.track_convert2bed(track_tuple, True)) 
+                elif split_dataTypes and len(key)==2:                 
+                    track_dict[key]=Bed(self.track_convert2bed(track_tuple, True))
+                else:    
+                    raise ValueError("Key of converted dictionary needs 1 or two items %s" % (str(key)))
+            elif mode=='bedTrack':
+                if not split_dataTypes and len(key)==1:
+                    track_dict[(key, '_'.join(self.dataTypes))]=Bed(self.track_convert2bed(track_tuple, True))
+        
         return track_dict
             
     def track_convert2bed (self, track, in_call=False):    
@@ -301,8 +306,8 @@ class intData: # if I name it as int I think is like self but with a better name
         #             bed_file.close
             yield(tuple(temp_list))
     
-    def _convert2bedGraph(self, data_tuple, split_dataTypes):
-        print "Sorry still not develop"
+    def track_convert2bedGraph(self, data_tuple, split_dataTypes):
+        print "option to develop"
         
     def _error (self, data_tuple):
         raise ValueError("culo")
