@@ -161,7 +161,7 @@ class intData: # if I name it as int I think is like self but with a better name
                          
         self.inFile.close()
         
-    def get_min_max(self, fields=None): 
+    def get_min_max(self, fields=None, **kwargs): 
         """
         Return the minimun and maximun of two given fields by default set to chromStart and chromEnd
         """
@@ -183,11 +183,12 @@ class intData: # if I name it as int I think is like self but with a better name
             elif len(_f) != 2:
                 raise ValueError("Only two fields can be consider for get_min_max %s: %s" % (fields, self.fieldsG))
         
-        for row in self.read(fields=_f):
+        for row in self.read(fields=_f, **kwargs):
                 if pMinMax[0] is None: pMinMax = list(row)
                 if pMinMax[0] > row[0]: pMinMax[0] = row[0]
                 if pMinMax[1] < row[1]: pMinMax[1] = row[1]
-        
+       
+        print pMinMax
         return pMinMax
     
     def get_field_items(self, field="dataTypes"): 
@@ -264,7 +265,7 @@ class intData: # if I name it as int I think is like self but with a better name
                 raise ValueError("Track mode does not exist %s"%mode)
                      
         return track_dict
-            
+                        
     def track_convert2bed (self, track, in_call=False):    
         #fields pass to read should be the ones of bed file
         _bed_fields = ["track","chromStart","chromEnd","dataTypes", "dataValue"]         
@@ -279,13 +280,24 @@ class intData: # if I name it as int I think is like self but with a better name
         
         for row in track:
             temp_list = [] 
-                      
+            ini_window = 1
+            delta_window = 300
+            end_window = delta_window
+            
+            i_track = self.fieldsG.index("track")
+            i_chr_start = self.fieldsG.index("chromStart")
+            i_chr_end = self.fieldsG.index("chromEnd")
+            i_data_value = self.fieldG.index("dataValue")
+             
+            self.fieldsG.index(f) 
+            partial_value = 0          
             for i in idx_f:
                 if self.fieldsG[i] == "track":
 #                     temp_list.append("chr" + row[i])
                     temp_list.append("chr1")
         #                     bed_file.write("chr%s\t"%row[i])
                 elif self.fieldsG[i] == "chromStart":
+                    if (row[i] < ini_window)
                     thickStart = row[i]
         #                     bed_file.write("%s\t"%row[i])
                     temp_list.append(row[i])
@@ -331,12 +343,23 @@ class intData: # if I name it as int I think is like self but with a better name
         
         for row in track:
             temp_list = [] 
-            # Aqui lo que tengo que hacer es solo hacer un for para los intervalos comprobar si el final ya se ha pasado y sino es asi entonces
-            # pasar al siguiente, tambien ponderarlo
-                      
+            ini_window = 1
+            delta_window = 300
+            end_window = delta_window
+            
+            i_track = self.fieldsG.index("track")
+            i_chr_start = self.fieldsG.index("chromStart")
+            i_chr_end = self.fieldsG.index("chromEnd")
+            i_data_value = self.fieldG.index("dataValue")
+             
+            self.fieldsG.index(f) 
+            partial_value = 0          
+            
+            print "^^^^%s"%self.min
+                     
             for i in idx_f:
                 if self.fieldsG[i] == "track":
-                    temp_list.append("chr1")        
+                    temp_list.append("chr1")      
                 elif self.fieldsG[i] == "chromStart":
                     thickStart = row[i]
                     temp_list.append(row[i])
@@ -477,14 +500,14 @@ def writeBed(self, feature="dataValue"):
 ##########################
 ## Examples of executions 
          
-intData = intData(path)
-print (intData.get_field_items("dataTypes"))
+intData = intData(path, relative_coord=True)
+# print (intData.get_field_items("dataTypes"))
 print(intData.min)
-# intData2 = intData.relative_coord()
+
  
 # intData.convert(mode = "bed", relative_coord = True)   
 # bedFiles = intData.convert(mode = "bed", relative_coord = True, split_dataTypes=False)
-bedFiles=intData.convert(mode = "bedGraph", window=300, relative_coord = True, split_dataTypes=False)
+bedFiles=intData.convert(mode = "bedGraph", window=300,  split_dataTypes=False)
 
 for key in bedFiles: 
 #     print (key), 
@@ -493,7 +516,7 @@ for key in bedFiles:
     name_file='_'.join(key)
     bedSingle.write(track=name_file)
     for line in bedSingle: print line
-     
+       
 # s=intData.read(relative_coord=True)
 
 # bedFile = intData.track_convert2bed(s)
