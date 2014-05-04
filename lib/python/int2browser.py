@@ -244,15 +244,25 @@ class intData: # if I name it as int I think is like self but with a better name
             track_tuple = tuple(group)
             if mode=='bed':
                 if not split_dataTypes and len(key)==1:
-                    track_dict[(key, '_'.join(self.dataTypes))]=Bed(self.track_convert2bed(track_tuple, True)) 
+                    track_dict[(key, '_'.join(self.dataTypes))]=Bed(self.track_convert2bed(track_tuple, True))
+                    print "====%s"%key 
                 elif split_dataTypes and len(key)==2:                 
                     track_dict[key]=Bed(self.track_convert2bed(track_tuple, True))
+                    print "====%s"%key
                 else:    
                     raise ValueError("Key of converted dictionary needs 1 or two items %s" % (str(key)))
-            elif mode=='bedTrack':
+            elif mode=='bedGraph':
                 if not split_dataTypes and len(key)==1:
-                    track_dict[(key, '_'.join(self.dataTypes))]=Bed(self.track_convert2bed(track_tuple, True))
-        
+                    track_dict[(key, '_'.join(self.dataTypes))]=Bed(self.track_convert2bedGraph(track_tuple, True))
+                    print "====%s"%key
+                elif split_dataTypes and len(key)==2:                 
+                    track_dict[key]=Bed(self.track_convert2bedGraph(track_tuple, True))
+                    print "====%s"%key
+                else:    
+                    raise ValueError("Key of converted dictionary needs 1 or two items %s" % (str(key)))
+            else:
+                raise ValueError("Track mode does not exist %s"%mode)
+                     
         return track_dict
             
     def track_convert2bed (self, track, in_call=False):    
@@ -272,7 +282,8 @@ class intData: # if I name it as int I think is like self but with a better name
                       
             for i in idx_f:
                 if self.fieldsG[i] == "track":
-                    temp_list.append("chr" + row[i])
+#                     temp_list.append("chr" + row[i])
+                    temp_list.append("chr1")
         #                     bed_file.write("chr%s\t"%row[i])
                 elif self.fieldsG[i] == "chromStart":
                     thickStart = row[i]
@@ -285,6 +296,7 @@ class intData: # if I name it as int I think is like self but with a better name
                 elif self.fieldsG[i] == "dataValue":
         #                     bed_file.write("%s\t"%row[i])
                     temp_list.append(row[i])
+                    #Assign color
                     for v in _intervals:
                         if float(row[i]) <= v:
                             j = _intervals.index(v)                        
@@ -306,9 +318,46 @@ class intData: # if I name it as int I think is like self but with a better name
         #             bed_file.close
             yield(tuple(temp_list))
     
-    def track_convert2bedGraph(self, data_tuple, split_dataTypes):
-        print "option to develop"
+    def track_convert2bedGraph(self, track, in_call=False):
+        _bed_fields = ["track","chromStart","chromEnd","dataValue"] 
+        #Check whether these fields are in the original otherwise raise exception
+        try:
+            idx_f = [self.fieldsG.index(f) for f in _bed_fields]                          
+        except ValueError:
+            raise ValueError("Mandatory field for bed creation '%s' not in file %s." % (f, self.path))
         
+        if (not in_call and len(self.tracks)  != 1):            
+            raise ValueError("Your file '%s' has more than one track, only single tracks can be converted to bedGraph" % (self.path))
+        
+        for row in track:
+            temp_list = [] 
+            # Aqui lo que tengo que hacer es solo hacer un for para los intervalos comprobar si el final ya se ha pasado y sino es asi entonces
+            # pasar al siguiente, tambien ponderarlo
+                      
+            for i in idx_f:
+                if self.fieldsG[i] == "track":
+                    temp_list.append("chr1")        
+                elif self.fieldsG[i] == "chromStart":
+                    thickStart = row[i]
+                    temp_list.append(row[i])
+                elif self.fieldsG[i] == "chromEnd":
+                    thickEnd = row[i]
+                    temp_list.append(row[i])
+                elif self.fieldsG[i] == "dataValue":
+                    temp_list.append(row[i])
+#                     for v in _intervals:
+#                         if float(row[i]) <= v:
+#                             j = _intervals.index(v)                        
+#                             d_type = row [self.fieldsG.index("dataTypes")]                        
+#                             color = _dict_col_grad[d_type][j]
+#                             break        
+#                 else:
+#                     temp_list.append(row[i])
+            
+#                   temp_list.append(color)
+            
+            yield(tuple(temp_list)) 
+            
     def _error (self, data_tuple):
         raise ValueError("culo")
          
@@ -434,7 +483,8 @@ print(intData.min)
 # intData2 = intData.relative_coord()
  
 # intData.convert(mode = "bed", relative_coord = True)   
-bedFiles = intData.convert(mode = "bed", relative_coord = True, split_dataTypes=False)
+# bedFiles = intData.convert(mode = "bed", relative_coord = True, split_dataTypes=False)
+bedFiles=intData.convert(mode = "bedGraph", window=300, relative_coord = True, split_dataTypes=False)
 
 for key in bedFiles: 
 #     print (key), 
@@ -442,8 +492,8 @@ for key in bedFiles:
     bedSingle = bedFiles[key]
     name_file='_'.join(key)
     bedSingle.write(track=name_file)
-#     for line in bedSingle: print line
-#     
+    for line in bedSingle: print line
+     
 # s=intData.read(relative_coord=True)
 
 # bedFile = intData.track_convert2bed(s)
