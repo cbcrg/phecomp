@@ -230,28 +230,18 @@ class intData: # if I name it as int I think is like self but with a better name
 #         return Bed({ 'bed': self._convert2bed, 'bedGraph': self._convert2bedGraph}.get(mode)(self.read(**kwargs)))  
 #             return { 'bed': self._convert2bed, 'bedGraph': self._convert2bedGraph}.get(mode)(self.read(**kwargs))
         return (dict_beds)
-    
+        
     def _convert2bed (self, data_tuple, split_dataTypes=False):
         """
         Transform data into a bed file if all the necessary fields present
         """                        
-        ### Muy importante aqui puedo implementar las opciones de que separan en multiples bedGraph 
-        ## dependiendo del numero de dataTypes y tracks
         idx_fields2split = [self.fieldsG.index("track"), self.fieldsG.index("dataTypes")] if split_dataTypes else [self.fieldsG.index("track")]
-        track = "cage1_test"
-        mode = "w"
-        bed_file = open(os.path.join(_pwd, track + _bedFileExt), mode)        
-        bed_file.write('track name="cage 1;drink" description="cage 1;drink" visibility=2 itemRgb="On" priority=20' + "\n")
-#         idx_fields2split = [self.fieldsG.index("track"), self.fieldsG.index("dataTypes")]
         track_dict = {}
         data_tuple=sorted(data_tuple,key=operator.itemgetter(*idx_fields2split))
         
         for key,group in itertools.groupby(data_tuple,operator.itemgetter(*idx_fields2split)):            
             track_tuple = tuple(group)
-#             track_dict[key]=Bed(self.track_convert2bed(track_tuple, True))
-#         for key,group in itertools.groupby(data_tuple,operator.itemgetter(self.fieldsG.index("track"))):
             if not split_dataTypes and len(key)==1:
-#                 print (key, '_'.join(self.dataTypes))
                 track_dict[(key, '_'.join(self.dataTypes))]=Bed(self.track_convert2bed(track_tuple, True)) 
             elif split_dataTypes and len(key)==2:                 
                 track_dict[key]=Bed(self.track_convert2bed(track_tuple, True))
@@ -311,7 +301,7 @@ class intData: # if I name it as int I think is like self but with a better name
         #             bed_file.close
             yield(tuple(temp_list))
     
-    def _convert2bedGraph(self, data_tuple):
+    def _convert2bedGraph(self, data_tuple, split_dataTypes):
         print "Sorry still not develop"
         
     def _error (self, data_tuple):
