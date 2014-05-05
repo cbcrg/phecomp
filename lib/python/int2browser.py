@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 from __future__ import division
+# from pybedtools import BedTool
 
 __author__ = 'Jose Espinosa-Carrasco'
 
@@ -12,21 +13,8 @@ import operator
 #import sys
 #print (sys.version)
 
-### Classes
 ## fieldG --> field in genome format
 ## fieldP --> correspoding field in phenome format
-
-class identity:
-    def __init__(self, fieldG, dictFields, header):
-        self.fieldG = fieldG        
-        self.header = header
-        self.fieldB = dictFields.get (fieldG, 'None')             
-    def index (self):
-        if self.fieldB is not 'None':
-            return self.header.index (self.fieldB)
-        else:
-            return self.fieldB  
-        
         
 ## VARIABLES
 _pwd = os.getcwd ()
@@ -257,7 +245,7 @@ class intData: # if I name it as int I think is like self but with a better name
                     raise ValueError("Key of converted dictionary needs 1 or two items %s" % (str(key)))
             elif mode=='bedGraph':
                 if not split_dataTypes and len(key)==1:
-                    track_dict[(key, '_'.join(self.dataTypes))]=Bed(self.track_convert2bedGraph(track_tuple, True))
+                    track_dict[(key, '_'.join(self.dataTypes))]=BedGraph(self.track_convert2bedGraph(track_tuple, True))
                     print "====%s"%key
                 elif split_dataTypes and len(key)==2:                 
                     track_dict[key]=Bed(self.track_convert2bedGraph(track_tuple, True))
@@ -450,7 +438,7 @@ class intData: # if I name it as int I think is like self but with a better name
          
 ################################################################################
 class dataIter(object):
-    def __init__(self, data, fields=None):
+    def __init__(self, data, fields=None, format="txt"):
         if isinstance(data,(tuple)):            
             data = iter(data)
         if not fields:
@@ -460,7 +448,7 @@ class dataIter(object):
             raise ValueError("Must specify a 'fields' attribute for %s." % self.__str__())
         self.data = data
         self.fields = fields
-        
+        self.format = format
     def __iter__(self):
         return self.data
 
@@ -544,6 +532,20 @@ class Bed(dataIter):
         kwargs['fields'] = ['chr','start','end','name','score','strand','thick_start','thick_end','item_rgb']
         dataIter.__init__(self,data,**kwargs)
 
+class BedGraph(dataIter):
+    """
+    dataInt class for bedGraph file format data
+    
+    Fields used in this application are:
+        
+         ['chr','start','end', 'score']
+          
+    """
+    def __init__(self,data,**kwargs):
+        kwargs['format'] = 'bed'
+        kwargs['fields'] = ['chr','start','end','score']
+        dataIter.__init__(self,data,**kwargs)
+        
 class ObjectContainer():
     pass 
         
@@ -582,6 +584,8 @@ for key in bedFiles:
     name_file='_'.join(key)
     bedSingle.write(track=name_file)
     for line in bedSingle: print line
+
+
        
 # s=intData.read(relative_coord=True)
 
