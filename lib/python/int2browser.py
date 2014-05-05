@@ -265,71 +265,45 @@ class intData: # if I name it as int I think is like self but with a better name
                 raise ValueError("Track mode does not exist %s"%mode)
                      
         return track_dict
-                        
-    def track_convert2bed (self, track, in_call=False):    
+    
+    def track_convert2bed (self, track, in_call=False):
         #fields pass to read should be the ones of bed file
-        _bed_fields = ["track","chromStart","chromEnd","dataTypes", "dataValue"]         
+        _bed_fields = ["track","chromStart","chromEnd","dataTypes", "dataValue"]
         #Check whether these fields are in the original otherwise raise exception
         try:
-            idx_f = [self.fieldsG.index(f) for f in _bed_fields]                          
+            [self.fieldsG.index(f) for f in _bed_fields]
         except ValueError:
             raise ValueError("Mandatory field for bed creation '%s' not in file %s." % (f, self.path))
 
-        if (not in_call and len(self.tracks)  != 1):            
-            raise ValueError("Your file '%s' has more than one track, only single tracks can be converted to bed" % (self.path)) 
+        if (not in_call and len(self.tracks) != 1):
+            raise ValueError("Your file '%s' has more than one track, only single tracks can be converted to bed" % (self.path))
         
-        for row in track:
-            temp_list = [] 
-            ini_window = 1
-            delta_window = 300
-            end_window = delta_window
+#         i_track = self.fieldsG.index("track")
+        i_chr_start = self.fieldsG.index("chromStart")
+        i_chr_end = self.fieldsG.index("chromEnd")
+        i_data_value = self.fieldsG.index("dataValue")
+        i_data_types = self.fieldsG.index("dataTypes")
             
-            i_track = self.fieldsG.index("track")
-            i_chr_start = self.fieldsG.index("chromStart")
-            i_chr_end = self.fieldsG.index("chromEnd")
-            i_data_value = self.fieldG.index("dataValue")
-             
-            self.fieldsG.index(f) 
-            partial_value = 0          
-            for i in idx_f:
-                if self.fieldsG[i] == "track":
-#                     temp_list.append("chr" + row[i])
-                    temp_list.append("chr1")
-        #                     bed_file.write("chr%s\t"%row[i])
-                elif self.fieldsG[i] == "chromStart":
-                    if (row[i] < ini_window)
-                    thickStart = row[i]
-        #                     bed_file.write("%s\t"%row[i])
-                    temp_list.append(row[i])
-                elif self.fieldsG[i] == "chromEnd":
-                    thickEnd = row[i]
-        #                     bed_file.write("%s\t"%row[i])
-                    temp_list.append(row[i])
-                elif self.fieldsG[i] == "dataValue":
-        #                     bed_file.write("%s\t"%row[i])
-                    temp_list.append(row[i])
-                    #Assign color
-                    for v in _intervals:
-                        if float(row[i]) <= v:
-                            j = _intervals.index(v)                        
-                            d_type = row [self.fieldsG.index("dataTypes")]                        
-                            color = _dict_col_grad[d_type][j]
-                            break        
-                else:
-        #                     bed_file.write("%s\t"%row[i])
-                    temp_list.append(row[i])
-        #             bed_file.write("+\t")
+        for row in track:
+            temp_list = []
+            temp_list.append("chr1")
+            temp_list.append(row[i_chr_start])
+            temp_list.append(row[i_chr_end])
+            temp_list.append(row[i_data_types]) 
+            temp_list.append(row[i_data_value])   
             temp_list.append("+")
-        #             bed_file.write("%s\t"%thickStart)
-            temp_list.append(thickStart)
-        #             bed_file.write("%s\t"%thickEnd)
-            temp_list.append(thickEnd)
-        #             bed_file.write("%s\t"%color)
-            temp_list.append(color) 
-        #             bed_file.write("\n")
-        #             bed_file.close
+            temp_list.append(row[i_chr_start])
+            temp_list.append(row[i_chr_end])
+            for v in _intervals:
+                if float(row[i_data_value]) <= v:
+                    j = _intervals.index(v)
+                    d_type = row [self.fieldsG.index("dataTypes")]
+                    color = _dict_col_grad[d_type][j]
+                    break
+            temp_list.append(color)          
+            
             yield(tuple(temp_list))
-    
+                    
     def track_convert2bedGraph(self, track, in_call=False):
         _bed_fields = ["track","chromStart","chromEnd","dataValue"] 
         #Check whether these fields are in the original otherwise raise exception
@@ -342,7 +316,7 @@ class intData: # if I name it as int I think is like self but with a better name
             raise ValueError("Your file '%s' has more than one track, only single tracks can be converted to bedGraph" % (self.path))
         
         for row in track:
-            temp_list = [] 
+            temp_list = []
             ini_window = 1
             delta_window = 300
             end_window = delta_window
@@ -351,6 +325,8 @@ class intData: # if I name it as int I think is like self but with a better name
             i_chr_start = self.fieldsG.index("chromStart")
             i_chr_end = self.fieldsG.index("chromEnd")
             i_data_value = self.fieldG.index("dataValue")
+             
+            
              
             self.fieldsG.index(f) 
             partial_value = 0          
@@ -506,8 +482,8 @@ print(intData.min)
 
  
 # intData.convert(mode = "bed", relative_coord = True)   
-# bedFiles = intData.convert(mode = "bed", relative_coord = True, split_dataTypes=False)
-bedFiles=intData.convert(mode = "bedGraph", window=300,  split_dataTypes=False)
+bedFiles = intData.convert(mode = "bed", relative_coord = True, split_dataTypes=False)
+# bedFiles=intData.convert(mode = "bedGraph", window=300,  split_dataTypes=False)
 
 for key in bedFiles: 
 #     print (key), 
