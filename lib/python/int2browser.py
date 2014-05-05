@@ -471,51 +471,7 @@ class dataIter(object):
             track_file.write('\t'.join(str(i) for i in row))
             track_file.write("\n")      
         track_file.close()
-        
-def write (data, file_type="bed", mode="w"):    
-    if not(isinstance(data, dataIter)):
-        t = type(data)
-        raise Exception("Object must be dataIter, '%s' of '%s' is not supported."%(data, t))
-    
-    _fileFields = ["track","chromStart","chromEnd","dataTypes", "dataValue"]
-#     _bedfile_fields = ["track","chromStart","chromEnd","dataValue"] 
-     
-    f2print = [data.fields.index(f) for f in _fileFields]
-    
-#     print (f2print)
-    track = "cage1_test"
-    bed_file = open(os.path.join(_pwd, track + _bedFileExt), mode)        
-    bed_file.write('track name="cage 1;drink" description="cage 1;drink" visibility=2 itemRgb="On" priority=20' + "\n")
-    for row in data.data:         
-        for i in f2print:
-            if data.fields[i] == "track":
-                bed_file.write("chr%s\t"%row[i])
-            elif data.fields[i] == "chromStart":
-                thickStart = row[i]
-                bed_file.write("%s\t"%row[i])
-            elif data.fields[i] == "chromEnd":
-                thickEnd = row[i]
-                bed_file.write("%s\t"%row[i])
-            elif data.fields[i] == "dataValue":
-                bed_file.write("%s\t"%row[i])
-                for v in _intervals:
-                    if float(row[i]) <= v:
-                        j = _intervals.index(v)                        
-                        d_type = row [data.fields.index("dataTypes")]                        
-                        color = _dict_col_grad[d_type][j]
-                        break        
-            else:
-                bed_file.write("%s\t"%row[i])
-                
-        bed_file.write("+\t")
-        bed_file.write("%s\t"%thickStart)
-        bed_file.write("%s\t"%thickEnd)
-        
-        bed_file.write("%s\t"%color) 
-        bed_file.write("\n")
-    bed_file.close
-                     
-
+                             
 ################################ Bed ##########################################
 
 class Bed(dataIter):
