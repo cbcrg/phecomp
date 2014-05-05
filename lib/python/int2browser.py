@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+from __future__ import division
+
 __author__ = 'Jose Espinosa-Carrasco'
 
 import argparse
@@ -30,6 +32,7 @@ class identity:
 _pwd = os.getcwd ()
 _genomeFileExt = ".fa"
 _bedFileExt = ".bed"
+_bedGraphFileExt = ".bedGraph"
 genericNt = "N"
 parser = argparse.ArgumentParser (description = 'Script to transform behavioral data into GB readable data')
 parser.add_argument ('-i','--input', help='Input file name',required=True)
@@ -315,50 +318,135 @@ class intData: # if I name it as int I think is like self but with a better name
         if (not in_call and len(self.tracks)  != 1):            
             raise ValueError("Your file '%s' has more than one track, only single tracks can be converted to bedGraph" % (self.path))
         
+        i_track = self.fieldsG.index("track")
+        i_chr_start = self.fieldsG.index("chromStart")
+        i_chr_end = self.fieldsG.index("chromEnd")
+        i_data_value = self.fieldsG.index("dataValue")
+        ini_window = 1
+        delta_window = 300
+        end_window = delta_window
+        partial_value = 0 
+        cross_interv_dict = {}
+                                     
         for row in track:
             temp_list = []
-            ini_window = 1
-            delta_window = 300
-            end_window = delta_window
             
-            i_track = self.fieldsG.index("track")
-            i_chr_start = self.fieldsG.index("chromStart")
-            i_chr_end = self.fieldsG.index("chromEnd")
-            i_data_value = self.fieldG.index("dataValue")
-             
-            
-             
+            chr_start = row[i_chr_start]
+            chr_end = row[i_chr_end]
+            data_value = float(row[i_data_value])
             self.fieldsG.index(f) 
-            partial_value = 0          
-            
-            print "^^^^%s"%self.min
                      
-            for i in idx_f:
-                if self.fieldsG[i] == "track":
-                    temp_list.append("chr1")      
-                elif self.fieldsG[i] == "chromStart":
-                    thickStart = row[i]
-                    temp_list.append(row[i])
-                elif self.fieldsG[i] == "chromEnd":
-                    thickEnd = row[i]
-                    temp_list.append(row[i])
-                elif self.fieldsG[i] == "dataValue":
-                    temp_list.append(row[i])
-#                     for v in _intervals:
-#                         if float(row[i]) <= v:
-#                             j = _intervals.index(v)                        
-#                             d_type = row [self.fieldsG.index("dataTypes")]                        
-#                             color = _dict_col_grad[d_type][j]
-#                             break        
-#                 else:
-#                     temp_list.append(row[i])
             
-#                   temp_list.append(color)
+#             print "^^^^%s"%self.min
+#             if ($relIniTime > $endInt)
+            #Intervals happening after the current window
+            #if there is a value accumulated it has to be dumped otherwise 0
+            if chr_start > end_window:
+                while (end_window < chr_start):
+                    print ("--------%s=====%s"%(chr_start, end_window))                                        
+                    partial_value = partial_value + cross_interv_dict.get(ini_window,0)
+                    temp_list.append("chr1")
+                    temp_list.append(ini_window)
+                    temp_list.append(end_window)
+                    temp_list.append(partial_value)
+                    partial_value = 0
+                    ini_window += delta_window
+                    end_window += delta_window                                 
+                    yield(tuple(temp_list))
+                    temp_list = []
+            #Value must to be waited between intervals
+                if chr_end > end_window:                 
+                    value2weight = data_value
+                    end_w = end_window
+    #                 start_w = ini_window
+                    start_new = chr_start
+                    end_new = chr_end
+                    
+    #                 for ($start_w; $start_w<=$relEndTime; $start_w=$start_w+$winSize)
+                    for start_w in range (ini_window, chr_end, delta_window):
+                        weighted_value = 0
+                        
+                        if (end_w == start_w):
+    #                         $weightedInt = ($end - $startNew + 1) / ($endNew - $startNew);
+                            print ("----->%s - %s / %s - %s"%(end_w,start_new,end_new,start_new))#del
+                            weighted_value = (end_w - start_new + 1) / (end_new - start_new)
+                        else: 
+    #                         $weightedInt = ($end - $startNew) / ($endNew - $startNew);
+                            print ("----->%s - %s / %s - %s"%(end_w,start_new,end_new,start_new)) #del    
+                            weighted_value = (end_w - start_new) / (end_new - start_new)
+                            print ("%s ==========weighted value inside else"%weighted_value)
+                            print type(weighted_value)
+                        print ("%s ==========weighted value"%weighted_value)
+                        weighted_value *= value2weight
+                        print ("%s ==========weighted value"%weighted_value)
+                        cross_interv_dict[start_w] = int(cross_interv_dict.get(start_w,0)) + float(weighted_value)
+                        
+                        start_new = end_w
+                        value2weight = value2weight - weighted_value
+                        
+    #                     if (($end + $winSize) >= $relEndTime)
+                        if ((end_w + delta_window) >= chr_end):
+                            new_start_w = start_w + delta_window
+#                             print (cross_interv_dict.get(new_start_w,0))#del
+#                             print (int(value2weight))#del
+                            cross_interv_dict[new_start_w] = cross_interv_dict.get(new_start_w,0) + value2weight
+                            break
+                        
+                        end_w = end_w + delta_window
+                else:
+                    partial_value = partial_value + data_value
+                    
+#             elsif ($relIniTime <= $endInt && $relIniTime => $startInt)        
+            elif (chr_start <= end_window and chr_start >= ini_window):
+                if chr_end <= end_window:
+                    partial_value = partial_value + data_value
+                 
+                
+                else:
+                    value2weight = data_value
+                    end_w = end_window
+    #                 start_w = ini_window
+                    start_new = chr_start
+                    end_new = chr_end
+                    
+    #                 for ($start_w; $start_w<=$relEndTime; $start_w=$start_w+$winSize)
+                    for start_w in range (ini_window, chr_end, delta_window):
+                        weighted_value = 0
+                        
+                        if (end_w == start_w):
+    #                         $weightedInt = ($end - $startNew + 1) / ($endNew - $startNew);
+                            print ("----->%s - %s / %s - %s"%(end_w,start_new,end_new,start_new))#del
+                            weighted_value = (end_w - start_new + 1) / (end_new - start_new)
+                        else: 
+    #                         $weightedInt = ($end - $startNew) / ($endNew - $startNew);
+                            print ("----->%s - %s / %s - %s"%(end_w,start_new,end_new,start_new)) #del    
+                            weighted_value = (end_w - start_new) / (end_new - start_new)
+                            print ("%s ==========weighted value inside else"%weighted_value)
+                            print type(weighted_value)
+                        print ("%s ==========weighted value"%weighted_value)
+                        weighted_value *= value2weight
+                        print ("%s ==========weighted value"%weighted_value)
+                        cross_interv_dict[start_w] = int(cross_interv_dict.get(start_w,0)) + float(weighted_value)
+                        
+                        start_new = end_w
+                        value2weight = value2weight - weighted_value
+                        
+    #                     if (($end + $winSize) >= $relEndTime)
+                        if ((end_w + delta_window) >= chr_end):
+                            new_start_w = start_w + delta_window
+#                             print (cross_interv_dict.get(new_start_w,0))#del
+#                             print (int(value2weight))#del
+                            cross_interv_dict[new_start_w] = cross_interv_dict.get(new_start_w,0) + value2weight
+                            break
+                        
+                        end_w = end_w + delta_window
             
-            yield(tuple(temp_list)) 
-            
+            else:
+                print ("FATAL ERROR: Something went wrong")    
+#         return iter(list_tuples)
+                                                  
     def _error (self, data_tuple):
-        raise ValueError("culo")
+        raise ValueError("Fatal error")
          
 ################################################################################
 class dataIter(object):
@@ -387,7 +475,7 @@ class dataIter(object):
         if track is None: 
             track = "cage1_test"
             
-        track_file = open(os.path.join(_pwd, track + _bedFileExt), mode)
+        track_file = open(os.path.join(_pwd, track + _bedGraphFileExt), mode)
         track_file.write('track name="cage 1;drink" description="cage 1;drink" visibility=2 itemRgb="On" priority=20' + "\n")
         
         for row in self.data:         
@@ -478,12 +566,14 @@ def writeBed(self, feature="dataValue"):
          
 intData = intData(path, relative_coord=True)
 # print (intData.get_field_items("dataTypes"))
-print(intData.min)
+# for row in intData.read(relative_coord=True):
+#     print row
+# print(intData.min)
 
  
 # intData.convert(mode = "bed", relative_coord = True)   
-bedFiles = intData.convert(mode = "bed", relative_coord = True, split_dataTypes=False)
-# bedFiles=intData.convert(mode = "bedGraph", window=300,  split_dataTypes=False)
+# bedFiles = intData.convert(mode = "bed", relative_coord = True, split_dataTypes=False)
+bedFiles=intData.convert(mode = "bedGraph", window=300,  split_dataTypes=False, relative_coord=True)
 
 for key in bedFiles: 
 #     print (key), 
