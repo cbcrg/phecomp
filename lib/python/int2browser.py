@@ -425,7 +425,6 @@ class dataIter(object):
     def next(self):
         return self.data.next()
 
-    ### WRITE TIENE QUE ESTAR AQUI DE MANERA QUE TODOS LAS CLASES QUE HEREDAN BED, BEDGRAPH ETC SE PUEDA HACER EL OUTPUT A UN ARCHIVO
     def write(self, file_type="bed", mode="w", track=None):
         if not(isinstance(self, dataIter)):
             raise Exception("Not writable object, type not supported '%s'."%(type(self)))
@@ -480,21 +479,7 @@ class BedGraph(dataIter):
         
 class ObjectContainer():
     pass 
-        
-def writeBed(self, feature="dataValue"):
-        try:
-            idxFeature = self.fieldsG.index(feature)
-            print idxFeature
-        except ValueError:
-                raise ValueError("Field '%s' correspondence with dataValue was not set for file %s." % (feature, self.path))
-        
-        idxfields = [self.fieldsG.index('chromStart'), self.fieldsG.index('chromEnd'), idxFeature]
-        data_r = self.read()
-        
-        for row in data_r:
-            yield tuple(row [i]
-                         for i in idxfields)    
-
+          
 ##########################
 ## Examples of executions 
          
