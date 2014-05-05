@@ -296,6 +296,7 @@ class intData: # if I name it as int I think is like self but with a better name
                     
     def track_convert2bedGraph(self, track, in_call=False):
         _bed_fields = ["track","chromStart","chromEnd","dataValue"] 
+        
         #Check whether these fields are in the original otherwise raise exception
         try:
             idx_f = [self.fieldsG.index(f) for f in _bed_fields]                          
@@ -322,15 +323,11 @@ class intData: # if I name it as int I think is like self but with a better name
             chr_end = row[i_chr_end]
             data_value = float(row[i_data_value])
             self.fieldsG.index(f) 
-                     
-            
-#             print "^^^^%s"%self.min
-#             if ($relIniTime > $endInt)
+
             #Intervals happening after the current window
             #if there is a value accumulated it has to be dumped otherwise 0
             if chr_start > end_window:
-                while (end_window < chr_start):
-                    print ("--------%s=====%s"%(chr_start, end_window))                                        
+                while (end_window < chr_start):                                      
                     partial_value = partial_value + cross_interv_dict.get(ini_window,0)
                     temp_list.append("chr1")
                     temp_list.append(ini_window)
@@ -341,88 +338,61 @@ class intData: # if I name it as int I think is like self but with a better name
                     end_window += delta_window                                 
                     yield(tuple(temp_list))
                     temp_list = []
-            #Value must to be waited between intervals
+                    
+                #Value must to be waited between intervals
                 if chr_end > end_window:                 
                     value2weight = data_value
                     end_w = end_window
-    #                 start_w = ini_window
                     start_new = chr_start
                     end_new = chr_end
                     
-    #                 for ($start_w; $start_w<=$relEndTime; $start_w=$start_w+$winSize)
                     for start_w in range (ini_window, chr_end, delta_window):
                         weighted_value = 0
                         
                         if (end_w == start_w):
-    #                         $weightedInt = ($end - $startNew + 1) / ($endNew - $startNew);
-                            print ("----->%s - %s / %s - %s"%(end_w,start_new,end_new,start_new))#del
                             weighted_value = (end_w - start_new + 1) / (end_new - start_new)
-                        else: 
-    #                         $weightedInt = ($end - $startNew) / ($endNew - $startNew);
-                            print ("----->%s - %s / %s - %s"%(end_w,start_new,end_new,start_new)) #del    
+                        else:     
                             weighted_value = (end_w - start_new) / (end_new - start_new)
-                            print ("%s ==========weighted value inside else"%weighted_value)
-                            print type(weighted_value)
-                        print ("%s ==========weighted value"%weighted_value)
+                            
                         weighted_value *= value2weight
-                        print ("%s ==========weighted value"%weighted_value)
-                        cross_interv_dict[start_w] = int(cross_interv_dict.get(start_w,0)) + float(weighted_value)
-                        
+                        cross_interv_dict[start_w] = int(cross_interv_dict.get(start_w,0)) + float(weighted_value)                      
                         start_new = end_w
-                        value2weight = value2weight - weighted_value
-                        
-    #                     if (($end + $winSize) >= $relEndTime)
+                        value2weight = value2weight - weighted_value                        
+
                         if ((end_w + delta_window) >= chr_end):
                             new_start_w = start_w + delta_window
-#                             print (cross_interv_dict.get(new_start_w,0))#del
-#                             print (int(value2weight))#del
                             cross_interv_dict[new_start_w] = cross_interv_dict.get(new_start_w,0) + value2weight
                             break
                         
                         end_w = end_w + delta_window
                 else:
                     partial_value = partial_value + data_value
-                    
-#             elsif ($relIniTime <= $endInt && $relIniTime => $startInt)        
+                            
             elif (chr_start <= end_window and chr_start >= ini_window):
                 if chr_end <= end_window:
-                    partial_value = partial_value + data_value
-                 
+                    partial_value = partial_value + data_value                 
                 
                 else:
                     value2weight = data_value
                     end_w = end_window
-    #                 start_w = ini_window
                     start_new = chr_start
                     end_new = chr_end
                     
-    #                 for ($start_w; $start_w<=$relEndTime; $start_w=$start_w+$winSize)
                     for start_w in range (ini_window, chr_end, delta_window):
                         weighted_value = 0
                         
                         if (end_w == start_w):
-    #                         $weightedInt = ($end - $startNew + 1) / ($endNew - $startNew);
-                            print ("----->%s - %s / %s - %s"%(end_w,start_new,end_new,start_new))#del
                             weighted_value = (end_w - start_new + 1) / (end_new - start_new)
-                        else: 
-    #                         $weightedInt = ($end - $startNew) / ($endNew - $startNew);
-                            print ("----->%s - %s / %s - %s"%(end_w,start_new,end_new,start_new)) #del    
+                        else:    
                             weighted_value = (end_w - start_new) / (end_new - start_new)
-                            print ("%s ==========weighted value inside else"%weighted_value)
-                            print type(weighted_value)
-                        print ("%s ==========weighted value"%weighted_value)
+                            
                         weighted_value *= value2weight
-                        print ("%s ==========weighted value"%weighted_value)
                         cross_interv_dict[start_w] = int(cross_interv_dict.get(start_w,0)) + float(weighted_value)
-                        
                         start_new = end_w
                         value2weight = value2weight - weighted_value
                         
-    #                     if (($end + $winSize) >= $relEndTime)
                         if ((end_w + delta_window) >= chr_end):
                             new_start_w = start_w + delta_window
-#                             print (cross_interv_dict.get(new_start_w,0))#del
-#                             print (int(value2weight))#del
                             cross_interv_dict[new_start_w] = cross_interv_dict.get(new_start_w,0) + value2weight
                             break
                         
@@ -430,7 +400,6 @@ class intData: # if I name it as int I think is like self but with a better name
             
             else:
                 print ("FATAL ERROR: Something went wrong")    
-#         return iter(list_tuples)
                                                   
     def _error (self, data_tuple):
         raise ValueError("Fatal error")
