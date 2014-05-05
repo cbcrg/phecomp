@@ -73,7 +73,6 @@ _dict_col_grad = {
                   'food_cd' : _red_gradient,
                   'food_fat' : _red_gradient}
 
-
 ## I have to create a class able to keep the data and the fields
 
 class intData: # if I name it as int I think is like self but with a better name
@@ -94,7 +93,7 @@ class intData: # if I name it as int I think is like self but with a better name
         self.max =  int(self.get_min_max(fields = ["chromStart","chromEnd"])[1])
         self.tracks =  self.get_field_items (field="track")
         self.dataTypes = self.get_field_items (field="dataTypes")
-        self.format = "csv"
+#         self.format = "csv"
                     
     def _set_fields_b(self, fields):
         """
@@ -438,7 +437,7 @@ class intData: # if I name it as int I think is like self but with a better name
          
 ################################################################################
 class dataIter(object):
-    def __init__(self, data, fields=None, format="txt"):
+    def __init__(self, data, fields=None, **kwargs):
         if isinstance(data,(tuple)):            
             data = iter(data)
         if not fields:
@@ -448,7 +447,9 @@ class dataIter(object):
             raise ValueError("Must specify a 'fields' attribute for %s." % self.__str__())
         self.data = data
         self.fields = fields
-        self.format = format
+#         self.format = format
+        kwargs['format'] = kwargs.get("format",'txt')
+        
     def __iter__(self):
         return self.data
 
@@ -528,10 +529,10 @@ class Bed(dataIter):
           
     """
     def __init__(self,data,**kwargs):
-#         kwargs['format'] = 'bed'
+        kwargs['format'] = 'bed'
         kwargs['fields'] = ['chr','start','end','name','score','strand','thick_start','thick_end','item_rgb']
         dataIter.__init__(self,data,**kwargs)
-
+        
 class BedGraph(dataIter):
     """
     dataInt class for bedGraph file format data
@@ -542,7 +543,7 @@ class BedGraph(dataIter):
           
     """
     def __init__(self,data,**kwargs):
-        kwargs['format'] = 'bed'
+        kwargs['format'] = 'bedGraph'
         kwargs['fields'] = ['chr','start','end','score']
         dataIter.__init__(self,data,**kwargs)
         
