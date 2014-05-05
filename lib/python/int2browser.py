@@ -58,8 +58,8 @@ _dict_Id = {'phase' :'chrom',
 
 _intervals = [0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 1, 1000]
 
-_dict_out_files = {'bed' : '_convert2bed',
-                   'bedGraph': '.bedGraph'}
+_dict_file = {'bed' : '.bed',
+              'bedGraph': '.bedGraph'}
 _black_gradient = ["226,226,226", "198,198,198", "170,170,170", "141,141,141", "113,113,113", "85,85,85", "56,56,56", "28,28,28", "0,0,0"]
 _blue_gradient = ["229,229,254", "203,203,254", "178,178,254", "152,152,254", "127,127,254", "102,102,254", "76,76,173", "51,51,162", "0,0,128"]
 _red_gradient = ["254,172,182", "254,153,162", "254,134,142", "254,115,121", "254,96,101", "254,77,81", "254,57,61", "254,38,40", "254,19,20"]
@@ -214,8 +214,8 @@ class intData: # if I name it as int I think is like self but with a better name
         kwargs['split_dataTypes'] = kwargs.get("split_dataTypes",False)
         
         print self.fieldsG
-        if mode not in _dict_out_files: 
-            raise ValueError("Mode \'%s\' not available. Possible convert() modes are %s"%(mode,', '.join(['{}'.format(m) for m in _dict_out_files.keys()])))
+        if mode not in _dict_file: 
+            raise ValueError("Mode \'%s\' not available. Possible convert() modes are %s"%(mode,', '.join(['{}'.format(m) for m in _dict_file.keys()])))
         
 #         dict_beds = ({ 'bed': self._convert2bed, 'bedGraph': self._convert2bedGraph}.get(mode)(self.read(**kwargs), kwargs.get('split_dataTypes')))
         dict_beds = (self._convert2single_track(self.read(**kwargs), kwargs.get('split_dataTypes'), mode)) 
@@ -460,11 +460,17 @@ class dataIter(object):
     def write(self, file_type="bed", mode="w", track=None):
         if not(isinstance(self, dataIter)):
             raise Exception("Not writable object, type not supported '%s'."%(type(self)))
-        
+
+        if file_type not in _dict_file: 
+            raise ValueError("File types not supported \'%s\'"%(file_type))
+                                                                                           
         if track is None: 
             track = "cage1_test"
+        
+        print _dict_file.get(file_type)
+        file_ext = _dict_file.get(file_type)
             
-        track_file = open(os.path.join(_pwd, track + _bedGraphFileExt), mode)
+        track_file = open(os.path.join(_pwd, track + file_ext), mode)
         track_file.write('track name="cage 1;drink" description="cage 1;drink" visibility=2 itemRgb="On" priority=20' + "\n")
         
         for row in self.data:         
@@ -539,7 +545,7 @@ for key in bedFiles:
 #     print ("---------")
     bedSingle = bedFiles[key]
     name_file='_'.join(key)
-    bedSingle.write(track=name_file)
+    bedSingle.write(track=name_file, file_type="bedGraph")
     for line in bedSingle: print line
 
 
