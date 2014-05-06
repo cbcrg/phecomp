@@ -69,6 +69,7 @@ _blue_gradient = ["229,229,254", "203,203,254", "178,178,254", "152,152,254", "1
 _red_gradient = ["254,172,182", "254,153,162", "254,134,142", "254,115,121", "254,96,101", "254,77,81", "254,57,61", "254,38,40", "254,19,20"]
 _green_gradient = ["203,254,203", "178,254,178", "152,254,152", "127,254,127", "102,254,102", "76,254,76", "51,254,51", "0,254,0", "25,115,25"]
 
+# esto tiene que ser implementado en una funcion 
 _dict_col_grad = {
                   'water' : _blue_gradient,
                   'drink' : _blue_gradient,
@@ -93,6 +94,7 @@ class intData: # if I name it as int I think is like self but with a better name
         self.path = path
         self.fieldsB = self._set_fields_b(kwargs.get ('fields'))        
         self.fieldsG = [_dict_Id [k] for k in self.fieldsB] 
+        self.delimiter = kwargs.get('delimiter',"\t")
         self.min =  int(self.get_min_max(fields = ["chromStart","chromEnd"])[0])
         self.max =  int(self.get_min_max(fields = ["chromStart","chromEnd"])[1])
         self.tracks =  self.get_field_items (field="track")
@@ -104,7 +106,7 @@ class intData: # if I name it as int I think is like self but with a better name
         Reading the behavioral fields from the header file    
         """        
         self.inFile  = open(path, "rb")
-        self.reader = csv.reader(self.inFile, delimiter='\t')
+        self.reader = csv.reader(self.inFile, delimiter=self.delimiter)
         fieldsB = self.reader.next()
         self.inFile.close()
         return fieldsB
@@ -484,6 +486,7 @@ class ObjectContainer():
 ## Examples of executions 
          
 intData = intData(path, relative_coord=True)
+print intData.fieldsB
 # print (intData.get_field_items("dataTypes"))
 # for row in intData.read(relative_coord=True):
 #     print row
