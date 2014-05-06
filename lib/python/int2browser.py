@@ -36,6 +36,7 @@ print ("Input file: %s" % args.input )
 print ("Output file: %s" % args.output )
 
 path = args.input
+path = "/Users/jespinosa/phecomp/20121119_phenomeBrowser/20140411_int2browserPythonDev/data/shortDev"
 ## Input debugging file
 #cat 20120502_FDF_CRG_hab_filtSHORT.csv | sed 's/ //g' | awk '{print $1"\t"$14"\t"$6"\t"$11"\t"$16"\thabituation"}' > shortDev.integer
 
@@ -91,8 +92,10 @@ class intData: # if I name it as int I think is like self but with a better name
     """
     #le meto el diccionario entre behavior and genomic data como un parametro y por defecto le pongo el diccionario del ejemplo
     def __init__(self, path, **kwargs):
-        self.path = path
+        self.path = self._check_path(path)
+#         self.path = path
         self.delimiter = kwargs.get('delimiter',"\t")
+        if os.path.exists(self.path): self.separator = self._check_delimiter()
         self.fieldsB = self._set_fields_b(kwargs.get ('fields'))        
         self.fieldsG = [_dict_Id [k] for k in self.fieldsB]         
         self.min =  int(self.get_min_max(fields = ["chromStart","chromEnd"])[0])
@@ -100,6 +103,19 @@ class intData: # if I name it as int I think is like self but with a better name
         self.tracks =  self.get_field_items (field="track")
         self.dataTypes = self.get_field_items (field="dataTypes")
 #         self.format = "csv"
+    
+    def _check_path(self, path):
+        ''' Check if a file exists and is accessible. '''
+        print path
+        assert isinstance(path, basestring), "Expected string or unicode, found %s." % type(path)
+        try:
+            f = open(path, "r")
+        except IOError:
+            raise IOError('File does not exist: %s' % path)
+        return path        
+    
+    def _check_delimiter (self):
+        pass
                     
     def _set_fields_b(self, fields):
         """
@@ -486,7 +502,7 @@ class ObjectContainer():
 ## Examples of executions 
          
 intData = intData(path, relative_coord=True)
-print intData.fieldsB
+# print intData.fieldsB
 # print (intData.get_field_items("dataTypes"))
 # for row in intData.read(relative_coord=True):
 #     print row
