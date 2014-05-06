@@ -33,7 +33,7 @@ if (binModeKey == 'binary') {
   path2hmmModel = "$HOME/phecomp/20130610_HMM/20130610_HMMbinarySignal/modelsHMM/ST_2_Bin_2_BEGIN_END.inmodel"
 }
 else {
-  path2hmmModel = "$HOME/phecomp/20130610_HMM/20130610_HMMfourSignal/modelsHMM/ST_2_Bin_4_BEGIN_END.inmodel"
+  path2hmmModel = "$HOME/phecomp/20140301_oneOutValidation/modelsHMM/ST_2_Bin_4_BEGIN_END.inmodel"
 }
 
 binModeMap = [ "binary":"1234", "four":"12,34" ]
@@ -108,12 +108,33 @@ process int2singleCageBinFile {
  file 'input' from intFiles
  
  output:
- file '*.hmm' into binFileSingle
+ set '*.hmm' into binFileSingle
  
  """
  int2browser.pl ${int2brOptMultiple} input
  """
 }
+
+// I make a copy of this
+// ( binFileSingleToFile,  binFileSingle) =  binFileSingle.split (2)
+
+// resultDir = file("$HOME/phecomp/20140301_oneOutValidation/resultsSingleCage/20120502_FDF_hab/test")
+// 
+// resultDir.with {
+//      if( !empty() ) { deleteDir() }
+//      mkdirs()
+//      println "Created: $resultDir"
+// }
+// 
+// // resultDir = file('./results')
+// 
+// binFileSingle.flatten().subscribe { file ->  
+//   result_file = resultDir.resolve (file.name)
+//   result_file.text = file.text
+//   fileName = file.name
+//   println "Copying: $fileName-----"
+// }
+
 
 // I need flatten so it takes each item of the list one by one
 // Here I get the cage from the file name and I put it on the channel
@@ -133,10 +154,29 @@ process trainModelOneOut {
   output:  
   set cage, 'trained_*.model' into trainedModels   
   set cage, 'outDecoded_*' into decodedSeq
+  set cage, 'trainedModelR'  into trainedModelsR
   
   """
   rhmm.pl -model ${path2hmmModel} -out trained_${cage} -data singleCage -action bw -nrounds 10 -nit 1000 -evaluate viterbi -outdata outDecoded_${cage} 
+  cat trained_*.model | grep -v "comment" |grep -v "fixed"  | sed  's/#set;//g' | sed 's/;/\t/g' | sed 's/::/-/g' > trainedModelR
   """
+}
+
+// I make a copy of this
+(decodedSeq,  decodedSeq2file) =  decodedSeq.split (2)
+
+resultDirDeco = file("$HOME/phecomp/20140301_oneOutValidation/resultsSingleCage/20120502_FDF_hab/outDecoded")
+
+resultDirDeco.with {
+     if( !empty() ) { deleteDir() }
+     mkdirs()
+     println "Created: $resultDirDeco"
+}
+
+decodedSeq2file.subscribe { 
+  println "Copying ******: $it[1]"
+  outFileDecoded = it[1]
+  outFileDecoded.copyTo( resultDirDeco.resolve ( outFileDecoded.name ) ) // Here you pass an object that is way you need resolve
 }
 
 process convertDecoded {
@@ -147,7 +187,7 @@ process convertDecoded {
   set cage, 'outDecoded_*' into decodedSeqBedGraph
   
   """
-  int2browser.pl -data outDecoded -winFile decoBed_${cage} -convert hmm2bedGraph -hmmField2extract stPost -outdata no -winFile outDecoded_${cage} 
+  int2browser.pl -data outDecoded -convert hmm2bedGraph -hmmField2extract posterior -outdata no -winFile outDecoded_${cage} 
   """
   
 }
@@ -185,6 +225,20 @@ decodedSeqBedGraph.subscribe {
 //   result_file = resultDir.resolve(file.name)
 //   result_file.text = file.text
 // }
+
+resultDir = file("$HOME/phecomp/20140301_oneOutValidation/resultsSingleCage/20120502_FDF_hab/modelsSingleCageR")
+
+resultDir.with {
+     if( !empty() ) { deleteDir() }
+     mkdirs()
+     println "Created: $resultDir"
+}
+
+trainedModelsR.subscribe { 
+  println "Copying R model: $it[1]"
+  outFileModR = it[1]
+  outFileModR.copyTo( "${resultDir}/${outFileModR.name}_${it[0]}" )
+}
 
 // Functions
 def paramCtrl ( val2check, list , defValue ) {  
