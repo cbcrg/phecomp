@@ -95,6 +95,7 @@ class intData: # if I name it as int I think is like self but with a better name
         self.path = self._check_path(path)
         self.delimiter = kwargs.get('delimiter',"\t")
         self.delimiter = self._check_delimiter()
+        self.header = kwargs.get('header',True)
         self.fieldsB = self._set_fields_b(kwargs.get ('fields'))        
         self.fieldsG = [_dict_Id [k] for k in self.fieldsB]         
         self.min =  int(self.get_min_max(fields = ["chromStart","chromEnd"])[0])
@@ -138,12 +139,28 @@ class intData: # if I name it as int I think is like self but with a better name
     
     def _set_fields_b(self, fields):
         """
-        Reading the behavioral fields from the header file    
-        """        
-        self.inFile  = open(path, "rb")
-        self.reader = csv.reader(self.inFile, delimiter=self.delimiter)
-        fieldsB = self.reader.next()
-        self.inFile.close()
+        Reading the behavioral fields from the header file or otherwise setting  
+        the fields to numeric values correspoding the colunm index starting at 0    
+        """ 
+        if fields:
+            pass
+        elif self.header == True:       
+            self.inFile  = open(path, "rb")
+            self.reader = csv.reader(self.inFile, delimiter=self.delimiter)
+            header = self.reader.next()
+            first_r = self.reader.next()
+            if len(header) == len(first_r):
+                fieldsB = [header[0].strip('# ')]+header[1:]
+            else:
+                raise ValueError("Number of fields in header '%d' does not match number of fields in first row '%d'" % (len(header), len(first_r)))     
+                #Achtung if I use open the I would have to get rid of \n
+                #fieldsB=[header[0].strip('# ')]+header[1:-1]+[header[-1][:-1]]
+            self.inFile.close()
+        else:
+            self.inFile  = open(path, "rb")
+            self.reader = csv.reader(self.inFile, delimiter=self.delimiter)
+            first_r = self.reader.next()
+            fieldsB = range(0,len(first_r))  
         return fieldsB
        
     def read(self, fields=None, relative_coord=False, fields2rel=None, **kwargs):
