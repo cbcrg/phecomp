@@ -54,7 +54,7 @@ path = args.input
 # dataValue = 'Value'
 # track = 'CAGE'
 
-_dict_Id = {'phase' :'chrom', 
+_dict_Id = {'Phase' :'chrom', 
             'StartT' : 'chromStart',  
             'EndT' :'chromEnd', 
             'Nature' : 'dataTypes', 
