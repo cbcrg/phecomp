@@ -1,7 +1,11 @@
 #!/usr/bin/env python
 
 from __future__ import division
-# from pybedtools import BedTool
+# import pybedtools
+# a = pybedtools.example_bedtool('a.bed')
+# b = pybedtools.example_bedtool('b.bed')
+# print a.intersect(b)
+
 
 __author__ = 'Jose Espinosa-Carrasco'
 
@@ -235,20 +239,16 @@ class intData: # if I name it as int I think is like self but with a better name
             track_tuple = tuple(group)
             if mode=='bed':
                 if not split_dataTypes and len(key)==1:
-                    track_dict[(key, '_'.join(self.dataTypes))]=Bed(self.track_convert2bed(track_tuple, True))
-                    print "====%s"%key 
+                    track_dict[(key, '_'.join(self.dataTypes))]=Bed(self.track_convert2bed(track_tuple, True))                     
                 elif split_dataTypes and len(key)==2:                 
                     track_dict[key]=Bed(self.track_convert2bed(track_tuple, True))
-                    print "====%s"%key
                 else:    
                     raise ValueError("Key of converted dictionary needs 1 or two items %s" % (str(key)))
             elif mode=='bedGraph':
                 if not split_dataTypes and len(key)==1:
-                    track_dict[(key, '_'.join(self.dataTypes))]=BedGraph(self.track_convert2bedGraph(track_tuple, True))
-                    print "====%s"%key
+                    track_dict[(key, '_'.join(self.dataTypes))]=BedGraph(self.track_convert2bedGraph(track_tuple, True))                    
                 elif split_dataTypes and len(key)==2:                 
-                    track_dict[key]=Bed(self.track_convert2bedGraph(track_tuple, True))
-                    print "====%s"%key
+                    track_dict[key]=Bed(self.track_convert2bedGraph(track_tuple, True))    
                 else:    
                     raise ValueError("Key of converted dictionary needs 1 or two items %s" % (str(key)))
             else:
@@ -268,7 +268,7 @@ class intData: # if I name it as int I think is like self but with a better name
         if (not in_call and len(self.tracks) != 1):
             raise ValueError("Your file '%s' has more than one track, only single tracks can be converted to bed" % (self.path))
         
-#         i_track = self.fieldsG.index("track")
+        i_track = self.fieldsG.index("track")
         i_chr_start = self.fieldsG.index("chromStart")
         i_chr_end = self.fieldsG.index("chromEnd")
         i_data_value = self.fieldsG.index("dataValue")
