@@ -92,9 +92,9 @@ class intData: # if I name it as int I think is like self but with a better name
     #le meto el diccionario entre behavior and genomic data como un parametro y por defecto le pongo el diccionario del ejemplo
     def __init__(self, path, **kwargs):
         self.path = path
-        self.fieldsB = self._set_fields_b(kwargs.get ('fields'))        
-        self.fieldsG = [_dict_Id [k] for k in self.fieldsB] 
         self.delimiter = kwargs.get('delimiter',"\t")
+        self.fieldsB = self._set_fields_b(kwargs.get ('fields'))        
+        self.fieldsG = [_dict_Id [k] for k in self.fieldsB]         
         self.min =  int(self.get_min_max(fields = ["chromStart","chromEnd"])[0])
         self.max =  int(self.get_min_max(fields = ["chromStart","chromEnd"])[1])
         self.tracks =  self.get_field_items (field="track")
