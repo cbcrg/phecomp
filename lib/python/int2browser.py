@@ -36,7 +36,7 @@ print ("Input file: %s" % args.input )
 print ("Output file: %s" % args.output )
 
 path = args.input
-path = "/Users/jespinosa/phecomp/20121119_phenomeBrowser/20140411_int2browserPythonDev/data/shortDev"
+
 ## Input debugging file
 #cat 20120502_FDF_CRG_hab_filtSHORT.csv | sed 's/ //g' | awk '{print $1"\t"$14"\t"$6"\t"$11"\t"$16"\thabituation"}' > shortDev.integer
 
@@ -93,9 +93,8 @@ class intData: # if I name it as int I think is like self but with a better name
     #le meto el diccionario entre behavior and genomic data como un parametro y por defecto le pongo el diccionario del ejemplo
     def __init__(self, path, **kwargs):
         self.path = self._check_path(path)
-#         self.path = path
         self.delimiter = kwargs.get('delimiter',"\t")
-        if os.path.exists(self.path): self.separator = self._check_delimiter()
+        self.delimiter = self._check_delimiter()
         self.fieldsB = self._set_fields_b(kwargs.get ('fields'))        
         self.fieldsG = [_dict_Id [k] for k in self.fieldsB]         
         self.min =  int(self.get_min_max(fields = ["chromStart","chromEnd"])[0])
@@ -105,7 +104,7 @@ class intData: # if I name it as int I think is like self but with a better name
 #         self.format = "csv"
     
     def _check_path(self, path):
-        ''' Check if a file exists and is accessible. '''
+        ''' Check if the input file exists and is accessible. '''
         print path
         assert isinstance(path, basestring), "Expected string or unicode, found %s." % type(path)
         try:
@@ -115,8 +114,28 @@ class intData: # if I name it as int I think is like self but with a better name
         return path        
     
     def _check_delimiter (self):
-        pass
-                    
+        """ Check whether the delimiter works, if delimiter is not set
+        then tries ' ', '\t' and ';'"""
+        if self.delimiter is None: 
+            raise ValueError("Delimiter must be set \'%s\'"%(self.delimiter))
+        
+        self.inFile  = open(path, "rb")
+        
+        for row in self.inFile:            
+            if row.count(self.delimiter) > 1: break
+            else: raise ValueError("Input delimiter does not correspond to delimiter found in file \'%s\'"%(self.delimiter))
+            
+            if row.count(" ") > 1:
+                self.delimiter = " "
+                break
+            if row.count("\t") > 1:
+                self.delimiter = "\t"
+                break
+            if row.count(";") > 1:
+                self.delimiter = "\t"
+                break      
+        return self.delimiter
+    
     def _set_fields_b(self, fields):
         """
         Reading the behavioral fields from the header file    
@@ -511,7 +530,7 @@ intData = intData(path, relative_coord=True)
  
 # intData.convert(mode = "bed", relative_coord = True)   
 # bedFiles = intData.convert(mode = "bed", relative_coord = True, split_dataTypes=False)
-bedFiles=intData.convert(mode = "bedGraph", window=300,  split_dataTypes=False, relative_coord=True)
+bedFiles=intData.convert(mode = "bedGraph", window=300, split_dataTypes=False, relative_coord=True)
 
 for key in bedFiles: 
 #     print (key), 
