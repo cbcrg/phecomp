@@ -157,7 +157,7 @@ process trainModelOneOut {
   set cage, 'trainedModelR'  into trainedModelsR
   
   """
-  rhmm.pl -model ${path2hmmModel} -out trained_${cage} -data singleCage -action bw -nrounds 10 -nit 1000 -evaluate viterbi -outdata outDecoded_${cage} 
+  rhmm.pl -model ${path2hmmModel} -out trained_${cage} -data singleCage -action bw -nrounds 10 -nit 1000 -evaluate viterbi -outmodel_format zeros  -outdata outDecoded_${cage} 
   cat trained_*.model | grep -v "comment" |grep -v "fixed"  | sed  's/#set;//g' | sed 's/;/\t/g' | sed 's/::/_/g' > trainedModelR
   """
 }
