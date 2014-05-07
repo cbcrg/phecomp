@@ -33,7 +33,7 @@ if (binModeKey == 'binary') {
   path2hmmModel = "$HOME/phecomp/20130610_HMM/20130610_HMMbinarySignal/modelsHMM/ST_2_Bin_2_BEGIN_END.inmodel"
 }
 else {
-  path2hmmModel = "$HOME/phecomp/20140301_oneOutValidation/modelsHMM/ST_2_Bin_4_BEGIN_END.inmodelerror"
+  path2hmmModel = "$HOME/phecomp/20140301_oneOutValidation/modelsHMM/ST_2_Bin_4_BEGIN_END.inmodel"
 }
 
 binModeMap = [ "binary":"1234", "four":"12,34" ]
