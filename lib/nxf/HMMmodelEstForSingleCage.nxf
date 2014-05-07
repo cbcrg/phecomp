@@ -186,7 +186,7 @@ process convertDecoded {
   set cage, 'outDecoded' from decodedSeq
   
   output:
-  set cage, 'outDecoded_*' into decodedSeqBedGraph
+  set cage, 'outDecodedBedGraph_*' into decodedSeqBedGraph
   
   """
   int2browser.pl -data outDecoded -convert hmm2bedGraph -hmmField2extract posterior -outdata no -winFile outDecodedBedGraph_${cage} 
