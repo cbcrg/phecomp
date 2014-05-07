@@ -152,7 +152,7 @@ process trainModelOneOut {
   set val (cage) , file ('singleCage') from binFileSingleCage
   
   output:  
-  set cage, 'trained_*.model' into trainedModels   
+  set cage, 'trained_*.model_zero' into trainedModels   
   set cage, 'outDecoded_*' into decodedSeq
   set cage, 'trainedModelR'  into trainedModelsR
   
