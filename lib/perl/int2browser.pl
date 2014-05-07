@@ -2489,7 +2489,8 @@ sub writeWindowBinning
     my $winParam = $param->{window};
     my $winMode = $param -> {winMode}? $param -> {winMode} : "discrete"; #by default discrete    	
     my $binMode = $param -> {binMode}? $param -> {binMode} : "four"; #by default binary
-    my $winFormat = exists ($param->{winFormat})? $param->{winFormat} : "bedGraph"; #by default bedGraph        
+    my $winFormat = exists ($param->{winFormat})? $param->{winFormat} : "bedGraph"; #by default bedGraph
+    my $winSize = exists ($param->{ws})? $param->{ws} : 1800;        
     my $natures = {};
     my $binH = {};
     my $binFourH = {};
@@ -2607,7 +2608,7 @@ sub writeWindowBinning
 	    			     }	
               }			    					    							    							    		
 	    		}
-				 if ($winFormat eq "rhmm") {print $F "#d;1;$lastRec;cage;$c;chN;$chN;nature;$nature;$winParam;0;bin;E;startInt;0;endInt;0\n";}   	
+				 if ($winFormat eq "rhmm") {print $F "#d;1;$lastRec;cage;$c;chN;$chN;nature;$nature;$winParam;0;bin;E;startInt;$startInt+$winSize;endInt;$startInt+($winSize*2)\n";}   	
 				 close ($F);
 	       print STDERR "      Results of cumulative window for $winParam of cage $c, channel $chN, nature $nature in: $file\n";
 	  	}
