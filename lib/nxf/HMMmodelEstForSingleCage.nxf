@@ -173,12 +173,14 @@ resultDirDeco.with {
      println "Created: $resultDirDeco"
 }
 
+// The cage number is alredy in name file (outDecoded_${cage})
 decodedSeq2file.subscribe { 
   println "Copying ******: $it[1]"
   outFileDecoded = it[1]
   outFileDecoded.copyTo( resultDirDeco.resolve ( outFileDecoded.name ) ) // Here you pass an object that is way you need resolve
 }
 
+// This process convert decoded files into bedGraph format
 process convertDecoded {
   input:
   set cage, 'outDecoded' from decodedSeq
@@ -187,9 +189,17 @@ process convertDecoded {
   set cage, 'outDecoded_*' into decodedSeqBedGraph
   
   """
-  int2browser.pl -data outDecoded -convert hmm2bedGraph -hmmField2extract posterior -outdata no -winFile outDecoded_${cage} 
+  int2browser.pl -data outDecoded -convert hmm2bedGraph -hmmField2extract posterior -outdata no -winFile outDecodedBedGraph_${cage} 
   """
   
+}
+
+decodedSeqBedGraph.subscribe { 
+  println "Copying: $it[1]"
+  outFileDeco = it[1]
+//   outFile.copyTo( resultDirDeco.resolve ( ) )
+  outFileDeco.copyTo( resultDirDeco.resolve ( outFileDeco.name ) ) // Here you pass an object that is way you need resolve
+//   outFile.copyTo( "${resultDirDeco}/${outFile.name}_${it[0]}" ) // Here you pass an string you do not need resolve
 }
 
 resultDir = file("$HOME/phecomp/20140301_oneOutValidation/resultsSingleCage/20120502_FDF_hab/modelsSingleCage")
@@ -204,6 +214,7 @@ myFile = resultDir.resolve (params.outFile)
 
 if( myFile.exists() ) myFile.delete()
 
+// The cage number is alredy in name file (trainedModel_${cage})
 trainedModels.subscribe { 
   println "Copying: $it[1]"
   outFileMod = it[1]
@@ -214,30 +225,23 @@ trainedModels.subscribe {
 //   outFileDeco.copyTo( resultDir.resolve ( outFileDeco.name ) )
 }
 
-decodedSeqBedGraph.subscribe { 
-  println "Copying: $it[1]"
-  outFileDeco = it[1]
-//   outFile.copyTo( resultDir.resolve ( ) )
-  outFileDeco.copyTo( resultDir.resolve ( outFileDeco.name ) ) // Here you pass an object that is way you need resolve
-//   outFile.copyTo( "${resultDir}/${outFile.name}_${it[0]}" ) // Here you pass an string you do not need resolve
-}
 // trainedModels.each { file ->
 //   result_file = resultDir.resolve(file.name)
 //   result_file.text = file.text
 // }
 
-resultDir = file("$HOME/phecomp/20140301_oneOutValidation/resultsSingleCage/20120502_FDF_hab/modelsSingleCageR")
+// resultDirModR = file("$HOME/phecomp/20140301_oneOutValidation/resultsSingleCage/20120502_FDF_hab/modelsSingleCageR")
 
-resultDir.with {
-     if( !empty() ) { deleteDir() }
-     mkdirs()
-     println "Created: $resultDir"
-}
+// resultDirModR.with {
+//      if( !empty() ) { deleteDir() }
+//      mkdirs()
+//      println "Created: $resultDir"
+// }
 
 trainedModelsR.subscribe { 
   println "Copying R model: $it[1]"
   outFileModR = it[1]
-  outFileModR.copyTo( "${resultDir}/${outFileModR.name}_${it[0]}" )
+  outFileModR.copyTo( "${resultDir}/${outFileModR.name}_cage${it[0]}" )
 }
 
 // Functions
