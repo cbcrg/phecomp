@@ -19,6 +19,7 @@ dfSingleTbl <- read.table (path, header=F, stringsAsFactors=F, dec=".", sep="\t"
 
 df <- do.call ("rbind", lapply (listFiles, dfTranspose))
 df
+df.PCA <- df[,c(-1, -2)] #getting rid of animal id and genotype
 
 # Functions
 dfTranspose <- function (tbl2read) 
@@ -42,7 +43,7 @@ dfTranspose <- function (tbl2read)
                   df.temp <- df.temp[-2,]
                   colnames(df.temp) <- colNames                
                   rownames (df.temp) <- as.numeric (gsub ("trainedModelR_cage", "", tbl2read, ignore.case = TRUE))
-                  df.temp$cage <- as.numeric (gsub ("trainedModelR_cage", "", tbl2read, ignore.case = TRUE))
+#                   df.temp$cage <- as.numeric (gsub ("trainedModelR_cage", "", tbl2read, ignore.case = TRUE))
                   # begin (B) and end (E) bins are not informative, removed
                   drops = c("ST_1_E","ST_1_B","ST_2_E","ST_2_B")
                   df.temp <- df.temp [,!(names(df.temp) %in% drops)]
@@ -63,8 +64,12 @@ if(df [which (df$trEm == "ST_1_0"),"proba"] < 0.6)
 tblChange
 tbl <- dfTranspose (listFiles[1])
 tbl
+getwd()
+dput (df, "dfModels.txt")
 dput(df)
-which (tbl$trEm == "ST_1_0") 
+culo <- 
+
+  which (tbl$trEm == "ST_1_0") 
 tbl [which (tbl$trEm == "ST_1_0"),"V3"] 
 
 df.temp <- data.frame (Filename=fn, read.csv (fn, sep="\t", dec=".", header = F))
