@@ -20,6 +20,37 @@ dfSingleTbl <- read.table (path, header=F, stringsAsFactors=F, dec=".", sep="\t"
 df <- do.call ("rbind", lapply (listFiles, dfTranspose))
 df
 
+pcaObject <- prcomp (df) 
+summary (pcaObject)
+pcaObject$rotation
+df.loadings <- as.data.frame(pcaObject$rotation, row.names = FALSE)
+# df.loadingsVarNames <- as.data.frame(pcaObject$rotation)
+# df.loadings$NameVar <- rownames (df.loadingsVarNames)
+
+#reordering the dataframe by PCA1 values and converting variables field into a factor
+# head(df.loadings)
+# df.loadings$PC1 <- with(df.loadings, reorder (NameVar, PC1))
+
+
+# PCAResult <- table2plotpca (dataTable)
+
+#Proportion of variance explained by PCA1, PCA2 and PCA3
+percent <- round((((pcaObject$sdev)^2 / sum(pcaObject$sdev^2))*100)[1:5])
+
+#Getting 5 first PC to make the plot
+PCA2plot <- as.data.frame (pcaObject$x[,c (1:5)])
+
+animals <- row.names(df)
+plotmatrix (PCA2plot)
+
+# plotmatrix2 (PCA2plot, mapping=aes(colour=factor (dataTable$genotype)))
+
+setwd ("/Users/jespinosa/MWM/clusteringKmeans/test/PCAsAllVarByDay")
+pdf (paste ("PCAmatrixPlots", ".pdf", sep=""), width = 20, height = 10)
+plotmatrix2 (PCA2plot, mapping=aes(colour=factor (dataTable$genotype)))
+dev.off()
+
+
 # Functions
 dfTranspose <- function (tbl2read) 
                 {
