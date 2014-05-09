@@ -181,6 +181,7 @@ decodedSeqBedGraph.subscribe {
 //   outFile.copyTo( "${resultDirDeco}/${outFile.name}_${it[0]}" ) // Here you pass an string you do not need resolve
 }
 
+println "--I was here"
 resultDir = file("$HOME/phecomp/20140301_oneOutValidation/resultsSingleCage/20120502_FDF_dev/modelsSingleCage")
 
 resultDir.with {
