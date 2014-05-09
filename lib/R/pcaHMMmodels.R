@@ -18,35 +18,48 @@ path <- "/Users/jespinosa/phecomp/20140301_oneOutValidation/resultsSingleCage/20
 dfSingleTbl <- read.table (path, header=F, stringsAsFactors=F, dec=".", sep="\t")
 
 df <- do.call ("rbind", lapply (listFiles, dfTranspose))
-          
+df
+
 # Functions
 dfTranspose <- function (tbl2read) 
                 {
-                  df.temp <- data.frame (read.csv (tbl2read, sep="\t", dec=".", header = F))
+                  df.temp <- data.frame (read.csv (tbl2read, sep="\t", dec=".", stringsAsFactors=F, header = F))
                   df.temp <- df.temp [,-4]
                   df.temp$trEm <-paste (df.temp$V1, df.temp$V2, sep="_")
                   df.temp <- df.temp [,c(-1,-2)]
-                  
+                  colnames(df.temp)  <- c("proba", "trEm")
+#                   return (df.temp)
                   #State 1 day, it means that bin 0 should have high value
-                  if(df.temp [which (df.temp$trEm == "ST_1_0"),"V3"] < 0.6) 
+                  if(df.temp [which (df.temp$trEm == "ST_1_0"),"proba"] < 0.6) 
                     {                      
                       df.temp <- transform(df.temp, trEm = gsub("ST_1", "ST_3", trEm)) 
                       df.temp <- transform(df.temp, trEm = gsub("ST_2", "ST_1", trEm))
                       df.temp <- transform(df.temp, trEm = gsub("ST_3", "ST_2", trEm))
                     }
-                  
+                                    
                   colNames <- df.temp$trEm
                   df.temp <- as.data.frame(t(df.temp))
                   df.temp <- df.temp[-2,]
                   colnames(df.temp) <- colNames                
                   rownames (df.temp) <- as.numeric (gsub ("trainedModelR_cage", "", tbl2read, ignore.case = TRUE))
                   df.temp$cage <- as.numeric (gsub ("trainedModelR_cage", "", tbl2read, ignore.case = TRUE))
+                  # begin (B) and end (E) bins are not informative, removed
+                  drops = c("ST_1_E","ST_1_B","ST_2_E","ST_2_B")
+                  df.temp <- df.temp [,!(names(df.temp) %in% drops)]
+
                   return (df.temp)
                 }
+
+
 
 # Code development
 # tblOriginal<- dfTranspose (listFiles[1])
 tblOriginal
+subset (df,select="ST_1_E")
+drops = c("ST_1_E","ST_1_B","ST_2_E","ST_2_B")
+df[,!(names(df) %in% drops)]
+if(df [which (df$trEm == "ST_1_0"),"proba"] < 0.6)
+  
 tblChange
 tbl <- dfTranspose (listFiles[1])
 tbl
