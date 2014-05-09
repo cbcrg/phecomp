@@ -19,7 +19,6 @@ dfSingleTbl <- read.table (path, header=F, stringsAsFactors=F, dec=".", sep="\t"
 
 df <- do.call ("rbind", lapply (listFiles, dfTranspose))
 df
-df.PCA <- df[,c(-1, -2)] #getting rid of animal id and genotype
 
 # Functions
 dfTranspose <- function (tbl2read) 
@@ -39,7 +38,11 @@ dfTranspose <- function (tbl2read)
                     }
                                     
                   colNames <- df.temp$trEm
-                  df.temp <- as.data.frame(t(df.temp))
+                  
+                  #t() changes values to string matrix that is way we need to change the mode 
+                  transpDf <- t(df.temp)
+                  mode (transpDf) <- "numeric"
+                  df.temp <- as.data.frame(transpDf, stringAsFactor=F)
                   df.temp <- df.temp[-2,]
                   colnames(df.temp) <- colNames                
                   rownames (df.temp) <- as.numeric (gsub ("trainedModelR_cage", "", tbl2read, ignore.case = TRUE))
