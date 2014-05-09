@@ -15,32 +15,26 @@ listFiles[1]
 setwd (path2Tbl)
 
 path <- "/Users/jespinosa/phecomp/20140301_oneOutValidation/resultsSingleCage/20120502_FDF_hab/modelsSingleCage/trainedModelR_cage01"
-df <- read.table (path, header=F, stringsAsFactors=F, dec=".", sep="\t")
+dfSingleTbl <- read.table (path, header=F, stringsAsFactors=F, dec=".", sep="\t")
 
-df <- do.call ("rbind", lapply (listFiles, 
-                function (tbl2read) 
-                  {
-                  df.temp <- data.frame (read.csv (tbl2read, sep="\t", dec=".", header = F))
-                  df.temp <- df.temp [,-4]
-                  df.temp$trEm <-paste (df.temp$V1, df.temp$V2, sep="_")
-                  df.temp <- df.temp [,c(-1,-2)]
-                  colNames <- df.temp$trEm
-                  df.temp <- as.data.frame(t(df.temp))
-                  df.temp <- df.temp[-2,]
-                  colnames(df.temp) <- colNames                
-                  rownames (df.temp) <- as.numeric (gsub ("trainedModelR_cage", "", tbl2read, ignore.case = TRUE))
-                  df.temp$cage <- as.numeric (gsub ("trainedModelR_cage", "", tbl2read, ignore.case = TRUE))
-                  return (df.temp)}
-                    )
-               )
+df <- do.call ("rbind", lapply (listFiles, dfTranspose))
+          
+# Functions
 dfTranspose <- function (tbl2read) 
                 {
                   df.temp <- data.frame (read.csv (tbl2read, sep="\t", dec=".", header = F))
                   df.temp <- df.temp [,-4]
                   df.temp$trEm <-paste (df.temp$V1, df.temp$V2, sep="_")
                   df.temp <- df.temp [,c(-1,-2)]
-                  print (df.temp)
-#                   if (df.temp [,df.trEm == "ST_1_0"] > 0.6) {print "culo"}
+                  
+                  #State 1 day, it means that bin 0 should have high value
+                  if(df.temp [which (df.temp$trEm == "ST_1_0"),"V3"] < 0.6) 
+                    {                      
+                      df.temp <- transform(df.temp, trEm = gsub("ST_1", "ST_3", trEm)) 
+                      df.temp <- transform(df.temp, trEm = gsub("ST_2", "ST_1", trEm))
+                      df.temp <- transform(df.temp, trEm = gsub("ST_3", "ST_2", trEm))
+                    }
+                  
                   colNames <- df.temp$trEm
                   df.temp <- as.data.frame(t(df.temp))
                   df.temp <- df.temp[-2,]
@@ -49,7 +43,16 @@ dfTranspose <- function (tbl2read)
                   df.temp$cage <- as.numeric (gsub ("trainedModelR_cage", "", tbl2read, ignore.case = TRUE))
                   return (df.temp)
                 }
-dfTranspose (listFiles[1])
+
+# Code development
+# tblOriginal<- dfTranspose (listFiles[1])
+tblOriginal
+tblChange
+tbl <- dfTranspose (listFiles[1])
+tbl
+dput(df)
+which (tbl$trEm == "ST_1_0") 
+tbl [which (tbl$trEm == "ST_1_0"),"V3"] 
 
 df.temp <- data.frame (Filename=fn, read.csv (fn, sep="\t", dec=".", header = F))
 df.temp <- df.temp [,-4]
