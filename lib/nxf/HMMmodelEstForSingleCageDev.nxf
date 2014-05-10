@@ -7,8 +7,8 @@
 #################################################################################
 */
 
-//params.in = "$HOME/phecomp/processedData/20120502_FDF_CRG/intFiles/20120502_FDF_CRG_hab_filt.int"
-//params.outFile = 'modelSingleCage.outmodel'
+params.in = "$HOME/phecomp/processedData/20120502_FDF_CRG/intFiles/20120502_FDF_CRG_devW_1_2_filtNoCage6.int"
+params.outFile = 'modelSingleCage.outmodel'
 
 params.window = 'Value'
 windowAllowedValues = [ 'Value', 'Duration', 'Intertime', 'Velocity' ]
