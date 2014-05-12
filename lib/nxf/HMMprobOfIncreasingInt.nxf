@@ -1,0 +1,300 @@
+/*
+#################################################################################
+### Jose Espinosa-Carrasco. CB/CSN-CRG. May 2014                              ### 
+#################################################################################
+### Code : 12.05                                                              ###
+### Estimate a model for each cage of the development                         ### 
+#################################################################################
+*/
+
+params.in = "$HOME/phecomp/processedData/20120502_FDF_CRG/intFiles/20120502_FDF_CRG_devW_1_2_filtNoCage6.int"
+params.outFile = 'modelSingleCage.outmodel'
+
+params.window = 'Value'
+windowAllowedValues = [ 'Value', 'Duration', 'Intertime', 'Velocity' ]
+window = paramCtrl (params.window, windowAllowedValues, 'Value')
+window = "-window $window"
+println "Window param is $params.window $window"
+
+params.winMode = 'binning'
+winModeAllowedValues = [ 'binning', 'discrete' ]
+println "dentro de params.winmode hay $params.winMode"
+winMode = paramCtrl (params.binMode, winModeAllowedValues, 'binning')
+
+winMode = "-winMode $winMode" 
+println "winMode param is $winMode"
+
+params.binMode = 'four'
+binModeAllowedValues = [ 'binary', 'four' ]
+binModeKey = paramCtrl (params.binMode, binModeAllowedValues, 'four')
+binMode = "-binMode $binModeKey"
+
+if (binModeKey == 'binary') {
+  path2hmmModel = "$HOME/phecomp/20130610_HMM/20130610_HMMbinarySignal/modelsHMM/ST_2_Bin_2_BEGIN_END.inmodel"
+}
+else {  
+  path2hmmModelHab = "$HOME/phecomp/20130610_HMM/20130610_HMMfourSignal/modelsHMM/ST_2_Bin_4_BEGIN_END.inmodel"
+}
+
+binModeMap = [ "binary":"1234", "four":"12,34" ]
+winCh2comb = binModeMap[binModeKey]
+winCh2comb = "-winCh2comb $winCh2comb"
+println "winCh2comb param is $winCh2comb"
+
+params.binFileName = 'binFile.hmm' 
+binFileName = "-winFile $params.binFileName"
+println "binFileName param is $binFileName"
+
+params.winSize = '300'
+winSize = params.winSize
+assert winSize.isDouble() : "[FATAL]: winSize must be numeric now is \"$params.winSize\""
+winSize = "-ws $winSize" 
+println "WindowSize param is $winSize" 
+
+params.winStepSize = '300'
+winStepSize = params.winStepSize
+assert winStepSize.isDouble() : "[FATAL]: winStepSize must be numeric now is \"$params.winStepSize\""
+winStepSize = "-wss $winStepSize"
+println "WindowStepSize param is $winStepSize"
+
+params.winFormat = "rhmm" 
+winFileFormatAllowed = [ 'rhmm', 'bedGraph' ]
+winFileFormat = paramCtrl (params.winFormat, winFileFormatAllowed, 'bedGraph')
+winFileFormat = "-winFormat $winFileFormat"
+println "winFormat param is $winFileFormat"
+
+params.rhmmFile = "single" 
+rhmmFileTypesAllowed = [ 'single', 'multiple' ]
+rhmmFileType = paramCtrl (params.rhmmFile, rhmmFileTypesAllowed, 'single')
+rhmmFileType = "-rhmmFile $rhmmFileType"
+println "winFileType param is $rhmmFileType"
+
+params.outdata = "-outdata no"
+outdata = params.outdata
+
+params.iniLight = '6'
+iniLightAllowedValues = [ 6, 7 ]
+iniLight = paramCtrl (params.iniLight, iniLightAllowedValues, 6)
+iniLight = "-iniLight $iniLight"
+println "Window param is $params.iniLight $iniLight"
+
+params.winCombMode = 'additive'
+winCombModeAllowedValues = [ 'additive', 'sign' ]
+winCombMode = paramCtrl (params.winCombMode, winCombModeAllowedValues, 'additive')
+winCombMode = "-winCombMode $winCombMode"
+println "WinCombMode param is $winCombMode"
+
+// Concatenating options
+space = " "
+int2brOptions =  window + space + winMode + space + binMode + space + winCh2comb + space + binFileName + space + winSize + space + winStepSize + space + winFileFormat + space + rhmmFileType + space + outdata + space + iniLight + space  + winCombMode + space + "-data"
+println "options: $int2brOptions"
+
+// File to estimate model (habituation)
+homeData = "$HOME/phecomp/processedData/" 
+myPath2IntfileHab = "$HOME/phecomp/processedData/20120502_FDF_CRG/intFiles/20120502_FDF_CRG_hab_filtNoCage6.int"
+println "path of hab file: $myPath2IntfileHab"
+intFileHab = file(myPath2IntfileHab)
+
+// Concatenating options
+space = " "
+int2brOptions =  window + space + winMode + space + binMode + space + winCh2comb + space + binFileName + space + winSize + space + winStepSize + space + winFileFormat + space + rhmmFileType + space + outdata + space + iniLight + space  + winCombMode + space + "-data"
+println "options: $int2brOptions"
+
+// Creating a binned file from habituation for model estimation
+process int2binFile4ModelEst {
+
+ input:
+ file 'fileHab' from intFileHab
+ 
+ // No tengo output ese es el problema debería dejar que se crearan y entonces recogerlos como se tenga que hacer
+ output:
+ file '*.hmm' into binFile4ModelEst 
+ 
+ """
+ int2browser.pl ${int2brOptions} fileHab
+ """
+
+}
+
+// Training the model with habituation file to estimate a model use for the evaluation of the other sequences
+process trainModelOneOut {
+  input:
+  set 'binFileHab' from binFile4ModelEst
+  
+  output:  
+  set 'trained_*.model' into trainedModelHab   
+  
+  """
+  rhmm.pl -model ${path2hmmModel} -out trained_${cage} -data oneCageOutFile -action bw -nrounds 10 -nit 1000 -evaluate viterbi -outdata outDecodedFile 
+  """
+}
+
+// // File to process
+// homeData = "$HOME/phecomp/processedData/" 
+// myPath2Intfile = "$HOME/phecomp/processedData/20120502_FDF_CRG/intFiles/20120502_FDF_CRG_devW_1_2_filtNoCage6.int"
+// println "path: $myPath2Intfile"
+// intFiles = file(myPath2Intfile)
+// 
+// 
+// // Creating a bined file for each cage
+// // Now I should make the same with all the other cages that actually were used to infer the models
+// rhmmFileType = "-rhmmFile multiple"
+// int2brOptMultiple =  window + space + winMode + space + binMode + space + winCh2comb + space + winSize + space + winStepSize + space + winFileFormat + space + rhmmFileType + space + outdata + space + iniLight + space  + winCombMode + space + "-data"
+// 
+// println "int2browser.pl ${int2brOptMultiple} input"
+// 
+// // Creating a file with all cages binned from habituation data
+// // this file will be used to estimate the model use to evaluate the data
+// process int2binFile {
+// 
+//  input:
+//  file 'input' from intFiles
+//  
+//  // No tengo output ese es el problema debería dejar que se crearan y entonces recogerlos como se tenga que hacer
+//  output:
+//  file '*.hmm' into bin_fileAll 
+//  
+//  """
+//  int2browser.pl ${int2brOptions} input 
+//  """
+// 
+// }
+// 
+// process int2singleCageBinFile {
+// 
+//  input:
+//  file 'input' from intFiles
+//  
+//  output:
+//  set '*.hmm' into binFileSingle
+//  
+//  """
+//  int2browser.pl ${int2brOptMultiple} input
+//  """
+// }
+// 
+// // I need flatten so it takes each item of the list one by one
+// // Here I get the cage from the file name and I put it on the channel
+// binFileSingleCage = binFileSingle.flatten().map { binSingleCage -> 
+//   def pattern = binSingleCage.name =~/^cage(\d+).*$/
+//   println binSingleCage.name
+//   println pattern [0][1]
+//   def cage = pattern[0][1]
+//   [ cage, binSingleCage ]
+// }
+// 
+// // For each intfile binned I will generate increasingly longer files from including just 2 hours until the end of the file
+// process  increasingBinFilesGen {
+//   input:
+//   set val (cage) , file ('singleCage') from binFileSingleCage
+//   
+//   output:  
+//   set cage, 'c_*' into increasingBinFiles   
+//  
+//   """
+//   splitIntFiles.sh singleCage
+//   """
+// }
+// 
+// 
+// process evalIncBinFiles {
+//   input:
+//   set cage, 'incBinFiles' from increasingBinFiles
+//   output: 
+//   set 'outDecoded' from decodedSeq
+//   
+//   
+// }
+// // I make a copy of binFileSingle
+// (binFileSingle2file,  binFileSingleCageCp) =  binFileSingleCage.split (2)
+// 
+// resultDirBin = file("$HOME/phecomp/20140512_probOfIncreasingInt/resultsSingleCage/20120502_FDF_dev/binFiles")
+// 
+// resultDirBin.with {
+//      if( !empty() ) { deleteDir() }
+//      mkdirs()
+//      println "Created: $resultDirBin"
+// }
+// 
+// // Copying binary file
+// binFileSingle2file.subscribe { 
+//   println "Copying bin file ******^^^^^^: $it[1]"
+//   binFile = it[1]
+//   binFile.copyTo( resultDirBin.resolve ( binFile.name ) ) // Here you pass an object that is way you need resolve
+// }
+// 
+// 
+// // I make a copy of this
+// (decodedSeq,  decodedSeq2file) =  decodedSeq.split (2)
+// 
+// resultDirDeco = file("$HOME/phecomp/20140512_probOfIncreasingInt/resultsSingleCage/20120502_FDF_dev/outDecoded")
+// 
+// resultDirDeco.with {
+//      if( !empty() ) { deleteDir() }
+//      mkdirs()
+//      println "Created: $resultDirDeco"
+// }
+// 
+// // The cage number is alredy in name file (outDecoded_${cage})
+// decodedSeq2file.subscribe { 
+//   println "Copying ******: $it[1]"
+//   outFileDecoded = it[1]
+//   outFileDecoded.copyTo( resultDirDeco.resolve ( outFileDecoded.name ) ) // Here you pass an object that is way you need resolve
+// }
+// 
+// // This process convert decoded files into bedGraph format
+// process convertDecoded {
+//   input:
+//   set cage, 'outDecoded' from decodedSeq
+//   
+//   output:
+//   set cage, 'outDecodedBedGraph_*' into decodedSeqBedGraph
+//   
+//   """
+//   int2browser.pl -data outDecoded -convert hmm2bedGraph -hmmField2extract posterior -outdata no -winFile outDecodedBedGraph_${cage} 
+//   """
+//   
+// }
+// 
+// println "--I was here"
+// 
+// decodedSeqBedGraph.subscribe { 
+//   println "Copying: $it[1]"
+//   outFileDeco = it[1]
+// //   outFile.copyTo( resultDirDeco.resolve ( ) )
+//   outFileDeco.copyTo( resultDirDeco.resolve ( outFileDeco.name ) ) // Here you pass an object that is way you need resolve
+// //   outFile.copyTo( "${resultDirDeco}/${outFile.name}_${it[0]}" ) // Here you pass an string you do not need resolve
+// }
+// 
+// resultDir = file("$HOME/phecomp/20140301_oneOutValidation/resultsSingleCage/20120502_FDF_dev/modelsSingleCage")
+// 
+// resultDir.with {
+//      if( !empty() ) { deleteDir() }
+//      mkdirs()
+//      println "Created: $resultDir"
+// }
+// 
+// myFile = resultDir.resolve (params.outFile)
+// 
+// if( myFile.exists() ) myFile.delete()
+// 
+// // The cage number is alredy in name file (trainedModel_${cage})
+// trainedModels.subscribe { 
+//   println "Copying: $it[1]"
+//   outFileMod = it[1]
+//   outFileMod.copyTo( resultDir.resolve ( outFileMod.name ) ) // Here you pass an object that is way you need resolve
+// }
+// 
+// trainedModelsR.subscribe { 
+//   println "Copying R model: $it[1]"
+//   outFileModR = it[1]
+//   outFileModR.copyTo( "${resultDir}/${outFileModR.name}_cage${it[0]}" )
+// }
+// 
+// Functions
+def paramCtrl ( val2check, list , defValue ) {  
+  if (list.contains (val2check))
+    return val2check
+  else
+    return defValue
+ }
