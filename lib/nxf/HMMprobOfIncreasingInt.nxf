@@ -125,7 +125,7 @@ process trainModelOneOut {
   set 'trained_*.model' into trainedModelHab   
   
   """
-  rhmm.pl -model ${path2hmmModelHab} -out trainedHab_ -data oneCageOutFile -action bw -nrounds 10 -nit 1000 -evaluate viterbi -outdata outDecodedFile 
+  rhmm.pl -model ${path2hmmModelHab} -out trainedHab_ -data binFileHab -action bw -nrounds 10 -nit 1000 -evaluate viterbi -outdata outDecodedFile 
   """
 }
 
