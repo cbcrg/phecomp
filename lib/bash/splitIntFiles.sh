@@ -22,9 +22,13 @@ splitSize=2
 stepSize=$(( splitSize * 3600 / ws ))
 
 linesFile=$(wc -l < "$file")
+fileAndExt=${file##*/}
+fileName=`echo $fileAndExt | cut -d . -f1`
+cage=${fileName##*cage}
+cage=${cage%ch*}
 
 for winSize in $(seq $stepSize $stepSize $linesFile)
 do
 	echo $winSize
-	sed -n "1,$winSize p" $file > "file_"$winSize
+	sed -n "1,$winSize p" $file > "c"_$cage"_s_"$winSize
 done
