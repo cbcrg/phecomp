@@ -115,24 +115,6 @@ process int2singleCageBinFile {
  """
 }
 
-// I make a copy of binFileSingle
-(binFileSingle2file,  binFileSingleCp) =  binFileSingle.split (2)
-
-resultDirBin = file("$HOME/phecomp/20140301_oneOutValidation/resultsSingleCage/20120502_FDF_dev/binFiles")
-
-resultDirBin.with {
-     if( !empty() ) { deleteDir() }
-     mkdirs()
-     println "Created: $resultDirBin"
-}
-
-// The cage number is alredy in name file (outDecoded_${cage})
-binFileSingle2file.subscribe { 
-  println "Copying ******: $it[1]"
-  outFileDecoded = it[1]
-  outFileDecoded.copyTo( resultDirDeco.resolve ( outFileDecoded.name ) ) // Here you pass an object that is way you need resolve
-}
-
 // I need flatten so it takes each item of the list one by one
 // Here I get the cage from the file name and I put it on the channel
 binFileSingleCage = binFileSingleCp.flatten().map { binSingleCage -> 
@@ -143,10 +125,28 @@ binFileSingleCage = binFileSingleCp.flatten().map { binSingleCage ->
   [ cage, binSingleCage ]
 }
 
+// I make a copy of binFileSingle
+(binFileSingle2file,  binFileSingleCageCp) =  binFileSingleCage.split (2)
+
+resultDirBin = file("$HOME/phecomp/20140301_oneOutValidation/resultsSingleCage/20120502_FDF_dev/binFiles")
+
+resultDirBin.with {
+     if( !empty() ) { deleteDir() }
+     mkdirs()
+     println "Created: $resultDirBin"
+}
+
+// Copying binary file
+binFileSingle2file.subscribe { 
+  println "Copying ******: $it[1]"
+  outFileDecoded = it[1]
+  outFileDecoded.copyTo( resultDirDeco.resolve ( outFileDecoded.name ) ) // Here you pass an object that is way you need resolve
+}
+
 // Training the model with a single cage of development
 process trainModelOneOut {
   input:
-  set val (cage) , file ('singleCage') from binFileSingleCage
+  set val (cage) , file ('singleCage') from binFileSingleCageCp
   
   output:  
   set cage, 'trained_*.model_zero' into trainedModels   
