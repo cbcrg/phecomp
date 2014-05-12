@@ -181,6 +181,20 @@ process  increasingBinFilesGen {
   """
 }
 
+process evalIncBinFiles {
+  input:
+  set val (cage), file (increasingBinFile) from increasingBinFiles
+  set trainedModel from trainedModelHab
+  
+  output:  
+  set cage, stdout into evalSingleCage
+
+  """
+  rhmm.pl -data ${increasingBinFile} -model ${trainedModel} -evaluation sequence -output no -outmodel no 
+  cat *.eval > /dev/stdout
+  """
+}
+
 dirFileIncr = file("$HOME/phecomp/20140512_probOfIncreasingInt/20120502_FDF_habDevW1_W2/dirFileIncr/")
 
 dirFileIncr.with {
@@ -189,12 +203,13 @@ dirFileIncr.with {
      println "Created: $dirFileIncr"
 }
 
+
 // Writing increasingBinFiles
-increasingBinFiles.subscribe { 
-  println "Copying: $it[1]"
-  outFileInc = it[1]
-  outFileInc.copyTo( dirFileIncr.resolve ( outFileInc.name ) ) // Here you pass an object that is way you need resolve
-}
+// increasingBinFiles.subscribe { 
+//   println "Copying: $it[1]"
+//   outFileInc = it[1]
+//   outFileInc.copyTo( dirFileIncr.resolve ( outFileInc.name ) ) // Here you pass an object that is way you need resolve
+// }
 
 
 // 
