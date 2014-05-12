@@ -138,9 +138,9 @@ resultDirBin.with {
 
 // Copying binary file
 binFileSingle2file.subscribe { 
-  println "Copying ******: $it[1]"
-  outFileDecoded = it[1]
-  outFileDecoded.copyTo( resultDirDeco.resolve ( outFileDecoded.name ) ) // Here you pass an object that is way you need resolve
+  println "Copying bin file ******^^^^^^: $it[1]"
+  binFile = it[1]
+  binFile.copyTo( resultDirDeco.resolve ( binFile.name ) ) // Here you pass an object that is way you need resolve
 }
 
 // Training the model with a single cage of development
