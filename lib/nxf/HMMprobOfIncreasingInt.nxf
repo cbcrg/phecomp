@@ -193,14 +193,14 @@ increasingBinFilesFlat = increasingBinFiles.flatten().map { increasingBinFile ->
 
 process evalIncBinFiles {
   input:
-  set val (cage), file ('increasingBinFile') from increasingBinFilesFlat
+  set val (cage), file ('increasingBinFile2eval') from increasingBinFilesFlat
   set trainedModel from trainedModelHab
   
   output:  
   set cage, stdout into evalSingleCage
 
   """
-  rhmm.pl -data ${increasingBinFile} -model ${trainedModel} -evaluation sequence -output no -outmodel no 
+  rhmm.pl -data ${increasingBinFile2eval} -model ${trainedModel} -evaluation sequence -output no -outmodel no 
   cat *.eval > /dev/stdout
   """
 }
