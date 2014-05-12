@@ -185,33 +185,35 @@ process  increasingBinFilesGen {
 // Here I get the cage from the file name and I put it on the channel
 increasingBinFilesFlat = increasingBinFiles.flatten().map { increasingBinFile -> 
   def pattern = increasingBinFile.name =~/^c(\d+).*$/
+  def patternStep = increasingBinFile.name =~/^c\d+_s_(\d+).*$/
   println increasingBinFile.name
   println pattern [0][1]
+  println patternStep [0][1]
   def cage = pattern[0][1]
   [ cage, increasingBinFile ]
 }
 
-process evalIncBinFiles {
-  input:
-  set val (cage), file ('increasingBinFile2eval') from increasingBinFilesFlat
-  set trainedModel from trainedModelHab
-  
-  output:  
-  set cage, stdout into evalSingleCage
-
-  """
-  rhmm.pl -data ${increasingBinFile2eval} -model ${trainedModel} -evaluation sequence -output no -outmodel no 
-  cat *.eval > /dev/stdout
-  """
-}
-
-dirFileIncr = file("$HOME/phecomp/20140512_probOfIncreasingInt/20120502_FDF_habDevW1_W2/dirFileIncr/")
-
-dirFileIncr.with {
-     if( !empty() ) { deleteDir() }
-     mkdirs()
-     println "Created: $dirFileIncr"
-}
+// process evalIncBinFiles {
+//   input:
+//   set val (cage), file ('increasingBinFile2eval') from increasingBinFilesFlat
+//   set trainedModel from trainedModelHab
+//   
+//   output:  
+//   set cage, stdout into evalSingleCage
+// 
+//   """
+//   rhmm.pl -data ${increasingBinFile2eval} -model ${trainedModel} -evaluation sequence -output no -outmodel no 
+//   cat *.eval > /dev/stdout
+//   """
+// }
+// 
+// dirFileIncr = file("$HOME/phecomp/20140512_probOfIncreasingInt/20120502_FDF_habDevW1_W2/dirFileIncr/")
+// 
+// dirFileIncr.with {
+//      if( !empty() ) { deleteDir() }
+//      mkdirs()
+//      println "Created: $dirFileIncr"
+// }
 
 
 // Writing increasingBinFiles
