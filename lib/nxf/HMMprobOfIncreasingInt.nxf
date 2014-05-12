@@ -122,80 +122,81 @@ process trainModelOneOut {
   set 'binFileHab' from binFile4ModelEst
   
   output:  
-  set 'trained_*.model' into trainedModelHab   
+  set 'trainedHab_*.model' into trainedModelHab   
   
   """
   rhmm.pl -model ${path2hmmModelHab} -out trainedHab_ -data binFileHab -action bw -nrounds 10 -nit 1000 -evaluate viterbi -outdata outDecodedFile 
   """
 }
 
-// // File to process
-// homeData = "$HOME/phecomp/processedData/" 
-// myPath2Intfile = "$HOME/phecomp/processedData/20120502_FDF_CRG/intFiles/20120502_FDF_CRG_devW_1_2_filtNoCage6.int"
-// println "path: $myPath2Intfile"
-// intFiles = file(myPath2Intfile)
-// 
-// 
-// // Creating a bined file for each cage
-// // Now I should make the same with all the other cages that actually were used to infer the models
-// rhmmFileType = "-rhmmFile multiple"
-// int2brOptMultiple =  window + space + winMode + space + binMode + space + winCh2comb + space + winSize + space + winStepSize + space + winFileFormat + space + rhmmFileType + space + outdata + space + iniLight + space  + winCombMode + space + "-data"
-// 
-// println "int2browser.pl ${int2brOptMultiple} input"
-// 
-// // Creating a file with all cages binned from habituation data
-// // this file will be used to estimate the model use to evaluate the data
-// process int2binFile {
-// 
-//  input:
-//  file 'input' from intFiles
-//  
-//  // No tengo output ese es el problema debería dejar que se crearan y entonces recogerlos como se tenga que hacer
-//  output:
-//  file '*.hmm' into bin_fileAll 
-//  
-//  """
-//  int2browser.pl ${int2brOptions} input 
-//  """
-// 
-// }
-// 
-// process int2singleCageBinFile {
-// 
-//  input:
-//  file 'input' from intFiles
-//  
-//  output:
-//  set '*.hmm' into binFileSingle
-//  
-//  """
-//  int2browser.pl ${int2brOptMultiple} input
-//  """
-// }
-// 
-// // I need flatten so it takes each item of the list one by one
-// // Here I get the cage from the file name and I put it on the channel
-// binFileSingleCage = binFileSingle.flatten().map { binSingleCage -> 
-//   def pattern = binSingleCage.name =~/^cage(\d+).*$/
-//   println binSingleCage.name
-//   println pattern [0][1]
-//   def cage = pattern[0][1]
-//   [ cage, binSingleCage ]
-// }
-// 
-// // For each intfile binned I will generate increasingly longer files from including just 2 hours until the end of the file
-// process  increasingBinFilesGen {
-//   input:
-//   set val (cage) , file ('singleCage') from binFileSingleCage
-//   
-//   output:  
-//   set cage, 'c_*' into increasingBinFiles   
-//  
-//   """
-//   splitIntFiles.sh singleCage
-//   """
-// }
-// 
+// File to process
+myPath2Intfile = "$HOME/phecomp/processedData/20120502_FDF_CRG/intFiles/20120502_FDF_CRG_hab_DevW1_W2_filtNoCage6.int"
+println "path: $myPath2Intfile"
+intFiles = file(myPath2Intfile)
+
+
+// Creating a bined file for each cage
+// Now I should make the same with all the other cages that actually were used to infer the models
+rhmmFileType = "-rhmmFile multiple"
+int2brOptMultiple =  window + space + winMode + space + binMode + space + winCh2comb + space + winSize + space + winStepSize + space + winFileFormat + space + rhmmFileType + space + outdata + space + iniLight + space  + winCombMode + space + "-data"
+
+println "int2browser.pl ${int2brOptMultiple} input"
+
+// Creating a bin file for each cage 
+// the probability of all cages will be increasingly evaluated
+process int2singleCageBinFile {
+
+ input:
+ file 'input' from intFiles
+ 
+ output:
+ set '*.hmm' into binFilesSingleCages
+ 
+ """
+ int2browser.pl ${int2brOptMultiple} input
+ """
+}
+
+
+// I need flatten so it takes each item of the list one by one
+// Here I get the cage from the file name and I put it on the channel
+binFileSingleCage = binFilesSingleCages.flatten().map { binSingleCage -> 
+  def pattern = binSingleCage.name =~/^cage(\d+).*$/
+  println binSingleCage.name
+  println pattern [0][1]
+  def cage = pattern[0][1]
+  [ cage, binSingleCage ]
+}
+
+// For each intfile binned I will generate increasingly longer files from including just 2 hours until the end of the file
+process  increasingBinFilesGen {
+  input:
+  set val (cage) , file ('singleCage') from binFileSingleCage
+  
+  output:  
+  set cage, 'c_*' into increasingBinFiles   
+ 
+  """
+  splitIntFiles.sh singleCage
+  """
+}
+
+dirFileIncr = file("$HOME/phecomp/20140512_probOfIncreasingInt/20120502_FDF_habDevW1_W2/dirFileIncr/")
+
+dirFileIncr.with {
+     if( !empty() ) { deleteDir() }
+     mkdirs()
+     println "Created: $dirFileIncr"
+}
+
+// Writing increasingBinFiles
+increasingBinFiles.subscribe { 
+  println "Copying: $it[1]"
+  outFileInc = it[1]
+  outFileInc.copyTo( dirFileIncr.resolve ( outFileInc.name ) ) // Here you pass an object that is way you need resolve
+}
+
+
 // 
 // process evalIncBinFiles {
 //   input:
