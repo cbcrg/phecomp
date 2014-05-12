@@ -183,12 +183,12 @@ process  increasingBinFilesGen {
 
 // I need flatten so it takes each item of the list one by one
 // Here I get the cage from the file name and I put it on the channel
-increasingBinFilesFlat = increasingBinFiles.flatten().map { increasingBinFilesFlat -> 
-  def pattern = increasingBinFilesFlat.name =~/^c(\d+).*$/
-  println increasingBinFilesFlat.name
+increasingBinFilesFlat = increasingBinFiles.flatten().map { increasingBinFile -> 
+  def pattern = increasingBinFile.name =~/^c(\d+).*$/
+  println increasingBinFile.name
   println pattern [0][1]
   def cage = pattern[0][1]
-  [ cage, increasingBinFilesFlat ]
+  [ cage, increasingBinFile ]
 }
 
 process evalIncBinFiles {
