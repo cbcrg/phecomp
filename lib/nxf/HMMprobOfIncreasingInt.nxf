@@ -195,18 +195,12 @@ increasingBinFilesFlat = increasingBinFiles.flatten().map { increasingBinFile ->
    [ cage, step ,increasingBinFile ]
 }
 
-// bin_fileSingleCageDev = bin_fileSingleDev.flatten().map { binSingleCageDev -> 
-//   def pattern = binSingleCageDev.name =~/^cage(\d+).*$/
-//   println binSingleCageDev.name
-//   println pattern [0][1]
-//   def cage = pattern[0][1]
-//   [ cage, binSingleCageDev ]
-// }
+// modelEstimationData = trainedModels.spread( binSingleCageCh )
+cageStepFileModData = increasingBinFilesFlat.spread( trainedModelHab )
 
 process evalIncBinFiles {
   input:
-  set val (cage), val (step), file ('increasingBinFile2eval') from increasingBinFilesFlat
-  set trainedModel from trainedModelHab
+  set val (cage), val (step), file ('increasingBinFile2eval'), file ('trainedModel') from cageStepFileModData
   
   output:  
   set cage, step, stdout into evalSingleCage
