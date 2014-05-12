@@ -106,7 +106,7 @@ process int2binFile4ModelEst {
  input:
  file 'fileHab' from intFileHab
  
- // No tengo output ese es el problema debería dejar que se crearan y entonces recogerlos como se tenga que hacer
+ // No tengo output ese es el problema deber��a dejar que se crearan y entonces recogerlos como se tenga que hacer
  output:
  file '*.hmm' into binFile4ModelEst 
  
@@ -177,7 +177,7 @@ process  increasingBinFilesGen {
   set 'c_*' into increasingBinFiles   
  
   """
-  splitIntFiles.sh "cage"${cage}"chBinFiles.int"
+  splitIntFiles.sh singleCage
   """
 }
 
