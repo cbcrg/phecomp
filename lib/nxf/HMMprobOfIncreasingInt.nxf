@@ -203,20 +203,20 @@ increasingBinFilesFlat = increasingBinFiles.flatten().map { increasingBinFile ->
 //   [ cage, binSingleCageDev ]
 // }
 
-// process evalIncBinFiles {
-//   input:
-//   set val (cage), file ('increasingBinFile2eval') from increasingBinFilesFlat
-//   set trainedModel from trainedModelHab
-//   
-//   output:  
-//   set cage, stdout into evalSingleCage
-// 
-//   """
-//   rhmm.pl -data ${increasingBinFile2eval} -model ${trainedModel} -evaluation sequence -output no -outmodel no 
-//   cat *.eval > /dev/stdout
-//   """
-// }
-// 
+process evalIncBinFiles {
+  input:
+  set val (cage), val (step), file ('increasingBinFile2eval') from increasingBinFilesFlat
+  set trainedModel from trainedModelHab
+  
+  output:  
+  set cage, step, stdout into evalSingleCage
+
+  """
+  rhmm.pl -data ${increasingBinFile2eval} -model ${trainedModel} -evaluation sequence -output no -outmodel no 
+  cat *.eval > /dev/stdout
+  """
+}
+ 
 // dirFileIncr = file("$HOME/phecomp/20140512_probOfIncreasingInt/20120502_FDF_habDevW1_W2/dirFileIncr/")
 // 
 // dirFileIncr.with {
