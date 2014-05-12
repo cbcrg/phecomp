@@ -177,7 +177,7 @@ process  increasingBinFilesGen {
   set 'c_*' into increasingBinFiles   
  
   """
-  splitIntFiles.sh singleCage
+  splitIntFiles.sh "cage"${cage}"chBinFiles.int"
   """
 }
 
