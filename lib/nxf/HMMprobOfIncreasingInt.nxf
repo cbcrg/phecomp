@@ -217,14 +217,25 @@ process evalIncBinFiles {
   """
 }
  
-// dirFileIncr = file("$HOME/phecomp/20140512_probOfIncreasingInt/20120502_FDF_habDevW1_W2/dirFileIncr/")
-// 
-// dirFileIncr.with {
-//      if( !empty() ) { deleteDir() }
-//      mkdirs()
-//      println "Created: $dirFileIncr"
-// }
+ 
+dirFileIncr = file("$HOME/phecomp/20140512_probOfIncreasingInt/20120502_FDF_habDevW1_W2/dirFileIncr/")
+ 
+dirFileIncr.with {
+     if( !empty() ) { deleteDir() }
+     mkdirs()
+     println "Created: $dirFileIncr"
+}
 
+myFile = resultDir.resolve ("tableResults")
+
+if( myFile.exists() ) myFile.delete()
+  
+myFile << 'cage\tstep\tevalScore\n'
+
+evalSingleCage.subscribe { 
+  tuple -> 
+  myFile << ( tuple [0] + "\t" + tuple [1] + "\t" + tuple [2] ) << '\n' 
+}
 
 // Writing increasingBinFiles
 // increasingBinFiles.subscribe { 
