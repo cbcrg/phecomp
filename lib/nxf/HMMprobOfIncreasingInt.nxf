@@ -174,7 +174,7 @@ process  increasingBinFilesGen {
   set val (cage) , file ('singleCage') from binFileSingleCage
   
   output:  
-  set cage, 'c_*' into increasingBinFiles   
+  set 'c_*' into increasingBinFiles   
  
   """
   splitIntFiles.sh singleCage
