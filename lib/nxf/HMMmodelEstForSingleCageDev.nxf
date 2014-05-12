@@ -117,7 +117,7 @@ process int2singleCageBinFile {
 
 // I need flatten so it takes each item of the list one by one
 // Here I get the cage from the file name and I put it on the channel
-binFileSingleCage = binFileSingleCp.flatten().map { binSingleCage -> 
+binFileSingleCage = binFileSingle.flatten().map { binSingleCage -> 
   def pattern = binSingleCage.name =~/^cage(\d+).*$/
   println binSingleCage.name
   println pattern [0][1]
