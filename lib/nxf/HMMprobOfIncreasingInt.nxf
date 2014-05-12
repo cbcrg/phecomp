@@ -226,7 +226,7 @@ dirFileIncr.with {
      println "Created: $dirFileIncr"
 }
 
-myFile = resultDir.resolve ("tableResults")
+myFile = dirFileIncr.resolve ("tableResults.tbl")
 
 if( myFile.exists() ) myFile.delete()
   
