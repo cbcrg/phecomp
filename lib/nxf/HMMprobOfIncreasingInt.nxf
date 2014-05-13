@@ -106,7 +106,7 @@ process int2binFile4ModelEst {
  input:
  file 'fileHab' from intFileHab
  
- // No tengo output ese es el problema deber��a dejar que se crearan y entonces recogerlos como se tenga que hacer
+ // No tengo output ese es el problema deberia dejar que se crearan y entonces recogerlos como se tenga que hacer
  output:
  file '*.hmm' into binFile4ModelEst 
  
@@ -141,7 +141,7 @@ resultDir.with {
      println "Created: $resultDir"
 }
 
-myFile = resultDir.resolve ("modelHab.inmodel)
+myFile = resultDir.resolve ("modelHab.inmodel")
 
 if( myFile.exists() ) myFile.delete()
 
