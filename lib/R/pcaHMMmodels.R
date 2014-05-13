@@ -6,18 +6,23 @@
 ##############################################################
 
 home <- Sys.getenv("HOME")
+#habituation
 path2Tbl <- "/Users/jespinosa/phecomp/20140301_oneOutValidation/resultsSingleCage/20120502_FDF_hab/modelsSingleCage/"
-
+#development
+# path2Tbl <- "/Users/jespinosa/phecomp/20140301_oneOutValidation/resultsSingleCage/20120502_FDF_dev/modelsSingleCage"
 pattern <- "trainedModelR_cage[[:digit:]]"
 
 listFiles <- list.files (path = path2Tbl, pattern = pattern)
 listFiles[1]
 setwd (path2Tbl)
 
-path <- "/Users/jespinosa/phecomp/20140301_oneOutValidation/resultsSingleCage/20120502_FDF_hab/modelsSingleCage/trainedModelR_cage01"
-dfSingleTbl <- read.table (path, header=F, stringsAsFactors=F, dec=".", sep="\t")
+# path <- "/Users/jespinosa/phecomp/20140301_oneOutValidation/resultsSingleCage/20120502_FDF_hab/modelsSingleCage/trainedModelR_cage01"
+# tbl2read <- "/Users/jespinosa/phecomp/20140301_oneOutValidation/resultsSingleCage/20120502_FDF_dev/modelsSingleCage/trainedModelR_cage01" 
+rm (tbl2read)
+# dfSingleTbl <- read.table (path, header=F, stringsAsFactors=F, dec=".", sep="\t")
 
 df <- do.call ("rbind", lapply (listFiles, dfTranspose))
+warnings ()
 df
 
 pcaObject <- prcomp (df) 
@@ -37,8 +42,8 @@ df.loadings <- as.data.frame(pcaObject$rotation, row.names = FALSE)
 #Proportion of variance explained by PCA1, PCA2 and PCA3
 percent <- round((((pcaObject$sdev)^2 / sum(pcaObject$sdev^2))*100)[1:5])
 
-#Getting 5 first PC to make the plot
-PCA2plot <- as.data.frame (pcaObject$x[,c (1:5)])
+#Getting 3 first PC to make the plot
+PCA2plot <- as.data.frame (pcaObject$x[,c (1:3)])
 
 animals <- row.names(df)
 plotmatrix (PCA2plot)
@@ -69,9 +74,11 @@ dfTranspose <- function (tbl2read)
                     }
                                     
                   colNames <- df.temp$trEm
+#                   df.temp
                   
                   #t() changes values to string matrix that is way we need to change the mode 
                   transpDf <- t(df.temp)
+
                   mode (transpDf) <- "numeric"
                   df.temp <- as.data.frame(transpDf, stringAsFactor=F)
                   df.temp <- df.temp[-2,]
