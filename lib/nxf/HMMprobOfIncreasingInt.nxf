@@ -129,6 +129,31 @@ process trainModelOneOut {
   """
 }
 
+// A copy of the model to save it
+(trainedModelHab2eval,  trainedModelHab2file) =  trainedModelHab.split (2)
+
+// Writing model
+resultDir = file("$HOME/phecomp/20140512_probOfIncreasingInt/20120502_FDF_habDevW1_W2/modelHab")
+
+resultDir.with {
+     if( !empty() ) { deleteDir() }
+     mkdirs()
+     println "Created: $resultDir"
+}
+
+myFile = resultDir.resolve ("modelHab.inmodel)
+
+if( myFile.exists() ) myFile.delete()
+
+// The cage number is alredy in name file (trainedModel_${cage})
+trainedModelHab2file.subscribe { 
+  println "Copying: $it[1]"
+  outFileMod = it[1]
+  outFileMod.copyTo( resultDir.resolve ( ) )
+//   outFileMod.copyTo( resultDir.resolve ( outFileMod.name ) ) 
+}
+
+
 // File to process
 myPath2Intfile = "$HOME/phecomp/processedData/20120502_FDF_CRG/intFiles/20120502_FDF_CRG_hab_DevW1_W2_filtNoCage6.int"
 println "path: $myPath2Intfile"
@@ -196,7 +221,7 @@ increasingBinFilesFlat = increasingBinFiles.flatten().map { increasingBinFile ->
 }
 
 // modelEstimationData = trainedModels.spread( binSingleCageCh )
-cageStepFileModData = increasingBinFilesFlat.spread( trainedModelHab )
+cageStepFileModData = increasingBinFilesFlat.spread( trainedModelHab2eval )
 
 process evalIncBinFiles {
   input:
@@ -228,7 +253,7 @@ myFile << 'cage\tstep\tevalScore\n'
 
 evalSingleCage.subscribe { 
   tuple -> 
-  myFile << ( tuple [0] + "\t" + tuple [1] + "\t" + tuple [2] ) << '\n' 
+  myFile << ( tuple [0] + "\t" + tuple [1] + "\t" + tuple [2].trim() ) << '\n' 
 }
 
 // Writing increasingBinFiles
