@@ -148,7 +148,7 @@ if( myFile.exists() ) myFile.delete()
 // The cage number is alredy in name file (trainedModel_${cage})
 trainedModelHab2file.subscribe { 
   println "Copying: $it"
-  trainedModelHab2file.copyTo( resultDir.resolve ( ) )
+  it.copyTo( resultDir.resolve ( "modelHab.inmodel" ) )
 //   outFileMod.copyTo( resultDir.resolve ( outFileMod.name ) ) 
 }
 
