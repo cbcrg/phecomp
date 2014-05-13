@@ -5,11 +5,20 @@
 ### the models estimated by HMM                            ###
 ##############################################################
 
+library (ggplot2)
+library(lattice)
+install.packages("e1071")
+library("e1071")
+install.packages("plyr")
+library("plyr")
+install.packages("grid.extra")
+
 home <- Sys.getenv("HOME")
 #habituation
 path2Tbl <- "/Users/jespinosa/phecomp/20140301_oneOutValidation/resultsSingleCage/20120502_FDF_hab/modelsSingleCage/"
 #development
-# path2Tbl <- "/Users/jespinosa/phecomp/20140301_oneOutValidation/resultsSingleCage/20120502_FDF_dev/modelsSingleCage"
+# path2Tbl <- "/Users/jespinosa/phecomp/20140301_oneOutValidation/resultsSingleCage/20120502_FDF_dev/modelsSingleCage/"
+setwd(path2Tbl)
 pattern <- "trainedModelR_cage[[:digit:]]"
 
 listFiles <- list.files (path = path2Tbl, pattern = pattern)
@@ -26,7 +35,14 @@ warnings ()
 df
 
 pcaObject <- prcomp (df) 
+fit <- prcomp(USArrests, scale=T)
 summary (pcaObject)
+
+source ("/Users/jespinosa/git/phecomp/lib/R/plotParamPublication.R")
+
+PCbiplot(pcaObject)
+
+PCbiplot(fit)
 pcaObject$rotation
 df.loadings <- as.data.frame(pcaObject$rotation, row.names = FALSE)
 # df.loadingsVarNames <- as.data.frame(pcaObject$rotation)
@@ -44,17 +60,33 @@ percent <- round((((pcaObject$sdev)^2 / sum(pcaObject$sdev^2))*100)[1:5])
 
 #Getting 3 first PC to make the plot
 PCA2plot <- as.data.frame (pcaObject$x[,c (1:3)])
+plotmatrix(PCA2plot)
 
+# Adding cages as column
 animals <- row.names(df)
-plotmatrix (PCA2plot)
+colors <- PCA2plot
+colors$cage <- as.numeric(animals)
 
-# plotmatrix2 (PCA2plot, mapping=aes(colour=factor (dataTable$genotype)))
+colors <- labelGroups (colors)
+PCA2plot$diet <- as.factor(colors$diet)
 
-setwd ("/Users/jespinosa/MWM/clusteringKmeans/test/PCAsAllVarByDay")
-pdf (paste ("PCAmatrixPlots", ".pdf", sep=""), width = 20, height = 10)
-plotmatrix2 (PCA2plot, mapping=aes(colour=factor (dataTable$genotype)))
-dev.off()
-
+#####################
+##Loading functions
+labelGroups <- function (df.data, ctrlGroup = "odd", labelCase = "HF diet", labelCtrl="SC diet")
+{    
+  df.data$diet <- labelCtrl
+  
+  if (ctrlGroup == "odd")
+  {       
+    df.data$diet [which (df.data$cage%% 2 == 0)] <- labelCase    
+  }
+  else 
+  {        
+    df.data$diet [which (df.data$cage%% 2 != 0)] <- labelCase
+  }
+  
+  return (df.data)
+}
 
 # Functions
 dfTranspose <- function (tbl2read) 
@@ -92,7 +124,24 @@ dfTranspose <- function (tbl2read)
                   return (df.temp)
                 }
 
-
+PCbiplot <- function(PC, x="PC1", y="PC2") {
+  # PC being a prcomp object
+  data <- data.frame(obsnames=row.names(PC$x), PC$x)
+  plot <- ggplot(data, aes_string(x=x, y=y)) + geom_text(alpha=.4, size=5, aes(label=obsnames))
+  plot <- plot + geom_hline(aes(0), size=.2) + geom_vline(aes(0), size=.2)
+  datapc <- data.frame(varnames=rownames(PC$rotation), PC$rotation)
+  mult <- min(
+    (max(data[,y]) - min(data[,y])/(max(datapc[,y])-min(datapc[,y]))),
+    (max(data[,x]) - min(data[,x])/(max(datapc[,x])-min(datapc[,x])))
+  )
+  datapc <- transform(datapc,
+                      v1 = .7 * mult * (get(x)),
+                      v2 = .7 * mult * (get(y))
+  )
+  plot <- plot + coord_equal() + geom_text(data=datapc, aes(x=v1, y=v2, label=varnames), size = 5, vjust=1, color="red")
+  plot <- plot + geom_segment(data=datapc, aes(x=0, y=0, xend=v1, yend=v2), alpha=0.75, color="red")
+  plot
+}
 
 # Code development
 # tblOriginal<- dfTranspose (listFiles[1])
