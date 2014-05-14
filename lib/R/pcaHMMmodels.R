@@ -6,12 +6,12 @@
 ##############################################################
 
 library (ggplot2)
-library(lattice)
-install.packages("e1071")
-library("e1071")
-install.packages("plyr")
-library("plyr")
-install.packages("grid.extra")
+# library(lattice)
+# install.packages("e1071")
+# library("e1071")
+# install.packages("plyr")
+# library("plyr")
+# install.packages("grid.extra")
 
 home <- Sys.getenv("HOME")
 #habituation
@@ -23,26 +23,18 @@ pattern <- "trainedModelR_cage[[:digit:]]"
 
 listFiles <- list.files (path = path2Tbl, pattern = pattern)
 listFiles[1]
-setwd (path2Tbl)
-
-# path <- "/Users/jespinosa/phecomp/20140301_oneOutValidation/resultsSingleCage/20120502_FDF_hab/modelsSingleCage/trainedModelR_cage01"
-# tbl2read <- "/Users/jespinosa/phecomp/20140301_oneOutValidation/resultsSingleCage/20120502_FDF_dev/modelsSingleCage/trainedModelR_cage01" 
-rm (tbl2read)
-# dfSingleTbl <- read.table (path, header=F, stringsAsFactors=F, dec=".", sep="\t")
 
 df <- do.call ("rbind", lapply (listFiles, dfTranspose))
 warnings ()
 df
 
 pcaObject <- prcomp (df) 
-fit <- prcomp(USArrests, scale=T)
 summary (pcaObject)
 
 source ("/Users/jespinosa/git/phecomp/lib/R/plotParamPublication.R")
 
 PCbiplot(pcaObject)
 
-PCbiplot(fit)
 pcaObject$rotation
 df.loadings <- as.data.frame(pcaObject$rotation, row.names = FALSE)
 # df.loadingsVarNames <- as.data.frame(pcaObject$rotation)
