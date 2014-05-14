@@ -269,8 +269,8 @@ fileIncrDir.with {
 }
 
 increasingBinFiles2file.subscribe { 
-  println "Copying: $it[1]"
-  outFileInc = it[1]
+  println "Copying: $it[2]"
+  outFileInc = it[2]
   outFileInc.copyTo( fileIncrDir.resolve ( outFileInc.name ) ) // Here you pass an object that is way you need resolve
 }
 
