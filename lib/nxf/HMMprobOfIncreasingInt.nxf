@@ -273,3 +273,11 @@ increasingBinFiles2file.subscribe {
   outFileInc = it[2]
   outFileInc.copyTo( fileIncrDir.resolve ( outFileInc.name ) ) // Here you pass an object that is way you need resolve
 }
+
+// Functions
+def paramCtrl ( val2check, list , defValue ) {  
+  if (list.contains (val2check))
+    return val2check
+  else
+    return defValue
+ }
