@@ -132,27 +132,6 @@ process trainModelOneOut {
 // A copy of the model to save it
 (trainedModelHab2eval,  trainedModelHab2file) =  trainedModelHab.split (2)
 
-// Writing model
-resultDir = file("$HOME/phecomp/20140512_probOfIncreasingInt/20120502_FDF_habDevW1_W2/modelHab")
-
-resultDir.with {
-     if( !empty() ) { deleteDir() }
-     mkdirs()
-     println "Created: $resultDir"
-}
-
-myFile = resultDir.resolve ("modelHab.inmodel")
-
-if( myFile.exists() ) myFile.delete()
-
-// The cage number is alredy in name file (trainedModel_${cage})
-trainedModelHab2file.subscribe { 
-  println "Copying: $it"
-  it.copyTo( resultDir.resolve ( "modelHab.inmodel" ) )
-//   outFileMod.copyTo( resultDir.resolve ( outFileMod.name ) ) 
-}
-
-
 // File to process
 myPath2Intfile = "$HOME/phecomp/processedData/20120502_FDF_CRG/intFiles/20120502_FDF_CRG_hab_DevW1_W2_filtNoCage6.int"
 println "path: $myPath2Intfile"
@@ -219,8 +198,11 @@ increasingBinFilesFlat = increasingBinFiles.flatten().map { increasingBinFile ->
    [ cage, step ,increasingBinFile ]
 }
 
+// Copy of the increasing long sequences to save them
+(increasingBinFiles2eval,  increasingBinFiles2file) =  increasingBinFilesFlat.split (2)
+
 // modelEstimationData = trainedModels.spread( binSingleCageCh )
-cageStepFileModData = increasingBinFilesFlat.spread( trainedModelHab2eval )
+cageStepFileModData = increasingBinFiles2eval.spread( trainedModelHab2eval )
 
 process evalIncBinFiles {
   input:
@@ -234,17 +216,19 @@ process evalIncBinFiles {
   cat *.eval > /dev/stdout
   """
 }
+
+////////////////////////////////
+//Writing results
+
+dirFileProb = file("$HOME/phecomp/20140512_probOfIncreasingInt/20120502_FDF_habDevW1_W2/prob/")
  
- 
-dirFileIncr = file("$HOME/phecomp/20140512_probOfIncreasingInt/20120502_FDF_habDevW1_W2/dirFileIncr/")
- 
-dirFileIncr.with {
+dirFileProb.with {
      if( !empty() ) { deleteDir() }
      mkdirs()
-     println "Created: $dirFileIncr"
+     println "Created: $dirFileProb"
 }
 
-myFile = dirFileIncr.resolve ("tableResults.tbl")
+myFile = dirFileProb.resolve ("tableResults.tbl")
 
 if( myFile.exists() ) myFile.delete()
   
@@ -255,12 +239,40 @@ evalSingleCage.subscribe {
   myFile << ( tuple [0] + "\t" + tuple [1] + "\t" + tuple [2].trim() ) << '\n' 
 }
 
+// Writing model
+resultDir = file("$HOME/phecomp/20140512_probOfIncreasingInt/20120502_FDF_habDevW1_W2/modelHab")
+
+resultDir.with {
+  if( !empty() ) { deleteDir() }
+  mkdirs()
+  println "Created: $resultDir"
+}
+
+myFile = resultDir.resolve ("modelHab.inmodel")
+
+if( myFile.exists() ) myFile.delete()
+
+// The cage number is alredy in name file (trainedModel_${cage})
+trainedModelHab2file.subscribe { 
+  println "Copying: $it"
+  it.copyTo( resultDir.resolve ( "modelHab.inmodel" ) )
+//   outFileMod.copyTo( resultDir.resolve ( outFileMod.name ) ) 
+}
+
 // Writing increasingBinFiles
-// increasingBinFiles.subscribe { 
-//   println "Copying: $it[1]"
-//   outFileInc = it[1]
-//   outFileInc.copyTo( dirFileIncr.resolve ( outFileInc.name ) ) // Here you pass an object that is way you need resolve
-// }
+fileIncrDir = file("$HOME/phecomp/20140512_probOfIncreasingInt/20120502_FDF_habDevW1_W2/dirFileIncr/")
+
+fileIncrDir.with {
+  if( !empty() ) { deleteDir() }
+  mkdirs()
+  println "Created: $fileIncrDir"
+}
+
+increasingBinFiles2file.subscribe { 
+  println "Copying: $it[1]"
+  outFileInc = it[1]
+  outFileInc.copyTo( fileIncrDir.resolve ( outFileInc.name ) ) // Here you pass an object that is way you need resolve
+}
 
 
 // 
