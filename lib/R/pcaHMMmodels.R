@@ -13,6 +13,8 @@ library (ggplot2)
 # library("plyr")
 # install.packages("grid.extra")
 
+source ("/Users/jespinosa/git/phecomp/lib/R/plotParamPublication.R")
+
 home <- Sys.getenv("HOME")
 #habituation
 path2Tbl <- "/Users/jespinosa/phecomp/20140301_oneOutValidation/resultsSingleCage/20120502_FDF_hab/modelsSingleCage/"
@@ -30,8 +32,6 @@ df
 
 pcaObject <- prcomp (df) 
 summary (pcaObject)
-
-source ("/Users/jespinosa/git/phecomp/lib/R/plotParamPublication.R")
 
 PCbiplot(pcaObject)
 
