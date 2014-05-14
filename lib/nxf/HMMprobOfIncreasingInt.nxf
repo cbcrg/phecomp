@@ -248,9 +248,9 @@ resultDir.with {
   println "Created: $resultDir"
 }
 
-myFile = resultDir.resolve ("modelHab.inmodel")
+myModelFile = resultDir.resolve ("modelHab.inmodel")
 
-if( myFile.exists() ) myFile.delete()
+if( myModelFile.exists() ) myModelFile.delete()
 
 // The cage number is alredy in name file (trainedModel_${cage})
 trainedModelHab2file.subscribe { 
