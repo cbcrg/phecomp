@@ -110,13 +110,13 @@ $colorsGrad ->{"drink"} = [@blueGradient];
 $colorsGrad -> {"food"} = [@blackGradient];
 #$colorsGrad -> {"food_sc"} = [@blackGradient];
 $colorsGrad -> {"food_sc"} = [@greenGradient];
-$colorsGrad -> {"food_sc_1"} = [@greenGradient];
-$colorsGrad -> {"food_sc_2"} = [@greenGradient];
+$colorsGrad -> {"food_sc_3"} = [@greenGradient];
+$colorsGrad -> {"food_sc_4"} = [@greenGradient];
 $colorsGrad -> {"food_cd"} = [@redGradient];
 #$colorsGrad -> {"food_fat"} = [@greenGradient];
 $colorsGrad -> {"food_fat"} = [@redGradient];
-$colorsGrad -> {"food_fat_1"} = [@redGradient];
-$colorsGrad -> {"food_fat_2"} = [@redGradient];
+$colorsGrad -> {"food_fat_3"} = [@redGradient];
+$colorsGrad -> {"food_fat_4"} = [@redGradient];
 
 our $colorsSingleTone = {};
 $colorsSingleTone -> {"water"} = "0,0,255";
