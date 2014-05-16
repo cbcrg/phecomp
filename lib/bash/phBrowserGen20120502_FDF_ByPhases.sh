@@ -59,7 +59,7 @@ aryMtbFilesDevW1_2=( $( ls ${mtbFilesDir}201205*.mtb | grep -v "/20120502_FDF_CR
 ## Ary with all files
 aryMtbFilesAll=( $( ls ${mtbFilesDir}*.mtb | grep -v "LAHFD" | grep -v "LASC" | grep -v "LA_to_food" | grep -v "adulteration" | grep -v "quinine" | grep -v "LA" | grep -v "/20120502_FDF_CRG/20120502_FDF_CRG/2012071" ) )
 # mtb2GB.sh -f "${aryMtbFilesAll[*]}" -o "/users/cn/jespinosa/phecomp/processedData/" -i 6 -t all -p value  -w 1800
-qsub -q $typeQ,$nameQ $timeQ -cwd -o ${mtbLogFolder} -e ${mtbLogFolder} -v aryMtbFiles="${aryMtbFilesAll[*]}" -v dumpDir="/users/cn/jespinosa/phecomp/processedData/" -v iniLight=6  -v phaseTag="_all" -v par2int2browser="value"  -v winSize=1800 ${bashScDir}mtb2GBNoQsubIn.sh
+qsub -q $typeQ,$nameQ $timeQ -cwd -o ${mtbLogFolder} -e ${mtbLogFolder} -v aryMtbFiles="${aryMtbFilesAll[*]}" -v dumpDir="/users/cn/jespinosa/phecomp/processedData/" -v iniLight=6  -v phaseTag="_allSplitChannels" -v par2int2browser="value"  -v winSize=1800 ${bashScDir}mtb2GBNoQsubIn.sh
 
 ## Ary with habituation and first and second development week for paper
 aryMtbFilesDev=( $( ls ${mtbFilesDir}201205*.mtb | grep -v "/20120502_FDF_CRG/20120502_FDF_CRG/201205[3]" | grep -v "/20120502_FDF_CRG/20120502_FDF_CRG/2012052[3-8]" ) )
