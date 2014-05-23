@@ -226,7 +226,7 @@ errorTblPh=${path2GenBrSplit}${expName}"FilterGBrowserTblPh"".err"
 # -window Value -iniLight 8 -allFiles genomeBrowser -outdata no -out splitCh "${iniLight}
 # Analised field given by variable field2Window
 # optInt2browserSplitCh=${field2Window}" -allFiles genomeBrowser -outdata no -out splitCh "${iniLight}
-optInt2browserSplitCh=${field2Window}" -allFiles genomeBrowser -ws ${winSize} -wss ${winSize} -outdata no -out "${iniLight}
+optInt2browserSplitCh=${field2Window}" -allFiles genomeBrowser -ws ${winSize} -wss ${winSize} -outdata no "${iniLight}
 optInt2browserCombCh=${field2Window}" -winMode discrete -winFile combCh -ws ${winSize} -wss ${winSize} -winCh2comb 12,34 -outdata no "${iniLight}
 optInt2browserCombChSign=${field2Window}" -winMode discrete -winFile signCombCh -ws ${winSize} -wss ${winSize} -winCh2comb 12,34 -winCombMode sign -outdata no "${iniLight}
 optInt2browserGroups=${field2Window}" -winMode discrete -winFile groupDistro -ws ${winSize} -wss ${winSize} -winCh2comb 12,34 -winCombMode sign -winCage2comb -caseGroup odd -outdata no "${iniLight}
@@ -248,7 +248,7 @@ optInt2browserTblPh=${field2Window}" -winMode discrete -winFile dailyAverage -ws
 # # Samething joining channels
 # qsub -q $typeQ,$nameQ $timeQ -cwd -o ${path2GenBrowser} -e ${path2GenBrowser} ${bashScDir}int2browserCallFromQsub.sh "${path2IntFileFilter}" "${optInt2browserTblPhJoinedCh}" ${path2GenBrTblPh} "${errorTblPh}"      
 
-${bashScDir}int2browserCallFromQsub.sh "${path2IntFileFilter}" "${optInt2browserSplitCh}" ${path2GenBrSplit} "${errorSplitChGBrowser}" > ${path2GenBrowser}"GBsplitCh.out" 2> ${path2GenBrowser}"GBsplitCh.err"
+# ${bashScDir}int2browserCallFromQsub.sh "${path2IntFileFilter}" "${optInt2browserSplitCh}" ${path2GenBrSplit} "${errorSplitChGBrowser}" > ${path2GenBrowser}"GBsplitCh.out" 2> ${path2GenBrowser}"GBsplitCh.err"
 
 ${bashScDir}int2browserCallFromQsub.sh "${path2IntFileFilter}" "${optInt2browserCombCh}" ${path2GenBrCombCh} "${errorCombChGBrowser}" > ${path2GenBrowser}"GBcombCh.out" 2> ${path2GenBrowser}"GBcombCh.err"
 
