@@ -591,9 +591,9 @@ sub channel2Nature
 			$d->{$c}{$t}{SlotI}=$i;
 			
 			$Name=lc ($Name);
-			$Name=~s/\s//g;
-			
-			if ((length ($Name)) == 4 && ($Name =~/(w)(w)(s)(s)/ || $Name =~/(w)(w)(c)(s)/ || $Name=~/(w)(w)(s)(c)/ || $Name=~/(w)(w)(c)(s)/ || $Name=~/(w)(w)(f)(f)/))
+			$Name=~s/\s//g;			 			
+
+			if ((length ($Name)) == 4 && ($Name =~/(w)(w)(s)(s)/ || $Name =~/(w)(w)(c)(s)/ || $Name=~/(w)(w)(s)(c)/ || $Name=~/(w)(w)(c)(s)/ || $Name=~/(w)(w)(f)(f)/ || $Name=~/(w)(w)(h)(h)/ ))
 			  {
 			    
 		      	if ($i==1) 
