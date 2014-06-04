@@ -169,6 +169,22 @@ process oneOut {
   """
 }
 
+(oneCageOut, oneCageOut2file) = oneCageOut.split (2)
+
+resultDirFileOneOut = file("$HOME/phecomp/20140301_oneOutValidation/resultsOneOut/20120502_FDF_hab/filesOneOut")
+
+resultDirFileOneOut.with {
+     if( !empty() ) { deleteDir() }
+     mkdirs()
+     println "Created: $resultDirFileOneOut"
+}
+
+oneCageOut2file.subscribe  {  
+    println ">>>> ${it[1]}"
+    oneOutFile = it[1]
+    oneOutFile.copyTo( resultDirFileOneOut.resolve ( "cage${it[0]}.int" ) )
+}
+
 // Training the model with habituation file without a single cage (one out validation)
 process trainModelOneOut {
   input:
@@ -182,8 +198,9 @@ process trainModelOneOut {
   """
 }
 
-// I make a copy of this
+// I make two copies of trained models one for using it with evaluation of habituation, another for development and a third one to write a file
 (trainedModels, trainedModelDev) = trainedModels.split (2)
+(trainedModels,trainedModels2File) = trainedModels.split (2) 
 // Aqui lo que hago es que los dos channels se sincronicen por la cage
 // syncbinFileSingle_TrainedModel = bin_fileSingleCage.phase (trainedModels) .map { pair_a, pair_b -> pair_a << pair_b[1] }
 //Another way to perform same thing
@@ -193,8 +210,19 @@ process trainModelOneOut {
 // For each model I have to evaluate all sequences (spread operator)
 modelEstimationData = trainedModels.spread ( bin_fileSingleCage ) 
 
-// modelEstimationData.subscribe  {  println ">>>> $it" }
+resultDirModels = file("$HOME/phecomp/20140301_oneOutValidation/resultsOneOut/20120502_FDF_hab/models")
 
+resultDirModels.with {
+     if( !empty() ) { deleteDir() }
+     mkdirs()
+     println "Created: $resultDirModels"
+}
+
+trainedModels2File.subscribe  {  
+    println ">>>> $it[1]"
+    modelFile = it[1]
+    modelFile.copyTo( resultDirModels.resolve ( modelFile.name) )
+}
 
 process evalEachCage {
   input:
@@ -293,16 +321,16 @@ process evalEachCageDev {
   """
 }
 
-resultDir = file("phecomp/20140301_oneOutValidation/resultsOneOut/20120502_FDF_dev")
+resultDirDev = file("phecomp/20140301_oneOutValidation/resultsOneOut/20120502_FDF_dev")
 
-resultDir.with {
+resultDirDev.with {
      if( !empty() ) { deleteDir() }
      mkdirs()
-     println "Created: $resultDir"
+     println "Created: $resultDirDev"
 }
 
 tblOutDev = 'tblEvalOneOutDev.tbl'
-myFileDev = resultDir.resolve (tblOutDev)
+myFileDev = resultDirDev.resolve (tblOutDev)
 
 if( myFileDev.exists() ) myFileDev.delete()
   
@@ -312,7 +340,6 @@ evalSingleCageDev.subscribe {
   tuple -> 
   myFileDev << ( tuple [0] + "\t" + tuple [1] + "\t" + tuple [2].trim() ) << '\n' 
 }
-
 
 // Functions
 def paramCtrl ( val2check, list , defValue ) {  
