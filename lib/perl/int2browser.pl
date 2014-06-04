@@ -2720,6 +2720,7 @@ sub bin
 # 2 for presence of food
 # 3 for presence of water and food at the same time
 # One rhmm file with all the cages, this way I can directly feed rhmm.pl
+# It first do a simple binning of 1 and 0 and then is combine for example 1+2 = 3 (drink + food)
 sub writeWindowBinningSingleHmmFile 
   {
     my $h = shift;
@@ -2876,6 +2877,7 @@ sub writeWindowBinningSingleHmmFile
   }
    
 #This function writes the binning of the data in a single rhmm file with all cages and channels in a single file   
+#2 bins 1 and 0 
 sub writeWindowBinarySingleHmmFile 
   {
     my $h = shift;
