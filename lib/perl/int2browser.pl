@@ -696,8 +696,8 @@ sub anot2nature
                       return ("food_sc");                          
                       last SWITCH;
                     };
-                      
-                  ($annot eq "f") && do 
+                                        
+		  ($annot eq "f" || $annot eq "h") && do 
                     { 
                       return ("food_fat");                             
                       last SWITCH;
