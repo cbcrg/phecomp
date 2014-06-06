@@ -20,8 +20,21 @@ source ("/Users/jespinosa/git/phecomp/lib/R/plotParamPublication.R")
 
 path2OneOutTbl <- "/Users/jespinosa/phecomp/20140301_oneOutValidation/resultsOneOut/20120502_FDF_hab/tblEvalOneOut.tbl"
 df.oneOutEval <- read.table (path2OneOutTbl, sep="\t", dec=".", header=T, stringsAsFactors=T)
-df.oneOutEval
+df.oneOutEval$cage <- df.oneOutEval$evalCage
 
+ctrlGroup <- "odd"
+labelCtrl <- "SC diet"
+labelCase <- "HF diet"
+
+df.oneOutEval <- labelGroups (df.oneOutEval, ctrlGroup = ctrlGroup, labelCase = labelCase, labelCtrl=labelCtrl)
+head (df.oneOutEval)
+
+boxPlots <- ggplot (df.oneOutEval, aes (diet, score, fill =diet)) + 
+  geom_boxplot() + labs (y = "score = log (p)\n") +
+  scale_fill_manual(name = "Group", values = c("red", "green")) +
+  facet_wrap (~cageOut)
+
+boxPlots
 #####################
 ##Loading functions
 labelGroups <- function (df.data, ctrlGroup = "odd", labelCase = "HF diet", labelCtrl="SC diet")
