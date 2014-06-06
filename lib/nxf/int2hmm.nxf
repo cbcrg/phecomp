@@ -240,7 +240,8 @@ process evalEachCage {
   
   output:
   set cageOut, cageEval, stdout into evalSingleCage
-
+  
+  println "rhmm.pl -data binFileSingleDev -model trainedModel2Dev -evaluation sequence -output no -outmodel no"
   """
   rhmm.pl -data ${binFileSingle} -model ${trainedModel} -evaluation sequence -output no -outmodel no 
   cat *.eval > /dev/stdout
@@ -340,15 +341,17 @@ bin_fileSingleCageDev2file.subscribe  {
 modelEstimationDataDev = trainedModelDev.spread ( bin_fileSingleCageDev2run )
 
 process evalEachCageDev {
+//   echo true 
   input:
   set val (cageOut2Dev) , file ('trainedModel2Dev'), val (cageEvalDev), file ('binFileSingleDev') from modelEstimationDataDev
   
   output:
   set cageOut2Dev, cageEvalDev, stdout into evalSingleCageDev
-
+  
   """
   rhmm.pl -data ${binFileSingleDev} -model ${trainedModel2Dev} -evaluation sequence -output no -outmodel no 
   cat *.eval > /dev/stdout
+  # echo "rhmm.pl -data ${binFileSingleDev} -model ${trainedModel2Dev} -evaluation sequence -output no -outmodel no"
   """
 }
 
