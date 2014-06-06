@@ -107,6 +107,15 @@ intFiles = file(myPath2Intfile)
 
 println "int2browser.pl ${int2brOptions} input" 
 
+// Creating results folder
+resultDir = file("$HOME/phecomp/20140301_oneOutValidation/resultsOneOut/20120502_FDF_hab")
+
+resultDir.with {
+     if( !empty() ) { deleteDir() }
+     mkdirs()
+     println "Created: $resultDir"
+}
+
 // Creating a file with all cages binned
 process int2binFile {
 
@@ -152,6 +161,7 @@ bin_fileSingleCage = bin_fileSingle.flatten().map { binSingleCage ->
   [ cage, binSingleCage ]
 }
 
+
 // Filtering every cage from the file with all cages
 process oneOut {
   input:
@@ -175,8 +185,8 @@ resultDirFileOneOut = file("$HOME/phecomp/20140301_oneOutValidation/resultsOneOu
 
 resultDirFileOneOut.with {
      if( !empty() ) { deleteDir() }
-     mkdirs()
-     println "Created: $resultDirFileOneOut"
+     def result = mkdirs()
+     println "Created $result -- $resultDirFileOneOut"
 }
 
 oneCageOut2file.subscribe  {  
@@ -237,14 +247,6 @@ process evalEachCage {
   """
 }
 
-resultDir = file("$HOME/phecomp/20140301_oneOutValidation/resultsOneOut/20120502_FDF_hab")
-
-resultDir.with {
-     if( !empty() ) { deleteDir() }
-     mkdirs()
-     println "Created: $resultDir"
-}
-
 myFile = resultDir.resolve (params.outFile)
 
 if( myFile.exists() ) myFile.delete()
@@ -256,12 +258,22 @@ evalSingleCage.subscribe {
   myFile << ( tuple [0] + "\t" + tuple [1] + "\t" + tuple [2].trim() ) << '\n' 
 }
 
+
 //////////////
 // Development
 
 myPath2IntfileDev = "$HOME/phecomp/processedData/20120502_FDF_CRG/intFiles/20120502_FDF_CRG_devW_1_2_filtNoCage6.int"
 println "path: $myPath2IntfileDev"
 intFilesDev = file (myPath2IntfileDev)
+
+// Creating results folder
+resultDirDev = file("$HOME/phecomp/20140301_oneOutValidation/resultsOneOut/20120502_FDF_dev")
+
+resultDirDev.with {
+     if( !empty() ) { deleteDir() }
+     mkdirs()
+     println "Created: $resultDir"
+}
 
 // process int2binFileDev {
 // 
@@ -306,7 +318,26 @@ bin_fileSingleCageDev = bin_fileSingleDev.flatten().map { binSingleCageDev ->
   [ cage, binSingleCageDev ]
 }
 
-modelEstimationDataDev = trainedModelDev.spread ( bin_fileSingleCageDev )
+
+(bin_fileSingleCageDev2file, bin_fileSingleCageDev2run) = bin_fileSingleCageDev.split (2)
+
+resultDirFileSingleCageDev = file("$HOME/phecomp/20140301_oneOutValidation/resultsOneOut/20120502_FDF_dev/singleCageIntFiles")
+
+resultDirFileSingleCageDev.with {
+     if( !empty() ) { deleteDir() }
+     def result = mkdirs()
+     println "Created $result -- $resultDirFileSingleCageDev"
+}
+
+bin_fileSingleCageDev2file.subscribe  {  
+    println "##################### ${it[1]}"
+    println "##################### ${it[0]}"
+    oneOutFileDev = it[1]
+    oneOutFileDev.copyTo( resultDirFileSingleCageDev.resolve ( "cage${it[0]}.int") )
+}
+
+
+modelEstimationDataDev = trainedModelDev.spread ( bin_fileSingleCageDev2run )
 
 process evalEachCageDev {
   input:
@@ -321,14 +352,6 @@ process evalEachCageDev {
   """
 }
 
-resultDirDev = file("phecomp/20140301_oneOutValidation/resultsOneOut/20120502_FDF_dev")
-
-resultDirDev.with {
-     if( !empty() ) { deleteDir() }
-     mkdirs()
-     println "Created: $resultDirDev"
-}
-
 tblOutDev = 'tblEvalOneOutDev.tbl'
 myFileDev = resultDirDev.resolve (tblOutDev)
 
@@ -340,6 +363,7 @@ evalSingleCageDev.subscribe {
   tuple -> 
   myFileDev << ( tuple [0] + "\t" + tuple [1] + "\t" + tuple [2].trim() ) << '\n' 
 }
+
 
 // Functions
 def paramCtrl ( val2check, list , defValue ) {  
