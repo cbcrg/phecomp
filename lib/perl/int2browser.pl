@@ -2615,7 +2615,7 @@ sub writeWindowBinning
 	    			     }	
               }			    					    							    							    		
 	    		}
-				 if ($winFormat eq "rhmm") {print $F "#d;1;$lastRec;cage;$c;chN;$chN;nature;$nature;$winParam;0;bin;E;startInt;$startInt+$winSize;endInt;$startInt+($winSize*2)\n";}   	
+# 				 if ($winFormat eq "rhmm") {print $F "#d;1;$lastRec;cage;$c;chN;$chN;nature;$nature;$winParam;0;bin;E;startInt;$startInt+$winSize;endInt;$startInt+($winSize*2)\n";}   	
 				 close ($F);
 	       print STDERR "      Results of cumulative window for $winParam of cage $c, channel $chN, nature $nature in: $file\n";
 	  	}
