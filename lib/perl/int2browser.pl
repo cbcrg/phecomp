@@ -2552,7 +2552,7 @@ sub writeWindowBinning
 			     #Type of file
 			     print $F "#comment;Format: int2rhmm.01";
 				   print $F "\n";
-				   print $F "#d;1;0;cage;$c;chN;$chN;nature;$nature;$winParam;0;bin;B;startInt;0;endInt;0\n";	
+				   print $F "#d;1;0;cage;$c;chN;$chN;nature;$nature;$winParam;0;bin;BEGIN;startInt;0;endInt;0\n";	
           }
          elsif ($winFormat eq "bedGraph")
           {
@@ -2610,7 +2610,7 @@ sub writeWindowBinning
 	    			         }
 	    			       else
 	    			         {
-	    			           print $F "#d;1;$i;cage;$c;chN;$chN;nature;$nature;$winParam;0;bin;B;startInt;0;endInt;0\n";
+	    			           print $F "#d;1;$i;cage;$c;chN;$chN;nature;$nature;$winParam;0;bin;BEGIN;startInt;0;endInt;0\n";
 	    			         }
 	    			     }	
               }			    					    							    							    		
