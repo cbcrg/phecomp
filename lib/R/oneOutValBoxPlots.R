@@ -34,17 +34,20 @@ df.oneOutEvalFilt <- df.oneOutEval [df.oneOutEval[,"cageOut"] != df.oneOutEval[,
 df.oneOutEvalValue <- df.oneOutEval [df.oneOutEval[,"cageOut"] == df.oneOutEval[,"cage"], ]
 
 boxPlots <- ggplot (df.oneOutEvalFilt, aes (diet, score, fill =diet)) + 
-  geom_boxplot() + labs (y = "score = log (p)\n") +
-  scale_fill_manual(name = "Group", values = c("red", "green")) +
-  geom_point (                               # add the highlight points
-    data=df.oneOutEvalValue, 
-    aes(x=diet, y=score), 
-    color="black", size=3
-  ) +
-  facet_wrap (~cageOut)
+            geom_boxplot() + labs (y = "score = log (p)\n") +
+            scale_fill_manual(name = "Group", values = c("red", "green")) +
+            # add the point of animals not used for the training 
+            geom_point (data=df.oneOutEvalValue, 
+                        aes(x=diet, y=score), 
+                        color="black", size=3) +
+            facet_wrap (~cageOut)
 
-boxPlots
-boxPlots + geom_point (aes (y = 73.9))
+boxPlotsAnimalNotUsedTraining <- ggplot (df.oneOutEvalValue, aes (diet, score, fill =diet)) + 
+                                 geom_boxplot() + labs (y = "score = log (p)\n") +
+                                 scale_fill_manual(name = "Group", values = c("red", "green"))
+
+boxPlotsAnimalNotUsedTraining + geom_point(position = position_jitter(width = 0.3), color="blue", size=3)
+
 #####################
 ##Loading functions
 labelGroups <- function (df.data, ctrlGroup = "odd", labelCase = "HF diet", labelCtrl="SC diet")
