@@ -26,9 +26,15 @@ lastLine=`cat $file | tail -1`
 cage=${lastLine##*cage;}
 fileName=`echo $fileAndExt | cut -d . -f1`
 cage=${cage%;chN*}
+firstLine=1
 
 for winSize in $(seq $stepSize $stepSize $linesFile)
 do
-	echo $winSize
-	sed -n "1,$winSize p" $file > "c"_$cage"_s_"$winSize
+	echo -e "Lines to include from $firstLine to $winSize"
+	
+	# I have to keep the first line of the file with the format
+	head -1 $file > "c"_$cage"_s_"$winSize 
+
+	sed -n "$firstLine,$winSize p" $file >> "c"_$cage"_s_"$winSize
+	firstLine=$(( firstLine + stepSize ))
 done
