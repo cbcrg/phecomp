@@ -29,12 +29,22 @@ labelCase <- "HF diet"
 df.oneOutEval <- labelGroups (df.oneOutEval, ctrlGroup = ctrlGroup, labelCase = labelCase, labelCtrl=labelCtrl)
 head (df.oneOutEval)
 
-boxPlots <- ggplot (df.oneOutEval, aes (diet, score, fill =diet)) + 
+df.oneOutEvalFilt <- df.oneOutEval [df.oneOutEval[,"cageOut"] != df.oneOutEval[,"cage"], ]
+# Here I keep the value of the cage that has been filtered out for the trainning
+df.oneOutEvalValue <- df.oneOutEval [df.oneOutEval[,"cageOut"] == df.oneOutEval[,"cage"], ]
+
+boxPlots <- ggplot (df.oneOutEvalFilt, aes (diet, score, fill =diet)) + 
   geom_boxplot() + labs (y = "score = log (p)\n") +
   scale_fill_manual(name = "Group", values = c("red", "green")) +
+  geom_point (                               # add the highlight points
+    data=df.oneOutEvalValue, 
+    aes(x=diet, y=score), 
+    color="black", size=3
+  ) +
   facet_wrap (~cageOut)
 
 boxPlots
+boxPlots + geom_point (aes (y = 73.9))
 #####################
 ##Loading functions
 labelGroups <- function (df.data, ctrlGroup = "odd", labelCase = "HF diet", labelCtrl="SC diet")
