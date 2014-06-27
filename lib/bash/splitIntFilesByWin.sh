@@ -22,8 +22,10 @@ splitSize=2
 stepSize=$(( splitSize * 3600 / ws ))
 
 linesFile=$(wc -l < "$file")
-lastLine=`cat $file | tail -1`
-cage=${lastLine##*cage;}
+# lastLine=`cat $file | tail -1`
+# cage=${lastLine##*cage;}
+secondLine=`cat $file | head -2`
+cage=${secondLine##*cage;}
 fileName=`echo $fileAndExt | cut -d . -f1`
 cage=${cage%;chN*}
 firstLine=1
@@ -34,7 +36,7 @@ do
 	
 	# I have to keep the first line of the file with the format
 	head -1 $file > "c"_$cage"_s_"$winSize 
-
+	# sleep 2
 	sed -n "$firstLine,$winSize p" $file >> "c"_$cage"_s_"$winSize
 	firstLine=$(( firstLine + stepSize ))
 done
