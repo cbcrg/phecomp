@@ -22,8 +22,11 @@ splitSize=2
 stepSize=$(( splitSize * 3600 / ws ))
 
 linesFile=$(wc -l < "$file")
-lastLine=`cat $file | tail -1`
-cage=${lastLine##*cage;}
+# lastLine=`cat $file | tail -1`
+# cage=${lastLine##*cage;}
+secondLine=`cat $file | head -2`
+cage=${secondLine##*cage;}
+
 fileName=`echo $fileAndExt | cut -d . -f1`
 cage=${cage%;chN*}
 
