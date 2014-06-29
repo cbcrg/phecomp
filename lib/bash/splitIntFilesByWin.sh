@@ -18,7 +18,7 @@ file=$1
 # Smallest file will have 2 hours of experiment
 # As the binning is of 300 seconds --> 2 h = 24 lines of file
 ws=300
-splitSize=2
+splitSize=24
 stepSize=$(( splitSize * 3600 / ws ))
 
 linesFile=$(wc -l < "$file")
