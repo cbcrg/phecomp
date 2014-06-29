@@ -1,0 +1,283 @@
+/*
+#################################################################################
+### Jose Espinosa-Carrasco. CB/CSN-CRG. May 2014                              ### 
+#################################################################################
+### Code : 12.05                                                              ###
+### Estimate a model for each cage of the development                         ### 
+#################################################################################
+*/
+
+params.in = "$HOME/phecomp/processedData/20120502_FDF_CRG/intFiles/20120502_FDF_CRG_devW_1_2_filtNoCage6.int"
+params.outFile = 'modelSingleCage.outmodel'
+
+params.window = 'Value'
+windowAllowedValues = [ 'Value', 'Duration', 'Intertime', 'Velocity' ]
+window = paramCtrl (params.window, windowAllowedValues, 'Value')
+window = "-window $window"
+println "Window param is $params.window $window"
+
+params.winMode = 'binning'
+winModeAllowedValues = [ 'binning', 'discrete' ]
+println "dentro de params.winmode hay $params.winMode"
+winMode = paramCtrl (params.binMode, winModeAllowedValues, 'binning')
+
+winMode = "-winMode $winMode" 
+println "winMode param is $winMode"
+
+params.binMode = 'four'
+binModeAllowedValues = [ 'binary', 'four' ]
+binModeKey = paramCtrl (params.binMode, binModeAllowedValues, 'four')
+binMode = "-binMode $binModeKey"
+
+if (binModeKey == 'binary') {
+  path2hmmModelHab = "$HOME/phecomp/20130610_HMM/20130610_HMMbinarySignal/modelsHMM/ST_2_Bin_2_BEGIN_END.inmodel"
+}
+else {  
+  path2hmmModelHab = "$HOME/phecomp/20140301_oneOutValidation/modelsHMM/ST_2_Bin_4_BEGIN_END.inmodel"
+}
+
+binModeMap = [ "binary":"1234", "four":"12,34" ]
+winCh2comb = binModeMap[binModeKey]
+winCh2comb = "-winCh2comb $winCh2comb"
+println "winCh2comb param is $winCh2comb"
+
+params.binFileName = 'binFile.hmm' 
+binFileName = "-winFile $params.binFileName"
+println "binFileName param is $binFileName"
+
+params.winSize = '300'
+winSize = params.winSize
+assert winSize.isDouble() : "[FATAL]: winSize must be numeric now is \"$params.winSize\""
+winSize = "-ws $winSize" 
+println "WindowSize param is $winSize" 
+
+params.winStepSize = '300'
+winStepSize = params.winStepSize
+assert winStepSize.isDouble() : "[FATAL]: winStepSize must be numeric now is \"$params.winStepSize\""
+winStepSize = "-wss $winStepSize"
+println "WindowStepSize param is $winStepSize"
+
+params.winFormat = "rhmm" 
+winFileFormatAllowed = [ 'rhmm', 'bedGraph' ]
+winFileFormat = paramCtrl (params.winFormat, winFileFormatAllowed, 'bedGraph')
+winFileFormat = "-winFormat $winFileFormat"
+println "winFormat param is $winFileFormat"
+
+params.rhmmFile = "single" 
+rhmmFileTypesAllowed = [ 'single', 'multiple' ]
+rhmmFileType = paramCtrl (params.rhmmFile, rhmmFileTypesAllowed, 'single')
+rhmmFileType = "-rhmmFile $rhmmFileType"
+println "winFileType param is $rhmmFileType"
+
+params.outdata = "-outdata no"
+outdata = params.outdata
+
+params.iniLight = '6'
+iniLightAllowedValues = [ 6, 7 ]
+iniLight = paramCtrl (params.iniLight, iniLightAllowedValues, 6)
+iniLight = "-iniLight $iniLight"
+println "Window param is $params.iniLight $iniLight"
+
+params.winCombMode = 'additive'
+winCombModeAllowedValues = [ 'additive', 'sign' ]
+winCombMode = paramCtrl (params.winCombMode, winCombModeAllowedValues, 'additive')
+winCombMode = "-winCombMode $winCombMode"
+println "WinCombMode param is $winCombMode"
+
+// Concatenating options
+space = " "
+int2brOptions =  window + space + winMode + space + binMode + space + winCh2comb + space + binFileName + space + winSize + space + winStepSize + space + winFileFormat + space + rhmmFileType + space + outdata + space + iniLight + space  + winCombMode + space + "-data"
+println "options: $int2brOptions"
+
+// File to estimate model (habituation)
+homeData = "$HOME/phecomp/processedData/" 
+myPath2IntfileHab = "$HOME/phecomp/processedData/20120502_FDF_CRG/intFiles/20120502_FDF_CRG_hab_filtNoCage6.int"
+println "path of hab file: $myPath2IntfileHab"
+intFileHab = file(myPath2IntfileHab)
+
+// Concatenating options
+space = " "
+int2brOptions =  window + space + winMode + space + binMode + space + winCh2comb + space + binFileName + space + winSize + space + winStepSize + space + winFileFormat + space + rhmmFileType + space + outdata + space + iniLight + space  + winCombMode + space + "-data"
+println "options: $int2brOptions"
+
+// Creating a binned file from habituation for model estimation
+process int2binFile4ModelEst {
+
+ input:
+ file 'fileHab' from intFileHab
+ 
+ // No tengo output ese es el problema deberia dejar que se crearan y entonces recogerlos como se tenga que hacer
+ output:
+ file '*.hmm' into binFile4ModelEst 
+ 
+ """
+ int2browser.pl ${int2brOptions} fileHab
+ """
+
+}
+
+// Training the model with habituation file to estimate a model use for the evaluation of the other sequences
+process trainModelOneOut {
+  input:
+  set 'binFileHab' from binFile4ModelEst
+  
+  output:  
+  set 'trainedHab_*.model' into trainedModelHab   
+  
+  """
+  rhmm.pl -model ${path2hmmModelHab} -out trainedHab_ -data binFileHab -action bw -nrounds 10 -nit 1000 -evaluate viterbi -outdata outDecodedFile 
+  """
+}
+
+// A copy of the model to save it
+(trainedModelHab2eval,  trainedModelHab2file) =  trainedModelHab.split (2)
+
+// File to process
+myPath2Intfile = "$HOME/phecomp/processedData/20120502_FDF_CRG/intFiles/20120502_FDF_CRG_hab_DevW1_W2_filtNoCage6.int"
+println "path: $myPath2Intfile"
+intFiles = file(myPath2Intfile)
+
+
+// Creating a bined file for each cage
+// Now I should make the same with all the other cages that actually were used to infer the models
+rhmmFileType = "-rhmmFile multiple"
+int2brOptMultiple =  window + space + winMode + space + binMode + space + winCh2comb + space + winSize + space + winStepSize + space + winFileFormat + space + rhmmFileType + space + outdata + space + iniLight + space  + winCombMode + space + "-data"
+
+println "int2browser.pl ${int2brOptMultiple} input"
+
+// Creating a bin file for each cage 
+// the probability of all cages will be increasingly evaluated
+process int2singleCageBinFile {
+
+ input:
+ file 'input' from intFiles
+ 
+ output:
+ set '*.hmm' into binFilesSingleCages
+ 
+ """
+ int2browser.pl ${int2brOptMultiple} input
+ """
+}
+
+
+// I need flatten so it takes each item of the list one by one
+// Here I get the cage from the file name and I put it on the channel
+binFileSingleCage = binFilesSingleCages.flatten().map { binSingleCage -> 
+  def pattern = binSingleCage.name =~/^cage(\d+).*$/
+  println binSingleCage.name
+  println pattern [0][1]
+  def cage = pattern[0][1]
+  [ cage, binSingleCage ]
+}
+
+// For each intfile binned I will generate increasingly longer files from including just 2 hours until the end of the file
+process  increasingBinFilesGen {
+  input:
+  set val (cage) , file ('singleCage') from binFileSingleCage
+  
+  output:  
+  set 'c_*' into increasingBinFiles   
+ 
+  """
+  splitIntFilesByWin.sh singleCage
+  """
+}
+
+// Here I get the cage from the file name and I put it on the channel
+increasingBinFilesFlat = increasingBinFiles.flatten().map { increasingBinFile ->
+//   def pattern = increasingBinFile.name =~/^c_(\d+).*$/
+   def nameCp = increasingBinFile.name
+   def pattern = increasingBinFile.name =~/^c_(\d+).*$/
+   def patternStep = nameCp =~/^c_\d+_s_(\d+).*$/
+   println increasingBinFile.name
+   println pattern[0][1]
+   println patternStep [0][1]
+   def cage = pattern[0][1]
+   def step = patternStep [0][1]
+   [ cage, step ,increasingBinFile ]
+}
+
+// Copy of the increasing long sequences to save them
+(increasingBinFiles2eval,  increasingBinFiles2file) =  increasingBinFilesFlat.split (2)
+
+// modelEstimationData = trainedModels.spread( binSingleCageCh )
+cageStepFileModData = increasingBinFiles2eval.spread( trainedModelHab2eval )
+
+process evalIncBinFiles {
+  input:
+  set val (cage), val (step), file ('increasingBinFile2eval'), file ('trainedModel') from cageStepFileModData
+  
+  output:  
+  set cage, step, stdout into evalSingleCage
+
+  """
+  rhmm.pl -data ${increasingBinFile2eval} -model ${trainedModel} -evaluation sequence -output no -outmodel no 
+  cat *.eval > /dev/stdout
+  """
+}
+
+////////////////////////////////
+//Writing results
+
+dirFileProb = file("$HOME/phecomp/20140627_probOfWindowInt/20120502_FDF_habDevW1_W2/prob/")
+ 
+dirFileProb.with {
+     if( !empty() ) { deleteDir() }
+     mkdirs()
+     println "Created: $dirFileProb"
+}
+
+myFile = dirFileProb.resolve ("tableResults.tbl")
+
+if( myFile.exists() ) myFile.delete()
+  
+myFile << 'cage\tstep\tevalScore\n'
+
+evalSingleCage.subscribe { 
+  tuple -> 
+  myFile << ( tuple [0] + "\t" + tuple [1] + "\t" + tuple [2].trim() ) << '\n' 
+}
+
+// Writing model
+resultDir = file("$HOME/phecomp/20140627_probOfWindowInt/20120502_FDF_habDevW1_W2/modelHab")
+
+resultDir.with {
+  if( !empty() ) { deleteDir() }
+  mkdirs()
+  println "Created: $resultDir"
+}
+
+myModelFile = resultDir.resolve ("modelHab.inmodel")
+
+if( myModelFile.exists() ) myModelFile.delete()
+
+// The cage number is alredy in name file (trainedModel_${cage})
+trainedModelHab2file.subscribe { 
+  println "Copying: $it"
+  it.copyTo( resultDir.resolve ( "modelHab.inmodel" ) )
+//   outFileMod.copyTo( resultDir.resolve ( outFileMod.name ) ) 
+}
+
+// Writing increasingBinFiles
+fileIncrDir = file("$HOME/phecomp/20140627_probOfWindowInt/20120502_FDF_habDevW1_W2/dirFileIncr/")
+
+fileIncrDir.with {
+  if( !empty() ) { deleteDir() }
+  mkdirs()
+  println "Created: $fileIncrDir"
+}
+
+increasingBinFiles2file.subscribe { 
+  println "Copying: $it[2]"
+  outFileInc = it[2]
+  outFileInc.copyTo( fileIncrDir.resolve ( outFileInc.name ) ) // Here you pass an object that is way you need resolve
+}
+
+// Functions
+def paramCtrl ( val2check, list , defValue ) {  
+  if (list.contains (val2check))
+    return val2check
+  else
+    return defValue
+ }
