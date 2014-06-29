@@ -8,3 +8,17 @@
 ### produced by each animal during a given window time (for    ###
 ### example 2 hours, 12 hours or 24 hours                      ###
 ##################################################################
+
+##Getting HOME directory
+home <- Sys.getenv ("HOME")
+wd<-getwd()
+
+##Libraries
+library (ggplot2)
+library (plyr)
+library(reshape)
+
+##Loading functions
+source ("/Users/jespinosa/git/phecomp/lib/R/plotParamPublication.R")
+
+
