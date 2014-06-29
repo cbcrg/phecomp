@@ -18,7 +18,13 @@ library(reshape)
 ##Loading functions
 source ("/Users/jespinosa/git/phecomp/lib/R/plotParamPublication.R")
 
+#Habituation table
 path2OneOutTbl <- "/Users/jespinosa/phecomp/20140301_oneOutValidation/resultsOneOut/20120502_FDF_hab/tblEvalOneOut.tbl"
+title = "Model trainned without a cage during habituation \n and cages evaluated during same period"
+#Development table 
+path2OneOutTbl <- "/Users/jespinosa/phecomp/20140301_oneOutValidation/oldResults/resultsOneOut/20120502_FDF_dev/tblEvalOneOutDev.tbl"
+title = "Model trainned without a cage during habituation \n and cages evaluated during development"
+
 df.oneOutEval <- read.table (path2OneOutTbl, sep="\t", dec=".", header=T, stringsAsFactors=T)
 df.oneOutEval$cage <- df.oneOutEval$evalCage
 
@@ -35,18 +41,24 @@ df.oneOutEvalValue <- df.oneOutEval [df.oneOutEval[,"cageOut"] == df.oneOutEval[
 
 boxPlots <- ggplot (df.oneOutEvalFilt, aes (diet, score, fill =diet)) + 
             geom_boxplot() + labs (y = "score = log (p)\n") +
+            #scale_y_continuous(limits=c(-4500,-1200)) + 
             scale_fill_manual(name = "Group", values = c("red", "green")) +
+            labs (title = title) +
             # add the point of animals not used for the training 
             geom_point (data=df.oneOutEvalValue, 
                         aes(x=diet, y=score), 
                         color="black", size=3) +
             facet_wrap (~cageOut)
+boxPlots
+df.oneOutEvalValue <-df.oneOutEvalValue [df.oneOutEvalValue[,"cageOut"] != 11, ]
 
 boxPlotsAnimalNotUsedTraining <- ggplot (df.oneOutEvalValue, aes (diet, score, fill =diet)) + 
                                  geom_boxplot() + labs (y = "score = log (p)\n") +
-                                 scale_fill_manual(name = "Group", values = c("red", "green"))
-
-boxPlotsAnimalNotUsedTraining + geom_point(position = position_jitter(width = 0.3), color="blue", size=3)
+                                 #scale_y_continuous(limits=c(-4500,-2500)) + 
+                                 scale_fill_manual(name = "Group", values = c("red", "green")) +
+                                 labs (title = title)   
+boxPlotsAnimalNotUsedTraining + geom_point (position = position_jitter(width = 0.3), color="blue", size=3)
+boxPlotsAnimalNotUsedTraining + geom_jitter ()
 
 #####################
 ##Loading functions
