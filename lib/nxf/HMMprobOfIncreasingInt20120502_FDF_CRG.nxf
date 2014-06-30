@@ -220,7 +220,7 @@ process evalIncBinFiles {
 ////////////////////////////////
 //Writing results
 
-dirFileProb = file("$HOME/phecomp/20140627_probOfWindowInt/20120502_FDF_habDevW1_W2/prob/")
+dirFileProb = file("$HOME/phecomp/20140512_probOfIncreasingInt/20120502_FDF_habDevW1_W2/prob/")
  
 dirFileProb.with {
      if( !empty() ) { deleteDir() }
@@ -240,7 +240,7 @@ evalSingleCage.subscribe {
 }
 
 // Writing model
-resultDir = file("$HOME/phecomp/20140627_probOfWindowInt/20120502_FDF_habDevW1_W2/modelHab")
+resultDir = file("$HOME/phecomp/20140512_probOfIncreasingInt/20120502_FDF_habDevW1_W2/modelHab")
 
 resultDir.with {
   if( !empty() ) { deleteDir() }
@@ -260,7 +260,7 @@ trainedModelHab2file.subscribe {
 }
 
 // Writing increasingBinFiles
-fileIncrDir = file("$HOME/phecomp/20140627_probOfWindowInt/20120502_FDF_habDevW1_W2/dirFileIncr/")
+fileIncrDir = file("$HOME/phecomp/20140512_probOfIncreasingInt/20120502_FDF_habDevW1_W2/dirFileIncr/")
 
 fileIncrDir.with {
   if( !empty() ) { deleteDir() }
