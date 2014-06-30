@@ -10,6 +10,7 @@
 
 ##### MIRAR LOS DATOS PORQUE SON DIFERENTES EL 10 Y EL 2??
 library (ggplot2)
+library (grid) #viewport
 
 source ("/Users/jespinosa/git/phecomp/lib/R/plotParamPublication.R")
 
@@ -57,10 +58,31 @@ smallPlot <- smallPlot + theme (panel.border = element_blank()) +
   theme (legend.position = "none", axis.text.x = element_text (size=12), plot.title = element_text (size=12)) +
   labs(title = "Last period") 
   
+smallPlotBlack <- smallPlot  + theme (plot.background = element_rect(fill = 'black', colour = 'black'),
+                                       axis.title.x = element_text (color='white'),
+                                       axis.title.y = element_text (color='white'),
+                                       plot.title = element_text (color='white', size=base_size * 2),
+                                       axis.text.x = element_text (color='white'),
+                                       axis.text.y = element_text (color='white'),                       
+                                       legend.title = element_text (color='white'),
+                                       legend.text = element_text (color='white'),
+                                       legend.background = element_rect(fill = 'black'),
+                                       legend.key = element_rect(fill = 'black') 
+) 
 # smallPlotLines <- smallPlotLines + geom_text (data = df.probSeqLastPoint, aes (x =step+200, y =evalScore, label = cage), size=6, face="bold")
 # smallPlotLines
 
-bigPlot
+bigPlotBlack <- bigPlot + theme (plot.background = element_rect(fill = 'black', colour = 'black'),
+                 axis.title.x = element_text (color='white'),
+                 axis.title.y = element_text (color='white'),
+                 plot.title = element_text (color='white', size=base_size * 2),
+                 axis.text.x = element_text (color='white'),
+                 axis.text.y = element_text (color='white'),                       
+                 legend.title = element_text (color='white'),
+                 legend.text = element_text (color='white'),
+                 legend.background = element_rect(fill = 'black'),
+                 legend.key = element_rect(fill = 'black') 
+) 
 
 ## Combining the 2 plots in the same figure
 # Placing and setting the size of the subplot
@@ -77,4 +99,11 @@ full <- function()
 }
 full ()
 
+fullBlack <- function() 
+{
+  print(bigPlotBlack)
+  element_blank()
+  print(smallPlotBlack, vp = vp)           
+}
+fullBlack ()
 chr1:820,000-1,508,013
