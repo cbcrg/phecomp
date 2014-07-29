@@ -26,16 +26,16 @@ _genomeFileExt = ".fa"
 _bedFileExt = ".bed"
 _bedGraphFileExt = ".bedGraph"
 genericNt = "N"
-parser = argparse.ArgumentParser (description = 'Script to transform behavioral data into GB readable data')
-parser.add_argument ('-i','--input', help='Input file name',required=True)
-parser.add_argument ('-o','--output',help='Output file name', required=False)
-args = parser.parse_args ()
-
-## show values ##
-print ("Input file: %s" % args.input )
-print ("Output file: %s" % args.output )
-
-path = args.input
+# parser = argparse.ArgumentParser (description = 'Script to transform behavioral data into GB readable data')
+# parser.add_argument ('-i','--input', help='Input file name',required=True)
+# parser.add_argument ('-o','--output',help='Output file name', required=False)
+# args = parser.parse_args ()
+# 
+# ## show values ##
+# print ("Input file: %s" % args.input )
+# print ("Output file: %s" % args.output )
+# 
+# path = args.input
 
 ## Input debugging file
 #cat 20120502_FDF_CRG_hab_filtSHORT.csv | sed 's/ //g' | awk '{print $1"\t"$14"\t"$6"\t"$11"\t"$16"\thabituation"}' > shortDev.integer
@@ -110,7 +110,7 @@ class intData: # if I name it as int I think is like self but with a better name
     def __init__(self, path, **kwargs):
         self.path = self._check_path(path)
         self.delimiter = kwargs.get('delimiter',"\t")
-        self.delimiter = self._check_delimiter()
+        self.delimiter = self._check_delimiter(self.path)
         self.header = kwargs.get('header',True)
         self.fieldsB = self._set_fields_b(kwargs.get ('fields'))        
         self.fieldsG = [_dict_Id [k] for k in self.fieldsB]         
@@ -122,7 +122,7 @@ class intData: # if I name it as int I think is like self but with a better name
     
     def _check_path(self, path):
         ''' Check if the input file exists and is accessible. '''
-        print path
+        print (path)
         assert isinstance(path, basestring), "Expected string or unicode, found %s." % type(path)
         try:
             f = open(path, "r")
@@ -130,7 +130,7 @@ class intData: # if I name it as int I think is like self but with a better name
             raise IOError('File does not exist: %s' % path)
         return path        
     
-    def _check_delimiter (self):
+    def _check_delimiter (self, path):
         """ Check whether the delimiter works, if delimiter is not set
         then tries ' ', '\t' and ';'"""
         if self.delimiter is None: 
@@ -161,7 +161,7 @@ class intData: # if I name it as int I think is like self but with a better name
         if fields:
             pass
         elif self.header == True:       
-            self.inFile  = open(path, "rb")
+            self.inFile  = open(self.path, "rb")
             self.reader = csv.reader(self.inFile, delimiter=self.delimiter)
             header = self.reader.next()
             first_r = self.reader.next()
@@ -209,7 +209,7 @@ class intData: # if I name it as int I think is like self but with a better name
         return dataIter(self._read(indexL, idx_fields2rel), self.fieldsG)
        
     def _read(self, indexL, idx_fields2rel):
-        self.inFile  = open(path, "rb")
+        self.inFile  = open(self.path, "rb")
         self.reader = csv.reader(self.inFile, delimiter='\t')
         self.reader.next()
         
@@ -577,35 +577,55 @@ class ObjectContainer():
 # ## I have to create a class able to keep the data and the fields
 # ## What I am doing it to set the colorRestrictions as the dictionary that will at the same
 # ## time the input and the output of the function 
-def assign_color (listFields, colorRestrictions):
-    """Assign colors to fields, it is optional to set given color to given fields, for example set water to blue"""
-    #para cada uno de los campos existe en el diccionario sino
-    #lo pongo, una lista con used colors para no repetir 
-    
-    rest_colors = (list (_dict_rest_colors.values()))
-    print "888888"
-    print rest_colors
+## I have to generate a dictionary like the one below out of this function
+# _dict_col_grad
+def assign_color (set_dataTypes, color_restrictions):
+    """Assign colors to fields, it is optional to set given color to given fields, for example set water to blue
+       different data types get a different color in a circular manner"""
+
+    rest_colors = (list (color_restrictions.values()))
+
+    #If there are restricted colors they should be on the default colors list
     if not all(colors in _dict_colors for colors in rest_colors):
         raise ValueError("Not all restricted colors are available") 
-    #If there are restricted colors they should be on the default colors list
-#     if _dict_rest_colors not in _dict_colors: 
-#         raise ValueError("Mode \'%s\' not available. Possible convert() modes are %s"%(mode,', '.join(['{}'.format(m) for m in _dict_file.keys()])))
-#     _used_colors = []
-    return 0
+    
+    #If there are fields link to related colors they also must be in the data type list 
+    if not all(key in set_dataTypes for key in color_restrictions):                      
+        raise ValueError("Some values of data types provided as color restriction are not present in the file")
+    
+    d_dataType_color = {}
+    
+    for dataType in color_restrictions:
+        d_dataType_color[dataType] = _dict_colors[color_restrictions[dataType]] 
+    
+    colors_not_used = _dict_colors.keys()
+    colors_not_used.remove (color_restrictions[dataType])
+
+    for dataType in set_dataTypes:        
+        if not colors_not_used:
+           colors_not_used = _dict_colors.keys() 
+        
+        if dataType in d_dataType_color:
+            print ("Data type color gradient already set '%s'."%(dataType))
+        else:
+            d_dataType_color[dataType] = _dict_colors[colors_not_used.pop(0)]
+            print (colors_not_used)      
+            
+    return d_dataType_color
      
     
           
 ##########################
 ## Examples of executions 
          
-intData = intData(path, relative_coord=True)
-print ("===============")
-_dict_rest_colors = {
-                     'water' : 'blue'}
-list_of_fields = intData.dataTypes
-print list_of_fields
-
-assign_color (list_of_fields, _dict_rest_colors)
+# intData = intData(path, relative_coord=True)
+# print ("===============")
+# _dict_rest_colors = {
+#                      'water' : 'blue'}
+# set_dataTypes = intData.dataTypes
+# print set_dataTypes
+# 
+# assign_color (set_dataTypes, _dict_rest_colors)
 
 # print (intData.get_field_items("dataTypes"))
 # for row in intData.read(relative_coord=True):
@@ -615,18 +635,18 @@ assign_color (list_of_fields, _dict_rest_colors)
  
 # intData.convert(mode = "bed", relative_coord = True)   
 # bedFiles = intData.convert(mode = "bed", relative_coord = True, split_dataTypes=False)
-bedFiles=intData.convert(mode = "bedGraph", window=300, split_dataTypes=False, relative_coord=True)
-
-for key in bedFiles: 
-#     print (key), 
-#     print ("---------")
-    bedSingle = bedFiles[key]
-    name_file='_'.join(key)
-    bedSingle.write(track=name_file, file_type="bedGraph")
-    for line in bedSingle: print line
-
-
-       
+# bedFiles=intData.convert(mode = "bedGraph", window=300, split_dataTypes=False, relative_coord=True)
+# 
+# for key in bedFiles: 
+# #     print (key), 
+# #     print ("---------")
+#     bedSingle = bedFiles[key]
+#     name_file='_'.join(key)
+#     bedSingle.write(track=name_file, file_type="bedGraph")
+#     for line in bedSingle: print line
+# 
+# 
+#        
 # s=intData.read(relative_coord=True)
 
 # bedFile = intData.track_convert2bed(s)
