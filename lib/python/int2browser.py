@@ -65,11 +65,18 @@ _intervals = [0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 1, 1000]
 
 _dict_file = {'bed' : '.bed',
               'bedGraph': '.bedGraph'}
+
 _black_gradient = ["226,226,226", "198,198,198", "170,170,170", "141,141,141", "113,113,113", "85,85,85", "56,56,56", "28,28,28", "0,0,0"]
 _blue_gradient = ["229,229,254", "203,203,254", "178,178,254", "152,152,254", "127,127,254", "102,102,254", "76,76,173", "51,51,162", "0,0,128"]
 _red_gradient = ["254,172,182", "254,153,162", "254,134,142", "254,115,121", "254,96,101", "254,77,81", "254,57,61", "254,38,40", "254,19,20"]
 _green_gradient = ["203,254,203", "178,254,178", "152,254,152", "127,254,127", "102,254,102", "76,254,76", "51,254,51", "0,254,0", "25,115,25"]
 
+_dict_colors = {
+                'black' : _black_gradient,
+                'blue' : _blue_gradient,
+                'red' : _red_gradient,
+                'green' : _green_gradient}
+  
 # esto tiene que ser implementado en una funcion 
 # para cada uno de los fields que haya asignarle un color diferente
 _dict_col_grad = {
@@ -81,6 +88,14 @@ _dict_col_grad = {
                   'food_fat' : _red_gradient}
 
 ## I have to create a class able to keep the data and the fields
+## What I am doing it to set the colorRestrictions as the dictionary that will at the same
+## time the input and the output of the function 
+# def assign_color (listFields, colorRestrictions):
+#     """Assign colors to fields, it is optional to set given color to given fields, for example set water to blue"""
+#     #para cada uno de los campos existe en el diccionario sino
+#     #lo pongo, una lista con used colors para no repetir 
+#     _used_colors = []
+    
 
 class intData: # if I name it as int I think is like self but with a better name
     """
@@ -534,12 +549,64 @@ class BedGraph(dataIter):
         
 class ObjectContainer():
     pass 
+
+
+
+# PARTE REPETIDA DEL CODIGO PARA BORRAR - PARA QUE NO ESTE TAN LEJOS 
+# _black_gradient = ["226,226,226", "198,198,198", "170,170,170", "141,141,141", "113,113,113", "85,85,85", "56,56,56", "28,28,28", "0,0,0"]
+# _blue_gradient = ["229,229,254", "203,203,254", "178,178,254", "152,152,254", "127,127,254", "102,102,254", "76,76,173", "51,51,162", "0,0,128"]
+# _red_gradient = ["254,172,182", "254,153,162", "254,134,142", "254,115,121", "254,96,101", "254,77,81", "254,57,61", "254,38,40", "254,19,20"]
+# _green_gradient = ["203,254,203", "178,254,178", "152,254,152", "127,254,127", "102,254,102", "76,254,76", "51,254,51", "0,254,0", "25,115,25"]
+# 
+# _dict_colors = {
+#                 'black' : _black_gradient,
+#                 'blue' : _blue_gradient,
+#                 'red' : _red_gradient,
+#                 'green' : _green_gradient}
+#   
+# # esto tiene que ser implementado en una funcion 
+# # para cada uno de los fields que haya asignarle un color diferente
+# _dict_col_grad = {
+#                   'water' : _blue_gradient,
+#                   'drink' : _blue_gradient,
+#                   'food' : _black_gradient,
+#                   'food_sc' : _black_gradient,
+#                   'food_cd' : _red_gradient,
+#                   'food_fat' : _red_gradient}
+# 
+# ## I have to create a class able to keep the data and the fields
+# ## What I am doing it to set the colorRestrictions as the dictionary that will at the same
+# ## time the input and the output of the function 
+def assign_color (listFields, colorRestrictions):
+    """Assign colors to fields, it is optional to set given color to given fields, for example set water to blue"""
+    #para cada uno de los campos existe en el diccionario sino
+    #lo pongo, una lista con used colors para no repetir 
+    
+    rest_colors = (list (_dict_rest_colors.values()))
+    print "888888"
+    print rest_colors
+    if not all(colors in _dict_colors for colors in rest_colors):
+        raise ValueError("Not all restricted colors are available") 
+    #If there are restricted colors they should be on the default colors list
+#     if _dict_rest_colors not in _dict_colors: 
+#         raise ValueError("Mode \'%s\' not available. Possible convert() modes are %s"%(mode,', '.join(['{}'.format(m) for m in _dict_file.keys()])))
+#     _used_colors = []
+    return 0
+     
+    
           
 ##########################
 ## Examples of executions 
          
 intData = intData(path, relative_coord=True)
-# print intData.fieldsB
+print ("===============")
+_dict_rest_colors = {
+                     'water' : 'blue'}
+list_of_fields = intData.dataTypes
+print list_of_fields
+
+assign_color (list_of_fields, _dict_rest_colors)
+
 # print (intData.get_field_items("dataTypes"))
 # for row in intData.read(relative_coord=True):
 #     print row
