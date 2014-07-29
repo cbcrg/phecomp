@@ -13,7 +13,7 @@ import argparse
 import csv
 import os
 import itertools
-import operator
+# import operator
 #import sys
 #print (sys.version)
 
@@ -36,9 +36,6 @@ genericNt = "N"
 # print ("Output file: %s" % args.output )
 # 
 # path = args.input
-
-## Input debugging file
-#cat 20120502_FDF_CRG_hab_filtSHORT.csv | sed 's/ //g' | awk '{print $1"\t"$14"\t"$6"\t"$11"\t"$16"\thabituation"}' > shortDev.integer
 
 ############################################
 ## This should be in the configuration file
@@ -86,17 +83,7 @@ _dict_col_grad = {
                   'food_sc' : _black_gradient,
                   'food_cd' : _red_gradient,
                   'food_fat' : _red_gradient}
-
-## I have to create a class able to keep the data and the fields
-## What I am doing it to set the colorRestrictions as the dictionary that will at the same
-## time the input and the output of the function 
-# def assign_color (listFields, colorRestrictions):
-#     """Assign colors to fields, it is optional to set given color to given fields, for example set water to blue"""
-#     #para cada uno de los campos existe en el diccionario sino
-#     #lo pongo, una lista con used colors para no repetir 
-#     _used_colors = []
     
-
 class intData: # if I name it as int I think is like self but with a better name
     """
     Generic class for data
@@ -550,38 +537,11 @@ class BedGraph(dataIter):
 class ObjectContainer():
     pass 
 
-
-
-# PARTE REPETIDA DEL CODIGO PARA BORRAR - PARA QUE NO ESTE TAN LEJOS 
-# _black_gradient = ["226,226,226", "198,198,198", "170,170,170", "141,141,141", "113,113,113", "85,85,85", "56,56,56", "28,28,28", "0,0,0"]
-# _blue_gradient = ["229,229,254", "203,203,254", "178,178,254", "152,152,254", "127,127,254", "102,102,254", "76,76,173", "51,51,162", "0,0,128"]
-# _red_gradient = ["254,172,182", "254,153,162", "254,134,142", "254,115,121", "254,96,101", "254,77,81", "254,57,61", "254,38,40", "254,19,20"]
-# _green_gradient = ["203,254,203", "178,254,178", "152,254,152", "127,254,127", "102,254,102", "76,254,76", "51,254,51", "0,254,0", "25,115,25"]
-# 
-# _dict_colors = {
-#                 'black' : _black_gradient,
-#                 'blue' : _blue_gradient,
-#                 'red' : _red_gradient,
-#                 'green' : _green_gradient}
-#   
-# # esto tiene que ser implementado en una funcion 
-# # para cada uno de los fields que haya asignarle un color diferente
-# _dict_col_grad = {
-#                   'water' : _blue_gradient,
-#                   'drink' : _blue_gradient,
-#                   'food' : _black_gradient,
-#                   'food_sc' : _black_gradient,
-#                   'food_cd' : _red_gradient,
-#                   'food_fat' : _red_gradient}
-# 
-# ## I have to create a class able to keep the data and the fields
-# ## What I am doing it to set the colorRestrictions as the dictionary that will at the same
-# ## time the input and the output of the function 
-## I have to generate a dictionary like the one below out of this function
-# _dict_col_grad
 def assign_color (set_dataTypes, color_restrictions):
-    """Assign colors to fields, it is optional to set given color to given fields, for example set water to blue
-       different data types get a different color in a circular manner"""
+    """
+    Assign colors to fields, it is optional to set given color to given fields, for example set water to blue
+    different data types get a different color in a circular manner
+    """
 
     rest_colors = (list (color_restrictions.values()))
 
@@ -612,127 +572,3 @@ def assign_color (set_dataTypes, color_restrictions):
             print (colors_not_used)      
             
     return d_dataType_color
-     
-    
-          
-##########################
-## Examples of executions 
-         
-# intData = intData(path, relative_coord=True)
-# print ("===============")
-# _dict_rest_colors = {
-#                      'water' : 'blue'}
-# set_dataTypes = intData.dataTypes
-# print set_dataTypes
-# 
-# assign_color (set_dataTypes, _dict_rest_colors)
-
-# print (intData.get_field_items("dataTypes"))
-# for row in intData.read(relative_coord=True):
-#     print row
-# print(intData.min)
-
- 
-# intData.convert(mode = "bed", relative_coord = True)   
-# bedFiles = intData.convert(mode = "bed", relative_coord = True, split_dataTypes=False)
-# bedFiles=intData.convert(mode = "bedGraph", window=300, split_dataTypes=False, relative_coord=True)
-# 
-# for key in bedFiles: 
-# #     print (key), 
-# #     print ("---------")
-#     bedSingle = bedFiles[key]
-#     name_file='_'.join(key)
-#     bedSingle.write(track=name_file, file_type="bedGraph")
-#     for line in bedSingle: print line
-# 
-# 
-#        
-# s=intData.read(relative_coord=True)
-
-# bedFile = intData.track_convert2bed(s)
-# for line in bedFile:    
-#     print (line) 
-
-
-
-
-
-
-# for key in bedFiles:
-#     bed = bedFiles [key]
-#     print ("bed file" + key)
-#     for line in bed:  print line
-
-# s = intData.read(relative_coord = True, )
-
-# print (s.fields)
-# write(s)
-
-# print (intData.get_min_max(fields=["dataValue", "dataValue"]))
-# print (intData.tracks)
-# print (intData.dataTypes)
-
-# s2=write(s)
-# for line in s2: print line
-# print (type (s))
-# d=iter(s)
-# n=d.next()
-# print n
-# i = dataIter(s)
-# int=i.next()
-# print int
-# if isinstance(s,(list,tuple)):
-#     print "culo"
-# else:
-#     print "pedo"    
-# Tengo que crear las clases de los objetos correspondientes a cada tipo de datas bed, bedgraph y si hay alguno mas
-# Tendran un metodo para hacer write que puede ser diferente segun el tipo o directamente si lo hago bien, simplemente
-# cogera las lineas y sera capaz de hacerlo con una funcion generica
-# intDataBed = intData.writeBed (feature="dataValue")
-# 
-# for line in intDataBed:
-#     for item in line:
-#         print (item),  
-#     print ('\n'),
-
-
-# Stuff that might be interesting
-#import numpy as np
-#A = np.array (dataInt)
-
-#def genGenome (endChr, "N"):
-  
-## Example with pandas http://stackoverflow.com/questions/16503560/read-specific-columns-from-csv-file-with-python-csv
-#import pandas as pd
-#df = pd.read_csv (args.input)
-#col = df [chromStart]
-#print '------%-4s' % (col)
-
-#pybedtools examples
-# import pybedtools
-# x = pybedtools.BedTool('path/to/bam')
-# x.genome_coverage(bg=True, genome='hg19', split=True)\
-#     .saveas('path/to/bedgraph', trackline='track name="test track" visibility="full" type=bedGraph')
-        
-
-
-data=[(1, 'A', 'foo'),
-    (2, 'A', 'bar'),
-    (100, 'A', 'foo-bar'),
-     (300, 'A', 'foo-bar'),
- 
-    ('xx', 'B', 'foobar'),
-    ('yy', 'B', 'foo'),
-    ('yx', 'B', 'foo'),
-    (500, 'A', 'foo-bar'),
-     
-    (1000, 'C', 'py'),
-    (200, 'C', 'foo'),
-    ]
-#
-data2=sorted(data,key=operator.itemgetter(2))
-
-  
-# for key,group in itertools.groupby(data2,operator.itemgetter(1,2)):
-#     print(tuple(group))
-#     print key
