@@ -71,6 +71,7 @@ _red_gradient = ["254,172,182", "254,153,162", "254,134,142", "254,115,121", "25
 _green_gradient = ["203,254,203", "178,254,178", "152,254,152", "127,254,127", "102,254,102", "76,254,76", "51,254,51", "0,254,0", "25,115,25"]
 
 # esto tiene que ser implementado en una funcion 
+# para cada uno de los fields que haya asignarle un color diferente
 _dict_col_grad = {
                   'water' : _blue_gradient,
                   'drink' : _blue_gradient,
@@ -100,7 +101,7 @@ class intData: # if I name it as int I think is like self but with a better name
         self.fieldsG = [_dict_Id [k] for k in self.fieldsB]         
         self.min =  int(self.get_min_max(fields = ["chromStart","chromEnd"])[0])
         self.max =  int(self.get_min_max(fields = ["chromStart","chromEnd"])[1])
-        self.tracks =  self.get_field_items (field="track")
+        self.tracks  =  self.get_field_items (field="track")
         self.dataTypes = self.get_field_items (field="dataTypes")
 #         self.format = "csv"
     
@@ -393,7 +394,7 @@ class intData: # if I name it as int I think is like self but with a better name
                     yield(tuple(temp_list))
                     temp_list = []
                     
-                #Value must to be waited between intervals
+                #Value must to be weighted between intervals
                 if chr_end > end_window:                 
                     value2weight = data_value
                     end_w = end_window
