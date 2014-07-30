@@ -1,11 +1,6 @@
 #!/usr/bin/env python
 
 from __future__ import division
-# import pybedtools
-# a = pybedtools.example_bedtool('a.bed')
-# b = pybedtools.example_bedtool('b.bed')
-# print a.intersect(b)
-
 
 __author__ = 'Jose Espinosa-Carrasco'
 
@@ -13,12 +8,6 @@ import argparse
 import csv
 import os
 import itertools
-# import operator
-#import sys
-#print (sys.version)
-
-## fieldG --> field in genome format
-## fieldP --> correspoding field in phenome format
         
 ## VARIABLES
 _pwd = os.getcwd ()
@@ -26,16 +15,6 @@ _genomeFileExt = ".fa"
 _bedFileExt = ".bed"
 _bedGraphFileExt = ".bedGraph"
 genericNt = "N"
-# parser = argparse.ArgumentParser (description = 'Script to transform behavioral data into GB readable data')
-# parser.add_argument ('-i','--input', help='Input file name',required=True)
-# parser.add_argument ('-o','--output',help='Output file name', required=False)
-# args = parser.parse_args ()
-# 
-# ## show values ##
-# print ("Input file: %s" % args.input )
-# print ("Output file: %s" % args.output )
-# 
-# path = args.input
 
 ############################################
 ## This should be in the configuration file
@@ -76,6 +55,8 @@ _dict_colors = {
   
 # esto tiene que ser implementado en una funcion 
 # para cada uno de los fields que haya asignarle un color diferente
+# mirar la parte del codigo que utilizaba esto, asignar el diccionario despues de llamar la 
+# funcion y utilizarlo
 _dict_col_grad = {
                   'water' : _blue_gradient,
                   'drink' : _blue_gradient,
