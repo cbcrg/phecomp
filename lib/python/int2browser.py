@@ -53,19 +53,7 @@ _dict_colors = {
                 'blue' : _blue_gradient,
                 'red' : _red_gradient,
                 'green' : _green_gradient}
-  
-# esto tiene que ser implementado en una funcion 
-# para cada uno de los fields que haya asignarle un color diferente
-# mirar la parte del codigo que utilizaba esto, asignar el diccionario despues de llamar la 
-# funcion y utilizarlo
-_dict_col_grad = {
-                  'water' : _blue_gradient,
-                  'drink' : _blue_gradient,
-                  'food' : _black_gradient,
-                  'food_sc' : _black_gradient,
-                  'food_cd' : _red_gradient,
-                  'food_fat' : _red_gradient}
-    
+      
 class intData: # if I name it as int I think is like self but with a better name
     """
     Generic class for data
@@ -314,7 +302,7 @@ class intData: # if I name it as int I think is like self but with a better name
         i_data_types = self.fieldsG.index("dataTypes")
         
         #Generate dictionary of field and colors
-#         _dict_col_grad = assign_color (self.dataTypes, restrictedColors)
+        _dict_col_grad = assign_color (self.dataTypes)
             
         for row in track:
             temp_list = []
@@ -527,6 +515,9 @@ def assign_color (set_dataTypes, color_restrictions=None):
     """
     Assign colors to fields, it is optional to set given color to given fields, for example set water to blue
     different data types get a different color in a circular manner
+    
+    :param set_dataTypes: (list) each of the fields that should be linked to colors
+    :param color_restricitons: (dict) fields with colors set by the user
     """
     d_dataType_color = {}
     colors_not_used = []
@@ -555,7 +546,6 @@ def assign_color (set_dataTypes, color_restrictions=None):
         if dataType in d_dataType_color:
             print ("Data type color gradient already set '%s'."%(dataType))
         else:
-            d_dataType_color[dataType] = _dict_colors[colors_not_used.pop(0)]
-            print (colors_not_used)      
+            d_dataType_color[dataType] = _dict_colors[colors_not_used.pop(0)]    
             
     return d_dataType_color
