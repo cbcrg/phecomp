@@ -1,7 +1,21 @@
 #!/usr/bin/env python
 
-import int2browser
-import operator
+import int2browser, operator
+
+# import pybedtools
+# a = pybedtools.example_bedtool('a.bed')
+# b = pybedtools.example_bedtool('b.bed')
+# print a.intersect(b)
+
+
+# a_with_b = a.intersect(b, u=True)
+
+# import operator
+#import sys
+#print (sys.version)
+
+## fieldG --> field in genome format
+## fieldP --> correspoding field in phenome format
 
 parser = int2browser.argparse.ArgumentParser (description = 'Script to transform behavioral data into GB readable data')
 parser.add_argument ('-i','--input', help='Input file name',required=True)
@@ -19,21 +33,22 @@ path = args.input
 
 # print (path)
 intData = int2browser.intData(path, relative_coord=True)
+
 print ("===============")
-_dict_rest_colors = {
-                     'water' : 'blue'}
+d_rest_colors = {'water' : 'green'}
 set_dataTypes = intData.dataTypes
 print set_dataTypes
- 
-int2browser.assign_color (set_dataTypes, _dict_rest_colors)
+  
+# print (int2browser.assign_color (set_dataTypes, _dict_rest_colors))
 
+# print (int2browser.assign_color (set_dataTypes))
 ##########################
 ## Examples of executions 
          
 # intData = intData(path, relative_coord=True)
 # print ("===============")
 # _dict_rest_colors = {
-#                      'water' : 'blue'}
+#                       'water' : 'blue'}
 # set_dataTypes = intData.dataTypes
 # print set_dataTypes
 # 
@@ -46,21 +61,23 @@ int2browser.assign_color (set_dataTypes, _dict_rest_colors)
 
  
 # intData.convert(mode = "bed", relative_coord = True)   
-# bedFiles = intData.convert(mode = "bed", relative_coord = True, split_dataTypes=False)
+bedFiles = intData.convert(mode = "bed", relative_coord = True, split_dataTypes=False, restrictedColors=d_rest_colors)
 # bedFiles=intData.convert(mode = "bedGraph", window=300, split_dataTypes=False, relative_coord=True)
 # 
-# for key in bedFiles: 
-# #     print (key), 
-# #     print ("---------")
-#     bedSingle = bedFiles[key]
-#     name_file='_'.join(key)
-#     bedSingle.write(track=name_file, file_type="bedGraph")
-#     for line in bedSingle: print line
-# 
-# 
-#        
+for key in bedFiles: 
+    print (key), 
+    print ("---------")
+    bedSingle = bedFiles[key]
+    name_file='_'.join(key)
+    print ("---------")
+    print (name_file)
+    bedSingle.write(track=name_file, file_type="bedGraph")
+    for line in bedSingle: print line
+#  
+#  
+#         
 # s=intData.read(relative_coord=True)
-
+#   
 # bedFile = intData.track_convert2bed(s)
 # for line in bedFile:    
 #     print (line) 
