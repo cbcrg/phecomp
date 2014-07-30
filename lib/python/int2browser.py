@@ -8,6 +8,7 @@ import argparse
 import csv
 import os
 import itertools
+import operator
         
 ## VARIABLES
 _pwd = os.getcwd ()
@@ -473,7 +474,8 @@ class dataIter(object):
         if track is None: 
             track = "cage1_test"
         
-        print _dict_file.get(file_type)
+        print "File extension is: '%s'"%_dict_file.get(file_type)
+        
         file_ext = _dict_file.get(file_type)
             
         track_file = open(os.path.join(_pwd, track + file_ext), mode)
