@@ -295,7 +295,7 @@ class intData: # if I name it as int I think is like self but with a better name
                      
         return track_dict
     
-    def track_convert2bed (self, track, in_call=False):
+    def track_convert2bed (self, track, in_call=False, restrictedColors=None):
         #fields pass to read should be the ones of bed file
         _bed_fields = ["track","chromStart","chromEnd","dataTypes", "dataValue"]
         #Check whether these fields are in the original otherwise raise exception
@@ -312,6 +312,9 @@ class intData: # if I name it as int I think is like self but with a better name
         i_chr_end = self.fieldsG.index("chromEnd")
         i_data_value = self.fieldsG.index("dataValue")
         i_data_types = self.fieldsG.index("dataTypes")
+        
+        #Generate dictionary of field and colors
+#         _dict_col_grad = assign_color (self.dataTypes, restrictedColors)
             
         for row in track:
             temp_list = []
@@ -520,29 +523,30 @@ class BedGraph(dataIter):
 class ObjectContainer():
     pass 
 
-def assign_color (set_dataTypes, color_restrictions):
+def assign_color (set_dataTypes, color_restrictions=None):
     """
     Assign colors to fields, it is optional to set given color to given fields, for example set water to blue
     different data types get a different color in a circular manner
     """
-
-    rest_colors = (list (color_restrictions.values()))
-
-    #If there are restricted colors they should be on the default colors list
-    if not all(colors in _dict_colors for colors in rest_colors):
-        raise ValueError("Not all restricted colors are available") 
-    
-    #If there are fields link to related colors they also must be in the data type list 
-    if not all(key in set_dataTypes for key in color_restrictions):                      
-        raise ValueError("Some values of data types provided as color restriction are not present in the file")
-    
     d_dataType_color = {}
+    colors_not_used = []
     
-    for dataType in color_restrictions:
-        d_dataType_color[dataType] = _dict_colors[color_restrictions[dataType]] 
+    if color_restrictions is not None:
+        rest_colors = (list (color_restrictions.values()))
+
+        #If there are restricted colors they should be on the default colors list
+        if not all(colors in _dict_colors for colors in rest_colors):
+            raise ValueError("Not all restricted colors are available") 
+        
+        #If there are fields link to related colors they also must be in the data type list 
+        if not all(key in set_dataTypes for key in color_restrictions):                      
+            raise ValueError("Some values of data types provided as color restriction are not present in the file")
+            
+        for dataType in color_restrictions:
+            d_dataType_color[dataType] = _dict_colors[color_restrictions[dataType]] 
     
-    colors_not_used = _dict_colors.keys()
-    colors_not_used.remove (color_restrictions[dataType])
+        colors_not_used = _dict_colors.keys()
+        colors_not_used.remove (color_restrictions[dataType])
 
     for dataType in set_dataTypes:        
         if not colors_not_used:
