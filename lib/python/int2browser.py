@@ -12,6 +12,7 @@ import operator
         
 ## VARIABLES
 _pwd = os.getcwd ()
+# this could be better in a dictionary
 _genomeFileExt = ".fa"
 _bedFileExt = ".bed"
 _bedGraphFileExt = ".bedGraph"
@@ -113,7 +114,7 @@ class intData: # if I name it as int I think is like self but with a better name
     def _set_fields_b(self, fields):
         """
         Reading the behavioral fields from the header file or otherwise setting  
-        the fields to numeric values correspoding the colunm index starting at 0    
+        the fields to numeric values corresponding the column index starting at 0    
         """ 
         if fields:
             pass
