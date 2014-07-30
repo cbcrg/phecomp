@@ -80,7 +80,7 @@ class intData: # if I name it as int I think is like self but with a better name
     
     def _check_path(self, path):
         ''' Check if the input file exists and is accessible. '''
-        print (path)
+#         print (path)
         assert isinstance(path, basestring), "Expected string or unicode, found %s." % type(path)
         try:
             f = open(path, "r")
@@ -210,7 +210,6 @@ class intData: # if I name it as int I think is like self but with a better name
                 if pMinMax[0] > row[0]: pMinMax[0] = row[0]
                 if pMinMax[1] < row[1]: pMinMax[1] = row[1]
        
-        print pMinMax
         return pMinMax
     
     def get_field_items(self, field="dataTypes"): 
