@@ -72,8 +72,9 @@ class intData: # if I name it as int I think is like self but with a better name
         self.header = kwargs.get('header',True)
         self.fieldsB = self._set_fields_b(kwargs.get ('fields'))        
         self.fieldsG = [_dict_Id [k] for k in self.fieldsB]         
-        self.min =  int(self.get_min_max(fields = ["chromStart","chromEnd"])[0])
-        self.max =  int(self.get_min_max(fields = ["chromStart","chromEnd"])[1])
+#         self.min =  int(self.get_min_max(fields = ["chromStart","chromEnd"])[0])
+#         self.max =  int(self.get_min_max(fields = ["chromStart","chromEnd"])[1])
+        self.min, self.max =  self.get_min_max(fields = ["chromStart","chromEnd"])
         self.tracks  =  self.get_field_items (field="track")
         self.dataTypes = self.get_field_items (field="dataTypes")
 #         self.format = "csv"
@@ -193,7 +194,8 @@ class intData: # if I name it as int I think is like self but with a better name
             _f = ["chromStart","chromEnd"]
                         
             for row in self.read(fields=_f):
-#                 print row
+                row = map(int,pMinMax)
+                print(type (row[0])) 
                 if pMinMax[0] is None: pMinMax = list(row)
                 if pMinMax[0] > row[0]: pMinMax[0] = row[0]
                 if pMinMax[1] < row[1]: pMinMax[1] = row[1]
@@ -206,10 +208,11 @@ class intData: # if I name it as int I think is like self but with a better name
                 raise ValueError("Only two fields can be consider for get_min_max %s: %s" % (fields, self.fieldsG))
         
         for row in self.read(fields=_f, **kwargs):
-                if pMinMax[0] is None: pMinMax = list(row)
-                if pMinMax[0] > row[0]: pMinMax[0] = row[0]
-                if pMinMax[1] < row[1]: pMinMax[1] = row[1]
-       
+            row = map(int,row)            
+            if pMinMax[0] is None: pMinMax = list(row)
+            if pMinMax[0] > row[0]: pMinMax[0] = row[0]
+            if pMinMax[1] < row[1]: pMinMax[1] = row[1]
+
         return pMinMax
     
     def get_field_items(self, field="dataTypes"): 
