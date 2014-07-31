@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import int2browser, operator
+import int2browser, operator, csv
 
 # import pybedtools
 # a = pybedtools.example_bedtool('a.bed')
@@ -19,25 +19,59 @@ import int2browser, operator
 
 parser = int2browser.argparse.ArgumentParser (description = 'Script to transform behavioral data into GB readable data')
 parser.add_argument ('-i','--input', help='Input file name',required=True)
-parser.add_argument ('-o','--output',help='Output file name', required=False)
+parser.add_argument ('-c','--config_file',help='Configuration file with genome browser fields correspondence', required=False)
 args = parser.parse_args ()
 
 ## show values ##
 print ("Input file: %s" % args.input )
-print ("Output file: %s" % args.output )
-
+print ("Configuration file: %s" % args.config_file )
+ 
 path = args.input
 
 ## Input debugging file
 #cat 20120502_FDF_CRG_hab_filtSHORT.csv | sed 's/ //g' | awk '{print $1"\t"$14"\t"$6"\t"$11"\t"$16"\thabituation"}' > shortDev.int
 
-# print (path)
-intData = int2browser.intData(path, relative_coord=True)
+print (path)
 
-print ("===============")
-d_rest_colors = {'water' : 'green'}
-set_dataTypes = intData.dataTypes
-print set_dataTypes
+## Generation of a genome file
+intData = int2browser.intData (path, relative_coord=True)
+print (type(intData.min))
+print (intData.min)
+
+## Checking type
+# Now before applying read it has not class data_iter ask someone whether this is ok or not
+print(type(intData))
+intData_data_iter = intData.read()
+print(type(intData_data_iter))
+
+## Writing chromosome file
+# intData.writeChr()
+
+## Convert to bed
+bed_str = intData.convert(mode = "bed", relative_coord = True)
+# separating by data types (nature)
+bed_str =  intData.convert(mode = "bed", relative_coord = True, split_dataTypes=True)
+
+# Class of each object of the dictionary
+# print (type(bed_str[('2', 'water')]))
+# print (bed_str)
+
+# with open("input.txt", "r") as handle:
+#     lookup = dict((x[2], x[1]) for x in (x.split('t') for x in handle.read().split('n') if x))
+
+## CONFIGURATION FILE
+filename = '/Users/jespinosa/phecomp/20121119_phenomeBrowser/20140411_int2browserPythonDev/data/configFile.txt'
+with open(filename) as config_file:
+    culo=dict((row[0], row[1]) for row in (csv.reader(config_file, delimiter='\t')))
+#     list_of_dicts = list(csv.DictReader(file_object,delimiter='\t'))
+    
+print culo
+
+# 
+# print ("===============")
+# d_rest_colors = {'water' : 'green'}
+# set_dataTypes = intData.dataTypes
+# print set_dataTypes
   
 # print (int2browser.assign_color (set_dataTypes, _dict_rest_colors))
 
@@ -61,18 +95,18 @@ print set_dataTypes
 
  
 # intData.convert(mode = "bed", relative_coord = True)   
-bedFiles = intData.convert(mode = "bed", relative_coord = True, split_dataTypes=False, restrictedColors=d_rest_colors)
+# bedFiles = intData.convert(mode = "bed", relative_coord = True, split_dataTypes=False, restrictedColors=d_rest_colors)
 # bedFiles=intData.convert(mode = "bedGraph", window=300, split_dataTypes=False, relative_coord=True)
 # 
-for key in bedFiles: 
-    print (key), 
-    print ("---------")
-    bedSingle = bedFiles[key]
-    name_file='_'.join(key)
-    print ("---------")
-    print (name_file)
-    bedSingle.write(track=name_file, file_type="bedGraph")
-    for line in bedSingle: print line
+# for key in bedFiles: 
+#     print (key), 
+#     print ("---------")
+#     bedSingle = bedFiles[key]
+#     name_file='_'.join(key)
+#     print ("---------")
+#     print (name_file)
+#     bedSingle.write(track=name_file, file_type="bedGraph")
+#     for line in bedSingle: print line
 #  
 #  
 #         
@@ -145,21 +179,21 @@ for key in bedFiles:
         
 
 
-data=[(1, 'A', 'foo'),
-    (2, 'A', 'bar'),
-    (100, 'A', 'foo-bar'),
-     (300, 'A', 'foo-bar'),
- 
-    ('xx', 'B', 'foobar'),
-    ('yy', 'B', 'foo'),
-    ('yx', 'B', 'foo'),
-    (500, 'A', 'foo-bar'),
-     
-    (1000, 'C', 'py'),
-    (200, 'C', 'foo'),
-    ]
+# data=[(1, 'A', 'foo'),
+#     (2, 'A', 'bar'),
+#     (100, 'A', 'foo-bar'),
+#      (300, 'A', 'foo-bar'),
+#  
+#     ('xx', 'B', 'foobar'),
+#     ('yy', 'B', 'foo'),
+#     ('yx', 'B', 'foo'),
+#     (500, 'A', 'foo-bar'),
+#      
+#     (1000, 'C', 'py'),
+#     (200, 'C', 'foo'),
+#     ]
 #
-data2=sorted(data,key=operator.itemgetter(2))
+# data2=sorted(data,key=operator.itemgetter(2))
 
   
 # for key,group in itertools.groupby(data2,operator.itemgetter(1,2)):
