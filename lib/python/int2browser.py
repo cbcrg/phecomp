@@ -66,7 +66,7 @@ class intData: # if I name it as int I think is like self but with a better name
     """
     #le meto el diccionario entre behavior and genomic data como un parametro y por defecto le pongo el diccionario del ejemplo
     def __init__(self, path, **kwargs):
-        self.path = self._check_path(path)
+        self.path = check_path(path)
         self.delimiter = kwargs.get('delimiter',"\t")
         self.delimiter = self._check_delimiter(self.path)
         self.header = kwargs.get('header',True)
@@ -78,20 +78,7 @@ class intData: # if I name it as int I think is like self but with a better name
         self.tracks  =  self.get_field_items (field="track")
         self.dataTypes = self.get_field_items (field="dataTypes")
 #         self.format = "csv"
-    
-    def _check_path(self, path):
-        """ 
-        Check whether the input file exists and is accessible and if OK returns path
-        :param path: path to the intervals file
-        """
-#         print (path)
-        assert isinstance(path, basestring), "Expected string or unicode, found %s." % type(path)
-        try:
-            f = open(path, "r")
-        except IOError:
-            raise IOError('File does not exist: %s' % path)
-        return path        
-    
+          
     def _check_delimiter (self, path):
         """ Check whether the delimiter works, if delimiter is not set
         then tries ' ', '\t' and ';'"""
@@ -560,3 +547,18 @@ def assign_color (set_dataTypes, color_restrictions=None):
             d_dataType_color[dataType] = _dict_colors[colors_not_used.pop(0)]    
             
     return d_dataType_color
+
+def check_path(path):
+    """ 
+    Check whether the input file exists and is accessible and if OK returns path
+    :param path: path to the intervals file
+    """
+#         print (path)
+    assert isinstance(path, basestring), "Expected string or unicode, found %s." % type(path)
+    try:
+        f = open(path, "r")
+    except IOError:
+        raise IOError('File does not exist: %s' % path)
+    return path  
+    
+ 
