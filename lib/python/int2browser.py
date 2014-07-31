@@ -573,4 +573,11 @@ class ConfigInfo(object):
         with open(path) as config_file:
             return (dict((row[0], row[1]) for row in (csv.reader(config_file, delimiter='\t'))))
    
+    def write(self, indent=0):
+        for key, value in self.correspondence.iteritems():
+            print '\t' * indent + str(key),
+            if isinstance(value, dict):
+                self.write(value, indent+1)
+            else:
+                print '\t' * (indent+1) + str(value)
    
