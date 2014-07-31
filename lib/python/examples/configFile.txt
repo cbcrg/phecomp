@@ -1,0 +1,6 @@
+Phase	chrom 
+StartT	chromStart
+EndT	chromEnd
+Nature	dataTypes
+Value	dataValue 
+CAGE	track
