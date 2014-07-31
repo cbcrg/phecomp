@@ -80,7 +80,10 @@ class intData: # if I name it as int I think is like self but with a better name
 #         self.format = "csv"
     
     def _check_path(self, path):
-        ''' Check if the input file exists and is accessible. '''
+        """ 
+        Check whether the input file exists and is accessible and if OK returns path
+        :param path: path to the intervals file
+        """
 #         print (path)
         assert isinstance(path, basestring), "Expected string or unicode, found %s." % type(path)
         try:
