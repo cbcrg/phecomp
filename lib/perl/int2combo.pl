@@ -112,7 +112,7 @@ sub run_instruction
     #una opcion con las horas que quiero eliminar desde el principio
     #Mirar primera ocurrencia del archivo para todas las jaulas como en int2browser
     #Luego ir recorriendo recogiendo el time y poniendo un tag a los que son del periodo escogido
-    #Por œltimo a–adir una opci—n para borrar si queremos estos intervalos
+    #Por ultimo anyadir una opcion para borrar si queremos estos intervalos
     elsif ($c=~/^iniFileTag/)
     {
       $d = &tagIniFile ($d, $A);  
