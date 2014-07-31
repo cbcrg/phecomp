@@ -122,7 +122,7 @@ class intData: # if I name it as int I think is like self but with a better name
                 #fieldsB=[header[0].strip('# ')]+header[1:-1]+[header[-1][:-1]]
             self.inFile.close()
         else:
-            self.inFile  = open(path, "rb")
+            self.inFile  = open(self.path, "rb")
             self.reader = csv.reader(self.inFile, delimiter=self.delimiter)
             first_r = self.reader.next()
             fieldsB = range(0,len(first_r))  
@@ -556,9 +556,21 @@ def check_path(path):
 #         print (path)
     assert isinstance(path, basestring), "Expected string or unicode, found %s." % type(path)
     try:
-        f = open(path, "r")
+        open(path, "r")
     except IOError:
         raise IOError('File does not exist: %s' % path)
-    return path  
+    return path      
     
- 
+class ConfigInfo(object):
+    """
+    foo
+    """
+    def __init__(self, path, **kwargs):
+        self.path = check_path(path)
+        self.correspondence = self._correspondence_from_config(self.path)
+         
+    def _correspondence_from_config(self, path):
+        with open(path) as config_file:
+            return (dict((row[0], row[1]) for row in (csv.reader(config_file, delimiter='\t'))))
+   
+   
