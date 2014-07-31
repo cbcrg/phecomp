@@ -244,6 +244,11 @@ class intData: # if I name it as int I think is like self but with a better name
         print('Genome fasta file created: %s' % (chrom + _genomeFileExt))
               
     def convert(self, mode = None, **kwargs):
+        """
+        Returns an object/s of the class set by mode
+        :param mode: class of the output object, by default is set to bed
+         
+        """
         kwargs['relative_coord'] = kwargs.get("relative_coord",False)
         kwargs['split_dataTypes'] = kwargs.get("split_dataTypes",False)
         
@@ -252,8 +257,8 @@ class intData: # if I name it as int I think is like self but with a better name
             raise ValueError("Mode \'%s\' not available. Possible convert() modes are %s"%(mode,', '.join(['{}'.format(m) for m in _dict_file.keys()])))
         
 #         dict_beds = ({ 'bed': self._convert2bed, 'bedGraph': self._convert2bedGraph}.get(mode)(self.read(**kwargs), kwargs.get('split_dataTypes')))
-        dict_beds = (self._convert2single_track(self.read(**kwargs), kwargs.get('split_dataTypes'), mode)) 
-        return (dict_beds)
+        dict_tracks = (self._convert2single_track(self.read(**kwargs), kwargs.get('split_dataTypes'), mode)) 
+        return (dict_tracks)
         
     def _convert2single_track (self, data_tuple, split_dataTypes=False, mode=None):
         """
