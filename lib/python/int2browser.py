@@ -9,6 +9,7 @@ import csv
 import os
 import itertools
 import operator
+from re import match, compile
         
 ## VARIABLES
 _pwd = os.getcwd ()
@@ -539,7 +540,7 @@ def assign_color (set_dataTypes, color_restrictions=None):
 
     for dataType in set_dataTypes:        
         if not colors_not_used:
-           colors_not_used = _dict_colors.keys() 
+            colors_not_used = _dict_colors.keys() 
         
         if dataType in d_dataType_color:
             print ("Data type color gradient already set '%s'."%(dataType))
@@ -568,11 +569,59 @@ class ConfigInfo(object):
     def __init__(self, path, **kwargs):
         self.path = check_path(path)
         self.correspondence = self._correspondence_from_config(self.path)
-         
+    
     def _correspondence_from_config(self, path):
         with open(path) as config_file:
-            return (dict((row[0], row[1]) for row in (csv.reader(config_file, delimiter='\t'))))
-   
+            #eliminated possible empty lines at the end
+#             print (config_file)
+            config_file_list = filter(lambda x:  not match(r'^\s*$', x), config_file)
+#             print (config_file_list[0])             
+            print config_file_list[0][0]
+            if config_file_list[0][0] == '#':
+                del config_file_list [0]
+                return(self._tab_config(config_file_list))
+            if config_file_list[0][0] == '!':
+                del config_file_list[:2]
+                return(self._mapping_config(config_file_list))
+#             print(first_row[0])
+#             if first_row[0] == '#':
+#                 print "culo"
+#                 self._tab_config(config_file) 
+#                 return(self._tab_config(config_file))
+                          
+#     def _tab_config(self, path):
+#         with open(path) as config_file:
+#             return (dict((row[0], row[1]) for row in (csv.reader(config_file, delimiter='\t'))))
+    
+    def _tab_config(self, file_tab):
+        dict_correspondence ={}
+        
+        for row in file_tab:
+            row_split = row.rstrip('\n').split('\t')
+            print (row_split)
+            dict_correspondence[row_split[0]] = row_split[1]
+        return (dict_correspondence)    
+#         return (dict((row[0], row[1]) for row in file_tab))
+    
+    def _mapping_config(self, file_map):
+        print ("culo")
+        dict_correspondence ={}
+        for row in file_map:
+#             l = compile("(?<!^)\s+(?=[A-Z])(?!.\s)").split(row)
+            l=row.rstrip('\n').replace(" ","").replace("\t","").split(">")
+#             l = compile(">").split(row)            
+            print (l[0].split(":")[1])
+            dict_correspondence[l[0].split(":")[1]] = l[1].split(":")[1]
+            
+            #podria utilizar la info aqui para saber que tipo de archivo se quiere generar o
+            #sino no lo puedo llamar bed_file, sino genome_field o algo asi
+#         with open(path) as config_file:
+#             for row in (csv.reader(config_file, delimiter='\t')):
+#                 if row[0] == '!':
+#                     print(row)
+        print (dict_correspondence)
+        return (dict_correspondence)   
+    
     def write(self, indent=0):
         for key, value in self.correspondence.iteritems():
             print '\t' * indent + str(key),
