@@ -17,32 +17,39 @@ import int2browser, operator, csv
 ## fieldG --> field in genome format
 ## fieldP --> correspoding field in phenome format
 
+_rules_options=["all", "one_per_channel"]
 parser = int2browser.argparse.ArgumentParser (description = 'Script to transform behavioral data into GB readable data')
 parser.add_argument ('-i','--input', help='Input file name',required=True)
-parser.add_argument ('-c','--config_file',help='Configuration file with genome browser fields correspondence', required=False)
+parser.add_argument ('-f','--file_config',help='Configuration file with genome browser fields correspondence', required=False)
+# parser.add_argument ('-r','--channels_rules', help='Unique values of the field should be treat as different track or not', required=False)
+parser.add_argument ('-t','--track_rules', help='Unique values of the field track should be dump on different data structures or not', required=False, choices=_rules_options)
+parser.add_argument ('-d','--dataTypes_rules', help='Unique values of the field should dump on different data structures or not', required=False)
+parser.add_argument ('-c','--chrom_rules', help='Unique values of the field chrom should be dump on different data structures or not', required=False)
+
 args = parser.parse_args ()
 
 ## show values ##
 print ("Input file: %s" % args.input )
-print ("Configuration file: %s" % args.config_file )
- 
+print ("Configuration file: %s" % args.file_config )
+print ("Track rules is: %s" % args.track_rules)
 path = args.input
+
 
 ## Input debugging file
 #cat 20120502_FDF_CRG_hab_filtSHORT.csv | sed 's/ //g' | awk '{print $1"\t"$14"\t"$6"\t"$11"\t"$16"\thabituation"}' > shortDev.int
 
-print (path)
+# print (path)
 
 ## Generation of a genome file
 intData = int2browser.intData (path, relative_coord=True)
-print (type(intData.min))
-print (intData.min)
+# print (type(intData.min))
+# print (intData.min)
 
 ## Checking type
 # Now before applying read it has not class data_iter ask someone whether this is ok or not
-print(type(intData))
+# print(type(intData))
 intData_data_iter = intData.read()
-print(type(intData_data_iter))
+# print(type(intData_data_iter))
 
 ## Writing chromosome file
 # intData.writeChr()
@@ -60,13 +67,41 @@ bed_str =  intData.convert(mode = "bed", relative_coord = True, split_dataTypes=
 #     lookup = dict((x[2], x[1]) for x in (x.split('t') for x in handle.read().split('n') if x))
 
 ## CONFIGURATION FILE
-filename = '/Users/jespinosa/phecomp/20121119_phenomeBrowser/20140411_int2browserPythonDev/data/configFile.txt'
-with open(filename) as config_file:
-    culo=dict((row[0], row[1]) for row in (csv.reader(config_file, delimiter='\t')))
-#     list_of_dicts = list(csv.DictReader(file_object,delimiter='\t'))
-    
-print culo
+# Old way of given configuration file
+# My be is better to just delete this option and eliminated this part of the code
+# filename = '/Users/jespinosa/git/phecomp/lib/python/examples/configFile.txt'
+filename = '/Users/jespinosa/git/phecomp/lib/python/examples/b2g.txt'
+configFile = int2browser.ConfigInfo(filename)
+# print (configFile)
+# print(type(configFile))
+# print (isinstance(configFile, int2browser.ConfigInfo))
+# print(type(configFile.correspondence))
 
+configFile.write()
+
+# with open(filename) as config_file:
+#     culo=dict((row[0], row[1]) for row in (csv.reader(config_file, delimiter='\t')))
+# #     list_of_dicts = list(csv.DictReader(file_object,delimiter='\t'))
+#     
+# print culo
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+##################
 # 
 # print ("===============")
 # d_rest_colors = {'water' : 'green'}
