@@ -39,9 +39,13 @@ path = args.input
 # filename = '/Users/jespinosa/git/phecomp/lib/python/examples/configFile.txt'
 configFilePath = args.file_config
 
-configFile = int2browser.ConfigInfo(configFilePath)
-configFile.write()
+# Ahora funciona pero quiza deberia hacer una clase que solo devolviera el diccionario #EXPAND
+configFileDict = int2browser.ConfigInfo(configFilePath)
 
+print (configFileDict.correspondence)
+configFileDict.write()
+
+print ("=============")
 
 ## Input debugging file
 #cat 20120502_FDF_CRG_hab_filtSHORT.csv | sed 's/ //g' | awk '{print $1"\t"$14"\t"$6"\t"$11"\t"$16"\thabituation"}' > shortDev.int
@@ -49,7 +53,8 @@ configFile.write()
 # print (path)
 
 ## Generation of a genome file
-intData = int2browser.intData (path, relative_coord=True)
+intData = int2browser.intData (path, ontology_dict=configFileDict.correspondence,relative_coord=True)
+
 # print (type(intData.min))
 # print (intData.min)
 

@@ -66,13 +66,13 @@ class intData: # if I name it as int I think is like self but with a better name
      
     """
     #le meto el diccionario entre behavior and genomic data como un parametro y por defecto le pongo el diccionario del ejemplo
-    def __init__(self, path, **kwargs):
+    def __init__(self, path, ontology_dict, **kwargs):
         self.path = check_path(path)
         self.delimiter = kwargs.get('delimiter',"\t")
         self.delimiter = self._check_delimiter(self.path)
         self.header = kwargs.get('header',True)
         self.fieldsB = self._set_fields_b(kwargs.get ('fields'))        
-        self.fieldsG = [_dict_Id [k] for k in self.fieldsB]         
+        self.fieldsG = [ontology_dict [k] for k in self.fieldsB]         
 #         self.min =  int(self.get_min_max(fields = ["chromStart","chromEnd"])[0])
 #         self.max =  int(self.get_min_max(fields = ["chromStart","chromEnd"])[1])
         self.min, self.max =  self.get_min_max(fields = ["chromStart","chromEnd"])
@@ -562,7 +562,7 @@ def check_path(path):
         raise IOError('File does not exist: %s' % path)
     return path      
     
-class ConfigInfo(object):
+class ConfigInfo(dict):
     """
     Class holds a dictionary with the ontology between the genomic fields and the phenomics fields
     Ontology can be read both from a tabulated file or a ontology format file 
@@ -595,7 +595,6 @@ class ConfigInfo(object):
         for row in file_tab:
             row_split = row.rstrip('\n').split('\t')
             dict_correspondence[row_split[0]] = row_split[1]
-        
         return (dict_correspondence)    
     
     def _mapping_config(self, file_map):
