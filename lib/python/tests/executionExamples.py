@@ -21,7 +21,6 @@ _rules_options=["all", "one_per_channel"]
 parser = int2browser.argparse.ArgumentParser (description = 'Script to transform behavioral data into GB readable data')
 parser.add_argument ('-i','--input', help='Input file name',required=True)
 parser.add_argument ('-f','--file_config',help='Configuration file with genome browser fields correspondence', required=False)
-# parser.add_argument ('-r','--channels_rules', help='Unique values of the field should be treat as different track or not', required=False)
 parser.add_argument ('-t','--track_rules', help='Unique values of the field track should be dump on different data structures or not', required=False, choices=_rules_options)
 parser.add_argument ('-d','--dataTypes_rules', help='Unique values of the field should dump on different data structures or not', required=False)
 parser.add_argument ('-c','--chrom_rules', help='Unique values of the field chrom should be dump on different data structures or not', required=False)
@@ -30,9 +29,18 @@ args = parser.parse_args ()
 
 ## show values ##
 print ("Input file: %s" % args.input )
-print ("Configuration file: %s" % args.file_config )
+print ("Configuration file: %s" % args.file_config)
 print ("Track rules is: %s" % args.track_rules)
 path = args.input
+
+## CONFIGURATION FILE
+# Old way of given configuration file
+# My be is better to just delete this option and eliminated this part of the code
+# filename = '/Users/jespinosa/git/phecomp/lib/python/examples/configFile.txt'
+configFilePath = args.file_config
+
+configFile = int2browser.ConfigInfo(configFilePath)
+configFile.write()
 
 
 ## Input debugging file
@@ -66,18 +74,7 @@ bed_str =  intData.convert(mode = "bed", relative_coord = True, split_dataTypes=
 # with open("input.txt", "r") as handle:
 #     lookup = dict((x[2], x[1]) for x in (x.split('t') for x in handle.read().split('n') if x))
 
-## CONFIGURATION FILE
-# Old way of given configuration file
-# My be is better to just delete this option and eliminated this part of the code
-# filename = '/Users/jespinosa/git/phecomp/lib/python/examples/configFile.txt'
-filename = '/Users/jespinosa/git/phecomp/lib/python/examples/b2g.txt'
-configFile = int2browser.ConfigInfo(filename)
-# print (configFile)
-# print(type(configFile))
-# print (isinstance(configFile, int2browser.ConfigInfo))
-# print(type(configFile.correspondence))
 
-configFile.write()
 
 # with open(filename) as config_file:
 #     culo=dict((row[0], row[1]) for row in (csv.reader(config_file, delimiter='\t')))
