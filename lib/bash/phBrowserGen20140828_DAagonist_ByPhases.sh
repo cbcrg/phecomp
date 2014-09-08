@@ -27,7 +27,7 @@ scriptName=$(basename "$0")
 wDir=$PWD
 
 ## Mtb files of this experiment are in this folder 
-mtbFilesDir="/users/cn/jespinosa/phecomp/data/CRG/20140828_DAagonistOnHF_exp/data/"
+mtbFilesDir="/users/cn/jespinosa/phecomp/data/CRG/20140828_DAagonist_HF_FC/20140828_DAagonist_HF_FC/"
 mtbLogFolder=${mtbFilesDir}"logFiles/"
 checkCreateDir $mtbLogFolder
 
