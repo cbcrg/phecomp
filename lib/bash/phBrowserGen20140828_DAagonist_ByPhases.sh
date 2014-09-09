@@ -49,7 +49,7 @@ checkCreateDir $mtbLogFolder
 ## Only files with food I filtered out starvation periods because I have problems with signal coming from the 
 # introduction of the food at the end of this period
 ## Bars each 15 minutes
-aryMtbFilesDev=( ls ${mtbFilesDir}*.mtb | grep -v "_2hStarvation"
+aryMtbFilesDev=( $( ls ${mtbFilesDir}*.mtb | grep -v "_2hStarvation" ) )
 
 qsub -q $tcypeQ,$nameQ $timeQ -cwd -o ${mtbLogFolder} -e ${mtbLogFolder} -v aryMtbFiles="${aryMtbFilesDev[*]}" -v dumpDir="/users/cn/jespinosa/phecomp/processedData/" -v iniLight=6  -v phaseTag="_noStarv_15min" -v par2int2browser="value"  -v winSize=900 ${bashScDir}mtb2GBNoQsubIn.sh
 
