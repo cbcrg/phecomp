@@ -3699,8 +3699,9 @@ sub setAllOptions
 		$param->{phase2bed} = 1;
 		#$param->{window} = "Value" ;
 		$param->{window} = exists ($param->{window})? $param->{window} : "Value";
-		$param->{ws} = "1800" ;
-		$param->{wss} = "1800" ;
+		$param->{ws} = exists ($param->{ws})? $param->{ws} : "1800";
+		$param->{wss} = exists ($param->{wss})? $param->{wss} : "1800";
+		
 				
 		$param->{outCytoband} = exists ($param->{outCytoband})? $param->{outCytoband} : $param->{out};
 		$param->{outBed} = exists ($param->{outBed})? $param->{outBed} : $param->{out};
