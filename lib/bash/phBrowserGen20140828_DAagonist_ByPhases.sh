@@ -81,9 +81,9 @@ checkCreateDir $mtbLogFolder
 #  
 
 ## Each periood of 12 hours as I am starting at 8:00 the GB files I will get info by phase
-# All files
-aryMtbFilesDev=( $( ls ${mtbFilesDir}*.mtb ) )
-qsub -q $tcypeQ,$nameQ $timeQ -cwd -o ${mtbLogFolder} -e ${mtbLogFolder} -v aryMtbFiles="${aryMtbFilesDev[*]}" -v dumpDir="/users/cn/jespinosa/phecomp/processedData/" -v iniLight=6  -v phaseTag="_all_circa" -v par2int2browser="value"  -v winSize=43200 ${bashScDir}mtb2GBNoQsubIn.sh
+# All files but starvation periods
+aryMtbFilesDev=( $( ls ${mtbFilesDir}*.mtb | grep -v "_2hStarvation" ) )
+qsub -q $tcypeQ,$nameQ $timeQ -cwd -o ${mtbLogFolder} -e ${mtbLogFolder} -v aryMtbFiles="${aryMtbFilesDev[*]}" -v dumpDir="/users/cn/jespinosa/phecomp/processedData/" -v iniLight=6  -v phaseTag="_all_noStarv_circa" -v par2int2browser="value"  -v winSize=43200 ${bashScDir}mtb2GBNoQsubIn.sh
  
 # aryMtbFilesDev=( $( ls ${mtbFilesDir}*29082014_CRG_agonistDA_SC_c*.mtb ) )
 # qsub -q $tcypeQ,$nameQ $timeQ -cwd -o ${mtbLogFolder} -e ${mtbLogFolder} -v aryMtbFiles="${aryMtbFilesDev[*]}" -v dumpDir="/users/cn/jespinosa/phecomp/processedData/" -v iniLight=6  -v phaseTag="_20140829_circa" -v par2int2browser="value"  -v winSize=43200 ${bashScDir}mtb2GBNoQsubIn.sh
