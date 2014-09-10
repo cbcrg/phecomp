@@ -81,28 +81,31 @@ checkCreateDir $mtbLogFolder
 #  
 
 ## Each periood of 12 hours as I am starting at 8:00 the GB files I will get info by phase
-# aryMtbFilesDev=( $( ls ${mtbFilesDir}*.mtb ) )
-aryMtbFilesDev=( $( ls ${mtbFilesDir}*29082014_CRG_agonistDA_SC_c*.mtb ) )
-qsub -q $tcypeQ,$nameQ $timeQ -cwd -o ${mtbLogFolder} -e ${mtbLogFolder} -v aryMtbFiles="${aryMtbFilesDev[*]}" -v dumpDir="/users/cn/jespinosa/phecomp/processedData/" -v iniLight=6  -v phaseTag="_20140829_circa" -v par2int2browser="value"  -v winSize=43200 ${bashScDir}mtb2GBNoQsubIn.sh
-
-aryMtbFilesDev=( $( ls ${mtbFilesDir}*01092014_CRG_agonistDA_HF_*.mtb ) )
-qsub -q $tcypeQ,$nameQ $timeQ -cwd -o ${mtbLogFolder} -e ${mtbLogFolder} -v aryMtbFiles="${aryMtbFilesDev[*]}" -v dumpDir="/users/cn/jespinosa/phecomp/processedData/" -v iniLight=6  -v phaseTag="_20140901_circa" -v par2int2browser="value"  -v winSize=43200 ${bashScDir}mtb2GBNoQsubIn.sh
+# All files
+aryMtbFilesDev=( $( ls ${mtbFilesDir}*.mtb ) )
+qsub -q $tcypeQ,$nameQ $timeQ -cwd -o ${mtbLogFolder} -e ${mtbLogFolder} -v aryMtbFiles="${aryMtbFilesDev[*]}" -v dumpDir="/users/cn/jespinosa/phecomp/processedData/" -v iniLight=6  -v phaseTag="_all_circa" -v par2int2browser="value"  -v winSize=43200 ${bashScDir}mtb2GBNoQsubIn.sh
  
-aryMtbFilesDev=( $( ls ${mtbFilesDir}*03092014_CRG_agonistDA_HF_2hStarvation_*.mtb ) )
-qsub -q $tcypeQ,$nameQ $timeQ -cwd -o ${mtbLogFolder} -e ${mtbLogFolder} -v aryMtbFiles="${aryMtbFilesDev[*]}" -v dumpDir="/users/cn/jespinosa/phecomp/processedData/" -v iniLight=6  -v phaseTag="_20140903_Starv_circa" -v par2int2browser="value"  -v winSize=43200 ${bashScDir}mtb2GBNoQsubIn.sh
- 
-aryMtbFilesDev=( $( ls ${mtbFilesDir}*03092014_CRG_agonistDA_HF_after2hStarvation_c*.mtb ) )
-qsub -q $tcypeQ,$nameQ $timeQ -cwd -o ${mtbLogFolder} -e ${mtbLogFolder} -v aryMtbFiles="${aryMtbFilesDev[*]}" -v dumpDir="/users/cn/jespinosa/phecomp/processedData/" -v iniLight=6  -v phaseTag="_20140903_afterStarv_circa" -v par2int2browser="value"  -v winSize=43200 ${bashScDir}mtb2GBNoQsubIn.sh
- 
-aryMtbFilesDev=( $( ls ${mtbFilesDir}*04092014_CRG_agonistDA_HF_2hStarvation_*.mtb ) )
-qsub -q $tcypeQ,$nameQ $timeQ -cwd -o ${mtbLogFolder} -e ${mtbLogFolder} -v aryMtbFiles="${aryMtbFilesDev[*]}" -v dumpDir="/users/cn/jespinosa/phecomp/processedData/" -v iniLight=6  -v phaseTag="_20140904_Starv_circa" -v par2int2browser="value"  -v winSize=43200 ${bashScDir}mtb2GBNoQsubIn.sh
- 
-aryMtbFilesDev=( $( ls ${mtbFilesDir}*04092014_CRG_agonistDA_HF_after2hStarvation_c*.mtb ) )
-qsub -q $tcypeQ,$nameQ $timeQ -cwd -o ${mtbLogFolder} -e ${mtbLogFolder} -v aryMtbFiles="${aryMtbFilesDev[*]}" -v dumpDir="/users/cn/jespinosa/phecomp/processedData/" -v iniLight=6  -v phaseTag="_20140904_afterStarv_circa" -v par2int2browser="value"  -v winSize=43200 ${bashScDir}mtb2GBNoQsubIn.sh
- 
-aryMtbFilesDev=( $( ls ${mtbFilesDir}*05092014_CRG_agonistDA_HF_2hStarvation_*.mtb ) )
-qsub -q $tcypeQ,$nameQ $timeQ -cwd -o ${mtbLogFolder} -e ${mtbLogFolder} -v aryMtbFiles="${aryMtbFilesDev[*]}" -v dumpDir="/users/cn/jespinosa/phecomp/processedData/" -v iniLight=6  -v phaseTag="_20140905_Starv_circa" -v par2int2browser="value"  -v winSize=43200 ${bashScDir}mtb2GBNoQsubIn.sh
- 
-aryMtbFilesDev=( $( ls ${mtbFilesDir}*05092014_CRG_agonistDA_HF_after2hStarvation_c*.mtb ) )
-qsub -q $tcypeQ,$nameQ $timeQ -cwd -o ${mtbLogFolder} -e ${mtbLogFolder} -v aryMtbFiles="${aryMtbFilesDev[*]}" -v dumpDir="/users/cn/jespinosa/phecomp/processedData/" -v iniLight=6  -v phaseTag="_20140905_afterStarv_circa" -v par2int2browser="value"  -v winSize=43200 ${bashScDir}mtb2GBNoQsubIn.sh
- 
+# aryMtbFilesDev=( $( ls ${mtbFilesDir}*29082014_CRG_agonistDA_SC_c*.mtb ) )
+# qsub -q $tcypeQ,$nameQ $timeQ -cwd -o ${mtbLogFolder} -e ${mtbLogFolder} -v aryMtbFiles="${aryMtbFilesDev[*]}" -v dumpDir="/users/cn/jespinosa/phecomp/processedData/" -v iniLight=6  -v phaseTag="_20140829_circa" -v par2int2browser="value"  -v winSize=43200 ${bashScDir}mtb2GBNoQsubIn.sh
+# 
+# aryMtbFilesDev=( $( ls ${mtbFilesDir}*01092014_CRG_agonistDA_HF_*.mtb ) )
+# qsub -q $tcypeQ,$nameQ $timeQ -cwd -o ${mtbLogFolder} -e ${mtbLogFolder} -v aryMtbFiles="${aryMtbFilesDev[*]}" -v dumpDir="/users/cn/jespinosa/phecomp/processedData/" -v iniLight=6  -v phaseTag="_20140901_circa" -v par2int2browser="value"  -v winSize=43200 ${bashScDir}mtb2GBNoQsubIn.sh
+#  
+# aryMtbFilesDev=( $( ls ${mtbFilesDir}*03092014_CRG_agonistDA_HF_2hStarvation_*.mtb ) )
+# qsub -q $tcypeQ,$nameQ $timeQ -cwd -o ${mtbLogFolder} -e ${mtbLogFolder} -v aryMtbFiles="${aryMtbFilesDev[*]}" -v dumpDir="/users/cn/jespinosa/phecomp/processedData/" -v iniLight=6  -v phaseTag="_20140903_Starv_circa" -v par2int2browser="value"  -v winSize=43200 ${bashScDir}mtb2GBNoQsubIn.sh
+#  
+# aryMtbFilesDev=( $( ls ${mtbFilesDir}*03092014_CRG_agonistDA_HF_after2hStarvation_c*.mtb ) )
+# qsub -q $tcypeQ,$nameQ $timeQ -cwd -o ${mtbLogFolder} -e ${mtbLogFolder} -v aryMtbFiles="${aryMtbFilesDev[*]}" -v dumpDir="/users/cn/jespinosa/phecomp/processedData/" -v iniLight=6  -v phaseTag="_20140903_afterStarv_circa" -v par2int2browser="value"  -v winSize=43200 ${bashScDir}mtb2GBNoQsubIn.sh
+#  
+# aryMtbFilesDev=( $( ls ${mtbFilesDir}*04092014_CRG_agonistDA_HF_2hStarvation_*.mtb ) )
+# qsub -q $tcypeQ,$nameQ $timeQ -cwd -o ${mtbLogFolder} -e ${mtbLogFolder} -v aryMtbFiles="${aryMtbFilesDev[*]}" -v dumpDir="/users/cn/jespinosa/phecomp/processedData/" -v iniLight=6  -v phaseTag="_20140904_Starv_circa" -v par2int2browser="value"  -v winSize=43200 ${bashScDir}mtb2GBNoQsubIn.sh
+#  
+# aryMtbFilesDev=( $( ls ${mtbFilesDir}*04092014_CRG_agonistDA_HF_after2hStarvation_c*.mtb ) )
+# qsub -q $tcypeQ,$nameQ $timeQ -cwd -o ${mtbLogFolder} -e ${mtbLogFolder} -v aryMtbFiles="${aryMtbFilesDev[*]}" -v dumpDir="/users/cn/jespinosa/phecomp/processedData/" -v iniLight=6  -v phaseTag="_20140904_afterStarv_circa" -v par2int2browser="value"  -v winSize=43200 ${bashScDir}mtb2GBNoQsubIn.sh
+#  
+# aryMtbFilesDev=( $( ls ${mtbFilesDir}*05092014_CRG_agonistDA_HF_2hStarvation_*.mtb ) )
+# qsub -q $tcypeQ,$nameQ $timeQ -cwd -o ${mtbLogFolder} -e ${mtbLogFolder} -v aryMtbFiles="${aryMtbFilesDev[*]}" -v dumpDir="/users/cn/jespinosa/phecomp/processedData/" -v iniLight=6  -v phaseTag="_20140905_Starv_circa" -v par2int2browser="value"  -v winSize=43200 ${bashScDir}mtb2GBNoQsubIn.sh
+#  
+# aryMtbFilesDev=( $( ls ${mtbFilesDir}*05092014_CRG_agonistDA_HF_after2hStarvation_c*.mtb ) )
+# qsub -q $tcypeQ,$nameQ $timeQ -cwd -o ${mtbLogFolder} -e ${mtbLogFolder} -v aryMtbFiles="${aryMtbFilesDev[*]}" -v dumpDir="/users/cn/jespinosa/phecomp/processedData/" -v iniLight=6  -v phaseTag="_20140905_afterStarv_circa" -v par2int2browser="value"  -v winSize=43200 ${bashScDir}mtb2GBNoQsubIn.sh
+# 
