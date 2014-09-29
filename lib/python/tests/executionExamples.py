@@ -35,14 +35,15 @@ path = args.input
 
 ## CONFIGURATION FILE
 # Old way of given configuration file
-# My be is better to just delete this option and eliminated this part of the code
+# Maybe it would be better just to delete this option and eliminated this part of the code
 # filename = '/Users/jespinosa/git/phecomp/lib/python/examples/configFile.txt'
 configFilePath = args.file_config
 
-# Ahora funciona pero quiza deberia hacer una clase que solo devolviera el diccionario #EXPAND
+# Ahora funciona pero quiza deberia hacer una clase que solo devolviera el diccionario #EXPAND #done
 configFileDict = int2browser.ConfigInfo(configFilePath)
-
-print (configFileDict.correspondence)
+print (configFileDict)
+print ("************")
+print (type (configFileDict.correspondence))
 configFileDict.write()
 
 print ("=============")
