@@ -41,13 +41,17 @@ configFilePath = args.file_config
 
 # Ahora funciona pero quiza deberia hacer una clase que solo devolviera el diccionario #EXPAND #done
 configFileDict = int2browser.ConfigInfo(configFilePath)
-print (configFileDict)
-print ("************")
-print (type (configFileDict.correspondence))
-configFileDict.write()
 
-print ("=============")
+###################
+## Config file dictionary printed 
+# print (configFileDict)
+# print ("************")
+# print (type (configFileDict.correspondence))
+# configFileDict.write()
+# 
+# print ("=============")
 
+## How debugging file is created
 ## Input debugging file
 #cat 20120502_FDF_CRG_hab_filtSHORT.csv | sed 's/ //g' | awk '{print $1"\t"$14"\t"$6"\t"$11"\t"$16"\thabituation"}' > shortDev.int
 
@@ -66,16 +70,31 @@ intData_data_iter = intData.read()
 # print(type(intData_data_iter))
 
 ## Writing chromosome file
-# intData.writeChr()
+intData.writeChr()
 
 ## Convert to bed
-bed_str = intData.convert(mode = "bed", relative_coord = True)
+# bed_str = intData.convert(mode = "bed", relative_coord = True)
+
 # separating by data types (nature)
-bed_str =  intData.convert(mode = "bed", relative_coord = True, split_dataTypes=True)
+# bed_str =  intData.convert(mode = "bed", relative_coord = True, split_dataTypes=True)
+bed_str = intData.convert(mode = "bedGraph", relative_coord=True, split_dataTypes=True, window=300)
 
 # Class of each object of the dictionary
-# print (type(bed_str[('2', 'water')]))
-# print (bed_str)
+print (type(bed_str[('2', 'water')]))
+
+for key in bed_str: 
+    print (key), 
+    print ("---------")
+    bedSingle = bed_str[key]
+    name_file='_'.join(key)
+    print ("Name of the file generated is %s" % (str(key)))
+    
+##Utilizar split_dataTypes como variable para guardar como queremos que se distribuyan los datos
+
+#    print ("---------")
+#     print (name_file)
+#     bedSingle.write(track=name_file, file_type="bedGraph")
+#     for line in bedSingle: print line
 
 # with open("input.txt", "r") as handle:
 #     lookup = dict((x[2], x[1]) for x in (x.split('t') for x in handle.read().split('n') if x))
@@ -132,20 +151,20 @@ bed_str =  intData.convert(mode = "bed", relative_coord = True, split_dataTypes=
 # print(intData.min)
 
  
-# intData.convert(mode = "bed", relative_coord = True)   
+intData.convert(mode = "bed", relative_coord = True)   
 # bedFiles = intData.convert(mode = "bed", relative_coord = True, split_dataTypes=False, restrictedColors=d_rest_colors)
-# bedFiles=intData.convert(mode = "bedGraph", window=300, split_dataTypes=False, relative_coord=True)
-# 
-# for key in bedFiles: 
-#     print (key), 
-#     print ("---------")
-#     bedSingle = bedFiles[key]
-#     name_file='_'.join(key)
-#     print ("---------")
-#     print (name_file)
-#     bedSingle.write(track=name_file, file_type="bedGraph")
-#     for line in bedSingle: print line
-#  
+bedFiles=intData.convert(mode = "bedGraph", window=300, split_dataTypes=False, relative_coord=True)
+ 
+for key in bedFiles: 
+    print (key), 
+    print ("---------")
+    bedSingle = bedFiles[key]
+    name_file='_'.join(key)
+    print ("---------")
+    print (name_file)
+    bedSingle.write(track=name_file, file_type="bedGraph")
+    for line in bedSingle: print line
+  
 #  
 #         
 # s=intData.read(relative_coord=True)
