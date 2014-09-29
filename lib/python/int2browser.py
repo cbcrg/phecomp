@@ -562,7 +562,8 @@ def check_path(path):
         raise IOError('File does not exist: %s' % path)
     return path      
     
-class ConfigInfo(dict):
+# class ConfigInfo(dict):
+class ConfigInfo():
     """
     Class holds a dictionary with the ontology between the genomic fields and the phenomics fields
     Ontology can be read both from a tabulated file or a ontology format file 
@@ -575,7 +576,7 @@ class ConfigInfo(dict):
     def __init__(self, path, **kwargs):
         self.path = check_path(path)
         self.correspondence = self._correspondence_from_config(self.path)
-        
+    
     def _correspondence_from_config(self, path):
         with open(path) as config_file:
             #We eliminate possible empty lines at the end
