@@ -575,20 +575,23 @@ class ConfigInfo(dict):
     def __init__(self, path, **kwargs):
         self.path = check_path(path)
         self.correspondence = self._correspondence_from_config(self.path)
-    
+        
     def _correspondence_from_config(self, path):
         with open(path) as config_file:
             #We eliminate possible empty lines at the end
             config_file_list = filter(lambda x:  not match(r'^\s*$', x), config_file)
-
+            
             if config_file_list[0][0] == '#':
                 del config_file_list [0]
                 return(self._tab_config(config_file_list))
 
-            if config_file_list[0][0] == '!':
+            elif config_file_list[0][0] == '!':
                 del config_file_list[:2]
                 return(self._mapping_config(config_file_list))
-    
+            else:
+                raise TypeError("Configuration file format is not recognized: \"%s\"." % (path))
+                
+                
     def _tab_config(self, file_tab):
         dict_correspondence ={}
         
