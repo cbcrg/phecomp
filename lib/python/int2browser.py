@@ -242,10 +242,7 @@ class intData: # if I name it as int I think is like self but with a better name
          
         """
         kwargs['relative_coord'] = kwargs.get("relative_coord",False)
-#         kwargs['split_dataTypes'] = kwargs.get("split_dataTypes",False)
-#         kwargs['window'] = kwargs.get("window",300)
-#         
-# #         print >> sys.stderr, kwargs['window']#del
+
         print >> sys.stderr, self.fieldsG
         
         if mode not in _dict_file: 
