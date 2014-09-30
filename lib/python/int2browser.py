@@ -242,23 +242,31 @@ class intData: # if I name it as int I think is like self but with a better name
          
         """
         kwargs['relative_coord'] = kwargs.get("relative_coord",False)
-        kwargs['split_dataTypes'] = kwargs.get("split_dataTypes",False)
-        
+#         kwargs['split_dataTypes'] = kwargs.get("split_dataTypes",False)
+#         kwargs['window'] = kwargs.get("window",300)
+#         
+# #         print >> sys.stderr, kwargs['window']#del
         print >> sys.stderr, self.fieldsG
         
         if mode not in _dict_file: 
             raise ValueError("Mode \'%s\' not available. Possible convert() modes are %s"%(mode,', '.join(['{}'.format(m) for m in _dict_file.keys()])))
         
 #         dict_beds = ({ 'bed': self._convert2bed, 'bedGraph': self._convert2bedGraph}.get(mode)(self.read(**kwargs), kwargs.get('split_dataTypes')))
-        dict_tracks = (self._convert2single_track(self.read(**kwargs), kwargs.get('split_dataTypes'), mode)) 
+        print (kwargs)
+#         dict_tracks = (self._convert2single_track(self.read(**kwargs), kwargs.get('split_dataTypes'), mode, **kwargs)) 
+        dict_tracks = (self._convert2single_track(self.read(**kwargs), mode, **kwargs))
         return (dict_tracks)
         
-    def _convert2single_track (self, data_tuple, split_dataTypes=False, mode=None):
+#     def _convert2single_track (self, data_tuple, split_dataTypes=False, mode=None, **kwargs):
+    def _convert2single_track (self, data_tuple,  mode=None, **kwargs):
         """
         Transform data into a bed file if all the necessary fields present
         """   
         if mode is None:
-            mode='bed'                      
+            mode='bed' 
+                
+        split_dataTypes = kwargs.get("split_dataTypes",False)
+                                
         idx_fields2split = [self.fieldsG.index("track"), self.fieldsG.index("dataTypes")] if split_dataTypes else [self.fieldsG.index("track")]
         track_dict = {}
         data_tuple=sorted(data_tuple,key=operator.itemgetter(*idx_fields2split))
@@ -273,10 +281,13 @@ class intData: # if I name it as int I think is like self but with a better name
                 else:    
                     raise ValueError("Key of converted dictionary needs 1 or two items %s" % (str(key)))
             elif mode=='bedGraph':
+                window = kwargs.get("window", 300)
+                print >> sys.stderr, "Window size is set to:", window
+                
                 if not split_dataTypes and len(key)==1:
-                    track_dict[(key, '_'.join(self.dataTypes))]=BedGraph(self.track_convert2bedGraph(track_tuple, True))                    
+                    track_dict[(key, '_'.join(self.dataTypes))]=BedGraph(self.track_convert2bedGraph(track_tuple, True, window))                    
                 elif split_dataTypes and len(key)==2:                 
-                    track_dict[key]=Bed(self.track_convert2bedGraph(track_tuple, True))    
+                    track_dict[key]=Bed(self.track_convert2bedGraph(track_tuple, True, window))    
                 else:    
                     raise ValueError("Key of converted dictionary needs 1 or two items %s" % (str(key)))
             else:
@@ -325,7 +336,7 @@ class intData: # if I name it as int I think is like self but with a better name
             
             yield(tuple(temp_list))
                     
-    def track_convert2bedGraph(self, track, in_call=False):
+    def track_convert2bedGraph(self, track, in_call=False, window=300):
         _bed_fields = ["track","chromStart","chromEnd","dataValue"] 
         
         #Check whether these fields are in the original otherwise raise exception
@@ -342,7 +353,8 @@ class intData: # if I name it as int I think is like self but with a better name
         i_chr_end = self.fieldsG.index("chromEnd")
         i_data_value = self.fieldsG.index("dataValue")
         ini_window = 1
-        delta_window = 300
+#         delta_window = 300
+        delta_window = window        
         end_window = delta_window
         partial_value = 0 
         cross_interv_dict = {}
