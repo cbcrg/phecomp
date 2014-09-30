@@ -90,12 +90,12 @@ for key in bed_str:
 ######################
 ## Convert to BEDGRAPH
 # bedGraph_str = intData.convert(mode = "bedGraph", relative_coord=True, split_dataTypes=True, window=300)
-bedGraph_str = intData.convert(mode = "bedGraph", relative_coord=True, split_dataTypes=True, window=1800)
-print ("Type after conversion is %s" % type(bedGraph_str[('2', 'water')]))
+bedGraph_str = intData.convert(mode = "bedGraph", relative_coord=True, split_dataTypes=False, window=300)
+# print ("Type after conversion is %s" % type(bedGraph_str[('2', 'water')]))
 
 for key in bedGraph_str:     
     bedSingle = bedGraph_str[key]
-    for line in bedSingle: print line
+#     for line in bedSingle: print line
     name_file='_'.join(key)
     # Writing the file 
     # file_type might be interesting that the type of file is automatically recognized
@@ -106,7 +106,9 @@ for key in bedGraph_str:
 #     
 # ##Utilizar split_dataTypes como variable para guardar como queremos que se distribuyan los datos
 
-
+## split_dataTypes=False   ==> 2_water_food_sc/1_water_food_sc
+## split_dataTypes=True   ==> 2_water/ 2_food_sc /1_water / 1_food_sc
+# Esencialmente lo que hace ahora es separar por nature o no
 
 
 
