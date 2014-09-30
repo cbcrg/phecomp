@@ -9,6 +9,7 @@ import csv
 import os
 import itertools
 import operator
+import sys
 from re import match, compile
         
 ## VARIABLES
@@ -142,8 +143,8 @@ class intData: # if I name it as int I think is like self but with a better name
         
         idx_fields2rel = [10000000000000]
             
-        if relative_coord:
-            print "Relative coord is true"
+        if relative_coord:             
+            print >>sys.stderr, "Relative coord is true"
             
             if fields2rel is None:
                 _f2rel = ["chromStart","chromEnd"]        
@@ -243,7 +244,8 @@ class intData: # if I name it as int I think is like self but with a better name
         kwargs['relative_coord'] = kwargs.get("relative_coord",False)
         kwargs['split_dataTypes'] = kwargs.get("split_dataTypes",False)
         
-        print self.fieldsG
+        print >> sys.stderr, self.fieldsG
+        
         if mode not in _dict_file: 
             raise ValueError("Mode \'%s\' not available. Possible convert() modes are %s"%(mode,', '.join(['{}'.format(m) for m in _dict_file.keys()])))
         
