@@ -46,6 +46,8 @@ _intervals = [0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 1, 1000]
 _dict_file = {'bed' : '.bed',
               'bedGraph': '.bedGraph'}
 
+# _options_split_dataTypes = ('one_per_channel','list_all', 'True', 'False') #del
+
 _black_gradient = ["226,226,226", "198,198,198", "170,170,170", "141,141,141", "113,113,113", "85,85,85", "56,56,56", "28,28,28", "0,0,0"]
 _blue_gradient = ["229,229,254", "203,203,254", "178,178,254", "152,152,254", "127,127,254", "102,102,254", "76,76,173", "51,51,162", "0,0,128"]
 _red_gradient = ["254,172,182", "254,153,162", "254,134,142", "254,115,121", "254,96,101", "254,77,81", "254,57,61", "254,38,40", "254,19,20"]
@@ -249,8 +251,8 @@ class intData: # if I name it as int I think is like self but with a better name
             raise ValueError("Mode \'%s\' not available. Possible convert() modes are %s"%(mode,', '.join(['{}'.format(m) for m in _dict_file.keys()])))
         
 #         dict_beds = ({ 'bed': self._convert2bed, 'bedGraph': self._convert2bedGraph}.get(mode)(self.read(**kwargs), kwargs.get('split_dataTypes')))
-        print (kwargs)
 #         dict_tracks = (self._convert2single_track(self.read(**kwargs), kwargs.get('split_dataTypes'), mode, **kwargs)) 
+    
         dict_tracks = (self._convert2single_track(self.read(**kwargs), mode, **kwargs))
         return (dict_tracks)
         
@@ -261,16 +263,32 @@ class intData: # if I name it as int I think is like self but with a better name
         """   
         if mode is None:
             mode='bed' 
-                
-        split_dataTypes = kwargs.get("split_dataTypes",False)
-                                
+        
+        split_dataTypes = kwargs.get("split_dataTypes", False)
+        
+        if not isinstance (kwargs.get("split_dataTypes"), bool):
+            raise ValueError("Split_dataTypes is a boolean flag, value \'%s\' not allowed."%(kwargs.get("split_dataTypes")))
+        
+        print ("split_dataTypes has been set to:", split_dataTypes)
+        
+        # esto me puede servir para cuando haga los filtros por cage 1,3,5 por ejemplo
+#         if split_dataTypes not in _options_split_dataTypes: 
+#             raise ValueError("Split mode \'%s\' not available. Possible ways of splitting data are %s"%(split_dataTypes,', '.join(['{}'.format(m) for m in _options_split_dataTypes])))        
+#         
+        # Aqui me dice cuales son los campos para separar, esto lo podria utilizar si le paso yo la informacion
+        # Si existia split_dataTypes separaba por track y nature (dataTypes) y sino solo separaba por track animal
+        # Lo otro estaria on top of that una vez he separado las tuples las podria volver a agregar, aunque no se si se puede extender una tuple                        
         idx_fields2split = [self.fieldsG.index("track"), self.fieldsG.index("dataTypes")] if split_dataTypes else [self.fieldsG.index("track")]
         track_dict = {}
+        print ("-------------", idx_fields2split)
         data_tuple=sorted(data_tuple,key=operator.itemgetter(*idx_fields2split))
-        
-        for key,group in itertools.groupby(data_tuple,operator.itemgetter(*idx_fields2split)):            
+        print (data_tuple)
+        for key,group in itertools.groupby(data_tuple,operator.itemgetter(*idx_fields2split)):
+            print ("88888888888",key, group)            
             track_tuple = tuple(group)
             if mode=='bed':
+                print >> sys.stderr, "culo", key
+                # mirar como funciona esto cuando hay solo una cage o un nature
                 if not split_dataTypes and len(key)==1:
                     track_dict[(key, '_'.join(self.dataTypes))]=Bed(self.track_convert2bed(track_tuple, True))                     
                 elif split_dataTypes and len(key)==2:                 

@@ -71,13 +71,14 @@ print("Type intData after method read applied %s" % type(intData_data_iter))
 ######################
 ## Convert to BED
 # split_dataTypes=False by default
-bed_str = intData.convert(mode = "bed", relative_coord = True)
-print ("Type after conversion is %s" % type(bed_str[('2', 'water_food_sc')]))
+# bed_str = intData.convert(mode = "bed", relative_coord = 'True')
+# print ("Type after conversion is %s" % type(bed_str[('2', 'water_food_sc')]))
                      
 # separating by data types (nature) split_dataTypes=True
+# bed_str =  intData.convert(mode = "bed", relative_coord = True, split_dataTypes=True)
 bed_str =  intData.convert(mode = "bed", relative_coord = True, split_dataTypes=True)
 print("Type after conversion is %s" % type(bed_str[('2', 'water')]))
-
+ 
 for key in bed_str:     
     bedSingle = bed_str[key]
 #     for line in bedSingle: print line
@@ -90,17 +91,17 @@ for key in bed_str:
 ######################
 ## Convert to BEDGRAPH
 # bedGraph_str = intData.convert(mode = "bedGraph", relative_coord=True, split_dataTypes=True, window=300)
-bedGraph_str = intData.convert(mode = "bedGraph", relative_coord=True, split_dataTypes=False, window=300)
-# print ("Type after conversion is %s" % type(bedGraph_str[('2', 'water')]))
-
-for key in bedGraph_str:     
-    bedSingle = bedGraph_str[key]
-#     for line in bedSingle: print line
-    name_file='_'.join(key)
-    # Writing the file 
-    # file_type might be interesting that the type of file is automatically recognized
-#     bedSingle.write(track=name_file, file_type="bedGraph")
-    print("Name of the file generated is %s" % (name_file))
+# bedGraph_str = intData.convert(mode = "bedGraph", relative_coord=True, split_dataTypes=False, window=300)
+# # print ("Type after conversion is %s" % type(bedGraph_str[('2', 'water')]))
+# 
+# for key in bedGraph_str:     
+#     bedSingle = bedGraph_str[key]
+# #     for line in bedSingle: print line
+#     name_file='_'.join(key)
+#     # Writing the file 
+#     # file_type might be interesting that the type of file is automatically recognized
+# #     bedSingle.write(track=name_file, file_type="bedGraph")
+#     print("Name of the file generated is %s" % (name_file))
 
 
 #     
@@ -225,23 +226,31 @@ for key in bedGraph_str:
 #         
 # 
 # 
-# # data=[(1, 'A', 'foo'),
-# #     (2, 'A', 'bar'),
-# #     (100, 'A', 'foo-bar'),
-# #      (300, 'A', 'foo-bar'),
-# #  
-# #     ('xx', 'B', 'foobar'),
-# #     ('yy', 'B', 'foo'),
-# #     ('yx', 'B', 'foo'),
-# #     (500, 'A', 'foo-bar'),
-# #      
-# #     (1000, 'C', 'py'),
-# #     (200, 'C', 'foo'),
-# #     ]
-# #
-# # data2=sorted(data,key=operator.itemgetter(2))
+
+# import itertools
+# import operator
+# 
+# data=[(1, 'A', 'foo'),
+#     (2, 'A', 'bar'),
+#     (100, 'A', 'foo-bar'),
+#      (300, 'A', 'foo-bar'),
+#   
+#     ('xx', 'B', 'foobar'),
+#     ('yy', 'B', 'foo'),
+#     ('yx', 'B', 'foo'),
+#     (500, 'A', 'foo-bar'),
+#       
+#     (1000, 'C', 'py'),
+#     (200, 'C', 'foo'),
+#     ]
+# 
+# for key,group in itertools.groupby(data,operator.itemgetter(0,1)):
+#     print key, group
+#     
+# data2=sorted(data,key=operator.itemgetter(1))
+
 # 
 #   
-# # for key,group in itertools.groupby(data2,operator.itemgetter(1,2)):
-# #     print(tuple(group))
-# #     print key
+# for key,group in itertools.groupby(data2,operator.itemgetter(1,2)):
+#     print(tuple(group))
+#     print key
