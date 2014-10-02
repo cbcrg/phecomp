@@ -265,10 +265,20 @@ class intData: # if I name it as int I think is like self but with a better name
         Transform data into a bed file if all the necessary fields present
         """   
         dict_split = {}
+#         tracks2remove = ['1'] 
+
+        #First remove
+#         data_tuple = [tup for tup in data_tuple if not any(i in tup[self.fieldsG.index("track")] for i in tracks2remove)]
         
-        #First separate data by track and dataTypes
+#         results = [t[1] for t in data_tuple if t[0] == 10]
+        
+       
+            
+        
+        #Second separate data by track and dataTypes
         idx_fields2split = [self.fieldsG.index("track"), self.fieldsG.index("dataTypes")]
         data_tuple = sorted(data_tuple,key=operator.itemgetter(*idx_fields2split))
+        
 #         print data_tuple
         
         track_rules = kwargs.get("track_rules", "split_all")
@@ -325,22 +335,38 @@ class intData: # if I name it as int I think is like self but with a better name
         print d_track_merge
         
         d_dataTypes_merge = {}
+        
         ##################
         # Joining the dataTypes or natures
-        dataTypes_list = self.dataTypes
+#         dataTypes_list = self.dataTypes
         
         for key, nest_dict in d_track_merge.items():
             d_dataTypes_merge[key] = {}
             for key_2, data in nest_dict.items():            
-                d_dataTypes_merge[key]['_'.join(nest_dict.keys())]= data
-        
-                
-            
+                d_dataTypes_merge[key]['_'.join(nest_dict.keys())]= data                
+                                
         print d_dataTypes_merge
         
+        ####
+        # merge everything that is as getting the data as it is entering into the function
+        # but without filtering
+        
+        track_dict = {}
+         
+        ### 
+        # Here I join dataTypes and tracks if selected
+        for k, d in d_dataTypes_merge.items():
+            for k_2, d_2 in d.items():
+                track_dict[k,k_2] = Bed(self.track_convert2bed(d_2, True))
 #         if mode is None:
 #             mode='bed' 
 #         
+        for k, v in d_track_merge.items():
+            if isinstance(v,dict):
+                print "is a dictionary"
+        return (track_dict)
+#             track_dict[(key, '_'.join(self.dataTypes))]=BedGraph(self.track_convert2bedGraph(track_tuple, True, window))   
+
 #         split_dataTypes = kwargs.get("split_dataTypes", False)
 #         
 #         if not isinstance (kwargs.get("split_dataTypes"), bool):
