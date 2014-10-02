@@ -47,6 +47,7 @@ _dict_file = {'bed' : '.bed',
               'bedGraph': '.bedGraph'}
 
 # _options_split_dataTypes = ('one_per_channel','list_all', 'True', 'False') #del
+_options_track_rules = ('split_all', 'join_all')
 
 _black_gradient = ["226,226,226", "198,198,198", "170,170,170", "141,141,141", "113,113,113", "85,85,85", "56,56,56", "28,28,28", "0,0,0"]
 _blue_gradient = ["229,229,254", "203,203,254", "178,178,254", "152,152,254", "127,127,254", "102,102,254", "76,76,173", "51,51,162", "0,0,128"]
@@ -261,54 +262,152 @@ class intData: # if I name it as int I think is like self but with a better name
         """
         Transform data into a bed file if all the necessary fields present
         """   
-        if mode is None:
-            mode='bed' 
+        dict_split = {}
         
-        split_dataTypes = kwargs.get("split_dataTypes", False)
+        #First separate data by track and dataTypes
+        idx_fields2split = [self.fieldsG.index("track"), self.fieldsG.index("dataTypes")]
+        data_tuple = sorted(data_tuple,key=operator.itemgetter(*idx_fields2split))
+#         print data_tuple
         
-        if not isinstance (kwargs.get("split_dataTypes"), bool):
-            raise ValueError("Split_dataTypes is a boolean flag, value \'%s\' not allowed."%(kwargs.get("split_dataTypes")))
+        track_rules = kwargs.get("track_rules", "split_all")
         
-        print ("split_dataTypes has been set to:", split_dataTypes)
+        if track_rules not in _options_track_rules: 
+            raise ValueError("Track_rules \'%s\' not allowed. Possible values are %s"%(track_rules,', '.join(['{}'.format(m) for m in _options_track_rules])))
         
-        # esto me puede servir para cuando haga los filtros por cage 1,3,5 por ejemplo
-#         if split_dataTypes not in _options_split_dataTypes: 
-#             raise ValueError("Split mode \'%s\' not available. Possible ways of splitting data are %s"%(split_dataTypes,', '.join(['{}'.format(m) for m in _options_split_dataTypes])))        
+        
+        for key,group in itertools.groupby(data_tuple, operator.itemgetter(*idx_fields2split)):
+#             print "keys are:" , key[0],key[1]
+            if not dict_split.has_key(key[0]):
+                dict_split [key[0]] = {}
+            dict_split [key[0]][key[1]] = tuple(group)
+            
+#         print dict_split
+        
+        dict_merge = {}
+       
+        track_list = self.tracks
+        # Joining tracks in track_list
+        # make a function!!!      
+        for key, nest_dict in dict_split.items():
+            if key not in track_list: 
+                print "Track skipped: %s" % key
+                continue
+            if not dict_merge.has_key('_'.join(dict_split.keys())):
+                dict_merge['_'.join(dict_split.keys())] = {}
+            for key_2, data in nest_dict.items():
+                                
+                if not dict_merge['_'.join(dict_split.keys())].has_key(key_2):
+                    dict_merge['_'.join(dict_split.keys())] [key_2]= data
+                else:  
+                    dict_merge['_'.join(dict_split.keys())] [key_2] = dict_merge['_'.join(dict_split.keys())] [key_2] + data
+                    
+#         for key, value in b.items():
+#             new.setdefault(key, []).extend(value)
+        print dict_merge
+        dict_filt = {}
+        
+#         if track_rules=="join_all":
+        for key in dict_merge:
+            print "key++++++",key
+        
+        
+        
+            
+#         print dict_split
+        
+#         if mode is None:
+#             mode='bed' 
 #         
-        # Aqui me dice cuales son los campos para separar, esto lo podria utilizar si le paso yo la informacion
-        # Si existia split_dataTypes separaba por track y nature (dataTypes) y sino solo separaba por track animal
-        # Lo otro estaria on top of that una vez he separado las tuples las podria volver a agregar, aunque no se si se puede extender una tuple                        
-        idx_fields2split = [self.fieldsG.index("track"), self.fieldsG.index("dataTypes")] if split_dataTypes else [self.fieldsG.index("track")]
-        track_dict = {}
-        print ("-------------", idx_fields2split)
-        data_tuple=sorted(data_tuple,key=operator.itemgetter(*idx_fields2split))
-        print (data_tuple)
-        for key,group in itertools.groupby(data_tuple,operator.itemgetter(*idx_fields2split)):
-            print ("88888888888",key, group)            
-            track_tuple = tuple(group)
-            if mode=='bed':
-                print >> sys.stderr, "culo", key
-                # mirar como funciona esto cuando hay solo una cage o un nature
-                if not split_dataTypes and len(key)==1:
-                    track_dict[(key, '_'.join(self.dataTypes))]=Bed(self.track_convert2bed(track_tuple, True))                     
-                elif split_dataTypes and len(key)==2:                 
-                    track_dict[key]=Bed(self.track_convert2bed(track_tuple, True))
-                else:    
-                    raise ValueError("Key of converted dictionary needs 1 or two items %s" % (str(key)))
-            elif mode=='bedGraph':
-                window = kwargs.get("window", 300)
-                print >> sys.stderr, "Window size is set to:", window
-                
-                if not split_dataTypes and len(key)==1:
-                    track_dict[(key, '_'.join(self.dataTypes))]=BedGraph(self.track_convert2bedGraph(track_tuple, True, window))                    
-                elif split_dataTypes and len(key)==2:                 
-                    track_dict[key]=Bed(self.track_convert2bedGraph(track_tuple, True, window))    
-                else:    
-                    raise ValueError("Key of converted dictionary needs 1 or two items %s" % (str(key)))
-            else:
-                raise ValueError("Track mode does not exist %s"%mode)
-                     
-        return track_dict
+#         split_dataTypes = kwargs.get("split_dataTypes", False)
+#         
+#         if not isinstance (kwargs.get("split_dataTypes"), bool):
+#             raise ValueError("Split_dataTypes is a boolean flag, value \'%s\' not allowed."%(kwargs.get("split_dataTypes")))
+#         
+#         print ("split_dataTypes has been set to:", split_dataTypes)
+#         
+#         #By default all tracks are splitted
+#         track_rules = kwargs.get("track_rules", "split_all")
+#         # esto me puede servir para cuando haga los filtros por cage 1,3,5 por ejemplo
+# #         if split_dataTypes not in _options_split_dataTypes: 
+# #             raise ValueError("Split mode \'%s\' not available. Possible ways of splitting data are %s"%(split_dataTypes,', '.join(['{}'.format(m) for m in _options_split_dataTypes])))        
+#         if track_rules not in _options_track_rules: 
+#             raise ValueError("Track_rules \'%s\' not allowed. Possible values are %s"%(track_rules,', '.join(['{}'.format(m) for m in _options_track_rules])))        
+#         
+#         print ("id of the present tracks",self.tracks)
+#         idx_fields2split = []
+#         print ("track rules are=========", track_rules)#del   
+#         # Aqui me dice cuales son los campos para separar, esto lo podria utilizar si le paso yo la informacion
+#         # Si existia split_dataTypes separaba por track y nature (dataTypes) y sino solo separaba por track animal
+#         # Lo otro estaria on top of that una vez he separado las tuples las podria volver a agregar, aunque no se si se puede extender una tuple  
+#         
+#         # ESTA ES LA LINEA CLAVE PARA CAMBIAR LAS TRACKS QUE QUIERO INCLUIR EN EL SELF.FIELDSG.INDEX
+#         idx_fields2split = [self.fieldsG.index("track"), self.fieldsG.index("dataTypes")] if split_dataTypes else [self.fieldsG.index("track")]
+# #         if split_dataTypes and track_rules == "split_all":
+# #             idx_fields2split = [self.fieldsG.index("track"), self.fieldsG.index("dataTypes")]            
+# #             data_tuple = sorted(data_tuple,key=operator.itemgetter(*idx_fields2split))
+# #         elif not split_dataTypes and track_rules == "split_all":
+# #             idx_fields2split = [self.fieldsG.index("track")]
+# #             data_tuple = sorted(data_tuple,key=operator.itemgetter(*idx_fields2split))
+#         
+#             
+#         
+#         print("aquesta es la key", '_'.join(self.tracks),'_'.join(self.dataTypes))
+#         # en lugar de esto puedo hacer una 
+#         track_dict = {}
+#         print ("length-------------", len(idx_fields2split))#del
+#         data_tuple = sorted(data_tuple,key=operator.itemgetter(*idx_fields2split))
+# #         print (data_tuple)#del
+#         if track_rules=="join_all":        
+#         #El for solo deberia correr cuando no hay el join all
+#             for key,group in itertools.groupby(data_tuple, operator.itemgetter(*idx_fields2split)):
+#                 track_tuple = tuple()
+#                 if mode=='bed':
+#                     if not split_dataTypes:
+#                         track_dict['_'.join(self.tracks),'_'.join(self.dataTypes)] = Bed(self.track_convert2bed(track_tuple, True))
+#                     else:
+#                         track_dict[(key, '_'.join(self.tracks))] = Bed(self.track_convert2bed(track_tuple, True))
+#                 elif mode == 'bedGraph':
+#                     track_dict['_'.join(self.tracks)] = Bed(self.track_convert2bed(track_tuple, True))                                                        
+#                 else:
+#                     raise ValueError("Track mode does not exist %s"%mode)
+#             
+#         else:
+#             for key,group in itertools.groupby(data_tuple, operator.itemgetter(*idx_fields2split)):
+#                 if key[0] is '1': 
+#                     print "##############"
+#                     continue            
+#                 print ("88888888888",self.dataTypes)#del          
+#                 print ("key is-----", key[0])
+#                 print ("type group is: ", type(group))  
+#                 track_tuple = tuple(group)
+#                 print ("type of track tuple is: ", type(track_tuple))
+#     #             filter_list=[1]
+#     #             [tup for tup in tup_list if any(i in tup for i in filter_list)]
+#                 print "============lllll",  ('_'.join(self.dataTypes) + '_' +  '_'.join(self.tracks))
+#                 if mode=='bed':
+#                     print >> sys.stderr, "culo", key
+#                     # mirar como funciona esto cuando hay solo una cage o un nature
+#                     if not split_dataTypes and len(key)==1:
+#                         print "============ (key, '_'.join(self.dataTypes))"
+#                         track_dict[(key, '_'.join(self.dataTypes))]=Bed(self.track_convert2bed(track_tuple, True))                     
+#                     elif split_dataTypes and len(key)==2:                 
+#                         track_dict[key]=Bed(self.track_convert2bed(track_tuple, True))
+#                     else:    
+#                         raise ValueError("Key of converted dictionary needs 1 or 2 items %s" % (str(key)))
+#                 elif mode=='bedGraph':
+#                     window = kwargs.get("window", 300)
+#                     print >> sys.stderr, "Window size is set to:", window
+#                     
+#                     if not split_dataTypes and len(key)==1:
+#                         track_dict[(key, '_'.join(self.dataTypes))]=BedGraph(self.track_convert2bedGraph(track_tuple, True, window))                    
+#                     elif split_dataTypes and len(key)==2:                 
+#                         track_dict[key]=Bed(self.track_convert2bedGraph(track_tuple, True, window))    
+#                     else:    
+#                         raise ValueError("Key of converted dictionary needs 1 or two items %s" % (str(key)))
+#                 else:
+#                     raise ValueError("Track mode does not exist %s"%mode)
+#                      
+#         return track_dict
     
     def track_convert2bed (self, track, in_call=False, restrictedColors=None):
         #fields pass to read should be the ones of bed file
