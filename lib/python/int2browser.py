@@ -259,6 +259,8 @@ class intData: # if I name it as int I think is like self but with a better name
         
 #     def _convert2single_track (self, data_tuple, split_dataTypes=False, mode=None, **kwargs):
     def _convert2single_track (self, data_tuple,  mode=None, **kwargs):
+#     def _convert2track_by_rules (self, data_tuple,  mode=None, **kwargs):
+        
         """
         Transform data into a bed file if all the necessary fields present
         """   
@@ -283,8 +285,9 @@ class intData: # if I name it as int I think is like self but with a better name
             
 #         print dict_split
         
-        ### 
-        tracks2remove = (1,3) 
+        ###################
+        ### Filtering tracks
+        tracks2remove = [3] 
         #remove tracks
         for key in tracks2remove:
             print "$$$$$$$$$$$$$$",key
@@ -292,35 +295,42 @@ class intData: # if I name it as int I think is like self but with a better name
         
         print dict_split
         
-        dict_merge = {}
+        d_track_merge = {}
         
-        track_list = self.tracks
+        ##################
         # Joining tracks in track_list
-        # make a function!!!      
+        # make a function!!!   
+        track_list = self.tracks # in this case I will join all
+           
         for key, nest_dict in dict_split.items():
             if key not in track_list: 
                 print "Track skipped: %s" % key
                 continue
-            if not dict_merge.has_key('_'.join(dict_split.keys())):
-                dict_merge['_'.join(dict_split.keys())] = {}
+            print "000000000000", '_'.join(track_list)
+            if not d_track_merge.has_key('_'.join(dict_split.keys())):
+                d_track_merge['_'.join(dict_split.keys())] = {}
             for key_2, data in nest_dict.items():
                                 
-                if not dict_merge['_'.join(dict_split.keys())].has_key(key_2):
-                    dict_merge['_'.join(dict_split.keys())] [key_2]= data
+                if not d_track_merge['_'.join(dict_split.keys())].has_key(key_2):
+                    d_track_merge['_'.join(dict_split.keys())] [key_2]= data
                 else:  
-                    dict_merge['_'.join(dict_split.keys())] [key_2] = dict_merge['_'.join(dict_split.keys())] [key_2] + data
+                    d_track_merge['_'.join(dict_split.keys())] [key_2] = d_track_merge['_'.join(dict_split.keys())] [key_2] + data
                     
 #         for key, value in b.items():
 #             new.setdefault(key, []).extend(value)
-        print dict_merge
-        dict_filt = {}
+        print d_track_merge
         
-#         if track_rules=="join_all":
-        for key in dict_merge:
-            print "key++++++",key
+        d_dataTypes_merge = {}
+        ##################
+        # Joining the dataTypes or natures
+        dataTypes_list = self.dataTypes
         
+        for key, nest_dict in d_track_merge.items():
+            for key_2, data in nest_dict.items():
+                print "culo"
+#                 d_dataTypes_merge ['_'.join(dict_split.keys())] [key_2]= data
         
-        
+
             
 #         print dict_split
         
