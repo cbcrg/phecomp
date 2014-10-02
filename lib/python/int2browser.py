@@ -287,34 +287,39 @@ class intData: # if I name it as int I think is like self but with a better name
         
         ###################
         ### Filtering tracks
-        tracks2remove = [3] 
+        tracks2remove = [1,3] 
         #remove tracks
         for key in tracks2remove:
+            key = str(key)
             print "$$$$$$$$$$$$$$",key
-            dict_split.pop(str(key), None)
-        
-        print dict_split
-        
+            dict_split.pop(key, None)
+#             self.tracks.remove(key)
+            if key in self.tracks:
+                self.tracks.remove(key)
+                
+#         print dict_split
+        print "chivato.....", self.tracks
         d_track_merge = {}
         
         ##################
         # Joining tracks in track_list
         # make a function!!!   
         track_list = self.tracks # in this case I will join all
+        ### cuidado si quito 
            
         for key, nest_dict in dict_split.items():
             if key not in track_list: 
                 print "Track skipped: %s" % key
                 continue
             print "000000000000", '_'.join(track_list)
-            if not d_track_merge.has_key('_'.join(dict_split.keys())):
-                d_track_merge['_'.join(dict_split.keys())] = {}
+            if not d_track_merge.has_key('_'.join(track_list)):
+                d_track_merge['_'.join(track_list)] = {}
             for key_2, data in nest_dict.items():
                                 
-                if not d_track_merge['_'.join(dict_split.keys())].has_key(key_2):
-                    d_track_merge['_'.join(dict_split.keys())] [key_2]= data
+                if not d_track_merge['_'.join(track_list)].has_key(key_2):
+                    d_track_merge['_'.join(track_list)] [key_2]= data
                 else:  
-                    d_track_merge['_'.join(dict_split.keys())] [key_2] = d_track_merge['_'.join(dict_split.keys())] [key_2] + data
+                    d_track_merge['_'.join(track_list)] [key_2] = d_track_merge['_'.join(track_list)] [key_2] + data
                     
 #         for key, value in b.items():
 #             new.setdefault(key, []).extend(value)
