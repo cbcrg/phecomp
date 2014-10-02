@@ -283,8 +283,17 @@ class intData: # if I name it as int I think is like self but with a better name
             
 #         print dict_split
         
+        ### 
+        tracks2remove = (1,3) 
+        #remove tracks
+        for key in tracks2remove:
+            print "$$$$$$$$$$$$$$",key
+            dict_split.pop(str(key), None)
+        
+        print dict_split
+        
         dict_merge = {}
-       
+        
         track_list = self.tracks
         # Joining tracks in track_list
         # make a function!!!      
