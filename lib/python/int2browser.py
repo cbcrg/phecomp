@@ -287,7 +287,7 @@ class intData: # if I name it as int I think is like self but with a better name
         
         ###################
         ### Filtering tracks
-        tracks2remove = [1,3] 
+        tracks2remove = [3] 
         #remove tracks
         for key in tracks2remove:
             key = str(key)
@@ -297,8 +297,7 @@ class intData: # if I name it as int I think is like self but with a better name
             if key in self.tracks:
                 self.tracks.remove(key)
                 
-#         print dict_split
-        print "chivato.....", self.tracks
+
         d_track_merge = {}
         
         ##################
@@ -331,13 +330,13 @@ class intData: # if I name it as int I think is like self but with a better name
         dataTypes_list = self.dataTypes
         
         for key, nest_dict in d_track_merge.items():
-            for key_2, data in nest_dict.items():
-                print "culo"
-#                 d_dataTypes_merge ['_'.join(dict_split.keys())] [key_2]= data
+            d_dataTypes_merge[key] = {}
+            for key_2, data in nest_dict.items():            
+                d_dataTypes_merge[key]['_'.join(nest_dict.keys())]= data
         
-
+                
             
-#         print dict_split
+        print d_dataTypes_merge
         
 #         if mode is None:
 #             mode='bed' 
