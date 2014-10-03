@@ -363,7 +363,7 @@ class intData: # if I name it as int I think is like self but with a better name
         #Output    
         for k, d in d_dataTypes_merge.items():
             for k_2, d_2 in d.items():       
-                track_dict[k,k_2] = globals()[_dict_file[mode][0]](getattr(self,_dict_file[mode][1])(d_2, True))
+                track_dict[k,k_2] = globals()[_dict_file[mode][0]](getattr(self,_dict_file[mode][1])(d_2, True, window=300))
                                 
         return (track_dict)
 #             track_dict[(key, '_'.join(self.dataTypes))]=BedGraph(self.track_convert2bedGraph(track_tuple, True, window))   
@@ -459,7 +459,7 @@ class intData: # if I name it as int I think is like self but with a better name
 #                      
 #         return track_dict
     
-    def track_convert2bed (self, track, in_call=False, restrictedColors=None):
+    def track_convert2bed (self, track, in_call=False, restrictedColors=None, **kwargs):
         #fields pass to read should be the ones of bed file
         _bed_fields = ["track","chromStart","chromEnd","dataTypes", "dataValue"]
         #Check whether these fields are in the original otherwise raise exception
