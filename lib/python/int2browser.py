@@ -43,8 +43,9 @@ _dict_Id = {'Phase' :'chrom',
 
 _intervals = [0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 1, 1000]
 
-_dict_file = {'bed' : '.bed',
-              'bedGraph': '.bedGraph'}
+#Contains class and file extension
+_dict_file = {'bed' : ('Bed', 'track_convert2bed', '.bed'),              
+              'bedGraph': ('BedGraph', 'track_convert2bedGraph', '.bedGraph')}
 
 # _options_split_dataTypes = ('one_per_channel','list_all', 'True', 'False') #del
 _options_track_rules = ('split_all', 'join_all')
@@ -238,7 +239,7 @@ class intData: # if I name it as int I think is like self but with a better name
         genomeFile.close()
         print('Genome fasta file created: %s' % (chrom + _genomeFileExt))
               
-    def convert(self, mode = None, **kwargs):
+    def convert(self, mode = 'bed', **kwargs):
         """
         Returns an object/s of the class set by mode
         :param mode: class of the output object, by default is set to bed
@@ -247,7 +248,7 @@ class intData: # if I name it as int I think is like self but with a better name
         kwargs['relative_coord'] = kwargs.get("relative_coord",False)
 
         print >> sys.stderr, self.fieldsG
-        
+            
         if mode not in _dict_file: 
             raise ValueError("Mode \'%s\' not available. Possible convert() modes are %s"%(mode,', '.join(['{}'.format(m) for m in _dict_file.keys()])))
         
@@ -337,20 +338,33 @@ class intData: # if I name it as int I think is like self but with a better name
         # merge everything that is as getting the data as it is entering into the function
         # but without filtering
         
+        
         track_dict = {}
-         
+        
+        
+        
+   
         ### 
         # Here I join dataTypes and tracks if selected
-        for k, d in d_dataTypes_merge.items():
-            for k_2, d_2 in d.items():
-                track_dict[k,k_2] = Bed(self.track_convert2bed(d_2, True))
-#         if mode is None:
-#             mode='bed' 
-#        
-        #validacion del diccionario para imprimir o lo que sea 
+        ## Esto vendria hecho de antes... si he juntado primero tracks y luego datatypes ya estan todos en un solo diccionario
+        
+        #######
+        # Generating track dict (output)
+        #validacion del diccionario para imprimir o lo que sea
+        # mirar si es un diccionario de diccionarios la primera validacion hay que desarrolarla 
         for k, v in d_track_merge.items():
             if isinstance(v,dict):
-                print "is a dictionary"
+                print "Is a dictionary"
+        
+        #Checking mode for creating the object
+        if mode is None:
+            mode='Bed'        
+        
+        #Output    
+        for k, d in d_dataTypes_merge.items():
+            for k_2, d_2 in d.items():       
+                track_dict[k,k_2] = globals()[_dict_file[mode][0]](getattr(self,_dict_file[mode][1])(d_2, True))
+                                
         return (track_dict)
 #             track_dict[(key, '_'.join(self.dataTypes))]=BedGraph(self.track_convert2bedGraph(track_tuple, True, window))   
 
@@ -630,7 +644,7 @@ class dataIter(object):
         
         print "File extension is: '%s'"%_dict_file.get(file_type)
         
-        file_ext = _dict_file.get(file_type)
+        file_ext = _dict_file.get(file_type) #modify
             
         track_file = open(os.path.join(_pwd, track + file_ext), mode)
         track_file.write('track name="cage 1;drink" description="cage 1;drink" visibility=2 itemRgb="On" priority=20' + "\n")
