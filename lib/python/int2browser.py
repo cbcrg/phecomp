@@ -355,15 +355,13 @@ class intData: # if I name it as int I think is like self but with a better name
         for k, v in d_track_merge.items():
             if isinstance(v,dict):
                 print "Is a dictionary"
-        
-        #Checking mode for creating the object
-        if mode is None:
-            mode='Bed'        
+                                   
+        window = kwargs.get("window", 300)
         
         #Output    
         for k, d in d_dataTypes_merge.items():
             for k_2, d_2 in d.items():       
-                track_dict[k,k_2] = globals()[_dict_file[mode][0]](getattr(self,_dict_file[mode][1])(d_2, True, window=300))
+                track_dict[k,k_2] = globals()[_dict_file[mode][0]](getattr(self,_dict_file[mode][1])(d_2, True, window))
                                 
         return (track_dict)
 #             track_dict[(key, '_'.join(self.dataTypes))]=BedGraph(self.track_convert2bedGraph(track_tuple, True, window))   
@@ -606,7 +604,7 @@ class intData: # if I name it as int I think is like self but with a better name
                         end_w = end_w + delta_window
             
             else:
-                print ("FATAL ERROR: Something went wrong")    
+                print ("FATAL ERROR: Something went wrong") #modify    
                                                   
     def _error (self, data_tuple):
         raise ValueError("Fatal error")
@@ -634,18 +632,21 @@ class dataIter(object):
 
     def write(self, file_type="bed", mode="w", track=None):
         if not(isinstance(self, dataIter)):
-            raise Exception("Not writable object, type not supported '%s'."%(type(self)))
-
+            raise Exception("Not writable object, type not supported '%s'."%(type(self)))    
+        
+        if not(isinstance(self, globals()[_dict_file[file_type][0]])):
+            raise Exception("File type to write is '%s' while object is of class '%s' ."%(type(self), _dict_file[file_type][0]))
+        
         if file_type not in _dict_file: 
             raise ValueError("File types not supported \'%s\'"%(file_type))
                                                                                            
         if track is None: 
             track = "cage1_test"
         
-        print "File extension is: '%s'"%_dict_file.get(file_type)
+        print "File extension is: '%s'"%_dict_file.get(file_type)[2]
         
-        file_ext = _dict_file.get(file_type) #modify
-            
+        file_ext = _dict_file.get(file_type)[2]
+           
         track_file = open(os.path.join(_pwd, track + file_ext), mode)
         track_file.write('track name="cage 1;drink" description="cage 1;drink" visibility=2 itemRgb="On" priority=20' + "\n")
         
