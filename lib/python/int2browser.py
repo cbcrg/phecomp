@@ -320,7 +320,7 @@ class intData: # if I name it as int I think is like self but with a better name
             if key not in track_list: 
                 print "Track skipped: %s" % key
                 continue
-            print "000000000000", '_'.join(track_list)
+#             print "000000000000", '_'.join(track_list)#del
             if not d_track_merge.has_key('_'.join(track_list)):
                 d_track_merge['_'.join(track_list)] = {}
             for key_2, data in nest_dict.items():
