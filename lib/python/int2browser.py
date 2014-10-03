@@ -265,21 +265,23 @@ class intData: # if I name it as int I think is like self but with a better name
         Transform data into a bed file if all the necessary fields present
         """   
         dict_split = {}
-#         tracks2remove = ['1'] 
 
-        #First remove
+        ###################
+        ### Filtering tracks
+        tracks2remove = [] 
 #         data_tuple = [tup for tup in data_tuple if not any(i in tup[self.fieldsG.index("track")] for i in tracks2remove)]
-        
-#         results = [t[1] for t in data_tuple if t[0] == 10]
-        
-       
-            
-        
+
+        for key in tracks2remove:
+            key = str(key)
+            print "$$$$$$$$$$$$$$",key
+            dict_split.pop(key, None)
+
+            if key in self.tracks:
+                self.tracks.remove(key)
+                
         #Second separate data by track and dataTypes
         idx_fields2split = [self.fieldsG.index("track"), self.fieldsG.index("dataTypes")]
         data_tuple = sorted(data_tuple,key=operator.itemgetter(*idx_fields2split))
-        
-#         print data_tuple
         
         track_rules = kwargs.get("track_rules", "split_all")
         
@@ -288,50 +290,31 @@ class intData: # if I name it as int I think is like self but with a better name
         
         
         for key,group in itertools.groupby(data_tuple, operator.itemgetter(*idx_fields2split)):
-#             print "keys are:" , key[0],key[1]
             if not dict_split.has_key(key[0]):
                 dict_split [key[0]] = {}
             dict_split [key[0]][key[1]] = tuple(group)
-            
-#         print dict_split
-        
-        ###################
-        ### Filtering tracks
-        tracks2remove = [] 
-        #remove tracks
-        for key in tracks2remove:
-            key = str(key)
-            print "$$$$$$$$$$$$$$",key
-            dict_split.pop(key, None)
-#             self.tracks.remove(key)
-            if key in self.tracks:
-                self.tracks.remove(key)
-                
 
         d_track_merge = {}
         
         ##################
         # Joining tracks in track_list
-        # make a function!!!   
-        track_list = self.tracks # in this case I will join all
-        ### cuidado si quito 
+        # make a function!!!     join_dict_by_primary_key   
+        track_list = self.tracks # in this case I will join all   ### cuidado si quito 
            
         for key, nest_dict in dict_split.items():
             if key not in track_list: 
                 print "Track skipped: %s" % key
                 continue
-#             print "000000000000", '_'.join(track_list)#del
+            
             if not d_track_merge.has_key('_'.join(track_list)):
                 d_track_merge['_'.join(track_list)] = {}
-            for key_2, data in nest_dict.items():
-                                
+            
+            for key_2, data in nest_dict.items():                            
                 if not d_track_merge['_'.join(track_list)].has_key(key_2):
                     d_track_merge['_'.join(track_list)] [key_2]= data
                 else:  
                     d_track_merge['_'.join(track_list)] [key_2] = d_track_merge['_'.join(track_list)] [key_2] + data
                     
-#         for key, value in b.items():
-#             new.setdefault(key, []).extend(value)
         print d_track_merge
         
         d_dataTypes_merge = {}
@@ -363,7 +346,8 @@ class intData: # if I name it as int I think is like self but with a better name
                 track_dict[k,k_2] = Bed(self.track_convert2bed(d_2, True))
 #         if mode is None:
 #             mode='bed' 
-#         
+#        
+        #validacion del diccionario para imprimir o lo que sea 
         for k, v in d_track_merge.items():
             if isinstance(v,dict):
                 print "is a dictionary"
