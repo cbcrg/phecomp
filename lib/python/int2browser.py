@@ -266,19 +266,6 @@ class intData: # if I name it as int I think is like self but with a better name
         Transform data into a bed file if all the necessary fields present
         """   
         dict_split = {}
-
-        ###################
-        ### Filtering tracks
-        tracks2remove = [] 
-#         data_tuple = [tup for tup in data_tuple if not any(i in tup[self.fieldsG.index("track")] for i in tracks2remove)]
-
-        for key in tracks2remove:
-            key = str(key)
-#             print "$$$$$$$$$$$$$$",key#del
-            dict_split.pop(key, None)
-
-            if key in self.tracks:
-                self.tracks.remove(key)
                 
         #Second separate data by track and dataTypes
         idx_fields2split = [self.fieldsG.index("track"), self.fieldsG.index("dataTypes")]
@@ -294,7 +281,13 @@ class intData: # if I name it as int I think is like self but with a better name
             if not dict_split.has_key(key[0]):
                 dict_split [key[0]] = {}
             dict_split [key[0]][key[1]] = tuple(group)
-
+        
+        ###################
+        ### Filtering tracks
+        tracks2remove = [1,2] 
+#         data_tuple = [tup for tup in data_tuple if not any(i in tup[self.fieldsG.index("track")] for i in tracks2remove)]
+                 
+        dict_split = self.remove (dict_split, tracks2remove)            
         d_track_merge = {}
         
         ##################
@@ -466,7 +459,17 @@ class intData: # if I name it as int I think is like self but with a better name
                     d_dataTypes_merge[key]['_'.join(nest_dict.keys())] = d_dataTypes_merge[key]['_'.join(nest_dict.keys())] + data            
         print d_dataTypes_merge
         return (d_dataTypes_merge)
-           
+    
+    def remove (self, dict_t, tracks2remove):
+            for key in tracks2remove:
+                key = str(key)
+        #             print "$$$$$$$$$$$$$$",key#del
+                dict_t.pop(key, None)
+        
+                if key in self.tracks:
+                    self.tracks.remove(key)
+            return (dict_t) 
+               
     def track_convert2bed (self, track, in_call=False, restrictedColors=None, **kwargs):
         #fields pass to read should be the ones of bed file
         _bed_fields = ["track","chromStart","chromEnd","dataTypes", "dataValue"]
