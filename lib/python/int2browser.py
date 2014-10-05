@@ -309,16 +309,7 @@ class intData: # if I name it as int I think is like self but with a better name
         ##################
         # Joining the dataTypes or natures
 #         dataTypes_list = self.dataTypes
-        
-        for key, nest_dict in d_track_merge.items():
-            d_dataTypes_merge[key] = {}
-            for key_2, data in nest_dict.items(): 
-                print data 
-                if not d_dataTypes_merge[key].has_key('_'.join(nest_dict.keys())):
-                    d_dataTypes_merge[key]['_'.join(nest_dict.keys())] = data 
-                else:                    
-                    d_dataTypes_merge[key]['_'.join(nest_dict.keys())] = d_dataTypes_merge[key]['_'.join(nest_dict.keys())] + data            
-        print d_dataTypes_merge
+        d_dataTypes_merge = self.join_by_dataType (d_track_merge)
         
         ####
         # merge everything that is as getting the data as it is entering into the function
@@ -459,7 +450,23 @@ class intData: # if I name it as int I think is like self but with a better name
                         
             print d_track_merge
             return (d_track_merge)
+    
+    def join_by_dataType (self, dict_d):
         
+        d_dataTypes_merge = {}
+        
+        for key, nest_dict in dict_d.items():
+            d_dataTypes_merge[key] = {}
+            
+            for key_2, data in nest_dict.items(): 
+                print "((((((((((((((((",key_2  
+                if not d_dataTypes_merge[key].has_key('_'.join(nest_dict.keys())):
+                    d_dataTypes_merge[key]['_'.join(nest_dict.keys())] = data 
+                else:                    
+                    d_dataTypes_merge[key]['_'.join(nest_dict.keys())] = d_dataTypes_merge[key]['_'.join(nest_dict.keys())] + data            
+        print d_dataTypes_merge
+        return (d_dataTypes_merge)
+           
     def track_convert2bed (self, track, in_call=False, restrictedColors=None, **kwargs):
         #fields pass to read should be the ones of bed file
         _bed_fields = ["track","chromStart","chromEnd","dataTypes", "dataValue"]
@@ -657,7 +664,7 @@ class dataIter(object):
         track_file.write('track name="cage 1;drink" description="cage 1;drink" visibility=2 itemRgb="On" priority=20' + "\n")
         
         for row in self.data: 
-            print ("row is: ", row)  #del
+#             print ("row is: ", row)  #del
             track_file.write('\t'.join(str(i) for i in row))
             track_file.write("\n")      
         track_file.close()
