@@ -357,12 +357,12 @@ class intData: # if I name it as int I think is like self but with a better name
                 print "Is a dictionary"
                                    
         window = kwargs.get("window", 300)
-        
+#         d_dataTypes_merge = dict_split
         #Output    
         for k, d in d_dataTypes_merge.items():
             for k_2, d_2 in d.items():       
                 track_dict[k,k_2] = globals()[_dict_file[mode][0]](getattr(self,_dict_file[mode][1])(d_2, True, window))
-                                
+#         print track_dict                        
         return (track_dict)
 #             track_dict[(key, '_'.join(self.dataTypes))]=BedGraph(self.track_convert2bedGraph(track_tuple, True, window))   
 
@@ -520,6 +520,9 @@ class intData: # if I name it as int I think is like self but with a better name
         end_window = delta_window
         partial_value = 0 
         cross_interv_dict = {}
+        
+        #When the tracks have been join it is necessary to order by chr_start
+        track = sorted(track, key=operator.itemgetter(*[i_chr_start]))
                                      
         for row in track:
             temp_list = []
@@ -650,7 +653,8 @@ class dataIter(object):
         track_file = open(os.path.join(_pwd, track + file_ext), mode)
         track_file.write('track name="cage 1;drink" description="cage 1;drink" visibility=2 itemRgb="On" priority=20' + "\n")
         
-        for row in self.data:         
+        for row in self.data: 
+            print ("row is: ", row)  #del
             track_file.write('\t'.join(str(i) for i in row))
             track_file.write("\n")      
         track_file.close()
