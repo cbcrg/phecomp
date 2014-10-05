@@ -274,7 +274,7 @@ class intData: # if I name it as int I think is like self but with a better name
 
         for key in tracks2remove:
             key = str(key)
-            print "$$$$$$$$$$$$$$",key
+#             print "$$$$$$$$$$$$$$",key#del
             dict_split.pop(key, None)
 
             if key in self.tracks:
@@ -300,23 +300,9 @@ class intData: # if I name it as int I think is like self but with a better name
         ##################
         # Joining tracks in track_list
         # make a function!!!     join_dict_by_primary_key   
-        track_list = self.tracks # in this case I will join all   ### cuidado si quito 
-           
-        for key, nest_dict in dict_split.items():
-            if key not in track_list: 
-                print "Track skipped: %s" % key
-                continue
-            
-            if not d_track_merge.has_key('_'.join(track_list)):
-                d_track_merge['_'.join(track_list)] = {}
-            
-            for key_2, data in nest_dict.items():                            
-                if not d_track_merge['_'.join(track_list)].has_key(key_2):
-                    d_track_merge['_'.join(track_list)] [key_2]= data
-                else:  
-                    d_track_merge['_'.join(track_list)] [key_2] = d_track_merge['_'.join(track_list)] [key_2] + data
-                    
-        print d_track_merge
+        track_list = self.tracks # in this case I will join all tracks   ### cuidado si quito 
+        
+        d_track_merge = self.join_by_track (dict_split, track_list)
         
         d_dataTypes_merge = {}
         
@@ -339,10 +325,7 @@ class intData: # if I name it as int I think is like self but with a better name
         # but without filtering
         
         
-        track_dict = {}
-        
-        
-        
+        track_dict = {}                        
    
         ### 
         # Here I join dataTypes and tracks if selected
@@ -351,13 +334,14 @@ class intData: # if I name it as int I think is like self but with a better name
         #######
         # Generating track dict (output)
         #validacion del diccionario para imprimir o lo que sea
-        # mirar si es un diccionario de diccionarios la primera validacion hay que desarrolarla 
+        #mirar si es un diccionario de diccionarios la primera validacion hay que desarrolarla 
         for k, v in d_track_merge.items():
             if isinstance(v,dict):
                 print "Is a dictionary"
                                    
         window = kwargs.get("window", 300)
 #         d_dataTypes_merge = dict_split
+        
         #Output    
         for k, d in d_dataTypes_merge.items():
             for k_2, d_2 in d.items():       
@@ -365,7 +349,8 @@ class intData: # if I name it as int I think is like self but with a better name
 #         print track_dict                        
         return (track_dict)
 #             track_dict[(key, '_'.join(self.dataTypes))]=BedGraph(self.track_convert2bedGraph(track_tuple, True, window))   
-
+        
+        
 #         split_dataTypes = kwargs.get("split_dataTypes", False)
 #         
 #         if not isinstance (kwargs.get("split_dataTypes"), bool):
@@ -456,7 +441,25 @@ class intData: # if I name it as int I think is like self but with a better name
 #                     raise ValueError("Track mode does not exist %s"%mode)
 #                      
 #         return track_dict
-    
+    def join_by_track (self, dict, tracks2join):  
+            d_track_merge = {} 
+            for key, nest_dict in dict.items():
+                if key not in tracks2join: 
+                    print "Track skipped: %s" % key
+                    continue
+                
+                if not d_track_merge.has_key('_'.join(tracks2join)):
+                    d_track_merge['_'.join(tracks2join)] = {}
+                
+                for key_2, data in nest_dict.items():                            
+                    if not d_track_merge['_'.join(tracks2join)].has_key(key_2):
+                        d_track_merge['_'.join(tracks2join)] [key_2]= data
+                    else:  
+                        d_track_merge['_'.join(tracks2join)] [key_2] = d_track_merge['_'.join(tracks2join)] [key_2] + data
+                        
+            print d_track_merge
+            return (d_track_merge)
+        
     def track_convert2bed (self, track, in_call=False, restrictedColors=None, **kwargs):
         #fields pass to read should be the ones of bed file
         _bed_fields = ["track","chromStart","chromEnd","dataTypes", "dataValue"]
