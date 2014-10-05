@@ -432,9 +432,9 @@ class intData: # if I name it as int I think is like self but with a better name
 #                     raise ValueError("Track mode does not exist %s"%mode)
 #                      
 #         return track_dict
-    def join_by_track (self, dict, tracks2join):  
+    def join_by_track (self, dict_t, tracks2join):  
             d_track_merge = {} 
-            for key, nest_dict in dict.items():
+            for key, nest_dict in dict_t.items():
                 if key not in tracks2join: 
                     print "Track skipped: %s" % key
                     continue
@@ -459,7 +459,7 @@ class intData: # if I name it as int I think is like self but with a better name
             d_dataTypes_merge[key] = {}
             
             for key_2, data in nest_dict.items(): 
-                print "((((((((((((((((",key_2  
+#                 print "((((((((((((((((",key_2  #del
                 if not d_dataTypes_merge[key].has_key('_'.join(nest_dict.keys())):
                     d_dataTypes_merge[key]['_'.join(nest_dict.keys())] = data 
                 else:                    
