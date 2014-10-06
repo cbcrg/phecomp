@@ -650,31 +650,28 @@ class dataIter(object):
         if not(isinstance(self, dataIter)):
             raise Exception("Not writable object, type not supported '%s'."%(type(self)))    
         
-        if (type(self) is BedGraph):
-            print "Is BedGraph"
-            
-        if not(isinstance(self, globals()[_dict_file[file_type][0]])):
-            raise Exception("File type to write is '%s' while object is of class '%s' ."%(type(self), _dict_file[file_type][0]))
+        if (type(self) is globals()[_dict_file['bedGraph'][0]]):
+            file_ext = _dict_file.get('bedGraph')[2]      
+        elif (type(self) is globals()[_dict_file['bed'][0]]):
+            file_ext = _dict_file.get('bed')[2]        
+        else:
+            raise ValueError("Unwritable object of class\'%s\'"%(type(self)))
         
         if file_type not in _dict_file: 
             raise ValueError("File types not supported \'%s\'"%(file_type))
                                                                                            
         if track is None: 
             track = "cage1_test"
-        
-        print "File extension is: '%s'"%_dict_file.get(file_type)[2]
-        
-        file_ext = _dict_file.get(file_type)[2]
            
         track_file = open(os.path.join(_pwd, track + file_ext), mode)
-        track_file.write('track name="cage 1;drink" description="cage 1;drink" visibility=2 itemRgb="On" priority=20' + "\n")
+        track_file.write('track name="cage 1;drink" description="cage 1;drink" visibility=2 itemRgb="On" priority=20' + "\n")#modify
         
         for row in self.data: 
 #             print ("row is: ", row)  #del
             track_file.write('\t'.join(str(i) for i in row))
             track_file.write("\n")      
         track_file.close()
-                             
+                                     
 ################################ Bed ##########################################
 
 class Bed(dataIter):
