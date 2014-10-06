@@ -638,7 +638,7 @@ class dataIter(object):
         self.data = data
         self.fields = fields
 #         self.format = format
-        kwargs['format'] = kwargs.get("format",'txt')
+        self.format = kwargs.get("format",'txt')
         
     def __iter__(self):
         return self.data
@@ -650,12 +650,7 @@ class dataIter(object):
         if not(isinstance(self, dataIter)):
             raise Exception("Not writable object, type not supported '%s'."%(type(self)))    
         
-        if (type(self) is globals()[_dict_file['bedGraph'][0]]):
-            file_ext = _dict_file.get('bedGraph')[2]      
-        elif (type(self) is globals()[_dict_file['bed'][0]]):
-            file_ext = _dict_file.get('bed')[2]        
-        else:
-            raise ValueError("Unwritable object of class\'%s\'"%(type(self)))
+        file_ext = _dict_file.get(self.format)[2]      
         
         if file_type not in _dict_file: 
             raise ValueError("File types not supported \'%s\'"%(file_type))
@@ -688,6 +683,7 @@ class Bed(dataIter):
         kwargs['format'] = 'bed'
         kwargs['fields'] = ['chr','start','end','name','score','strand','thick_start','thick_end','item_rgb']
         dataIter.__init__(self,data,**kwargs)
+        #modify include here the track and datatypes!!!
         
 class BedGraph(dataIter):
     """
