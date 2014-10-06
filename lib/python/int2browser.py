@@ -284,7 +284,7 @@ class intData: # if I name it as int I think is like self but with a better name
         
         ###################
         ### Filtering tracks
-        tracks2remove = [1,2] 
+        tracks2remove = [] 
 #         data_tuple = [tup for tup in data_tuple if not any(i in tup[self.fieldsG.index("track")] for i in tracks2remove)]
                  
         dict_split = self.remove (dict_split, tracks2remove)            
@@ -650,6 +650,9 @@ class dataIter(object):
         if not(isinstance(self, dataIter)):
             raise Exception("Not writable object, type not supported '%s'."%(type(self)))    
         
+        if (type(self) is BedGraph):
+            print "Is BedGraph"
+            
         if not(isinstance(self, globals()[_dict_file[file_type][0]])):
             raise Exception("File type to write is '%s' while object is of class '%s' ."%(type(self), _dict_file[file_type][0]))
         
