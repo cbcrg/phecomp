@@ -664,7 +664,7 @@ class dataIter(object):
         if self.dataTypes is None:
             self.dataTypes = "a"
             
-        name_file = self.track + "_" + self.dataTypes + file_ext
+        name_file = "tr_" + self.track + "_dt" + self.dataTypes + file_ext
         print >>sys.stderr, "File %s generated" % name_file       
         track_file = open(os.path.join(_pwd, name_file), mode)
         
