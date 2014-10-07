@@ -330,7 +330,7 @@ class intData: # if I name it as int I think is like self but with a better name
         #Output    
         for k, d in d_dataTypes_merge.items():
             for k_2, d_2 in d.items():       
-                track_dict[k,k_2] = globals()[_dict_file[mode][0]](getattr(self,_dict_file[mode][1])(d_2, True, window), track=k, dataTypes=k_2)
+                track_dict[k,k_2] = globals()[_dict_file[mode][0]](getattr(self,_dict_file[mode][1])(d_2, True, window), track=k, dataTypes=k_2, color="culo")
 #         print track_dict                        
         return (track_dict)
 #             track_dict[(key, '_'.join(self.dataTypes))]=BedGraph(self.track_convert2bedGraph(track_tuple, True, window))   
@@ -489,7 +489,7 @@ class intData: # if I name it as int I think is like self but with a better name
         i_data_value = self.fieldsG.index("dataValue")
         i_data_types = self.fieldsG.index("dataTypes")
         
-        #Generate dictionary of field and colors
+        #Generate dictionary of field and color gradients
         _dict_col_grad = assign_color (self.dataTypes)
             
         for row in track:
@@ -664,7 +664,7 @@ class dataIter(object):
         if self.dataTypes is None:
             self.dataTypes = "a"
             
-        name_file = "tr_" + self.track + "_dt" + self.dataTypes + file_ext
+        name_file = "tr_" + self.track + "_dt_" + self.dataTypes + file_ext
         print >>sys.stderr, "File %s generated" % name_file       
         track_file = open(os.path.join(_pwd, name_file), mode)
         
@@ -728,7 +728,7 @@ def assign_color (set_dataTypes, color_restrictions=None):
     different data types get a different color in a circular manner
     
     :param set_dataTypes: (list) each of the fields that should be linked to colors
-    :param color_restricitons: (dict) fields with colors set by the user
+    :param color_restrictions: (dict) fields with colors set by the user
     """
     d_dataType_color = {}
     colors_not_used = []
