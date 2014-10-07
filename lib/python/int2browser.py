@@ -489,6 +489,7 @@ class intData: # if I name it as int I think is like self but with a better name
         i_data_value = self.fieldsG.index("dataValue")
         i_data_types = self.fieldsG.index("dataTypes")
         
+        print "--------------------", self.dataTypes
         #Generate dictionary of field and color gradients
         _dict_col_grad = assign_color (self.dataTypes)
             
@@ -663,11 +664,18 @@ class dataIter(object):
         
         if self.dataTypes is None:
             self.dataTypes = "a"
-            
+        
+        print "----",self.dataTypes
+        set_dataTypes = set()
+        set_dataTypes.add(self.dataTypes)
+        _dict_col_grad = assign_color (set_dataTypes)
+      
+        print _dict_col_grad
+                
         name_file = "tr_" + self.track + "_dt_" + self.dataTypes + file_ext
         print >>sys.stderr, "File %s generated" % name_file       
         track_file = open(os.path.join(_pwd, name_file), mode)
-        
+        print _dict_col_grad[self.dataTypes][7]
         #Annotation track to set the genome browser interface
         annotation_track = ''
         if self.format == 'bed':
@@ -676,7 +684,9 @@ class dataIter(object):
             #modify take into account type of nature to set color 
             # I can generate a set of colors for me o give the 
             # possibility of introduce a set of colors and datatypes to the user
-            annotation_track = 'track type=' + self.format + " " + 'name=\"' + self.track + "_" + self.dataTypes + '\"' + " " + '\"description=' + self.track + "_" + self.dataTypes + '\"' + " " + 'visibility=full color=200,100,0 altColor=0,100,200 priority=20'        
+            # tengo que hacerlo antes porque tengo que saber el numero de tracks que hay, puedo 
+            # hacer un set antes de uno por uno y luego hacer tambien un join como en el otro caso
+            annotation_track = 'track type=' + self.format + " " + 'name=\"' + self.track + "_" + self.dataTypes + '\"' + " " + '\"description=' + self.track + "_" + self.dataTypes + '\"' + " " + 'visibility=full color=' + _dict_col_grad[self.dataTypes][7] + ' altColor=0,100,200 priority=20'        
         track_file.write (annotation_track+"\n")
         
         for row in self.data: 
