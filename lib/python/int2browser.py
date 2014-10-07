@@ -647,7 +647,7 @@ class dataIter(object):
     def next(self):
         return self.data.next()
 
-    def write(self, file_type="bed", mode="w"):
+    def write(self, file_type="bed", mode="w"):#modify maybe I have to change the method name now is the same as the os.write()???
         if not(isinstance(self, dataIter)):
             raise Exception("Not writable object, type not supported '%s'."%(type(self)))    
         
@@ -662,10 +662,10 @@ class dataIter(object):
         if self.dataTypes is None:
             self.dataTypes = "a"
             
-        name_track = self.track + "_" + self.dataTypes 
-        print "name of tracks will be" ,name_track       
-        track_file = open(os.path.join(_pwd, name_track + file_ext), mode)
-        #modify I have to change this
+        name_file = self.track + "_" + self.dataTypes + file_ext
+        print >>sys.stderr, "File %s generated" % name_file       
+        track_file = open(os.path.join(_pwd, name_file), mode)
+        
         track_file.write('track name="cage 1;drink" description="cage 1;drink" visibility=2 itemRgb="On" priority=20' + "\n")#modify
         
         for row in self.data: 
