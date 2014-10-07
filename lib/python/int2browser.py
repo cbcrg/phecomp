@@ -668,7 +668,16 @@ class dataIter(object):
         print >>sys.stderr, "File %s generated" % name_file       
         track_file = open(os.path.join(_pwd, name_file), mode)
         
-        track_file.write('track name="cage 1;drink" description="cage 1;drink" visibility=2 itemRgb="On" priority=20' + "\n")#modify
+        #Annotation track to set the genome browser interface
+        annotation_track = ''
+        if self.format == 'bed':
+            annotation_track = 'track type=' + self.format + " " + 'name=\"' +  self.track + "_" + self.dataTypes + '\"' + " " + '\"description=' + self.track + " " + self.dataTypes+ '\"' + " " + "visibility=2 itemRgb=\"On\" priority=20" 
+        elif self.format == 'bedGraph':
+            #modify take into account type of nature to set color 
+            # I can generate a set of colors for me o give the 
+            # possibility of introduce a set of colors and datatypes to the user
+            annotation_track = 'track type=' + self.format + " " + 'name=\"' + self.track + "_" + self.dataTypes + '\"' + " " + '\"description=' + self.track + "_" + self.dataTypes + '\"' + " " + 'visibility=full color=200,100,0 altColor=0,100,200 priority=20'        
+        track_file.write (annotation_track+"\n")
         
         for row in self.data: 
 #             print ("row is: ", row)  #del
