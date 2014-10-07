@@ -636,9 +636,10 @@ class dataIter(object):
 #             else: raise ValueError("Must specify a 'fields' attribute for %s." % self.__str__())
             raise ValueError("Must specify a 'fields' attribute for %s." % self.__str__())
         self.data = data
-        self.fields = fields
-#         self.format = format
+        self.fields = fields       
         self.format = kwargs.get("format",'txt')
+        self.track = kwargs.get('track', "")
+        self.dataTypes = kwargs.get('dataTypes', "")
         
     def __iter__(self):
         return self.data
@@ -646,7 +647,7 @@ class dataIter(object):
     def next(self):
         return self.data.next()
 
-    def write(self, file_type="bed", mode="w", track=None):
+    def write(self, file_type="bed", mode="w"):
         if not(isinstance(self, dataIter)):
             raise Exception("Not writable object, type not supported '%s'."%(type(self)))    
         
@@ -654,11 +655,16 @@ class dataIter(object):
         
         if file_type not in _dict_file: 
             raise ValueError("File types not supported \'%s\'"%(file_type))
-                                                                                           
-        if track is None: 
-            track = "cage1_test"
-           
-        track_file = open(os.path.join(_pwd, track + file_ext), mode)
+                                                                                                 
+        if self.track is None: 
+            self.track = "1"
+        
+        if self.dataTypes is None:
+            self.dataTypes = "a"
+            
+        name_track = self.track + "_" + self.dataTypes 
+        print "name of tracks will be" ,name_track       
+        track_file = open(os.path.join(_pwd, name_track + file_ext), mode)
         #modify I have to change this
         track_file.write('track name="cage 1;drink" description="cage 1;drink" visibility=2 itemRgb="On" priority=20' + "\n")#modify
         
@@ -681,8 +687,6 @@ class Bed(dataIter):
           
     """
     def __init__(self, data, **kwargs):
-        self.track = kwargs.get('track', 1)#modify include here the track and datatypes!!!
-        self.dataTypes = kwargs.get('dataTypes', "a")
         kwargs['format'] = 'bed'
         kwargs['fields'] = ['chr','start','end','name','score','strand','thick_start','thick_end','item_rgb']        
         
@@ -699,8 +703,6 @@ class BedGraph(dataIter):
           
     """
     def __init__(self,data,**kwargs):
-        self.track = kwargs.get('track', 1)#modify include here the track and datatypes!!!
-        self.dataTypes = kwargs.get('dataTypes', "a")
         kwargs['format'] = 'bedGraph'
         kwargs['fields'] = ['chr','start','end','score']        
 # 
