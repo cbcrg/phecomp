@@ -45,7 +45,8 @@ _intervals = [0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 1, 1000]
 
 #Contains class and file extension
 _dict_file = {'bed' : ('Bed', 'track_convert2bed', '.bed'),              
-              'bedGraph': ('BedGraph', 'track_convert2bedGraph', '.bedGraph')}
+              'bedGraph': ('BedGraph', 'track_convert2bedGraph', '.bedGraph'),
+              'txt': ('dataIter', '', '.txt')}
 
 # _options_split_dataTypes = ('one_per_channel','list_all', 'True', 'False') #del
 _options_track_rules = ('split_all', 'join_all')
@@ -647,15 +648,16 @@ class dataIter(object):
     def next(self):
         return self.data.next()
 
-    def write(self, file_type="bed", mode="w"):#modify maybe I have to change the method name now is the same as the os.write()???
+    def write(self, mode="w"):#modify maybe I have to change the method name now is the same as the os.write()???
+        
         if not(isinstance(self, dataIter)):
             raise Exception("Not writable object, type not supported '%s'."%(type(self)))    
         
-        file_ext = _dict_file.get(self.format)[2]      
-        
-        if file_type not in _dict_file: 
-            raise ValueError("File types not supported \'%s\'"%(file_type))
-                                                                                                 
+        try:
+            file_ext = _dict_file.get(self.format)[2]      
+        except KeyError:
+            raise ValueError("File types not supported \'%s\'"%(self.format))
+                                                           
         if self.track is None: 
             self.track = "1"
         
