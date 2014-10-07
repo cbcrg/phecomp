@@ -329,7 +329,7 @@ class intData: # if I name it as int I think is like self but with a better name
         #Output    
         for k, d in d_dataTypes_merge.items():
             for k_2, d_2 in d.items():       
-                track_dict[k,k_2] = globals()[_dict_file[mode][0]](getattr(self,_dict_file[mode][1])(d_2, True, window))
+                track_dict[k,k_2] = globals()[_dict_file[mode][0]](getattr(self,_dict_file[mode][1])(d_2, True, window), track=k, dataTypes=k_2)
 #         print track_dict                        
         return (track_dict)
 #             track_dict[(key, '_'.join(self.dataTypes))]=BedGraph(self.track_convert2bedGraph(track_tuple, True, window))   
@@ -426,23 +426,23 @@ class intData: # if I name it as int I think is like self but with a better name
 #                      
 #         return track_dict
     def join_by_track (self, dict_t, tracks2join):  
-            d_track_merge = {} 
-            for key, nest_dict in dict_t.items():
-                if key not in tracks2join: 
-                    print "Track skipped: %s" % key
-                    continue
-                
-                if not d_track_merge.has_key('_'.join(tracks2join)):
-                    d_track_merge['_'.join(tracks2join)] = {}
-                
-                for key_2, data in nest_dict.items():                            
-                    if not d_track_merge['_'.join(tracks2join)].has_key(key_2):
-                        d_track_merge['_'.join(tracks2join)] [key_2]= data
-                    else:  
-                        d_track_merge['_'.join(tracks2join)] [key_2] = d_track_merge['_'.join(tracks2join)] [key_2] + data
-                        
-            print d_track_merge
-            return (d_track_merge)
+        d_track_merge = {} 
+        for key, nest_dict in dict_t.items():
+            if key not in tracks2join: 
+                print "Track skipped: %s" % key
+                continue
+            
+            if not d_track_merge.has_key('_'.join(tracks2join)):
+                d_track_merge['_'.join(tracks2join)] = {}
+            
+            for key_2, data in nest_dict.items():                            
+                if not d_track_merge['_'.join(tracks2join)].has_key(key_2):
+                    d_track_merge['_'.join(tracks2join)] [key_2]= data
+                else:  
+                    d_track_merge['_'.join(tracks2join)] [key_2] = d_track_merge['_'.join(tracks2join)] [key_2] + data
+                    
+        print d_track_merge
+        return (d_track_merge)
     
     def join_by_dataType (self, dict_d):
         
@@ -659,6 +659,7 @@ class dataIter(object):
             track = "cage1_test"
            
         track_file = open(os.path.join(_pwd, track + file_ext), mode)
+        #modify I have to change this
         track_file.write('track name="cage 1;drink" description="cage 1;drink" visibility=2 itemRgb="On" priority=20' + "\n")#modify
         
         for row in self.data: 
@@ -679,11 +680,14 @@ class Bed(dataIter):
           'thick_start','thick_end','item_rgb']
           
     """
-    def __init__(self,data,**kwargs):
+    def __init__(self, data, **kwargs):
+        self.track = kwargs.get('track', 1)#modify include here the track and datatypes!!!
+        self.dataTypes = kwargs.get('dataTypes', "a")
         kwargs['format'] = 'bed'
-        kwargs['fields'] = ['chr','start','end','name','score','strand','thick_start','thick_end','item_rgb']
+        kwargs['fields'] = ['chr','start','end','name','score','strand','thick_start','thick_end','item_rgb']        
+        
         dataIter.__init__(self,data,**kwargs)
-        #modify include here the track and datatypes!!!
+        
         
 class BedGraph(dataIter):
     """
@@ -695,8 +699,11 @@ class BedGraph(dataIter):
           
     """
     def __init__(self,data,**kwargs):
+        self.track = kwargs.get('track', 1)#modify include here the track and datatypes!!!
+        self.dataTypes = kwargs.get('dataTypes', "a")
         kwargs['format'] = 'bedGraph'
-        kwargs['fields'] = ['chr','start','end','score']
+        kwargs['fields'] = ['chr','start','end','score']        
+# 
         dataIter.__init__(self,data,**kwargs)
         
 class ObjectContainer():
