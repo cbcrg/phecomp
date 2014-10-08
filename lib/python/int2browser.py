@@ -303,7 +303,7 @@ class intData: # if I name it as int I think is like self but with a better name
         ##################
         # Joining the dataTypes or natures
 #         dataTypes_list = self.dataTypes
-        d_dataTypes_merge = self.join_by_dataType (d_track_merge)
+        d_dataTypes_merge = self.join_by_dataType (d_track_merge, mode)
         
         ####
         # merge everything that is as getting the data as it is entering into the function
@@ -325,8 +325,7 @@ class intData: # if I name it as int I think is like self but with a better name
                 print "Is a dictionary"
                                    
         window = kwargs.get("window", 300)
-#         d_dataTypes_merge = dict_split
-        
+
         print "&&&&&&&&&&&&&&&&&&&&", self.dataTypes
         _dict_col_grad = assign_color (self.dataTypes)
         
@@ -446,10 +445,9 @@ class intData: # if I name it as int I think is like self but with a better name
                 else:  
                     d_track_merge['_'.join(tracks2join)] [key_2] = d_track_merge['_'.join(tracks2join)] [key_2] + data
                     
-        print d_track_merge
         return (d_track_merge)
     
-    def join_by_dataType (self, dict_d):
+    def join_by_dataType (self, dict_d, mode):
         
         d_dataTypes_merge = {}
         
@@ -467,22 +465,20 @@ class intData: # if I name it as int I think is like self but with a better name
                     d_dataTypes_merge[key]['_'.join(nest_dict.keys())] = d_dataTypes_merge[key]['_'.join(nest_dict.keys())] + data
                     new_dataTypes.add('_'.join(nest_dict.keys()))          
         
-        
-        self.dataTypes = new_dataTypes
-        
-                    
-        print d_dataTypes_merge
+        if mode == 'bedGraph':
+            self.dataTypes = new_dataTypes
+
         return (d_dataTypes_merge)
     
     def remove (self, dict_t, tracks2remove):
-            for key in tracks2remove:
-                key = str(key)
-        #             print "$$$$$$$$$$$$$$",key#del
-                dict_t.pop(key, None)
-        
-                if key in self.tracks:
-                    self.tracks.remove(key)
-            return (dict_t) 
+        for key in tracks2remove:
+            key = str(key)
+    
+            dict_t.pop(key, None)
+    
+            if key in self.tracks:
+                self.tracks.remove(key)
+        return (dict_t) 
                
     def track_convert2bed (self, track, in_call=False, restrictedColors=None, **kwargs):
         #fields pass to read should be the ones of bed file
@@ -502,7 +498,6 @@ class intData: # if I name it as int I think is like self but with a better name
         i_data_value = self.fieldsG.index("dataValue")
         i_data_types = self.fieldsG.index("dataTypes")
         
-        print "--------------------", self.dataTypes
         #Generate dictionary of field and color gradients
         _dict_col_grad = assign_color (self.dataTypes)
             
@@ -635,7 +630,7 @@ class intData: # if I name it as int I think is like self but with a better name
                         end_w = end_w + delta_window
             
             else:
-                print ("FATAL ERROR: Something went wrong") #modify    
+                print ("FATAL ERROR: Something went wrong")
                                                   
     def _error (self, data_tuple):
         raise ValueError("Fatal error")
@@ -684,12 +679,12 @@ class dataIter(object):
         print "^^^^^^^^^^^^^^^", set_dataType
         _dict_col_grad = assign_color (set_dataType)
       
-        print "^^^^^^^^^^^^^^^", _dict_col_grad
-                
+        print "^^^^^^^^^^^^^^^", _dict_col_grad, _dict_col_grad[self.dataType][7]
+#         _dict_col_grad[self.dataType][7]
         name_file = "tr_" + self.track + "_dt_" + self.dataType + file_ext
         print >>sys.stderr, "File %s generated" % name_file       
         track_file = open(os.path.join(_pwd, name_file), mode)
-        _dict_col_grad[self.dataType][7] 
+#         _dict_col_grad[self.dataType][7] 
         #Annotation track to set the genome browser interface
         annotation_track = ''
         if self.format == 'bed':
@@ -700,9 +695,9 @@ class dataIter(object):
             # possibility of introduce a set of colors and datatypes to the user
             # tengo que hacerlo antes porque tengo que saber el numero de tracks que hay, puedo 
             # hacer un set antes de uno por uno y luego hacer tambien un join como en el otro caso
-            annotation_track = 'track type=' + self.format + " " + 'name=\"' + self.track + "_" + self.dataType + '\"' + " " + '\"description=' + self.track + "_" + self.dataType + '\"' + " " + 'visibility=full color=' + _dict_col_grad[self.dataType][7] + ' altColor=0,100,200 priority=20'        
-        track_file.write (annotation_track+"\n")
-        
+#             annotation_track = 'track type=' + self.format + " " + 'name=\"' + self.track + "_" + self.dataType + '\"' + " " + '\"description=' + self.track + "_" + self.dataType + '\"' + " " + 'visibility=full color=' + _dict_col_grad[self.dataType][7] + ' altColor=0,100,200 priority=20'        
+#         track_file.write (annotation_track+"\n")
+            print self.color
         for row in self.data: 
 #             print ("row is: ", row)  #del
             track_file.write('\t'.join(str(i) for i in row))
