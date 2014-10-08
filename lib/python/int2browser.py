@@ -665,15 +665,12 @@ class dataIter(object):
         except KeyError:
             raise ValueError("File types not supported \'%s\'"%(self.format))
                                                            
-        if self.track is None: 
+        if self.track is "": 
             self.track = "1"
         
-        if self.dataType is None:
+        if self.dataType is "":
             self.dataType = "a"
-        
-        set_dataType = set()
-        set_dataType.add(self.dataType)
-       
+                
         name_file = "tr_" + self.track + "_dt_" + self.dataType + file_ext
         print >>sys.stderr, "File %s generated" % name_file       
 
@@ -684,7 +681,7 @@ class dataIter(object):
         if self.format == 'bed':
             annotation_track = 'track type=' + self.format + " " + 'name=\"' +  self.track + "_" + self.dataType + '\"' + " " + '\"description=' + self.track + " " + self.dataType + '\"' + " " + "visibility=2 itemRgb=\"On\" priority=20" 
         elif self.format == 'bedGraph':
-            annotation_track = 'track type=' + self.format + " " + 'name=\"' + self.track + "_" + self.dataType + '\"' + " " + '\"description=' + self.track + "_" + self.dataType + '\"' + " " + 'visibility=full color=' + self.color[7] + ' altColor=' + self.color[8] + ' priority=20'        
+            annotation_track = 'track type=' + self.format + " " + 'name=\"' + self.track + "_" + self.dataType + '\"' + " " + '\"description=' + self.track + "_" + self.dataType + '\"' + " " + 'visibility=full color=' + self.color[7] + ' altColor=' + self.color[8] + 'priority=20'        
             track_file.write (annotation_track + "\n")
            
         for row in self.data: 
@@ -724,9 +721,7 @@ class BedGraph(dataIter):
     def __init__(self,data,**kwargs):
         kwargs['format'] = 'bedGraph'
         kwargs['fields'] = ['chr','start','end','score']        
-#         kwargs['color'] = kwargs.get('')
-        self.color = kwargs.get('color',"blue")
-        print "000000000000",self.color
+        self.color = kwargs.get('color',_blue_gradient)
         dataIter.__init__(self,data,**kwargs)
         
 class ObjectContainer():
