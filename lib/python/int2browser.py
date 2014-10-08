@@ -85,7 +85,7 @@ class intData: # if I name it as int I think is like self but with a better name
         self.tracks  =  self.get_field_items (field="track")
         self.dataTypes = self.get_field_items (field="dataTypes")
 #         self.format = "csv"
-          
+        print "value of self.dataTypes after set in intdata", self.dataTypes  
     def _check_delimiter (self, path):
         """ Check whether the delimiter works, if delimiter is not set
         then tries ' ', '\t' and ';'"""
@@ -327,10 +327,14 @@ class intData: # if I name it as int I think is like self but with a better name
         window = kwargs.get("window", 300)
 #         d_dataTypes_merge = dict_split
         
+        print "&&&&&&&&&&&&&&&&&&&&", self.dataTypes
+        _dict_col_grad = assign_color (self.dataTypes)
+        
+        print "===============", _dict_col_grad
         #Output    
         for k, d in d_dataTypes_merge.items():
             for k_2, d_2 in d.items():       
-                track_dict[k,k_2] = globals()[_dict_file[mode][0]](getattr(self,_dict_file[mode][1])(d_2, True, window), track=k, dataTypes=k_2, color="culo")
+                track_dict[k,k_2] = globals()[_dict_file[mode][0]](getattr(self,_dict_file[mode][1])(d_2, True, window), track=k, dataType=k_2, color="culo")
 #         print track_dict                        
         return (track_dict)
 #             track_dict[(key, '_'.join(self.dataTypes))]=BedGraph(self.track_convert2bedGraph(track_tuple, True, window))   
@@ -450,14 +454,23 @@ class intData: # if I name it as int I think is like self but with a better name
         d_dataTypes_merge = {}
         
         for key, nest_dict in dict_d.items():
+            
             d_dataTypes_merge[key] = {}
+            new_dataTypes = set()
             
             for key_2, data in nest_dict.items(): 
-#                 print "((((((((((((((((",key_2  #del
+                
                 if not d_dataTypes_merge[key].has_key('_'.join(nest_dict.keys())):
-                    d_dataTypes_merge[key]['_'.join(nest_dict.keys())] = data 
+                    d_dataTypes_merge[key]['_'.join(nest_dict.keys())] = data
+                    new_dataTypes.add('_'.join(nest_dict.keys())) 
                 else:                    
-                    d_dataTypes_merge[key]['_'.join(nest_dict.keys())] = d_dataTypes_merge[key]['_'.join(nest_dict.keys())] + data            
+                    d_dataTypes_merge[key]['_'.join(nest_dict.keys())] = d_dataTypes_merge[key]['_'.join(nest_dict.keys())] + data
+                    new_dataTypes.add('_'.join(nest_dict.keys()))          
+        
+        
+        self.dataTypes = new_dataTypes
+        
+                    
         print d_dataTypes_merge
         return (d_dataTypes_merge)
     
@@ -641,7 +654,7 @@ class dataIter(object):
         self.fields = fields       
         self.format = kwargs.get("format",'txt')
         self.track = kwargs.get('track', "")
-        self.dataTypes = kwargs.get('dataTypes', "")
+        self.dataType = kwargs.get('dataType', "")
         
     def __iter__(self):
         return self.data
@@ -662,31 +675,32 @@ class dataIter(object):
         if self.track is None: 
             self.track = "1"
         
-        if self.dataTypes is None:
-            self.dataTypes = "a"
+        if self.dataType is None:
+            self.dataType = "a"
         
-        print "----",self.dataTypes
-        set_dataTypes = set()
-        set_dataTypes.add(self.dataTypes)
-        _dict_col_grad = assign_color (set_dataTypes)
+        print "----",self.dataType
+        set_dataType = set()
+        set_dataType.add(self.dataType)
+        print "^^^^^^^^^^^^^^^", set_dataType
+        _dict_col_grad = assign_color (set_dataType)
       
-        print _dict_col_grad
+        print "^^^^^^^^^^^^^^^", _dict_col_grad
                 
-        name_file = "tr_" + self.track + "_dt_" + self.dataTypes + file_ext
+        name_file = "tr_" + self.track + "_dt_" + self.dataType + file_ext
         print >>sys.stderr, "File %s generated" % name_file       
         track_file = open(os.path.join(_pwd, name_file), mode)
-        print _dict_col_grad[self.dataTypes][7]
+        _dict_col_grad[self.dataType][7] 
         #Annotation track to set the genome browser interface
         annotation_track = ''
         if self.format == 'bed':
-            annotation_track = 'track type=' + self.format + " " + 'name=\"' +  self.track + "_" + self.dataTypes + '\"' + " " + '\"description=' + self.track + " " + self.dataTypes+ '\"' + " " + "visibility=2 itemRgb=\"On\" priority=20" 
+            annotation_track = 'track type=' + self.format + " " + 'name=\"' +  self.track + "_" + self.dataType + '\"' + " " + '\"description=' + self.track + " " + self.dataType + '\"' + " " + "visibility=2 itemRgb=\"On\" priority=20" 
         elif self.format == 'bedGraph':
             #modify take into account type of nature to set color 
             # I can generate a set of colors for me o give the 
             # possibility of introduce a set of colors and datatypes to the user
             # tengo que hacerlo antes porque tengo que saber el numero de tracks que hay, puedo 
             # hacer un set antes de uno por uno y luego hacer tambien un join como en el otro caso
-            annotation_track = 'track type=' + self.format + " " + 'name=\"' + self.track + "_" + self.dataTypes + '\"' + " " + '\"description=' + self.track + "_" + self.dataTypes + '\"' + " " + 'visibility=full color=' + _dict_col_grad[self.dataTypes][7] + ' altColor=0,100,200 priority=20'        
+            annotation_track = 'track type=' + self.format + " " + 'name=\"' + self.track + "_" + self.dataType + '\"' + " " + '\"description=' + self.track + "_" + self.dataType + '\"' + " " + 'visibility=full color=' + _dict_col_grad[self.dataType][7] + ' altColor=0,100,200 priority=20'        
         track_file.write (annotation_track+"\n")
         
         for row in self.data: 
@@ -726,7 +740,9 @@ class BedGraph(dataIter):
     def __init__(self,data,**kwargs):
         kwargs['format'] = 'bedGraph'
         kwargs['fields'] = ['chr','start','end','score']        
-# 
+#         kwargs['color'] = kwargs.get('')
+        self.color = kwargs.get('color',"blue")
+        print "000000000000",self.color
         dataIter.__init__(self,data,**kwargs)
         
 class ObjectContainer():
