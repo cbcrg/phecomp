@@ -326,14 +326,16 @@ class intData: # if I name it as int I think is like self but with a better name
                                    
         window = kwargs.get("window", 300)
 
-        print "&&&&&&&&&&&&&&&&&&&&", self.dataTypes
+        print "&&&&&&&&&&&&&&&&&&&&", self.dataTypes#del
         _dict_col_grad = assign_color (self.dataTypes)
         
-        print "===============", _dict_col_grad
         #Output    
         for k, d in d_dataTypes_merge.items():
-            for k_2, d_2 in d.items():       
-                track_dict[k,k_2] = globals()[_dict_file[mode][0]](getattr(self,_dict_file[mode][1])(d_2, True, window), track=k, dataType=k_2, color="culo")
+            for k_2, d_2 in d.items():
+                print "===============######", k_2      #del 
+                track_dict[k,k_2] = globals()[_dict_file[mode][0]](getattr(self,_dict_file[mode][1])(d_2, True, window), track=k, dataType=k_2, color=_dict_col_grad[k_2][7])
+                
+                print "===============", _dict_col_grad[k_2][7]#del
 #         print track_dict                        
         return (track_dict)
 #             track_dict[(key, '_'.join(self.dataTypes))]=BedGraph(self.track_convert2bedGraph(track_tuple, True, window))   
@@ -673,13 +675,13 @@ class dataIter(object):
         if self.dataType is None:
             self.dataType = "a"
         
-        print "----",self.dataType
+        print "----",self.dataType #del
         set_dataType = set()
         set_dataType.add(self.dataType)
-        print "^^^^^^^^^^^^^^^", set_dataType
+        print "^^^^^^^^^^^^^^^", set_dataType #del
         _dict_col_grad = assign_color (set_dataType)
       
-        print "^^^^^^^^^^^^^^^", _dict_col_grad, _dict_col_grad[self.dataType][7]
+        print "^^^^^^^^^^^^^^^", self.color#del
 #         _dict_col_grad[self.dataType][7]
         name_file = "tr_" + self.track + "_dt_" + self.dataType + file_ext
         print >>sys.stderr, "File %s generated" % name_file       
@@ -695,9 +697,10 @@ class dataIter(object):
             # possibility of introduce a set of colors and datatypes to the user
             # tengo que hacerlo antes porque tengo que saber el numero de tracks que hay, puedo 
             # hacer un set antes de uno por uno y luego hacer tambien un join como en el otro caso
-#             annotation_track = 'track type=' + self.format + " " + 'name=\"' + self.track + "_" + self.dataType + '\"' + " " + '\"description=' + self.track + "_" + self.dataType + '\"' + " " + 'visibility=full color=' + _dict_col_grad[self.dataType][7] + ' altColor=0,100,200 priority=20'        
-#         track_file.write (annotation_track+"\n")
-            print self.color
+            annotation_track = 'track type=' + self.format + " " + 'name=\"' + self.track + "_" + self.dataType + '\"' + " " + '\"description=' + self.track + "_" + self.dataType + '\"' + " " + 'visibility=full color=' + self.color + ' altColor=altColor priority=20'        
+            print "*********", annotation_track#del
+            track_file.write (annotation_track + "\n")
+            print "iiiiiiiiiiiii color is:   ", self.color #del
         for row in self.data: 
 #             print ("row is: ", row)  #del
             track_file.write('\t'.join(str(i) for i in row))
