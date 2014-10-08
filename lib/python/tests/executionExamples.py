@@ -56,13 +56,25 @@ configFileDict.write()
 ## Generation of a genome file
 intData = int2browser.intData (path, ontology_dict=configFileDict.correspondence, relative_coord=True)
 print ("Min value in the file %i" % (intData.min))
+print intData.min
 
 ## Checking type
 # Now before applying read it has not class data_iter ask someone whether this is ok or not
 print("Type intData %s" % (type(intData)))
 intData_data_iter = intData.read()
-print("Type intData after method read applied %s" % type(intData_data_iter))
+print("====")
+print intData_data_iter.next()
+print intData_data_iter.format
+print intData_data_iter.track
 
+intData_data_iter.write()
+
+print("####END")
+
+# print("Type intData after method read applied %s" % type(intData_data_iter))
+# for x in intData_data_iter:
+#     print x
+    
 ######################
 ## Writing chromosome file
 # intData.writeChr()
@@ -76,20 +88,22 @@ print("Type intData after method read applied %s" % type(intData_data_iter))
                      
 # separating by data types (nature) split_dataTypes=True
 # bed_str =  intData.convert(mode = "bed", relative_coord = True, split_dataTypes=True)
-bed_str =  intData.convert(mode = "bed", relative_coord = True, split_dataTypes=True, track_rules='split_all')
-# print("Type after conversion is %s" % type(bed_str[('2', 'water')]))
- 
-for key in bed_str:     
-    bedSingle = bed_str[key]
-    print(type (bedSingle))
-    for line in bedSingle: print line
-    name_file='_'.join(key)
-    print "@@@@@@@@@@@", name_file
-#     # Writing the file 
-#     # file_type might be interesting that the type of file is automatically recognized
-    bedSingle.write(track=name_file, file_type="bed")
-    print("Name of the file generated is %s" % (name_file))
-
+# bed_str =  intData.convert(mode = "bedGraph", relative_coord = True, split_dataTypes=True, track_rules='split_all')
+# # print("Type after conversion is %s" % type(bed_str[('2', 'water')]))
+#  
+# for key in bed_str:     
+#     bedSingle = bed_str[key]
+#     print "#########",key
+#     print(type(bedSingle))
+#     print "data types are ------",(bedSingle.dataType)
+# #     for line in bedSingle: print line
+#     name_file='_'.join(key)
+#     print "@@@@@@@@@@@", name_file
+#     print bedSingle.track
+# #     # Writing the file 
+# #     # file_type might be interesting that the type of file is automatically recognized
+#     bedSingle.write()
+#     
 ######################
 ## Convert to BEDGRAPH
 # bedGraph_str = intData.convert(mode = "bedGraph", relative_coord=True, split_dataTypes=True, window=300)
