@@ -7,8 +7,8 @@ _rules_options=["all", "one_per_channel"]
 parser = argparse.ArgumentParser(description = 'Script to transform behavioral data into GB readable data')
 parser.add_argument('-i','--input', help='Input file name',required=True)
 parser.add_argument('-f','--file_config',help='Configuration file with genome browser fields correspondence', required=False)
-parser.add_argument('-r','--track_rules', help='Unique values of the field track should be dump on different data structures or not', required=False, choices=_rules_options)
 parser.add_argument('-t','--tracks', help='List of selected tracks', required=False, type=int, nargs='+')
+parser.add_argument('-r','--track_rules', help='Unique values of the field track should be dump on different data structures or not', required=False, choices=_rules_options)
 parser.add_argument('-d','--dataTypes_rules', help='Unique values of the field should dump on different data structures or not', required=False)
 # parser.add_argument('-','--dataTypes_rules', help='Unique values of the field should dump on different data structures or not', required=False)
 parser.add_argument('-c','--chrom_rules', help='Unique values of the field chrom should be dump on different data structures or not', required=False)
@@ -25,14 +25,15 @@ path = args.input
 ## CONFIGURATION FILE
 configFilePath = args.file_config
 configFileDict = int2browser.ConfigInfo(configFilePath)
-track_numbers = args.tracks 
-print "track numbers: ",track_numbers
-print "type-------: ",type(track_numbers)
-print "type: ",type(track_numbers[0])
-print "ooooooooooo",type(track_numbers.split(','))
+
+# Handling Argument tracks
+sel_tracks = args.tracks 
+print "track numbers: ",sel_tracks
+print "type-------: ",type(sel_tracks)
+print "type: ",type(sel_tracks[0])
+
 
 intData = int2browser.intData(path, ontology_dict=configFileDict.correspondence, relative_coord=True)
 
-i = (1,2,3)
-print(type(i))
-print(type (i[0]))
+# Generation of the files set by the user by command line
+bed_str =  intData.convert(mode = "bedGraph", relative_coord = True, split_dataTypes=True, tracks=sel_tracks, track_rules='split_all')
