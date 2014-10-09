@@ -271,12 +271,6 @@ class intData: # if I name it as int I think is like self but with a better name
         idx_fields2split = [self.fieldsG.index("track"), self.fieldsG.index("dataTypes")]
         data_tuple = sorted(data_tuple,key=operator.itemgetter(*idx_fields2split))
         
-        track_rules = kwargs.get("track_rules", "split_all")
-        print "track rules are:", track_rules
-        if track_rules not in _options_track_rules: 
-            raise ValueError("Track_rules \'%s\' not allowed. Possible values are %s"%(track_rules,', '.join(['{}'.format(m) for m in _options_track_rules])))
-        
-        
         for key,group in itertools.groupby(data_tuple, operator.itemgetter(*idx_fields2split)):
             if not dict_split.has_key(key[0]):
                 dict_split [key[0]] = {}
@@ -284,29 +278,49 @@ class intData: # if I name it as int I think is like self but with a better name
         
         ###################
         ### Filtering tracks
+        sel_tracks = []
         if not kwargs.get('tracks'):
-            sel_tracks = []
+            pass
         else:
             sel_tracks = map(str, kwargs.get("tracks",[]))
-            
-        print "%%%%%%%%%%%%%%%%%%",sel_tracks
-#         sel_tracks = map(str, kwargs.get("tracks",[999999]))        
-        
+                
         #When any tracks are selected we consider that all tracks must be considered
         if sel_tracks != []:
-            tracks2rm = self.tracks.difference(sel_tracks)
-            print >> sys.stderr, "Removed tracks are:", ' '.join(tracks2rm)
-            dict_split = self.remove (dict_split, tracks2rm)  
-                   
-        d_track_merge = {}
+            tracks2rm = self.tracks.difference(sel_tracks)            
+            dict_split = self.remove (dict_split, tracks2rm)
+            print >> sys.stderr, "Removed tracks are:", ' '.join(tracks2rm)  
+            #eliminar de self.tracks la track eliminada #modify ya esta hecho en la funcion     
         
+        ###################
+        ###Track rules   
+        track_rules = ""
+        
+        if not kwargs.get('track_rules'):
+            track_rules = "split_all"
+        else:
+            track_rules = kwargs.get('track_rules',"split_all")
+
+        print "Track rules are: ", track_rules    #del
+        
+        if track_rules not in _options_track_rules: 
+            raise ValueError("Track_rules \'%s\' not allowed. Possible values are %s"%(track_rules,', '.join(['{}'.format(m) for m in _options_track_rules])))
+        
+        print "****Tracks to join if split all is set",self.tracks
+        #split_all is like default
+        #join_all
+        tracks2merge = ""
+        
+        if track_rules == "join_all":
+            tracks2merge = self.tracks 
         ##################
         # Joining tracks in track_list
-        # make a function!!!     join_dict_by_primary_key 
-        print "---------- this is how is set the tracks to join", self.tracks  
-        track_list = self.tracks # in this case I will join all tracks   ### cuidado si quito 
+        # make a function!!!     join_dict_by_primary_key
+        d_track_merge = {} 
         
-        d_track_merge = self.join_by_track (dict_split, track_list)
+        print "---------- This is how is set the tracks to join", self.tracks  
+#         track_list = self.tracks # in this case I will join all tracks   ### cuidado si quito #modify 
+        
+        d_track_merge = self.join_by_track (dict_split, tracks2merge)
         
         d_dataTypes_merge = {}
         
