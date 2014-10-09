@@ -4,7 +4,6 @@ from __future__ import division
 
 __author__ = 'Jose Espinosa-Carrasco'
 
-import argparse
 import csv
 import os
 import itertools
