@@ -246,7 +246,7 @@ class intData: # if I name it as int I think is like self but with a better name
          
         """
         kwargs['relative_coord'] = kwargs.get("relative_coord",False)
-
+        
         print >> sys.stderr, self.fieldsG
             
         if mode not in _dict_file: 
@@ -266,13 +266,13 @@ class intData: # if I name it as int I think is like self but with a better name
         Transform data into a bed file if all the necessary fields present
         """   
         dict_split = {}
-                
+        
         #Second separate data by track and dataTypes
         idx_fields2split = [self.fieldsG.index("track"), self.fieldsG.index("dataTypes")]
         data_tuple = sorted(data_tuple,key=operator.itemgetter(*idx_fields2split))
         
         track_rules = kwargs.get("track_rules", "split_all")
-        
+        print "track rules are:", track_rules
         if track_rules not in _options_track_rules: 
             raise ValueError("Track_rules \'%s\' not allowed. Possible values are %s"%(track_rules,', '.join(['{}'.format(m) for m in _options_track_rules])))
         
@@ -284,10 +284,15 @@ class intData: # if I name it as int I think is like self but with a better name
         
         ###################
         ### Filtering tracks
-        tracks2remove = [] 
-#         data_tuple = [tup for tup in data_tuple if not any(i in tup[self.fieldsG.index("track")] for i in tracks2remove)]
-                 
-        dict_split = self.remove (dict_split, tracks2remove)            
+        sel_tracks = map(str, kwargs.get("tracks",[]))        
+        print "Selected tracks are: ", sel_tracks
+        
+        #When any tracks are selected we consider that all tracks must be considered
+        if sel_tracks != []:
+            tracks2rm = self.tracks.difference(sel_tracks)
+            print >> sys.stderr, "Removed tracks are:", ' '.join(tracks2rm)
+            dict_split = self.remove (dict_split, tracks2rm)  
+                   
         d_track_merge = {}
         
         ##################
