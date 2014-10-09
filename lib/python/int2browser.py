@@ -85,7 +85,7 @@ class intData: # if I name it as int I think is like self but with a better name
         self.tracks  =  self.get_field_items (field="track")
         self.dataTypes = self.get_field_items (field="dataTypes")
 #         self.format = "csv"
-        print "value of self.dataTypes after set in intdata", self.dataTypes  
+  
     def _check_delimiter (self, path):
         """ Check whether the delimiter works, if delimiter is not set
         then tries ' ', '\t' and ';'"""
@@ -332,7 +332,8 @@ class intData: # if I name it as int I think is like self but with a better name
         for k, d in d_dataTypes_merge.items():
             for k_2, d_2 in d.items():
                 track_dict[k,k_2] = globals()[_dict_file[mode][0]](getattr(self,_dict_file[mode][1])(d_2, True, window), track=k, dataType=k_2, color=_dict_col_grad[k_2])
-                                       
+#                 track_dict[k,k_2] = globals()[_dict_file[mode][0]](getattr(self,_dict_file[mode][1])(d_2, True, window), track=k, dataType=k_2)
+                
         return (track_dict)
 #             track_dict[(key, '_'.join(self.dataTypes))]=BedGraph(self.track_convert2bedGraph(track_tuple, True, window))   
         
@@ -681,7 +682,7 @@ class dataIter(object):
         if self.format == 'bed':
             annotation_track = 'track type=' + self.format + " " + 'name=\"' +  self.track + "_" + self.dataType + '\"' + " " + '\"description=' + self.track + " " + self.dataType + '\"' + " " + "visibility=2 itemRgb=\"On\" priority=20" 
         elif self.format == 'bedGraph':
-            annotation_track = 'track type=' + self.format + " " + 'name=\"' + self.track + "_" + self.dataType + '\"' + " " + '\"description=' + self.track + "_" + self.dataType + '\"' + " " + 'visibility=full color=' + self.color[7] + ' altColor=' + self.color[8] + 'priority=20'        
+            annotation_track = 'track type=' + self.format + " " + 'name=\"' + self.track + "_" + self.dataType + '\"' + " " + '\"description=' + self.track + "_" + self.dataType + '\"' + " " + 'visibility=full color=' + self.color[7] + ' altColor=' + self.color[8] + ' priority=20'        
             track_file.write (annotation_track + "\n")
            
         for row in self.data: 
