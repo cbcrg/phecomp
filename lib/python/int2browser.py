@@ -284,8 +284,13 @@ class intData: # if I name it as int I think is like self but with a better name
         
         ###################
         ### Filtering tracks
-        sel_tracks = map(str, kwargs.get("tracks",[]))        
-        print "Selected tracks are: ", sel_tracks
+        if not kwargs.get('tracks'):
+            sel_tracks = []
+        else:
+            sel_tracks = map(str, kwargs.get("tracks",[]))
+            
+        print "%%%%%%%%%%%%%%%%%%",sel_tracks
+#         sel_tracks = map(str, kwargs.get("tracks",[999999]))        
         
         #When any tracks are selected we consider that all tracks must be considered
         if sel_tracks != []:
@@ -297,7 +302,8 @@ class intData: # if I name it as int I think is like self but with a better name
         
         ##################
         # Joining tracks in track_list
-        # make a function!!!     join_dict_by_primary_key   
+        # make a function!!!     join_dict_by_primary_key 
+        print "---------- this is how is set the tracks to join", self.tracks  
         track_list = self.tracks # in this case I will join all tracks   ### cuidado si quito 
         
         d_track_merge = self.join_by_track (dict_split, track_list)
