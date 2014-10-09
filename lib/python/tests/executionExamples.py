@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import int2browser, operator, csv
+import int2browser, operator, csv, argparse
 
 # import pybedtools
 # a = pybedtools.example_bedtool('a.bed')
@@ -18,19 +18,19 @@ import int2browser, operator, csv
 ## fieldP --> correspoding field in phenome format
 
 _rules_options=["all", "one_per_channel"]
-parser = int2browser.argparse.ArgumentParser (description = 'Script to transform behavioral data into GB readable data')
-parser.add_argument ('-i','--input', help='Input file name',required=True)
-parser.add_argument ('-f','--file_config',help='Configuration file with genome browser fields correspondence', required=False)
-parser.add_argument ('-t','--track_rules', help='Unique values of the field track should be dump on different data structures or not', required=False, choices=_rules_options)
-parser.add_argument ('-d','--dataTypes_rules', help='Unique values of the field should dump on different data structures or not', required=False)
-parser.add_argument ('-c','--chrom_rules', help='Unique values of the field chrom should be dump on different data structures or not', required=False)
+parser = argparse.ArgumentParser(description = 'Script to transform behavioral data into GB readable data')
+parser.add_argument('-i','--input', help='Input file name',required=True)
+parser.add_argument('-f','--file_config',help='Configuration file with genome browser fields correspondence', required=False)
+parser.add_argument('-t','--track_rules', help='Unique values of the field track should be dump on different data structures or not', required=False, choices=_rules_options)
+parser.add_argument('-d','--dataTypes_rules', help='Unique values of the field should dump on different data structures or not', required=False)
+parser.add_argument('-c','--chrom_rules', help='Unique values of the field chrom should be dump on different data structures or not', required=False)
 
-args = parser.parse_args ()
+args = parser.parse_args()
 
 ## show values ##
-print ("Input file: %s" % args.input )
-print ("Configuration file: %s" % args.file_config)
-print ("Track rules is: %s" % args.track_rules)
+print("Input file: %s" % args.input )
+print("Configuration file: %s" % args.file_config)
+print("Track rules is: %s" % args.track_rules)
 path = args.input
 
 ## CONFIGURATION FILE
@@ -44,9 +44,9 @@ configFileDict = int2browser.ConfigInfo(configFilePath)
 
 ###################
 ## Config file dictionary printed 
-print ("Config file: %s\n" % (type(configFileDict)))
-print (type (configFileDict.correspondence))
-print ("Dictionary config:")
+print("Config file: %s\n" % (type(configFileDict)))
+print(type (configFileDict.correspondence))
+print("Dictionary config:")
 configFileDict.write()
 
 ## How debugging file is created
@@ -54,12 +54,12 @@ configFileDict.write()
 #cat 20120502_FDF_CRG_hab_filtSHORT.csv | sed 's/ //g' | awk '{print $1"\t"$14"\t"$6"\t"$11"\t"$16"\thabituation"}' > shortDev.int
 
 ## Generation of a genome file
-intData = int2browser.intData (path, ontology_dict=configFileDict.correspondence, relative_coord=True)
-print ("Min value in the file %i" % (intData.min))
-print intData.min
+intData = int2browser.intData(path, ontology_dict=configFileDict.correspondence, relative_coord=True)
 
 ## Checking type
 # Now before applying read it has not class data_iter ask someone whether this is ok or not
+print ("Min value in the file %i" % (intData.min))
+print intData.min
 print("Type intData %s" % (type(intData)))
 intData_data_iter = intData.read()
 print("====")
@@ -83,16 +83,16 @@ print("####END")
 ######################
 ## Convert to BED
 # split_dataTypes=False by default
-# bed_str = intData.convert(mode = "bed", relative_coord = 'True')
+# bed_str = intData.convert(mode = "bedGraph", relative_coord = 'True')
 # print ("Type after conversion is %s" % type(bed_str[('2', 'water_food_sc')]))
                      
 # separating by data types (nature) split_dataTypes=True
 # bed_str =  intData.convert(mode = "bed", relative_coord = True, split_dataTypes=True)
-# bed_str =  intData.convert(mode = "bedGraph", relative_coord = True, split_dataTypes=True, track_rules='split_all')
+bed_str =  intData.convert(mode = "bedGraph", relative_coord = True, split_dataTypes=True, track_rules='split_all')
 # # print("Type after conversion is %s" % type(bed_str[('2', 'water')]))
 #  
-# for key in bed_str:     
-#     bedSingle = bed_str[key]
+for key in bed_str:     
+    bedSingle = bed_str[key]
 #     print "#########",key
 #     print(type(bedSingle))
 #     print "data types are ------",(bedSingle.dataType)
@@ -102,7 +102,7 @@ print("####END")
 #     print bedSingle.track
 # #     # Writing the file 
 # #     # file_type might be interesting that the type of file is automatically recognized
-#     bedSingle.write()
+    bedSingle.write()
 #     
 ######################
 ## Convert to BEDGRAPH
