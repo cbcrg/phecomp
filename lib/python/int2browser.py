@@ -308,27 +308,18 @@ class intData: # if I name it as int I think is like self but with a better name
         
         if track_rules not in _options_track_rules: 
             raise ValueError("Track_rules \'%s\' not allowed. Possible values are %s"%(track_rules,', '.join(['{}'.format(m) for m in _options_track_rules])))
-        
-#         tracks2merge = ""
-#         
-#         if track_rules == "join_all":
-#             tracks2merge = self.tracks
-        
+
         tracks2merge = read_track_rules(tracks=self.tracks, track_rules="join_odd")
-        print "*************",tracks2merge    
+   
         ##################
         # Joining tracks in track_list
         d_track_merge = {} 
         
-        if tracks2merge != "":
-            d_track_merge = self.join_by_track(dict_split, tracks2merge)
+        if not tracks2merge:
+            d_track_merge =  dict_split            
         else:
-            d_track_merge =  dict_split
-        
-        
-        
-        
-        
+            d_track_merge = self.join_by_track(dict_split, tracks2merge)
+                
         d_dataTypes_merge = {}
         
         ##################
@@ -781,7 +772,7 @@ def read_track_rules (tracks, track_rules = "split_all"):
     
     if track_rules not in tr_rules_options:
         raise ValueError("Track_rules \'%s\' not allowed. Possible values are %s"%(track_rules,', '.join(['{}'.format(m) for m in tr_rules_options])))
-    #Comprobar si la lista esta vacia!!!! 
+    
     tracks2merge = ""
     print tracks
     if track_rules == "join_all":
@@ -794,4 +785,8 @@ def read_track_rules (tracks, track_rules = "split_all"):
         tracks2merge = ""
     
     print >>sys.stderr, "Tracks to merge are: ", ",".join(tracks2merge)
+    
+    if not tracks2merge:
+        print >>sys.stderr,("No track rules applied as track rules \'%s\' can not be applied to list of tracks provided \'%s\'"%(track_rules, " ".join(tracks)))
+        
     return (tracks2merge)
