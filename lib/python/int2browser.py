@@ -292,7 +292,9 @@ class intData: # if I name it as int I think is like self but with a better name
             #eliminar de self.tracks la track eliminada #modify ya esta hecho en la funcion     
         
         ###################
-        ###Track rules   
+        ###Track rules  
+        #split_all is like default
+        #join_all 
         track_rules = ""
         
         if not kwargs.get('track_rules'):
@@ -305,22 +307,21 @@ class intData: # if I name it as int I think is like self but with a better name
         if track_rules not in _options_track_rules: 
             raise ValueError("Track_rules \'%s\' not allowed. Possible values are %s"%(track_rules,', '.join(['{}'.format(m) for m in _options_track_rules])))
         
-        print "****Tracks to join if split all is set",self.tracks
-        #split_all is like default
-        #join_all
         tracks2merge = ""
         
+        print "track rules has been set to", track_rules
         if track_rules == "join_all":
-            tracks2merge = self.tracks 
+            tracks2merge = self.tracks
+             
         ##################
         # Joining tracks in track_list
-        # make a function!!!     join_dict_by_primary_key
         d_track_merge = {} 
         
-        print "---------- This is how is set the tracks to join", self.tracks  
-#         track_list = self.tracks # in this case I will join all tracks   ### cuidado si quito #modify 
-        
-        d_track_merge = self.join_by_track (dict_split, tracks2merge)
+        if tracks2merge != "":
+            d_track_merge = self.join_by_track (dict_split, tracks2merge)
+        else:
+            d_track_merge =  dict_split
+
         
         d_dataTypes_merge = {}
         
