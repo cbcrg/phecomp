@@ -2,9 +2,10 @@
 
 import int2browser
 import argparse
+import sys
 
 _rules_options = ['all', 'one_per_channel']
-tr_rules_options = ['split_all', 'join_all'] 
+tr_rules_options = ['split_all', 'join_all', 'join_odd', 'join_even'] 
 
 parser = argparse.ArgumentParser(description = 'Script to transform behavioral data into GB readable data')
 parser.add_argument('-i','--input', help='Input file name',required=True)
@@ -31,18 +32,21 @@ configFileDict = int2browser.ConfigInfo(configFilePath)
 
 # Handling Argument tracks
 sel_tracks = args.tracks 
-print "Selected tracks are: ", sel_tracks
+print >>sys.stderr, "@@@Pergola_rules.py Selected tracks are: ", sel_tracks
 
 track_rules = args.track_rules
-print "Track rules are: ", track_rules
+print >>sys.stderr, "@@@Pergola_rules.py Track rules are: ", track_rules
 
-print "Print all the options set by pergola_rules end here!"
+print >>sys.stderr, "@@@Print all the options set by pergola_rules end here!"
 
 intData = int2browser.intData(path, ontology_dict=configFileDict.correspondence, relative_coord=True)
-
-# Generation of the files set by the user by command line
-bed_str =  intData.convert(mode = "bedGraph", relative_coord = True, split_dataTypes=True, tracks=sel_tracks, track_rules='join_all')
-
-for key in bed_str:
-    print key     
-    
+track_list = intData.tracks
+        
+tracks2merge = int2browser.read_track_rules (tracks=track_list, track_rules="join_odd")        
+print >>sys.stderr, "@@@Pergola_rules.py Tracks2merge=",tracks2merge
+# # tracks2merge=2       
+# # Generation of the files set by the user by command line
+bed_str =  intData.convert(mode = "bedGraph", relative_coord = True, split_dataTypes=True, tracks=sel_tracks, tracks_merge=tracks2merge)
+# 
+# for key in bed_str:
+#     print key
