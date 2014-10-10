@@ -297,27 +297,24 @@ class intData: # if I name it as int I think is like self but with a better name
         ###Track rules  
         #split_all is like default
         #join_all 
-        track_rules = ""
-        
+        track_rules = ""        
+
         if not kwargs.get('track_rules'):
             track_rules = "split_all"
         else:
             track_rules = kwargs.get('track_rules',"split_all")
-
-        print "Track rules are: ", track_rules    #del
         
         if track_rules not in _options_track_rules: 
             raise ValueError("Track_rules \'%s\' not allowed. Possible values are %s"%(track_rules,', '.join(['{}'.format(m) for m in _options_track_rules])))
-
-        tracks2merge = read_track_rules(tracks=self.tracks, track_rules="join_odd")
-   
+        
         ##################
         # Joining tracks in track_list
         d_track_merge = {} 
         
-        if not tracks2merge:
-            d_track_merge =  dict_split            
+        if track_rules == "split_all":
+            d_track_merge =  dict_split         
         else:
+            tracks2merge = read_track_rules(tracks=self.tracks, track_rules=track_rules)
             d_track_merge = self.join_by_track(dict_split, tracks2merge)
                 
         d_dataTypes_merge = {}
