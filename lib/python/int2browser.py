@@ -267,7 +267,8 @@ class intData: # if I name it as int I think is like self but with a better name
         """   
         dict_split = {}
         
-        #Second separate data by track and dataTypes
+        ###################
+        ### Data is separated by track and dataTypes
         idx_fields2split = [self.fieldsG.index("track"), self.fieldsG.index("dataTypes")]
         data_tuple = sorted(data_tuple,key=operator.itemgetter(*idx_fields2split))
         
@@ -284,7 +285,7 @@ class intData: # if I name it as int I think is like self but with a better name
         else:
             sel_tracks = map(str, kwargs.get("tracks",[]))
                 
-        #When any tracks are selected we consider that all tracks must be considered
+        #When any tracks are selected we consider that any track should be removed
         if sel_tracks != []:
             tracks2rm = self.tracks.difference(sel_tracks)            
             dict_split = self.remove (dict_split, tracks2rm)
@@ -309,7 +310,6 @@ class intData: # if I name it as int I think is like self but with a better name
         
         tracks2merge = ""
         
-        print "track rules has been set to", track_rules
         if track_rules == "join_all":
             tracks2merge = self.tracks
              
@@ -321,7 +321,6 @@ class intData: # if I name it as int I think is like self but with a better name
             d_track_merge = self.join_by_track (dict_split, tracks2merge)
         else:
             d_track_merge =  dict_split
-
         
         d_dataTypes_merge = {}
         
@@ -329,11 +328,6 @@ class intData: # if I name it as int I think is like self but with a better name
         # Joining the dataTypes or natures
 #         dataTypes_list = self.dataTypes
         d_dataTypes_merge = self.join_by_dataType (d_track_merge, mode)
-        
-        ####
-        # merge everything that is as getting the data as it is entering into the function
-        # but without filtering
-        
         
         track_dict = {}                        
    
