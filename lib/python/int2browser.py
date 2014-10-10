@@ -48,7 +48,8 @@ _dict_file = {'bed' : ('Bed', 'track_convert2bed', '.bed'),
               'txt': ('dataIter', '', '.txt')}
 
 # _options_split_dataTypes = ('one_per_channel','list_all', 'True', 'False') #del
-_options_track_rules = ('split_all', 'join_all')
+_options_track_rules = ('split_all', 'join_all', 'join_odd', 'join_even') 
+tr_rules_options = ('split_all', 'join_all', 'join_odd', 'join_even') 
 
 _black_gradient = ["226,226,226", "198,198,198", "170,170,170", "141,141,141", "113,113,113", "85,85,85", "56,56,56", "28,28,28", "0,0,0"]
 _blue_gradient = ["229,229,254", "203,203,254", "178,178,254", "152,152,254", "127,127,254", "102,102,254", "76,76,173", "51,51,162", "0,0,128"]
@@ -763,4 +764,25 @@ class ConfigInfo():
                 self.write(value, indent+1)
             else:
                 print '\t' * (indent+1) + str(value)
-   
+
+def read_track_rules (tracks, track_rules = "split_all"):
+    """ 
+    Read track rules and returns a set with the tracks to be joined
+    :param tracks: (set) of tracks to which track_rules should be applied set([1,2])
+    :param track_rules: (str) option to join tracks (join_all, split_all, join_odd, join_evens) 
+    """
+    
+    if track_rules not in tr_rules_options:
+        raise ValueError("Track_rules \'%s\' not allowed. Possible values are %s"%(track_rules,', '.join(['{}'.format(m) for m in tr_rules_options])))
+    
+    tracks2merge = ""
+    print tracks
+    if track_rules == "join_all":
+        tracks2merge = tracks
+    elif track_rules == 'join_odd':
+        tracks2merge = set([t for t in tracks if not int(t) % 2])
+    elif track_rules == 'join_even':
+        tracks2merge = set([t for t in tracks if int(t) % 2])
+    
+    print >>sys.stderr, "Tracks to merge are: ", ",".join(tracks2merge)
+    return (tracks2merge)
