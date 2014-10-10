@@ -312,11 +312,38 @@ class intData: # if I name it as int I think is like self but with a better name
         d_track_merge = {} 
         
         if track_rules == "split_all":
-            d_track_merge =  dict_split         
+            d_track_merge =  dict_split
+            print "ojete"         
         else:
             tracks2merge = read_track_rules(tracks=self.tracks, track_rules=track_rules)
+            print "length",len(self.tracks.union(tracks2merge))
+            if len(self.tracks.union(tracks2merge)) == 0:
+                raise ValueError("culo")
             d_track_merge = self.join_by_track(dict_split, tracks2merge)
-                
+        
+        print "after joining....",self.tracks
+        
+        ###################
+        ###tracks_merge         
+        if not kwargs.get('tracks_merge'):
+            tracks_merge = self.tracks
+        else:
+            tracks_merge = kwargs.get('tracks_merge',self.tracks)
+        print "Tracks_merge:...........",tracks_merge
+        
+        print (dict_split)
+        
+        print "length111111111", type(tracks_merge)
+        
+        print "length111111111",len(self.tracks.intersection(tracks_merge)) 
+        
+        if not all(tracks in self.tracks for tracks in tracks_merge):
+            raise ValueError("Tracks to merge: %s, are not in the track list: %s" % (" ".join(tracks_merge), " ".join(self.tracks)))
+   
+        d_track_merge = self.join_by_track(dict_split, tracks_merge)
+        
+        print (d_track_merge)        
+        
         d_dataTypes_merge = {}
         
         ##################
@@ -771,7 +798,7 @@ def read_track_rules (tracks, track_rules = "split_all"):
         raise ValueError("Track_rules \'%s\' not allowed. Possible values are %s"%(track_rules,', '.join(['{}'.format(m) for m in tr_rules_options])))
     
     tracks2merge = ""
-    print tracks
+
     if track_rules == "join_all":
         tracks2merge = tracks
     elif track_rules == 'join_odd':
