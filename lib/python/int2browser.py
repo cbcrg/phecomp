@@ -310,19 +310,16 @@ class intData: # if I name it as int I think is like self but with a better name
         ##################
         # Joining tracks in track_list
         d_track_merge = {} 
-        
+
         if track_rules == "split_all":
             d_track_merge =  dict_split
         else:
             tracks2merge = read_track_rules(tracks=self.tracks, track_rules=track_rules)
-#             print "length.............................",len(self.tracks.union(tracks2merge))
+
             if not all(tracks in self.tracks for tracks in tracks2merge):
                 raise ValueError("Tracks to merge set by track_rules: %s, are not in the track list: %s" % (" ".join(tracks2merge), " ".join(self.tracks)))
-#             if len(self.tracks.union(tracks2merge)) == 0:
-#                 raise ValueError("culo")
             d_track_merge = self.join_by_track(dict_split, tracks2merge)
         
-        print "after joining....", self.tracks #modify self.tracks should have the tracks joined after joining them 
         
         ###################
         ###tracks_merge         
@@ -332,7 +329,7 @@ class intData: # if I name it as int I think is like self but with a better name
             tracks_merge = kwargs.get('tracks_merge',self.tracks)
         print "Tracks_merge:...........",tracks_merge
         
-        print (dict_split)
+        print "dict_split=",(d_track_merge)
         
         if not all(tracks in self.tracks for tracks in tracks_merge):
             raise ValueError("Tracks to merge: %s, are not in the track list: %s" % (" ".join(tracks_merge), " ".join(self.tracks)))
@@ -375,21 +372,27 @@ class intData: # if I name it as int I think is like self but with a better name
         return (track_dict)
 
     def join_by_track (self, dict_t, tracks2join):  
+        
         d_track_merge = {} 
+        new_tracks = set()
+        
         for key, nest_dict in dict_t.items():
+            
             if key not in tracks2join: 
-                print "Track skipped: %s" % key
+                print "Track not use because was not set when join_by_track is called: %s" % key
                 continue
             
             if not d_track_merge.has_key('_'.join(tracks2join)):
                 d_track_merge['_'.join(tracks2join)] = {}
+                new_tracks.add('_'.join(tracks2join))
             
             for key_2, data in nest_dict.items():                            
                 if not d_track_merge['_'.join(tracks2join)].has_key(key_2):
                     d_track_merge['_'.join(tracks2join)] [key_2]= data
                 else:  
                     d_track_merge['_'.join(tracks2join)] [key_2] = d_track_merge['_'.join(tracks2join)] [key_2] + data
-                    
+
+        self.tracks = new_tracks            
         return (d_track_merge)
     
     def join_by_dataType (self, dict_d, mode):
