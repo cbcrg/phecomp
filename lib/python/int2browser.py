@@ -309,19 +309,25 @@ class intData: # if I name it as int I think is like self but with a better name
         if track_rules not in _options_track_rules: 
             raise ValueError("Track_rules \'%s\' not allowed. Possible values are %s"%(track_rules,', '.join(['{}'.format(m) for m in _options_track_rules])))
         
-        tracks2merge = ""
+#         tracks2merge = ""
+#         
+#         if track_rules == "join_all":
+#             tracks2merge = self.tracks
         
-        if track_rules == "join_all":
-            tracks2merge = self.tracks
-             
+        tracks2merge = read_track_rules(tracks=self.tracks, track_rules="join_odd")
+        print "*************",tracks2merge    
         ##################
         # Joining tracks in track_list
         d_track_merge = {} 
         
         if tracks2merge != "":
-            d_track_merge = self.join_by_track (dict_split, tracks2merge)
+            d_track_merge = self.join_by_track(dict_split, tracks2merge)
         else:
             d_track_merge =  dict_split
+        
+        
+        
+        
         
         d_dataTypes_merge = {}
         
@@ -768,21 +774,24 @@ class ConfigInfo():
 def read_track_rules (tracks, track_rules = "split_all"):
     """ 
     Read track rules and returns a set with the tracks to be joined
+    
     :param tracks: (set) of tracks to which track_rules should be applied set([1,2])
     :param track_rules: (str) option to join tracks (join_all, split_all, join_odd, join_evens) 
     """
     
     if track_rules not in tr_rules_options:
         raise ValueError("Track_rules \'%s\' not allowed. Possible values are %s"%(track_rules,', '.join(['{}'.format(m) for m in tr_rules_options])))
-    
+    #Comprobar si la lista esta vacia!!!! 
     tracks2merge = ""
     print tracks
     if track_rules == "join_all":
         tracks2merge = tracks
     elif track_rules == 'join_odd':
-        tracks2merge = set([t for t in tracks if not int(t) % 2])
-    elif track_rules == 'join_even':
         tracks2merge = set([t for t in tracks if int(t) % 2])
+    elif track_rules == 'join_even':
+        tracks2merge = set([t for t in tracks if not int(t) % 2])
+    else:
+        tracks2merge = ""
     
     print >>sys.stderr, "Tracks to merge are: ", ",".join(tracks2merge)
     return (tracks2merge)
