@@ -3,6 +3,17 @@
 import int2browser
 from argparse import ArgumentParser, ArgumentTypeError
 import sys
+import re
+
+def parseNumList(string):
+    m = re.match(r'(\d+)(?:-(\d+))?$', string)
+
+    if not m:
+        raise ArgumentTypeError("'" + string + "' is not a range of number. Expected '0-5' or '2'.")
+    start = m.group(1)
+    end = m.group(2) or start
+    
+    return list(range(int(start,10), int(end,10)+1))
 
 _rules_options = ['all', 'one_per_channel']
 tr_rules_options = ['split_all', 'join_all', 'join_odd', 'join_even', 'join_range', 'join_list'] 
@@ -11,9 +22,9 @@ parser = ArgumentParser(description = 'Script to transform behavioral data into 
 parser.add_argument('-i','--input', help='Input file name',required=True)
 parser.add_argument('-f','--file_config',help='Configuration file with genome browser fields correspondence', required=False)
 parser.add_argument('-t','--tracks', help='List of selected tracks', required=False, type=int, nargs='+')
-parser.add_argument('-r','--track_rules', help='Help msg here', required=False, choices=tr_rules_options)
+parser.add_argument('-u','--track_rules', help='Help msg here', required=False, choices=tr_rules_options)
 parser.add_argument('-d','--dataTypes_rules', help='Unique values of the field should dump on different data structures or not', required=False, choices=_rules_options)
-parser.add_argument('-','--', help='Unique values of the field should dump on different data structures or not', required=False, choices=_rules_options)
+parser.add_argument('-r','--range', help='Help msg here', required=False, type=parseNumList)
 
 # parser.add_argument('-','--dataTypes_rules', help='Unique values of the field should dump on different data structures or not', required=False)
 parser.add_argument('-c','--chrom_rules', help='Unique values of the field chrom should be dump on different data structures or not', required=False)
@@ -39,16 +50,19 @@ print >>sys.stderr, "@@@Pergola_rules.py Selected tracks are: ", sel_tracks
 track_rules = args.track_rules
 print >>sys.stderr, "@@@Pergola_rules.py Track rules are: ", track_rules
 
+track_list = args.range
+print >>sys.stderr, "@@@Pergola_rules.py Track list in range are: ", track_list
+
 print >>sys.stderr, "@@@Print all the options set by pergola_rules end here!"
 
-intData = int2browser.intData(path, ontology_dict=configFileDict.correspondence, relative_coord=True)
-track_list = intData.tracks
+# intData = int2browser.intData(path, ontology_dict=configFileDict.correspondence, relative_coord=True)
+# track_list = intData.tracks
         
-tracks2merge = int2browser.read_track_rules (tracks=track_list, track_rules="join_odd")        
-print >>sys.stderr, "@@@Pergola_rules.py Tracks2merge=",tracks2merge
+# tracks2merge = int2browser.read_track_rules (tracks=track_list, track_rules="join_odd")        
+# print >>sys.stderr, "@@@Pergola_rules.py Tracks2merge=",tracks2merge
 # # tracks2merge=2       
 # # Generation of the files set by the user by command line
-bed_str =  intData.convert(mode = "bedGraph", relative_coord = True, split_dataTypes=True, tracks=sel_tracks, tracks_merge=tracks2merge)
+# bed_str =  intData.convert(mode = "bedGraph", relative_coord = True, split_dataTypes=True, tracks=sel_tracks, tracks_merge=tracks2merge)
 # 
 # for key in bed_str:
 #     print key
