@@ -1,18 +1,20 @@
 #!/usr/bin/env python
 
 import int2browser
-import argparse
+from argparse import ArgumentParser, ArgumentTypeError
 import sys
 
 _rules_options = ['all', 'one_per_channel']
-tr_rules_options = ['split_all', 'join_all', 'join_odd', 'join_even'] 
+tr_rules_options = ['split_all', 'join_all', 'join_odd', 'join_even', 'join_range', 'join_list'] 
 
-parser = argparse.ArgumentParser(description = 'Script to transform behavioral data into GB readable data')
+parser = ArgumentParser(description = 'Script to transform behavioral data into GB readable data')
 parser.add_argument('-i','--input', help='Input file name',required=True)
 parser.add_argument('-f','--file_config',help='Configuration file with genome browser fields correspondence', required=False)
 parser.add_argument('-t','--tracks', help='List of selected tracks', required=False, type=int, nargs='+')
 parser.add_argument('-r','--track_rules', help='Help msg here', required=False, choices=tr_rules_options)
 parser.add_argument('-d','--dataTypes_rules', help='Unique values of the field should dump on different data structures or not', required=False, choices=_rules_options)
+parser.add_argument('-','--', help='Unique values of the field should dump on different data structures or not', required=False, choices=_rules_options)
+
 # parser.add_argument('-','--dataTypes_rules', help='Unique values of the field should dump on different data structures or not', required=False)
 parser.add_argument('-c','--chrom_rules', help='Unique values of the field chrom should be dump on different data structures or not', required=False)
 
