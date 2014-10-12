@@ -23,7 +23,7 @@ parser.add_argument('-i','--input', help='Input file name',required=True)
 parser.add_argument('-f','--file_config',help='Configuration file with genome browser fields correspondence', required=False)
 parser.add_argument('-t','--tracks', help='List of selected tracks', required=False, type=int, nargs='+')
 parser.add_argument('-a','--track_actions', help='Help msg here', required=False, choices=tr_act_options)
-parser.add_argument('-d','--dataTypes_actions', help='Unique values of the field should dump on different data structures or not', required=False, choices=tr_act_options)
+parser.add_argument('-d','--dataTypes_actions', help='Unique values of the field should dump on different data structures or not', required=False, choices=dt_act_options)
 parser.add_argument('-r','--range', help='Help msg here', required=False, type=parseNumList)
 
 # parser.add_argument('-','--dataTypes_rules', help='Unique values of the field should dump on different data structures or not', required=False)
@@ -52,6 +52,9 @@ print >>sys.stderr, "@@@Pergola_rules.py Track rules are: ", track_rules
 
 track_list = args.range
 print >>sys.stderr, "@@@Pergola_rules.py Track list in range are: ", track_list
+
+dataTypes_act = args.dataTypes_actions
+print >>sys.stderr, "@@@Pergola_rules.py dataTypes actions are: ", dataTypes_act
 
 print >>sys.stderr, "@@@Print all the options set by pergola_rules end here!"
 
