@@ -35,7 +35,7 @@ args = parser.parse_args()
 print("This are the selected options: -f  /Users/jespinosa/git/phecomp/lib/python/examples/b2g.txt -i /Users/jespinosa/git/phecomp/lib/python/examples/shortDev.int -t all")
 print("Input file: %s" % args.input )
 print("Configuration file: %s" % args.file_config)
-print("Track rules is: %s" % args.track_actions)
+print("Track actions is: %s" % args.track_actions)
 
 path = args.input
 
@@ -47,8 +47,8 @@ configFileDict = int2browser.ConfigInfo(configFilePath)
 sel_tracks = args.tracks 
 print >>sys.stderr, "@@@Pergola_rules.py Selected tracks are: ", sel_tracks
 
-track_rules = args.track_actions
-print >>sys.stderr, "@@@Pergola_rules.py Track rules are: ", track_rules
+track_act = args.track_actions
+print >>sys.stderr, "@@@Pergola_rules.py Track rules are: ", track_act
 
 track_list = args.range
 print >>sys.stderr, "@@@Pergola_rules.py Track list in range are: ", track_list
