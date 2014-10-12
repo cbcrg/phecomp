@@ -15,15 +15,15 @@ def parseNumList(string):
     
     return list(range(int(start,10), int(end,10)+1))
 
-_rules_options = ['all', 'one_per_channel']
-tr_rules_options = ['split_all', 'join_all', 'join_odd', 'join_even', 'join_range', 'join_list'] 
+dt_act_options = ['all', 'one_per_channel']
+tr_act_options = ['split_all', 'join_all', 'join_odd', 'join_even', 'join_range', 'join_list'] 
 
 parser = ArgumentParser(description = 'Script to transform behavioral data into GB readable data')
 parser.add_argument('-i','--input', help='Input file name',required=True)
 parser.add_argument('-f','--file_config',help='Configuration file with genome browser fields correspondence', required=False)
 parser.add_argument('-t','--tracks', help='List of selected tracks', required=False, type=int, nargs='+')
-parser.add_argument('-u','--track_rules', help='Help msg here', required=False, choices=tr_rules_options)
-parser.add_argument('-d','--dataTypes_rules', help='Unique values of the field should dump on different data structures or not', required=False, choices=_rules_options)
+parser.add_argument('-a','--track_actions', help='Help msg here', required=False, choices=tr_act_options)
+parser.add_argument('-d','--dataTypes_actions', help='Unique values of the field should dump on different data structures or not', required=False, choices=tr_act_options)
 parser.add_argument('-r','--range', help='Help msg here', required=False, type=parseNumList)
 
 # parser.add_argument('-','--dataTypes_rules', help='Unique values of the field should dump on different data structures or not', required=False)
@@ -35,7 +35,7 @@ args = parser.parse_args()
 print("This are the selected options: -f  /Users/jespinosa/git/phecomp/lib/python/examples/b2g.txt -i /Users/jespinosa/git/phecomp/lib/python/examples/shortDev.int -t all")
 print("Input file: %s" % args.input )
 print("Configuration file: %s" % args.file_config)
-print("Track rules is: %s" % args.track_rules)
+print("Track rules is: %s" % args.track_actions)
 
 path = args.input
 
@@ -47,7 +47,7 @@ configFileDict = int2browser.ConfigInfo(configFilePath)
 sel_tracks = args.tracks 
 print >>sys.stderr, "@@@Pergola_rules.py Selected tracks are: ", sel_tracks
 
-track_rules = args.track_rules
+track_rules = args.track_actions
 print >>sys.stderr, "@@@Pergola_rules.py Track rules are: ", track_rules
 
 track_list = args.range
