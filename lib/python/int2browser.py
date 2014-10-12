@@ -50,6 +50,7 @@ _dict_file = {'bed' : ('Bed', 'track_convert2bed', '.bed'),
 # _options_split_dataTypes = ('one_per_channel','list_all', 'True', 'False') #del
 _options_track_rules = ('split_all', 'join_all', 'join_odd', 'join_even') 
 tr_rules_options = ('split_all', 'join_all', 'join_odd', 'join_even') 
+dt_act_options = ['all', 'one_per_channel']
 
 _black_gradient = ["226,226,226", "198,198,198", "170,170,170", "141,141,141", "113,113,113", "85,85,85", "56,56,56", "28,28,28", "0,0,0"]
 _blue_gradient = ["229,229,254", "203,203,254", "178,178,254", "152,152,254", "127,127,254", "102,102,254", "76,76,173", "51,51,162", "0,0,128"]
@@ -814,3 +815,32 @@ def read_track_rules (tracks, track_rules = "split_all"):
         print >>sys.stderr,("No track rules applied as track rules \'%s\' can not be applied to list of tracks provided \'%s\'"%(track_rules, " ".join(tracks)))
         
     return (tracks2merge)
+
+def read_dataTypes_rules (tracks, dt_action = "split_all"):
+    """ 
+    Read dataTypes action and returns the option set
+    
+    :param tracks: (set) of tracks to which track_rules should be applied set([1,2])
+    :param dt_actions: (str) option to join dataTypes ('all', 'one_per_channel') 
+    """
+    
+    if dt_action not in dt_act_options:
+        raise ValueError("Track_rules \'%s\' not allowed. Possible values are %s"%(dt_action,', '.join(['{}'.format(m) for m in tr_rules_options])))
+#     
+#     tracks2merge = ""
+# 
+#     if track_rules == "join_all":
+#         tracks2merge = tracks
+#     elif track_rules == 'join_odd':
+#         tracks2merge = set([t for t in tracks if int(t) % 2])
+#     elif track_rules == 'join_even':
+#         tracks2merge = set([t for t in tracks if not int(t) % 2])
+#     else:
+#         tracks2merge = ""
+#     
+#     print >>sys.stderr, "Tracks to merge are: ", ",".join(tracks2merge)
+#     
+#     if not tracks2merge:
+#         print >>sys.stderr,("No track rules applied as track rules \'%s\' can not be applied to list of tracks provided \'%s\'"%(track_rules, " ".join(tracks)))
+#         
+#     return (tracks2merge)
