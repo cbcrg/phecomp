@@ -65,8 +65,6 @@ else:
     tracks2merge = ""
     
 # exists args.range or args.list by default without setting any action they are joined keeping it simple
-# if (not in_call and len(self.tracks) != 1):
-# tracks2merge = args.range
 if tracks2merge and args.track_actions:
     raise ValueError ("Options --list -l or --range -r are incompatible with --track_actions -t, please change your options")
 if tracks2merge:
@@ -78,13 +76,11 @@ if tracks2merge:
 track_act = args.track_actions
 print >>sys.stderr, "@@@Pergola_rules.py Track actions are: ", track_act
 
-
-
-
-
+# Handling argument dataTypes actions
 dataTypes_act = args.dataTypes_actions
 print >>sys.stderr, "@@@Pergola_rules.py dataTypes actions are: ", dataTypes_act
 
+#End  of options
 print >>sys.stderr, "@@@Print all the options set by pergola_rules end here!"
 
 intData = int2browser.intData(path, ontology_dict=configFileDict.correspondence, relative_coord=True)
@@ -99,7 +95,7 @@ print "====================", tracks2merge
 # print >>sys.stderr, "@@@Pergola_rules.py Tracks2merge=",tracks2merge
 # # tracks2merge=2       
 # # Generation of the files set by the user by command line
-bed_str =  intData.convert(mode = "bedGraph", relative_coord = True, split_dataTypes=True, tracks=sel_tracks, tracks_merge=tracks2merge)
+bed_str =  intData.convert(mode = "bedGraph", relative_coord = True, dataTypes_actions=dataTypes_act, tracks=sel_tracks, tracks_merge=tracks2merge)
  
 for key in bed_str:
-    print key
+    print "key.......: ",key
