@@ -793,8 +793,8 @@ def read_track_actions (tracks, track_action = "split_all"):
     """ 
     Read track actions and returns a set with the tracks to be joined
     
-    :param tracks: (set) of tracks to which track_rules should be applied set([1,2])
-    :param track_rules: (str) option to join tracks (join_all, split_all, join_odd, join_evens) 
+    :param tracks: (set) of tracks to which track_action should be applied set([1,2])
+    :param track_action: (str) option to join tracks (join_all, split_all, join_odd, join_evens) 
     """
     
     if track_action not in tr_act_options:
@@ -813,20 +813,20 @@ def read_track_actions (tracks, track_action = "split_all"):
     print >>sys.stderr,"Tracks to merge are: ", ",".join("'{0}'".format(t) for t in tracks2merge)
        
     if not tracks2merge:
-        print >>sys.stderr,("No track rules applied as track rules \'%s\' can not be applied to list of tracks provided \'%s\'"%(track_action, " ".join(tracks)))
+        print >>sys.stderr,("No track action applied as track actions \'%s\' can not be applied to list of tracks provided \'%s\'"%(track_action, " ".join(tracks)))
         
     return (tracks2merge)
 
-def read_dataTypes_rules (tracks, dt_action = "split_all"):
+def read_dataTypes_actions (tracks, dt_action = "split_all"):
     """ 
     Read dataTypes action and returns the option set
     
-    :param tracks: (set) of tracks to which track_rules should be applied set([1,2])
+    :param tracks: (set) of tracks to which dt_action should be applied e.g. set([1,2])
     :param dt_actions: (str) option to join dataTypes ('all', 'one_per_channel') 
     """
     
     if dt_action not in dt_act_options:
-        raise ValueError("Track_rules \'%s\' not allowed. Possible values are %s"%(dt_action,', '.join(['{}'.format(m) for m in tr_act_options])))
+        raise ValueError("dt_action \'%s\' not allowed. Possible values are %s"%(dt_action,', '.join(['{}'.format(m) for m in tr_act_options])))
      
     tracks2merge = ""
 # 
