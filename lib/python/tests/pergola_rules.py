@@ -22,9 +22,9 @@ parser = ArgumentParser(description = 'Script to transform behavioral data into 
 parser.add_argument('-i','--input', help='Input file name',required=True)
 parser.add_argument('-f','--file_config',help='Configuration file with genome browser fields correspondence', required=False)
 parser.add_argument('-t','--tracks', help='List of selected tracks', required=False, type=int, nargs='+')
-parser.add_argument('-a','--track_actions', help='Help msg here', required=False, choices=tr_act_options)
+parser.add_argument('-a','--track_actions', help='Option of action with tracks selected, split_all, join_all, join_odd, join_even, join_range or join_list', required=False, choices=tr_act_options)
 parser.add_argument('-d','--dataTypes_actions', help='Unique values of the field should dump on different data structures or not', required=False, choices=dt_act_options)
-parser.add_argument('-r','--range', help='Help msg here', required=False, type=parseNumList)
+parser.add_argument('-r','--range', help='Numeric range to set tracks to select tracks', required=False, type=parseNumList)
 
 # parser.add_argument('-','--dataTypes_rules', help='Unique values of the field should dump on different data structures or not', required=False)
 parser.add_argument('-c','--chrom_rules', help='Unique values of the field chrom should be dump on different data structures or not', required=False)
