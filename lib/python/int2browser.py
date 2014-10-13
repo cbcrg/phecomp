@@ -329,7 +329,7 @@ class intData: # if I name it as int I think is like self but with a better name
         ###################
         ###tracks_merge                 
         if not kwargs.get('tracks_merge'):
-            pass
+            d_track_merge = dict_split
         else:
             tracks_merge = kwargs.get('tracks_merge',self.tracks)
             
