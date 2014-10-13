@@ -47,7 +47,7 @@ print("Configuration file: %s" % args.file_config)
 print("Track actions is: %s" % args.track_actions)
 
 path = args.input
-
+ 
 ## CONFIGURATION FILE
 configFilePath = args.file_config
 configFileDict = int2browser.ConfigInfo(configFilePath)
@@ -56,9 +56,7 @@ configFileDict = int2browser.ConfigInfo(configFilePath)
 sel_tracks = args.tracks 
 print >>sys.stderr, "@@@Pergola_rules.py Selected tracks are: ", sel_tracks
 
-track_act = args.track_actions
-print >>sys.stderr, "@@@Pergola_rules.py Track actions are: ", track_act
-
+# Handling list or range of tracks to join if set
 if (args.list):
     tracks2merge = args.list
 elif (args.range):
@@ -69,7 +67,20 @@ else:
 # exists args.range or args.list by default without setting any action they are joined keeping it simple
 # if (not in_call and len(self.tracks) != 1):
 # tracks2merge = args.range
-print >>sys.stderr, "@@@Pergola_rules.py Tracks to join are: ", tracks2merge
+if tracks2merge and args.track_actions:
+    raise ValueError ("Options --list -l or --range -r are incompatible with --track_actions -t, please change your options")
+if tracks2merge:
+    print tracks2merge
+    print ' '.join(str(i) for i in tracks2merge)
+    print >>sys.stderr, "@@@Pergola_rules.py Tracks to join are: %s"%(",".join("'{0}'".format(t) for t in tracks2merge))
+
+# Handling argument track actions
+track_act = args.track_actions
+print >>sys.stderr, "@@@Pergola_rules.py Track actions are: ", track_act
+
+
+
+
 
 dataTypes_act = args.dataTypes_actions
 print >>sys.stderr, "@@@Pergola_rules.py dataTypes actions are: ", dataTypes_act
