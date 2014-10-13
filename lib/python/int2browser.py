@@ -345,9 +345,11 @@ class intData: # if I name it as int I think is like self but with a better name
         
         ##################
         # Joining the dataTypes or natures
-#         dataTypes_list = self.dataTypes
-        d_dataTypes_merge = self.join_by_dataType (d_track_merge, mode)
-        
+        if not kwargs.get('dataTypes_actions') or kwargs.get('dataTypes_actions') == 'one_per_channel':
+            d_dataTypes_merge = d_track_merge
+        elif kwargs.get('dataTypes_actions') == 'all':
+            d_dataTypes_merge = self.join_by_dataType(d_track_merge, mode)
+            
         track_dict = {}                        
    
         ### 
