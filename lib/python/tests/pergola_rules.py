@@ -12,8 +12,10 @@ def parseNumList(string):
         raise ArgumentTypeError("'" + string + "' is not a range of number. Expected '0-5' or '2'.")
     start = m.group(1)
     end = m.group(2) or start
+    list_range=list(range(int(start,10), int(end,10)+1))
+    set_range=set(["{}".format(t) for t in list_range]) #modify probably I should change or set of tracks to integers and not string
     
-    return list(range(int(start,10), int(end,10)+1))
+    return set_range
 
 dt_act_options = ['all', 'one_per_channel']
 tr_act_options = ['split_all', 'join_all', 'join_odd', 'join_even', 'join_range', 'join_list'] 
@@ -50,22 +52,22 @@ print >>sys.stderr, "@@@Pergola_rules.py Selected tracks are: ", sel_tracks
 track_act = args.track_actions
 print >>sys.stderr, "@@@Pergola_rules.py Track rules are: ", track_act
 
-track_list = args.range
-print >>sys.stderr, "@@@Pergola_rules.py Track list in range are: ", track_list
+tracks2merge = args.range
+print >>sys.stderr, "@@@Pergola_rules.py Track list in range are: ", tracks2merge
 
 dataTypes_act = args.dataTypes_actions
 print >>sys.stderr, "@@@Pergola_rules.py dataTypes actions are: ", dataTypes_act
 
 print >>sys.stderr, "@@@Print all the options set by pergola_rules end here!"
 
-# intData = int2browser.intData(path, ontology_dict=configFileDict.correspondence, relative_coord=True)
-# track_list = intData.tracks
+intData = int2browser.intData(path, ontology_dict=configFileDict.correspondence, relative_coord=True)
+track_list = intData.tracks
         
-# tracks2merge = int2browser.read_track_rules (tracks=track_list, track_rules="join_odd")        
+# tracks2merge = int2browser.read_track_rules(tracks=track_list, track_rules="join_odd")        
 # print >>sys.stderr, "@@@Pergola_rules.py Tracks2merge=",tracks2merge
 # # tracks2merge=2       
 # # Generation of the files set by the user by command line
-# bed_str =  intData.convert(mode = "bedGraph", relative_coord = True, split_dataTypes=True, tracks=sel_tracks, tracks_merge=tracks2merge)
+bed_str =  intData.convert(mode = "bedGraph", relative_coord = True, split_dataTypes=True, tracks=sel_tracks, tracks_merge=tracks2merge)
 # 
 # for key in bed_str:
 #     print key
