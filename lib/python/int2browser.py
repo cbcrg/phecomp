@@ -331,10 +331,10 @@ class intData: # if I name it as int I think is like self but with a better name
         print "Tracks_merge:...........",tracks_merge
         
         print "dict_split=",(d_track_merge)
-        
+     
         if not all(tracks in self.tracks for tracks in tracks_merge):
-            raise ValueError("Tracks to merge: %s, are not in the track list: %s" % (" ".join(tracks_merge), " ".join(self.tracks)))
-   
+            raise ValueError ("Tracks to merge: %s, are not in the track list: " % ",".join("'{0}'".format(n) for n in tracks_merge), ",".join("'{0}'".format(n) for n in self.tracks))
+
         d_track_merge = self.join_by_track(dict_split, tracks_merge)
         
         print (d_track_merge)        
@@ -799,7 +799,7 @@ def read_track_rules (tracks, track_rules = "split_all"):
         raise ValueError("Track_rules \'%s\' not allowed. Possible values are %s"%(track_rules,', '.join(['{}'.format(m) for m in tr_rules_options])))
     
     tracks2merge = ""
-    print >>sys.stderr, "Tracks to merge ddddd are: ", ",".join(tracks2merge)
+    print >>sys.stderr, "Tracks to merge are: ", ",".join(tracks2merge)
     if track_rules == "join_all":
         tracks2merge = tracks
     elif track_rules == 'join_odd':
