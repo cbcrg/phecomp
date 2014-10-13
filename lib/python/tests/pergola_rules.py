@@ -33,7 +33,7 @@ parser.add_argument('-t','--tracks', help='List of selected tracks', required=Fa
 parser.add_argument('-a','--track_actions', help='Option of action with tracks selected, split_all, join_all, join_odd, join_even, join_range or join_list', required=False, choices=tr_act_options)
 parser.add_argument('-d','--dataTypes_actions', help='Unique values of the field should dump on different data structures or not', required=False, choices=dt_act_options)
 parser.add_argument('-r','--range', help='Numeric range of tracks', required=False, type=parseNumRange)
-parser.add_argument('-l','--list', help='Numeric list of tracks', required=False, type=int, nargs='+')
+parser.add_argument('-l','--list', help='Numeric list of tracks', required=False, type=str, nargs='+')
 
 # parser.add_argument('-','--dataTypes_rules', help='Unique values of the field should dump on different data structures or not', required=False)
 parser.add_argument('-c','--chrom_rules', help='Unique values of the field chrom should be dump on different data structures or not', required=False)
