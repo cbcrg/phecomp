@@ -49,7 +49,7 @@ _dict_file = {'bed' : ('Bed', 'track_convert2bed', '.bed'),
 
 # _options_split_dataTypes = ('one_per_channel','list_all', 'True', 'False') #del
 _options_track_rules = ('split_all', 'join_all', 'join_odd', 'join_even') 
-tr_rules_options = ('split_all', 'join_all', 'join_odd', 'join_even') 
+tr_act_options = ('split_all', 'join_all', 'join_odd', 'join_even') 
 dt_act_options = ['all', 'one_per_channel']
 
 _black_gradient = ["226,226,226", "198,198,198", "170,170,170", "141,141,141", "113,113,113", "85,85,85", "56,56,56", "28,28,28", "0,0,0"]
@@ -789,31 +789,31 @@ class ConfigInfo():
             else:
                 print '\t' * (indent+1) + str(value)
 
-def read_track_rules (tracks, track_rules = "split_all"):
+def read_track_actions (tracks, track_action = "split_all"):
     """ 
-    Read track rules and returns a set with the tracks to be joined
+    Read track actions and returns a set with the tracks to be joined
     
     :param tracks: (set) of tracks to which track_rules should be applied set([1,2])
     :param track_rules: (str) option to join tracks (join_all, split_all, join_odd, join_evens) 
     """
     
-    if track_rules not in tr_rules_options:
-        raise ValueError("Track_rules \'%s\' not allowed. Possible values are %s"%(track_rules,', '.join(['{}'.format(m) for m in tr_rules_options])))
+    if track_action not in tr_act_options:
+        raise ValueError("Track_action \'%s\' not allowed. Possible values are %s"%(track_action,', '.join(['{}'.format(m) for m in tr_act_options])))
     
     tracks2merge = ""
     print >>sys.stderr, "Tracks to merge are: ", ",".join(tracks2merge)
-    if track_rules == "join_all":
+    if track_action == "join_all":
         tracks2merge = tracks
-    elif track_rules == 'join_odd':
+    elif track_action == 'join_odd':
         tracks2merge = set([t for t in tracks if int(t) % 2])
-    elif track_rules == 'join_even':
+    elif track_action == 'join_even':
         tracks2merge = set([t for t in tracks if not int(t) % 2])
     else:
         tracks2merge = ""
     print >>sys.stderr,"Tracks to merge are: ", ",".join("'{0}'".format(t) for t in tracks2merge)
        
     if not tracks2merge:
-        print >>sys.stderr,("No track rules applied as track rules \'%s\' can not be applied to list of tracks provided \'%s\'"%(track_rules, " ".join(tracks)))
+        print >>sys.stderr,("No track rules applied as track rules \'%s\' can not be applied to list of tracks provided \'%s\'"%(track_action, " ".join(tracks)))
         
     return (tracks2merge)
 
@@ -826,7 +826,7 @@ def read_dataTypes_rules (tracks, dt_action = "split_all"):
     """
     
     if dt_action not in dt_act_options:
-        raise ValueError("Track_rules \'%s\' not allowed. Possible values are %s"%(dt_action,', '.join(['{}'.format(m) for m in tr_rules_options])))
+        raise ValueError("Track_rules \'%s\' not allowed. Possible values are %s"%(dt_action,', '.join(['{}'.format(m) for m in tr_act_options])))
      
     tracks2merge = ""
 # 
