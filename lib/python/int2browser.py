@@ -309,7 +309,7 @@ class intData: # if I name it as int I think is like self but with a better name
             raise ValueError("Track_rules \'%s\' not allowed. Possible values are %s"%(track_rules,', '.join(['{}'.format(m) for m in _options_track_rules])))
         
         ##################
-        # Joining tracks in track_list
+        # Joining tracks set by track_rules
         d_track_merge = {} 
 
         if track_rules == "split_all":
@@ -323,20 +323,20 @@ class intData: # if I name it as int I think is like self but with a better name
         
         
         ###################
-        ###tracks_merge         
+        ###tracks_merge
+        print "dict_split=",(d_track_merge)
+                 
         if not kwargs.get('tracks_merge'):
-            tracks_merge = self.tracks
+            d_track_merge =  dict_split
         else:
             tracks_merge = kwargs.get('tracks_merge',self.tracks)
-        print "Tracks_merge:...........",tracks_merge
-        
-        print "dict_split=",(d_track_merge)
-     
-        if not all(tracks in self.tracks for tracks in tracks_merge):
-            raise ValueError ("Tracks to merge: %s, are not in the track list: " % ",".join("'{0}'".format(n) for n in tracks_merge), ",".join("'{0}'".format(n) for n in self.tracks))
-
-        d_track_merge = self.join_by_track(dict_split, tracks_merge)
-        
+            
+            if not all(tracks in self.tracks for tracks in tracks_merge):
+                raise ValueError ("Tracks to merge: %s, are not in the track list: " % ",".join("'{0}'".format(n) for n in tracks_merge), ",".join("'{0}'".format(n) for n in self.tracks))
+            print >>sys.stderr, "Tracks that will be merged are: ",tracks_merge
+            
+            d_track_merge = self.join_by_track(dict_split, tracks_merge)
+                                
         print (d_track_merge)        
         
         d_dataTypes_merge = {}
