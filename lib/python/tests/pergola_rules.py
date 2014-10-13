@@ -50,7 +50,7 @@ sel_tracks = args.tracks
 print >>sys.stderr, "@@@Pergola_rules.py Selected tracks are: ", sel_tracks
 
 track_act = args.track_actions
-print >>sys.stderr, "@@@Pergola_rules.py Track rules are: ", track_act
+print >>sys.stderr, "@@@Pergola_rules.py Track actions are: ", track_act
 
 tracks2merge = args.range
 print >>sys.stderr, "@@@Pergola_rules.py Track list in range are: ", tracks2merge
@@ -63,11 +63,14 @@ print >>sys.stderr, "@@@Print all the options set by pergola_rules end here!"
 intData = int2browser.intData(path, ontology_dict=configFileDict.correspondence, relative_coord=True)
 track_list = intData.tracks
         
-# tracks2merge = int2browser.read_track_rules(tracks=track_list, track_rules="join_odd")        
+#Lo que podria hacer es dejar esto aqui y no leer nada dentro de la funcion de convert, asi siempre le paso la lista tracks2merge que es mas limpio
+#aunque esto evitaria que pudiera como crear una odd y otra even a la vez mirar como puedo hacer eso
+        
+tracks2merge = int2browser.read_track_actions(tracks=track_list, track_action="join_odd")        
 # print >>sys.stderr, "@@@Pergola_rules.py Tracks2merge=",tracks2merge
 # # tracks2merge=2       
 # # Generation of the files set by the user by command line
 bed_str =  intData.convert(mode = "bedGraph", relative_coord = True, split_dataTypes=True, tracks=sel_tracks, tracks_merge=tracks2merge)
-# 
-# for key in bed_str:
-#     print key
+ 
+for key in bed_str:
+    print key
