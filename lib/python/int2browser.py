@@ -291,38 +291,7 @@ class intData: # if I name it as int I think is like self but with a better name
         if sel_tracks != []:
             tracks2rm = self.tracks.difference(sel_tracks)            
             dict_split = self.remove (dict_split, tracks2rm)
-            print >> sys.stderr, "Removed tracks are:", ' '.join(tracks2rm)              
-        
-        # This part of the code is deprecated
-        # read_track_rules can be called from outside an then the tracks to join can be set by tracks_merge        
-#         ###################
-#         ###Track rules  
-#         #split_all is like default
-#         #join_all 
-#         track_rules = ""        
-# 
-#         if not kwargs.get('track_rules'):
-#             track_rules = "split_all"
-#         else:
-#             track_rules = kwargs.get('track_rules',"split_all")
-#         
-#         print "track rules are>", track_rules
-#         if track_rules not in _options_track_rules: 
-#             raise ValueError("Track_rules \'%s\' not allowed. Possible values are %s"%(track_rules,', '.join(['{}'.format(m) for m in _options_track_rules])))
-#                
-        # Joining tracks set by track_rules
-#         d_track_merge = {} 
-# 
-#         if track_rules == "split_all":
-#             d_track_merge =  dict_split
-#         else:
-#             ##### esto esta mal tengo tracks2merge y track_merge
-#             tracks2merge = read_track_rules(tracks=self.tracks, track_rules=track_rules)
-#             print "----",tracks2merge
-#             if not all(tracks in self.tracks for tracks in tracks2merge):
-#                 raise ValueError("Tracks to merge set by track_rules: %s, are not in the track list: %s" % (" ".join(tracks2merge), " ".join(self.tracks)))
-#             d_track_merge = self.join_by_track(dict_split, tracks2merge)
-#         
+            print >> sys.stderr, "Removed tracks are:", ' '.join(tracks2rm)
         
         d_track_merge = {} 
         
