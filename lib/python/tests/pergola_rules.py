@@ -28,28 +28,28 @@ tr_act_options = ['split_all', 'join_all', 'join_odd', 'join_even', 'join_list']
 
 parser = ArgumentParser(description = 'Script to transform behavioral data into GB readable data')
 parser.add_argument('-i','--input', help='Input file name',required=True)
-parser.add_argument('-f','--file_config',help='Configuration file with genome browser fields correspondence', required=False)
+parser.add_argument('-c','--config_file',help='Configuration file with genome browser fields correspondence', required=False)
 parser.add_argument('-t','--tracks', help='List of selected tracks', required=False, type=int, nargs='+')
 parser.add_argument('-a','--track_actions', help='Option of action with tracks selected, split_all, join_all, join_odd, join_even, join_range or join_list', required=False, choices=tr_act_options)
 parser.add_argument('-d','--dataTypes_actions', help='Unique values of the field should dump on different data structures or not', required=False, choices=dt_act_options)
 parser.add_argument('-r','--range', help='Numeric range of tracks', required=False, type=parseNumRange)
 parser.add_argument('-l','--list', help='Numeric list of tracks', required=False, type=str, nargs='+')
+parser.add_argument('-f','--format', help='Write file output format f', required=False, type=str)
 
-# parser.add_argument('-','--dataTypes_rules', help='Unique values of the field should dump on different data structures or not', required=False)
-parser.add_argument('-c','--chrom_rules', help='Unique values of the field chrom should be dump on different data structures or not', required=False)
+# parser.add_argument('-c','--chrom_rules', help='Unique values of the field chrom should be dump on different data structures or not', required=False)
 
 args = parser.parse_args()
 
 ## Show arguments selected
 print("This are the selected options: -f  /Users/jespinosa/git/phecomp/lib/python/examples/b2g.txt -i /Users/jespinosa/git/phecomp/lib/python/examples/shortDev.int -t all")
 print("Input file: %s" % args.input )
-print("Configuration file: %s" % args.file_config)
+print("Configuration file: %s" % args.config_file)
 print("Track actions is: %s" % args.track_actions)
 
 path = args.input
  
 ## CONFIGURATION FILE
-configFilePath = args.file_config
+configFilePath = args.config_file
 configFileDict = int2browser.ConfigInfo(configFilePath)
 
 # Handling Argument tracks
@@ -80,10 +80,20 @@ print >>sys.stderr, "@@@Pergola_rules.py Track actions are: ", track_act
 dataTypes_act = args.dataTypes_actions
 print >>sys.stderr, "@@@Pergola_rules.py dataTypes actions are: ", dataTypes_act
 
+# Handling argument format
+write_format = args.format
+print >>sys.stderr, "@@@Pergola_rules.py format to write files: ", write_format
+
 #End  of options
 print >>sys.stderr, "@@@Print all the options set by pergola_rules end here!"
 
 intData = int2browser.intData(path, ontology_dict=configFileDict.correspondence, relative_coord=True)
+
+iter=intData.read()
+for  i in iter:
+    pass
+#     print i
+
 track_list = intData.tracks
         
 #Lo que podria hacer es dejar esto aqui y no leer nada dentro de la funcion de convert, asi siempre le paso la lista tracks2merge que es mas limpio
