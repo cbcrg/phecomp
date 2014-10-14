@@ -90,8 +90,7 @@ print >>sys.stderr, "@@@Print all the options set by pergola_rules end here!"
 intData = int2browser.intData(path, ontology_dict=configFileDict.correspondence, relative_coord=True)
 
 iter=intData.read()
-for  i in iter:
-    pass
+# for  i in iter:
 #     print i
 
 track_list = intData.tracks
@@ -105,7 +104,9 @@ print "====================", tracks2merge
 # print >>sys.stderr, "@@@Pergola_rules.py Tracks2merge=",tracks2merge
 # # tracks2merge=2       
 # # Generation of the files set by the user by command line
-bed_str =  intData.convert(mode = "bedGraph", relative_coord = True, dataTypes_actions=dataTypes_act, tracks=sel_tracks, tracks_merge=tracks2merge)
+bed_str =  intData.convert(mode = write_format, relative_coord = True, dataTypes_actions=dataTypes_act, tracks=sel_tracks, tracks_merge=tracks2merge)
  
 for key in bed_str:
     print "key.......: ",key
+    bedSingle = bed_str[key]
+    bedSingle.write()
