@@ -254,16 +254,10 @@ class intData: # if I name it as int I think is like self but with a better name
         if mode not in _dict_file: 
             raise ValueError("Mode \'%s\' not available. Possible convert() modes are %s"%(mode,', '.join(['{}'.format(m) for m in _dict_file.keys()])))
         
-#         dict_beds = ({ 'bed': self._convert2bed, 'bedGraph': self._convert2bedGraph}.get(mode)(self.read(**kwargs), kwargs.get('split_dataTypes')))
-#         dict_tracks = (self._convert2single_track(self.read(**kwargs), kwargs.get('split_dataTypes'), mode, **kwargs)) 
-    
         dict_tracks = (self._convert2single_track(self.read(**kwargs), mode, **kwargs))
         return (dict_tracks)
         
-#     def _convert2single_track (self, data_tuple, split_dataTypes=False, mode=None, **kwargs):
     def _convert2single_track (self, data_tuple,  mode=None, **kwargs):
-#     def _convert2track_by_rules (self, data_tuple,  mode=None, **kwargs):
-        
         """
         Transform data into a bed file if all the necessary fields present
         """   
@@ -321,10 +315,6 @@ class intData: # if I name it as int I think is like self but with a better name
             
         track_dict = {}                        
    
-        ### 
-        # Here I join dataTypes and tracks if selected
-        ## Esto vendria hecho de antes... si he juntado primero tracks y luego datatypes ya estan todos en un solo diccionario
-        
         #######
         # Generating track dict (output)
         #validacion del diccionario para imprimir o lo que sea
@@ -405,6 +395,7 @@ class intData: # if I name it as int I think is like self but with a better name
     def track_convert2bed (self, track, in_call=False, restrictedColors=None, **kwargs):
         #fields pass to read should be the ones of bed file
         _bed_fields = ["track","chromStart","chromEnd","dataTypes", "dataValue"]
+        
         #Check whether these fields are in the original otherwise raise exception
         try:
             [self.fieldsG.index(f) for f in _bed_fields]
@@ -460,7 +451,6 @@ class intData: # if I name it as int I think is like self but with a better name
         i_chr_end = self.fieldsG.index("chromEnd")
         i_data_value = self.fieldsG.index("dataValue")
         ini_window = 1
-#         delta_window = 300
         delta_window = window        
         end_window = delta_window
         partial_value = 0 
@@ -562,11 +552,10 @@ class dataIter(object):
     def __init__(self, data, fields=None, **kwargs):
         if isinstance(data,(tuple)):            
             data = iter(data)
+        
         if not fields:
-#             if hasattr(data, 'description'):
-#                 fields = [x[0] for x in data.description]
-#             else: raise ValueError("Must specify a 'fields' attribute for %s." % self.__str__())
             raise ValueError("Must specify a 'fields' attribute for %s." % self.__str__())
+        
         self.data = data
         self.fields = fields       
         self.format = kwargs.get("format",'txt')
@@ -609,7 +598,6 @@ class dataIter(object):
             track_file.write (annotation_track + "\n")
            
         for row in self.data: 
-#             print ("row is: ", row)  #del
             track_file.write('\t'.join(str(i) for i in row))
             track_file.write("\n")      
         track_file.close()
@@ -695,7 +683,6 @@ def check_path(path):
     Check whether the input file exists and is accessible and if OK returns path
     :param path: path to the intervals file
     """
-#         print (path)
     assert isinstance(path, basestring), "Expected string or unicode, found %s." % type(path)
     try:
         open(path, "r")
@@ -703,7 +690,6 @@ def check_path(path):
         raise IOError('File does not exist: %s' % path)
     return path      
     
-# class ConfigInfo(dict):
 class ConfigInfo():
     """
     Class holds a dictionary with the ontology between the genomic fields and the phenomics fields
