@@ -78,7 +78,8 @@ class intData: # if I name it as int I think is like self but with a better name
         self.delimiter = kwargs.get('delimiter',"\t")
         self.delimiter = self._check_delimiter(self.path)
         self.header = kwargs.get('header',True)
-        self.fieldsB = self._set_fields_b(kwargs.get ('fields'))        
+        self.fieldsB = self._set_fields_b(kwargs.get ('fields')) 
+        print self.fieldsB       
         self.fieldsG = [ontology_dict [k] for k in self.fieldsB]         
 #         self.min =  int(self.get_min_max(fields = ["chromStart","chromEnd"])[0])
 #         self.max =  int(self.get_min_max(fields = ["chromStart","chromEnd"])[1])
@@ -708,6 +709,7 @@ class ConfigInfo():
         with open(path) as config_file:
             #We eliminate possible empty lines at the end
             config_file_list = filter(lambda x:  not match(r'^\s*$', x), config_file)
+            print "llll",config_file_list
             
             if config_file_list[0][0] == '#':
                 del config_file_list [0]
@@ -723,7 +725,7 @@ class ConfigInfo():
     def _tab_config(self, file_tab):
         dict_correspondence ={}
         
-        for row in file_tab:
+        for row in file_tab:            
             row_split = row.rstrip('\n').split('\t')
             dict_correspondence[row_split[0]] = row_split[1]
         return (dict_correspondence)    
@@ -732,8 +734,9 @@ class ConfigInfo():
         dict_correspondence ={}
        
         for row in file_map:
-            l=row.rstrip('\n').replace(" ","").replace("\t","").split(">")
-            dict_correspondence[l[0].split(":")[1]] = l[1].split(":")[1]        
+            l=row.split(">")
+            print "row is",l[1].split(":")[1].rstrip()
+            dict_correspondence[l[0].split(":")[1].rstrip()] = l[1].split(":")[1].rstrip('\t\n')        
 
         return (dict_correspondence)   
     
