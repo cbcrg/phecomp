@@ -199,8 +199,9 @@ class intData: # if I name it as int I think is like self but with a better name
                 _f = ["chromStart","chromEnd"]
                             
                 for row in self.read(fields=_f):
-                    row = map(int, row)
-#                     print(type (row[0])) 
+                    
+                    row = map(int, [ i.replace(".", "") for i in map(str, row)])
+#                     
                     if pMinMax[0] is None: pMinMax = list(row)
                     if pMinMax[0] > row[0]: pMinMax[0] = row[0]
                     if pMinMax[1] < row[1]: pMinMax[1] = row[1]
@@ -213,7 +214,7 @@ class intData: # if I name it as int I think is like self but with a better name
                     raise ValueError("Only two fields can be consider for get_min_max %s: %s" % (fields, self.fieldsG))
             
             for row in self.read(fields=_f, **kwargs):
-                row = map(int, row)            
+                row = map(int, [ i.replace(".", "") for i in map(str, row)])          
                 if pMinMax[0] is None: pMinMax = list(row)
                 if pMinMax[0] > row[0]: pMinMax[0] = row[0]
                 if pMinMax[1] < row[1]: pMinMax[1] = row[1]
@@ -225,16 +226,15 @@ class intData: # if I name it as int I think is like self but with a better name
             _f = ["chromStart"]
             
             for row in self.read(fields=_f):
-                row = map(int, [ i.replace(".", "") for i in map(str, row) ])
-                                
+                
+                row = map(int, [ i.replace(".", "") for i in map(str, row)])
+                                           
                 if p_min is None: p_min = row[0]
                 elif p_min > row: p_min = row[0]
                 elif p_max < row: p_max = row[0]
                 
                 pMinMax = p_min, p_max
-        
-        print pMinMax
-        
+
         min_max = pMinMax
         return pMinMax
     
