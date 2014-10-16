@@ -225,14 +225,14 @@ class intData: # if I name it as int I think is like self but with a better name
             _f = ["chromStart"]
             
             for row in self.read(fields=_f):
-                row = map(float, row)
+                row = map(int, [ i.replace(".", "") for i in map(str, row) ])
+                                
                 if p_min is None: p_min = row[0]
                 elif p_min > row: p_min = row[0]
                 elif p_max < row: p_max = row[0]
                 
                 pMinMax = p_min, p_max
-#        map(str, pMinMax)
-        pMinMax = map(int, [ i.replace(".", "") for i in map(str, pMinMax) ])
+        
         print pMinMax
         
         min_max = pMinMax
