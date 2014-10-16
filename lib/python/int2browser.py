@@ -136,7 +136,7 @@ class intData: # if I name it as int I think is like self but with a better name
             fieldsB = range(0,len(first_r))  
         return fieldsB
        
-    def read(self, fields=None, relative_coord=False, fields2rel=None, **kwargs):
+    def read(self, fields=None, relative_coord=False, intervals=True, fields2rel=None, **kwargs):
         # If I don't have fields then I get all the columns of the file
         if fields is None:
             fields = self.fieldsG
@@ -162,10 +162,31 @@ class intData: # if I name it as int I think is like self but with a better name
                 idx_fields2rel = [self.fieldsG.index(f) for f in _f2rel]                
             except ValueError:
                 raise ValueError("Field '%s' not in file %s." % (f, self.path))
+        
+        idx_fields2int = [10000000000000]
+        
+        if not intervals:             
+            print >>sys.stderr, "Intervals inferred from timepoints"
+            _time_points = ["chromStart"]
+            try:
+                idx_fields2int = [self.fieldsG.index(f) for f in _time_points]                
+            except ValueError:
+                raise ValueError("Field '%s' not in file %s." % (f, self.path))
             
-        return dataIter(self._read(indexL, idx_fields2rel), self.fieldsG)
+#             for row in self.read(fields=_time_points):
+#                l = map(int, [ i.replace(".", "") for i in map(str, row)])
+                
+#             row = map(int, [ i.replace(".", "") for i in map(str, row)])
+#             l = [map(int, [ i.replace(".", "") for i in map(str, row)]) for row in self.read(fields=_time_points)]
+            l = (map(int,  (str(row[0]).replace(".", "")  for row in self.read(fields=_time_points))))
+#             row = map(int, [ i.replace(".", "") for i in map(str, row)])
+            print "list of timepoints", list(interv(l))
+            
+#                 l = [int(line.split()[0]) for line in f]
+                
+        return dataIter(self._read(indexL, idx_fields2rel, idx_fields2int), self.fieldsG)
        
-    def _read(self, indexL, idx_fields2rel):
+    def _read(self, indexL, idx_fields2rel, idx_fields2int):
         self.inFile  = open(self.path, "rb")
         self.reader = csv.reader(self.inFile, delimiter='\t')
         self.reader.next()
@@ -175,9 +196,11 @@ class intData: # if I name it as int I think is like self but with a better name
             temp = []            
             for i in indexL:
                 if i in idx_fields2rel: 
-                    temp.append(int(interv [i]) - self.min + 1)
+                    temp.append(int(interv[i]) - self.min + 1)
+                elif i in idx_fields2int:#modify
+                    pass
                 else:
-                    temp.append(interv [i])
+                    temp.append(interv[i])
                 
             yield(tuple(temp))
                          
@@ -825,3 +848,20 @@ def read_dataTypes_actions (tracks, dt_action = "split_all"):
 #         print >>sys.stderr,("No track rules applied as track rules \'%s\' can not be applied to list of tracks provided \'%s\'"%(track_rules, " ".join(tracks)))
 #         
 #     return (tracks2merge)
+
+def interv(n_list):
+    """ 
+    Creates the correspondent intervals from a list of integers
+    
+    :param : (n_list) list of integers
+    :param dt_actions: (str) option to join dataTypes ('all', 'one_per_channel') 
+    """
+    temp_list = []
+    
+    for a, b in itertools.groupby(enumerate(n_list), lambda (x, y): y - x):        
+        b = list(b)
+        temp_list.append (b[0][1])
+        temp_list.append (b[-1][1])
+        
+        yield tuple(temp_list)
+        temp_list = []
