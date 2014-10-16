@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 ## -f  /Users/jespinosa/git/phecomp/lib/python/examples/b2g.txt -i /Users/jespinosa/git/phecomp/lib/python/examples/shortDev.int -a join_odd  -d all -r 1-2
+## -c  /Users/jespinosa/git/phecomp/lib/python/examples/b2g.txt -i /Users/jespinosa/git/phecomp/lib/python/examples/shortDev.int -r 1-2 -d all -f bedGraph
 
 import int2browser
 from argparse import ArgumentParser, ArgumentTypeError
@@ -47,11 +48,39 @@ print("Configuration file: %s" % args.config_file)
 print("Track actions is: %s" % args.track_actions)
 
 path = args.input
- 
+
+# abc = [chr(x) for x in range(97, 123)]
+# 
+# print "#############", abc
+# out = []
+
+# import random
+import itertools
+# 
+def ranges(i):
+    
+    temp_list = []
+    
+    for a, b in itertools.groupby(enumerate(i), lambda (x, y): y - x):        
+        b = list(b)
+        temp_list.append (b[0][1])
+        temp_list.append (b[-1][1])
+        
+        yield tuple(temp_list)
+        temp_list = []
+print "?????????????????",(list(ranges([0, 1, 3, 4, 7, 8, 9, 11,12,13])))
+# print ">>>>>>>>>>>>>>>>>>",list(enumerate([0, 1, 3, 4, 7, 8, 9, 11,12,13]))
+# out.append(abc[0])
+# for item in abc[1:]:
+#     out += [''] * random.randrange(4, 8)
+#     out.append(item)
+# 
+# print "+++++++++++++++++++++++++++++++",out     
 ## CONFIGURATION FILE
 configFilePath = args.config_file
 configFileDict = int2browser.ConfigInfo(configFilePath)
 
+print "########" , configFileDict.correspondence
 # Handling Argument tracks
 sel_tracks = args.tracks 
 print >>sys.stderr, "@@@Pergola_rules.py Selected tracks are: ", sel_tracks
@@ -87,26 +116,29 @@ print >>sys.stderr, "@@@Pergola_rules.py format to write files: ", write_format
 #End  of options
 print >>sys.stderr, "@@@Print all the options set by pergola_rules end here!"
 
-intData = int2browser.intData(path, ontology_dict=configFileDict.correspondence, relative_coord=True)
+intData = int2browser.intData(path, ontology_dict=configFileDict.correspondence, intervals=False)
+print intData.min
+print intData.max
 
-iter=intData.read()
+iter=intData.read(relative_coord=False, intervals=False)
+#buscar al manera de que si esta timepoint en el configuration file entonces crea de uno 
 # for  i in iter:
 #     print i
-
-track_list = intData.tracks
-        
-#Lo que podria hacer es dejar esto aqui y no leer nada dentro de la funcion de convert, asi siempre le paso la lista tracks2merge que es mas limpio
-#aunque esto evitaria que pudiera como crear una odd y otra even a la vez mirar como puedo hacer eso
-        
-# tracks2merge = int2browser.read_track_actions(tracks=track_list, track_action="join_odd")
-# tracks2merge = int2browser.read_track_actions(tracks=track_list, track_action=track_act) 
-print "====================", tracks2merge       
-# print >>sys.stderr, "@@@Pergola_rules.py Tracks2merge=",tracks2merge
-# # tracks2merge=2       
-# # Generation of the files set by the user by command line
-bed_str =  intData.convert(mode = write_format, relative_coord = True, dataTypes_actions=dataTypes_act, tracks=sel_tracks, tracks_merge=tracks2merge)
- 
-for key in bed_str:
-    print "key.......: ",key
-    bedSingle = bed_str[key]
-    bedSingle.write()
+# 
+# track_list = intData.tracks
+#         
+# #Lo que podria hacer es dejar esto aqui y no leer nada dentro de la funcion de convert, asi siempre le paso la lista tracks2merge que es mas limpio
+# #aunque esto evitaria que pudiera como crear una odd y otra even a la vez mirar como puedo hacer eso
+#         
+# # tracks2merge = int2browser.read_track_actions(tracks=track_list, track_action="join_odd")
+# # tracks2merge = int2browser.read_track_actions(tracks=track_list, track_action=track_act) 
+# print "====================", tracks2merge       
+# # print >>sys.stderr, "@@@Pergola_rules.py Tracks2merge=",tracks2merge
+# # # tracks2merge=2       
+# # # Generation of the files set by the user by command line
+# bed_str =  intData.convert(mode = write_format, relative_coord = True, dataTypes_actions=dataTypes_act, tracks=sel_tracks, tracks_merge=tracks2merge)
+#  
+# for key in bed_str:
+#     print "key.......: ",key
+#     bedSingle = bed_str[key]
+#     bedSingle.write()
