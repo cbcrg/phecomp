@@ -80,10 +80,12 @@ class intData: # if I name it as int I think is like self but with a better name
         self.header = kwargs.get('header',True)
         self.fieldsB = self._set_fields_b(kwargs.get ('fields')) 
         print "self.fieldsB is =============================",self.fieldsB       
-        self.fieldsG = [ontology_dict [k] for k in self.fieldsB]         
-#         self.min =  int(self.get_min_max(fields = ["chromStart","chromEnd"])[0])
-#         self.max =  int(self.get_min_max(fields = ["chromStart","chromEnd"])[1])
+        self.fieldsG = [ontology_dict [k] for k in self.fieldsB]        
+
+        if (kwargs.get ('relative_coord')): kwargs ['relative_coord' ] = False
         self.min, self.max =  self.get_min_max(**kwargs)
+#         self.min, self.max = self.get_min_max(fields = ["chromStart","chromEnd"])
+        print "================== he pasado esto"
         self.tracks  =  self.get_field_items (field="track")
         self.dataTypes = self.get_field_items (field="dataTypes")
 #         self.format = "csv"
