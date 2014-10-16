@@ -81,10 +81,7 @@ class intData: # if I name it as int I think is like self but with a better name
         self.fieldsB = self._set_fields_b(kwargs.get ('fields')) 
         print "self.fieldsB is =============================",self.fieldsB       
         self.fieldsG = [ontology_dict [k] for k in self.fieldsB]        
-
-        if (kwargs.get ('relative_coord')): kwargs ['relative_coord' ] = False
         self.min, self.max =  self.get_min_max(**kwargs)
-#         self.min, self.max = self.get_min_max(fields = ["chromStart","chromEnd"])
         print "================== he pasado esto"
         self.tracks  =  self.get_field_items (field="track")
         self.dataTypes = self.get_field_items (field="dataTypes")
@@ -153,7 +150,7 @@ class intData: # if I name it as int I think is like self but with a better name
         idx_fields2rel = [10000000000000]
             
         if relative_coord:             
-            print >>sys.stderr, "Relative coord is true"
+            print >>sys.stderr, "Relative coordinates is true"
             
             if fields2rel is None:
                 _f2rel = ["chromStart","chromEnd"]        
@@ -190,7 +187,7 @@ class intData: # if I name it as int I think is like self but with a better name
         """
         Return the minimun and maximun of two given fields by default set to chromStart and chromEnd
         """
-        min_max = [None,None]
+                
         pMinMax = [None,None]
         
         if kwargs.get('intervals', True):
@@ -213,7 +210,7 @@ class intData: # if I name it as int I think is like self but with a better name
                 elif len(_f) != 2:
                     raise ValueError("Only two fields can be consider for get_min_max %s: %s" % (fields, self.fieldsG))
             
-            for row in self.read(fields=_f, **kwargs):
+            for row in self.read(fields=_f):
                 row = map(int, [ i.replace(".", "") for i in map(str, row)])          
                 if pMinMax[0] is None: pMinMax = list(row)
                 if pMinMax[0] > row[0]: pMinMax[0] = row[0]
@@ -235,7 +232,6 @@ class intData: # if I name it as int I think is like self but with a better name
                 
                 pMinMax = p_min, p_max
 
-        min_max = pMinMax
         return pMinMax
     
     def get_field_items(self, field="dataTypes"): 
