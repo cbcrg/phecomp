@@ -143,17 +143,20 @@ class intData: # if I name it as int I think is like self but with a better name
             indexL = range(len(self.fieldsG))
         else:
             try:
-                indexL = [self.fieldsG.index(f) for f in fields]                
+                indexL = [self.fieldsG.index(f) for f in fields] 
+                print  self.fieldsG #del
             except ValueError:
                 raise ValueError("Field '%s' not in file %s." % (f, self.path))
-        
+        print "::::::::::::::",  indexL              
         idx_fields2rel = [10000000000000]
             
         if relative_coord:             
             print >>sys.stderr, "Relative coordinates is true"
             
-            if fields2rel is None:
-                _f2rel = ["chromStart","chromEnd"]        
+            if fields2rel is None and intervals:
+                _f2rel = ["chromStart","chromEnd"] 
+            elif fields2rel is None and not intervals:
+                _f2rel = ["chromStart"]            
             else:
                 if isinstance(fields2rel, basestring): fields2rel = [fields2rel]
                 _f2rel = [f for f in fields2rel if f in self.fieldsG]
@@ -161,11 +164,12 @@ class intData: # if I name it as int I think is like self but with a better name
             try:
                 idx_fields2rel = [self.fieldsG.index(f) for f in _f2rel]                
             except ValueError:
-                raise ValueError("Field '%s' not in file %s." % (f, self.path))
+                raise ValueError("Field '%s' not in file %s mandatory when option relative_coord=T." % (f, self.path))
         
         idx_fields2int = [10000000000000]
         
         l_startChrom = l_endChrom = []
+        
         if not intervals:             
             print >>sys.stderr, "Intervals inferred from timepoints"
             _time_points = ["chromStart"]
@@ -182,8 +186,9 @@ class intData: # if I name it as int I think is like self but with a better name
             l = (map(int,  (str(row[0]).replace(".", "")  for row in self.read(fields=_time_points))))
 #             row = map(int, [ i.replace(".", "") for i in map(str, row)])
             l_startChrom, l_endChrom = interv(l)
+            self.fieldsG.append("chromEnd")
             
-            print "list of timepoints", l_startChrom
+            print "self.fieldsGoooooooo", idx_fields2int
             
 #                 l = [int(line.split()[0]) for line in f]
                 
@@ -199,16 +204,33 @@ class intData: # if I name it as int I think is like self but with a better name
             j = self.reader.line_num -2 #header removed and list starts at 0
             temp = []            
             for i in indexL:
-                if i in idx_fields2rel: 
-                    temp.append(int(interv[i]) - self.min + 1)
-                elif i in idx_fields2int:#modify
-#                     pass
-                    print (l_startChrom[j])
-#                     
+                print "let seeeeeeeeeeeeeeeee :        ",(idx_fields2int, idx_fields2rel) #del
+                
+                if i in idx_fields2int and i in idx_fields2rel:#modify
+                    temp.append(l_startChrom[j] - self.min + 1)
+                    temp.append(l_endChrom[j] - self.min + 1) 
+                elif i in idx_fields2int and not i in idx_fields2rel:
                     temp.append(l_startChrom[j])
-                    temp.append(l_endChrom[j])
-                else:
+                    temp.append(l_endChrom[j]) 
+                elif i not in idx_fields2int and i in idx_fields2rel:
+                    temp.append(int(interv[i]) - self.min + 1)
+                elif i not in idx_fields2int and not i in idx_fields2rel:    
                     temp.append(interv[i])
+#                     temp.append(l_startChrom[j])
+#                     temp.append(l_endChrom[j]) 
+                     
+#                 elif i in idx_fields2rel:
+#                     print "------",self.min   
+#                     temp.append(int(interv[i]) - self.min + 1)
+#                
+# #                     print (l_startChrom[j])
+#                     
+#                     
+#                 elif i in idx_fields2int and i not in idx_fields2rel:
+#                     temp.append(l_startChrom[j])
+#                     temp.append(l_endChrom[j])    
+#                 else:
+#                     temp.append(interv[i])
                 
             yield(tuple(temp))
                          
@@ -888,7 +910,7 @@ def interv(n_list):
 #     print "n_list is:           ",n_list[9]
     
     for i, v in enumerate(n_list):
-        print [i]
+#         print [i]#del
         list_chromStart.append(v)
         if (i < len(n_list)-1):
 #             print "v, v n+1", (v, n_list[i+1]) 
