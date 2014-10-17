@@ -165,6 +165,7 @@ class intData: # if I name it as int I think is like self but with a better name
         
         idx_fields2int = [10000000000000]
         
+        l_startChrom = l_endChrom = []
         if not intervals:             
             print >>sys.stderr, "Intervals inferred from timepoints"
             _time_points = ["chromStart"]
@@ -180,25 +181,32 @@ class intData: # if I name it as int I think is like self but with a better name
 #             l = [map(int, [ i.replace(".", "") for i in map(str, row)]) for row in self.read(fields=_time_points)]
             l = (map(int,  (str(row[0]).replace(".", "")  for row in self.read(fields=_time_points))))
 #             row = map(int, [ i.replace(".", "") for i in map(str, row)])
-            print "list of timepoints", list(interv(l))
+            l_startChrom, l_endChrom = interv(l)
+            
+            print "list of timepoints", l_startChrom
             
 #                 l = [int(line.split()[0]) for line in f]
                 
-        return dataIter(self._read(indexL, idx_fields2rel, idx_fields2int), self.fieldsG)
+        return dataIter(self._read(indexL, idx_fields2rel, idx_fields2int, l_startChrom, l_endChrom), self.fieldsG)
        
-    def _read(self, indexL, idx_fields2rel, idx_fields2int):
+    def _read(self, indexL, idx_fields2rel, idx_fields2int,l_startChrom, l_endChrom):
         self.inFile  = open(self.path, "rb")
         self.reader = csv.reader(self.inFile, delimiter='\t')
         self.reader.next()
         
         for interv in self.reader:
-#             print "interval is :",  interv #del
+#             print "interval line is :",  self.reader.line_num #del
+            j = self.reader.line_num -2 #header removed and list starts at 0
             temp = []            
             for i in indexL:
                 if i in idx_fields2rel: 
                     temp.append(int(interv[i]) - self.min + 1)
                 elif i in idx_fields2int:#modify
-                    pass
+#                     pass
+                    print (l_startChrom[j])
+#                     
+                    temp.append(l_startChrom[j])
+                    temp.append(l_endChrom[j])
                 else:
                     temp.append(interv[i])
                 
@@ -849,19 +857,64 @@ def read_dataTypes_actions (tracks, dt_action = "split_all"):
 #         
 #     return (tracks2merge)
 
+# def interv(n_list):
+#     """ 
+#     Creates the correspondent intervals from a list of integers
+#     
+#     :param : (n_list) list of integers
+#     """
+#     temp_list = []
+#     
+#     for a, b in itertools.groupby(enumerate(n_list), lambda (x, y): y - x):        
+#         b = list(b)
+#         temp_list.append (b[0][1])
+#         temp_list.append (b[-1][1])
+#         
+#         yield tuple(temp_list)
+#         temp_list = []
+
 def interv(n_list):
     """ 
     Creates the correspondent intervals from a list of integers
     
     :param : (n_list) list of integers
-    :param dt_actions: (str) option to join dataTypes ('all', 'one_per_channel') 
     """
     temp_list = []
+    list_chromStart = list()
+    list_chromEnd = list() 
+    n_list = [n * 10 for n in n_list]
+#     print "n_list is:           ",n_list
+#     print "n_list is:           ",len(n_list)
+#     print "n_list is:           ",n_list[9]
     
-    for a, b in itertools.groupby(enumerate(n_list), lambda (x, y): y - x):        
-        b = list(b)
-        temp_list.append (b[0][1])
-        temp_list.append (b[-1][1])
-        
-        yield tuple(temp_list)
-        temp_list = []
+    for i, v in enumerate(n_list):
+        print [i]
+        list_chromStart.append(v)
+        if (i < len(n_list)-1):
+#             print "v, v n+1", (v, n_list[i+1]) 
+            list_chromEnd.append(n_list[i+1]-1)
+        else:
+            list_chromEnd.append(n_list[i]+1)
+     
+#      n_list:
+#         print i, len(n_list)
+# #         list_chromStart.append(n_list[i])
+#         if (i < len(n_list) -1):
+#             print "%%%%%%%%%%", (i, len(n_list))
+#             list_chromEnd.append(n_list[i+1]-1)
+#         else:
+#             print ":::::::::",i, len(n_list)
+#             list_chromEnd.append(n_list[i]+1)
+#     
+#     print "list chromStart is ------------:",list_chromStart    
+#     print "list chromEnd is ------------:",list_chromEnd 
+    
+    return list_chromStart, list_chromEnd
+    
+#     for a, b in itertools.groupby(enumerate(n_list), lambda (x, y): y - x):        
+#         b = list(b)
+#         temp_list.append (b[0][1])
+#         temp_list.append (b[-1][1])
+#         
+#         yield tuple(temp_list)
+#         temp_list = []
