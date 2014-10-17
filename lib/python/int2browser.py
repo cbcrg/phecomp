@@ -200,13 +200,10 @@ class intData: # if I name it as int I think is like self but with a better name
         self.reader.next()
         
         for interv in self.reader:
-#             print "interval line is :",  self.reader.line_num #del
-            j = self.reader.line_num -2 #header removed and list starts at 0
+            j = self.reader.line_num -2 #header removed and list starts at 0 #modify
             temp = []            
-            for i in indexL:
-                print "let seeeeeeeeeeeeeeeee :        ",(idx_fields2int, idx_fields2rel) #del
-                
-                if i in idx_fields2int and i in idx_fields2rel:#modify
+            for i in indexL:                                
+                if i in idx_fields2int and i in idx_fields2rel:
                     temp.append(l_startChrom[j] - self.min + 1)
                     temp.append(l_endChrom[j] - self.min + 1) 
                 elif i in idx_fields2int and not i in idx_fields2rel:
@@ -215,23 +212,8 @@ class intData: # if I name it as int I think is like self but with a better name
                 elif i not in idx_fields2int and i in idx_fields2rel:
                     temp.append(int(interv[i]) - self.min + 1)
                 elif i not in idx_fields2int and not i in idx_fields2rel:    
-                    temp.append(interv[i])
-#                     temp.append(l_startChrom[j])
-#                     temp.append(l_endChrom[j]) 
-                     
-#                 elif i in idx_fields2rel:
-#                     print "------",self.min   
-#                     temp.append(int(interv[i]) - self.min + 1)
-#                
-# #                     print (l_startChrom[j])
-#                     
-#                     
-#                 elif i in idx_fields2int and i not in idx_fields2rel:
-#                     temp.append(l_startChrom[j])
-#                     temp.append(l_endChrom[j])    
-#                 else:
-#                     temp.append(interv[i])
-                
+                    temp.append(interv[i])  
+            
             yield(tuple(temp))
                          
         self.inFile.close()
