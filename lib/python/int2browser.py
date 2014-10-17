@@ -78,11 +78,12 @@ class intData: # if I name it as int I think is like self but with a better name
         self.delimiter = kwargs.get('delimiter',"\t")
         self.delimiter = self._check_delimiter(self.path)
         self.header = kwargs.get('header',True)
-        self.fieldsB = self._set_fields_b(kwargs.get ('fields')) 
-        print "self.fieldsB is =============================",self.fieldsB       
+        self.fieldsB = self._set_fields_b(kwargs.get ('fields'))
         self.fieldsG = [ontology_dict [k] for k in self.fieldsB]        
+        
+        self.data = self._new_read(multiply_t = kwargs.get ('multiply_t', 1))
+        print "----------------",self.data
         self.min, self.max =  self.get_min_max(**kwargs)
-        print "================== he pasado esto"
         self.tracks  =  self.get_field_items (field="track")
         self.dataTypes = self.get_field_items (field="dataTypes")
 #         self.format = "csv"
@@ -136,7 +137,7 @@ class intData: # if I name it as int I think is like self but with a better name
             fieldsB = range(0,len(first_r))  
         return fieldsB
        
-    def read(self, fields=None, relative_coord=False, intervals=True, fields2rel=None, **kwargs):
+    def read(self, fields=None, relative_coord=False, intervals=True, fields2rel=None, multiply_t=1,**kwargs):
         # If I don't have fields then I get all the columns of the file
         if fields is None:
             fields = self.fieldsG
@@ -156,7 +157,7 @@ class intData: # if I name it as int I think is like self but with a better name
             if fields2rel is None and intervals:
                 _f2rel = ["chromStart","chromEnd"] 
             elif fields2rel is None and not intervals:
-                _f2rel = ["chromStart"]            
+                _f2rel = ["chromStart"]    
             else:
                 if isinstance(fields2rel, basestring): fields2rel = [fields2rel]
                 _f2rel = [f for f in fields2rel if f in self.fieldsG]
@@ -178,13 +179,14 @@ class intData: # if I name it as int I think is like self but with a better name
             except ValueError:
                 raise ValueError("Field '%s' not in file %s." % (f, self.path))
             
-            l_time_points = (map(int,  (str(row[0]).replace(".", "")  for row in self.read(fields=_time_points))))
+            l_time_points = (map(int, (str(row[0]).replace(".", "")  for row in self.read(fields=_time_points))))
             l_startChrom, l_endChrom = interv(l_time_points)
             self.fieldsG.append("chromEnd")
-                                        
-        return dataIter(self._read(indexL, idx_fields2rel, idx_fields2int, l_startChrom, l_endChrom), self.fieldsG)
+        
+                                                  
+        return dataIter(self._read(indexL, idx_fields2rel, idx_fields2int, l_startChrom, l_endChrom, multiply_t), self.fieldsG)
        
-    def _read(self, indexL, idx_fields2rel, idx_fields2int,l_startChrom, l_endChrom):
+    def _read(self, indexL, idx_fields2rel, idx_fields2int,l_startChrom, l_endChrom, multiply_t):
         self.inFile  = open(self.path, "rb")
         self.reader = csv.reader(self.inFile, delimiter='\t')
         self.reader.next()
@@ -207,6 +209,75 @@ class intData: # if I name it as int I think is like self but with a better name
             yield(tuple(temp))
                          
         self.inFile.close()
+    def _new_read(self, multiply_t):
+        print "cuuuuuuuuuuuuuuuuuuuulo"
+        self.inFile  = open(self.path, "rb")
+        self.reader = csv.reader(self.inFile, delimiter='\t')
+        self.reader.next()
+        
+        print "cuuuuuuuuuuuuuuuuuuuulo"
+        
+        _time_points = ["chromStart", "chromEnd"]
+        idx_fields2int = []
+                
+        try:
+            
+#             if any("abc" in s for s in some_list):
+#             if any(for t in_time_points in f for f in _time_points):
+            idx_fields2int = [f for f in _time_points if f in self.fieldsG]
+            
+            idx_fields2int = [self.fieldsG.index(f) for f in idx_fields2int]
+            print "..................",idx_fields2int                    
+        except ValueError:
+            raise ValueError("Field '%s' not in file %s." % (f, self.path))
+        
+        for interv in self.reader:
+            
+            temp = []            
+            for i in range(len(self.fieldsG)): 
+                print "######444444444",(i, idx_fields2int)                           
+                if i in idx_fields2int:
+                    print "shittttttt"
+                    temp.append(int(float(interv[i])*multiply_t))
+                    
+                else:    
+                    print "shittttttt"
+                    temp.append(interv[i])  
+            
+            yield(tuple(temp))
+                         
+        self.inFile.close()
+    
+#     def _meta_read_init (self, indexL, idx_fields2rel, idx_fields2int,l_startChrom, l_endChrom):
+#         pass
+#         self.inFile  = open(self.path, "rb")
+#         self.reader = csv.reader(self.inFile, delimiter='\t')
+#         self.reader.next() #modify if header true or something similar
+#         
+#         pMinMax = [None,None]
+#         
+#         if kwargs.get('intervals', True):
+#             
+#         for interv in self.reader:
+#             j = self.reader.line_num -2 #header removed and list starts at 0 #modify
+#             temp = []            
+#             for i in indexL:                                
+#                 if i in idx_fields2int and i in idx_fields2rel:
+#                     temp.append(l_startChrom[j] - self.min + 1)
+#                     temp.append(l_endChrom[j] - self.min + 1) 
+#                 elif i in idx_fields2int and not i in idx_fields2rel:
+#                     temp.append(l_startChrom[j])
+#                     temp.append(l_endChrom[j]) 
+#                 elif i not in idx_fields2int and i in idx_fields2rel:
+#                     temp.append(int(interv[i]) - self.min + 1)
+#                 elif i not in idx_fields2int and not i in idx_fields2rel:    
+#                     temp.append(interv[i])  
+#             
+#             yield(tuple(temp))
+#                          
+#         self.inFile.close()
+        
+        
         
     def get_min_max(self, fields=None, **kwargs): 
         """
@@ -223,7 +294,7 @@ class intData: # if I name it as int I think is like self but with a better name
                 for row in self.read(fields=_f):
                     
                     row = map(int, [ i.replace(".", "") for i in map(str, row)])
-#                     
+                    
                     if pMinMax[0] is None: pMinMax = list(row)
                     if pMinMax[0] > row[0]: pMinMax[0] = row[0]
                     if pMinMax[1] < row[1]: pMinMax[1] = row[1]
@@ -236,7 +307,9 @@ class intData: # if I name it as int I think is like self but with a better name
                     raise ValueError("Only two fields can be consider for get_min_max %s: %s" % (fields, self.fieldsG))
             
             for row in self.read(fields=_f):
-                row = map(int, [ i.replace(".", "") for i in map(str, row)])          
+                row = map(int, [ i.replace(".", "") for i in map(str, row)])
+#                 print "33333",row#del
+                          
                 if pMinMax[0] is None: pMinMax = list(row)
                 if pMinMax[0] > row[0]: pMinMax[0] = row[0]
                 if pMinMax[1] < row[1]: pMinMax[1] = row[1]
@@ -250,7 +323,8 @@ class intData: # if I name it as int I think is like self but with a better name
             for row in self.read(fields=_f):
                 
                 row = map(int, [ i.replace(".", "") for i in map(str, row)])
-                                           
+                 
+#                 print "33333",row#del                          
                 if p_min is None: p_min = row[0]
                 elif p_min > row: p_min = row[0]
                 elif p_max < row: p_max = row[0]
