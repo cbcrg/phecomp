@@ -209,39 +209,29 @@ class intData: # if I name it as int I think is like self but with a better name
             yield(tuple(temp))
                          
         self.inFile.close()
+        
     def _new_read(self, multiply_t):
-        print "cuuuuuuuuuuuuuuuuuuuulo"
+        
         self.inFile  = open(self.path, "rb")
         self.reader = csv.reader(self.inFile, delimiter='\t')
         self.reader.next()
-        
-        print "cuuuuuuuuuuuuuuuuuuuulo"
-        
+                        
         _time_points = ["chromStart", "chromEnd"]
         idx_fields2int = []
                 
-        try:
-            
-#             if any("abc" in s for s in some_list):
-#             if any(for t in_time_points in f for f in _time_points):
-            idx_fields2int = [f for f in _time_points if f in self.fieldsG]
-            
-            idx_fields2int = [self.fieldsG.index(f) for f in idx_fields2int]
-            print "..................",idx_fields2int                    
+        try:            
+            name_fields2int = [f for f in _time_points if f in self.fieldsG]            
+            idx_fields2int = [self.fieldsG.index(f) for f in name_fields2int]
+                 
         except ValueError:
             raise ValueError("Field '%s' not in file %s." % (f, self.path))
         
-        for interv in self.reader:
-            
+        for interv in self.reader:            
             temp = []            
             for i in range(len(self.fieldsG)): 
-                print "######444444444",(i, idx_fields2int)                           
                 if i in idx_fields2int:
-                    print "shittttttt"
-                    temp.append(int(float(interv[i])*multiply_t))
-                    
-                else:    
-                    print "shittttttt"
+                    temp.append(int(float(interv[i])*multiply_t))                    
+                else:                        
                     temp.append(interv[i])  
             
             yield(tuple(temp))
