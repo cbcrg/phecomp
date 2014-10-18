@@ -210,31 +210,97 @@ class intData: # if I name it as int I think is like self but with a better name
                          
         self.inFile.close()
         
-    def _new_read(self, multiply_t):
-        
+    def _new_read(self, multiply_t, intervals=False):
+        """
+        el min y maximo lo puedo recoger
+        y luego si se pide el cambio de coordenadas 
+        entonces el dataIter modificarlo
+        """
         self.inFile  = open(self.path, "rb")
         self.reader = csv.reader(self.inFile, delimiter='\t')
         self.reader.next()
                         
-        _time_points = ["chromStart", "chromEnd"]
-        idx_fields2int = []
+        _int_points = ["chromStart", "chromEnd"]
+        idx_fields2int = [10000000000000]
+        i_new_field = [10000000000000]
+                                
+        if not intervals:             
+            print >>sys.stderr, "Intervals inferred from timepoints"
+            _time_points = ["chromStart"]
+            f_int_end = "chromEnd"
+        
+            if f_int_end in self.fieldsG:
+                raise ValueError("Intervals can not be generated as '%s' already exists in file %s." % (f_int_end, self.path))
                 
+            try:
+                idx_fields2int = [self.fieldsG.index(f) for f in _time_points]              
+            except ValueError:
+                raise ValueError("Field '%s' not in file %s." % (f, self.path))
+            
+#             l_time_points = (map(int, (str(row[0]).replace(".", "")  for row in self.read(fields=_time_points))))
+#             l_startChrom, l_endChrom = interv(l_time_points)
+            self.fieldsG.append(f_int_end)
+            i_new_field = [len(self.fieldsG) - 1]
+        
         try:            
-            name_fields2int = [f for f in _time_points if f in self.fieldsG]            
-            idx_fields2int = [self.fieldsG.index(f) for f in name_fields2int]
+            print "llllllllllll",f,_int_points,self.fieldsG
+            f=""
+            name_fields2mult = [f for f in _int_points if f in self.fieldsG] 
+            print ".........",name_fields2mult           
+            idx_fields2mult = [self.fieldsG.index(f) for f in name_fields2mult]
                  
         except ValueError:
             raise ValueError("Field '%s' not in file %s." % (f, self.path))
+             
+        
+#         
+#         list_chromStart.append(v)
+#         
+#         if (i < len(n_list)-1):
+#             list_chromEnd.append(n_list[i+1]-1)
+#         else:
+#             list_chromEnd.append(n_list[i]+1)
+#         
+#         
+#         range = range(len(self.fieldsG))
+        v = 0
+        pv = 0
         
         for interv in self.reader:            
-            temp = []            
-            for i in range(len(self.fieldsG)): 
-                if i in idx_fields2int:
-                    temp.append(int(float(interv[i])*multiply_t))                    
-                else:                        
-                    temp.append(interv[i])  
+            temp = []  
+            p_temp = []
+            first = True
             
-            yield(tuple(temp))
+                      
+            for i in range(len(self.fieldsG)): 
+#                 print "''''''''''''''''",i,idx_fields2mult, idx_fields2int, i_new_field
+#                 if i in idx_fields2mult and i in idx_fields2int:
+                if i in idx_fields2mult and i in idx_fields2int:
+                    v = int(float(interv[i]) * multiply_t)
+                elif i in i_new_field and i in idx_fields2mult:
+                    if first:
+                        p_v =v
+                        pass
+                    else:
+#                         v = int(float(interv[i]+1) * multiply_t)
+                        p_temp.append(pv)
+                        p_temp = temp
+                        pv = v 
+                elif i in idx_fields2mult and i not in idx_fields2int:
+                    v = int(float(interv[i]) * multiply_t)
+                
+#                 elif i in i_new_field:
+#                     print "he pasado"
+#                     v=p_v-1
+                else: 
+                    v = interv[i]              
+                  
+                    
+            if first:
+                first = False                
+            else:                
+                yield(tuple(p_temp)) 
+                p_temp = temp
                          
         self.inFile.close()
     
