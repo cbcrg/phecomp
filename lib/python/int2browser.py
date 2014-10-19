@@ -79,10 +79,15 @@ class intData: # if I name it as int I think is like self but with a better name
         self.delimiter = self._check_delimiter(self.path)
         self.header = kwargs.get('header',True)
         self.fieldsB = self._set_fields_b(kwargs.get ('fields'))
-        self.fieldsG = [ontology_dict [k] for k in self.fieldsB]        
-        
-        self.data = self._new_read(multiply_t = kwargs.get ('multiply_t', 1), intervals=kwargs.get ('intervals', False))
-        print "----------------",self.data
+        self.fieldsG = [ontology_dict [k] for k in self.fieldsB]
+        self.min = 0
+        self.max = 0
+        self.data = self._new_read(multiply_t = kwargs.get ('multiply_t', 1), intervals=kwargs.get ('intervals', False))        
+       
+#         self.data = self._new_read(multiply_t = kwargs.get ('multiply_t', 1), intervals=kwargs.get ('intervals', False))
+        print ".......",self.max
+#         self._new_read(multiply_t = kwargs.get ('multiply_t', 1), intervals=kwargs.get ('intervals', False))
+        self.data
 #         self.min, self.max =  self.get_min_max(**kwargs)
 #         self.tracks  =  self.get_field_items (field="track")
 #         self.dataTypes = self.get_field_items (field="dataTypes")
@@ -222,7 +227,7 @@ class intData: # if I name it as int I think is like self but with a better name
                         
         _int_points = ["chromStart", "chromEnd"]
         idx_fields2int = [10000000000000]
-        i_new_field = [10000000000000]                        
+        i_new_field = [10000000000000]                                    
         
         if intervals:             
             print >>sys.stderr, "Intervals inferred from timepoints"
@@ -248,7 +253,22 @@ class intData: # if I name it as int I think is like self but with a better name
                  
         except ValueError:
             raise ValueError("Field '%s' not in file %s." % (f, self.path))
-
+        
+        p_min = None
+        p_max = None
+        
+        _start_f = ["chromStart"]
+        try:
+            i_min = [self.fieldsG.index(f) for f in _start_f]              
+        except ValueError:
+            raise ValueError("Field '%s' for min interval calculation time not in file %s." % (f, self.path))
+            
+        _end_f = ["chromEnd"]
+        try:
+            i_max = [self.fieldsG.index(f) for f in _end_f]              
+        except ValueError:
+            raise ValueError("Field '%s' for max interval calculation time not in file %s." % (f, self.path))
+              
         v = 0
         p_v = 0
         first = True
@@ -256,12 +276,12 @@ class intData: # if I name it as int I think is like self but with a better name
         
         for interv in self.reader:            
             temp = []            
-                      
+#             print ":::::::::::::::::::::",idx_fields2int
             for i in range(len(self.fieldsG)): 
                 if i in idx_fields2mult and i in idx_fields2int:
                     v = int(float(interv[i]) * multiply_t)
                     temp.append(v)
-                    p_v = v -1 
+                    p_v = v - 1
                 elif i in i_new_field and i in idx_fields2mult:
                     if first:
                         pass
@@ -273,16 +293,31 @@ class intData: # if I name it as int I think is like self but with a better name
                 else: 
                     v = interv[i]              
                     temp.append(v)
-                    
+                
+                if i in i_min:
+                    if p_min is None: p_min = v
+                    if p_min > v: p_min = v
+                
+                if i in i_max:
+                    if i_max == i_new_field:
+                        if first: pass
+                        if p_max is None: p_max = p_v
+                        if p_max < p_v: p_max = p_v
+                    else:
+                        if p_max is None: p_max = v
+                        if p_max < v: p_max = v
             if first:
                 first = False 
                 p_temp = temp
             else:               
                 yield(tuple(p_temp)) 
                 p_temp = temp
-                                 
+                         
         self.inFile.close()
-        
+#         print "::::::::", p_max
+        self.min = p_min         
+        self.max = 33333
+#         print self.max
 #     def get_min_max(self, fields=None, **kwargs): 
 #         """
 #         Return the minimun and maximun of two given fields by default set to chromStart and chromEnd
