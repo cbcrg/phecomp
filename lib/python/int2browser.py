@@ -81,11 +81,11 @@ class intData: # if I name it as int I think is like self but with a better name
         self.fieldsB = self._set_fields_b(kwargs.get ('fields'))
         self.fieldsG = [ontology_dict [k] for k in self.fieldsB]        
         
-        self.data = self._new_read(multiply_t = kwargs.get ('multiply_t', 1))
+        self.data = self._new_read(multiply_t = kwargs.get ('multiply_t', 1), intervals=kwargs.get ('intervals', False))
         print "----------------",self.data
-        self.min, self.max =  self.get_min_max(**kwargs)
-        self.tracks  =  self.get_field_items (field="track")
-        self.dataTypes = self.get_field_items (field="dataTypes")
+#         self.min, self.max =  self.get_min_max(**kwargs)
+#         self.tracks  =  self.get_field_items (field="track")
+#         self.dataTypes = self.get_field_items (field="dataTypes")
 #         self.format = "csv"
   
     def _check_delimiter (self, path):
@@ -171,17 +171,17 @@ class intData: # if I name it as int I think is like self but with a better name
         
         l_startChrom = l_endChrom = []
         
-        if not intervals:             
-            print >>sys.stderr, "Intervals inferred from timepoints"
-            _time_points = ["chromStart"]
-            try:
-                idx_fields2int = [self.fieldsG.index(f) for f in _time_points]                
-            except ValueError:
-                raise ValueError("Field '%s' not in file %s." % (f, self.path))
-            
-            l_time_points = (map(int, (str(row[0]).replace(".", "")  for row in self.read(fields=_time_points))))
-            l_startChrom, l_endChrom = interv(l_time_points)
-            self.fieldsG.append("chromEnd")
+#         if not intervals:             
+#             print >>sys.stderr, "Intervals inferred from timepoints"
+#             _time_points = ["chromStart"]
+#             try:
+#                 idx_fields2int = [self.fieldsG.index(f) for f in _time_points]                
+#             except ValueError:
+#                 raise ValueError("Field '%s' not in file %s." % (f, self.path))
+#             
+#             l_time_points = (map(int, (str(row[0]).replace(".", "")  for row in self.read(fields=_time_points))))
+#             l_startChrom, l_endChrom = interv(l_time_points)
+#             self.fieldsG.append("chromEnd")
         
                                                   
         return dataIter(self._read(indexL, idx_fields2rel, idx_fields2int, l_startChrom, l_endChrom, multiply_t), self.fieldsG)
@@ -223,8 +223,9 @@ class intData: # if I name it as int I think is like self but with a better name
         _int_points = ["chromStart", "chromEnd"]
         idx_fields2int = [10000000000000]
         i_new_field = [10000000000000]
-                                
-        if not intervals:             
+        print "::::::::::::jjjjjjjjjjj",self.fieldsG                         
+        
+        if intervals:             
             print >>sys.stderr, "Intervals inferred from timepoints"
             _time_points = ["chromStart"]
             f_int_end = "chromEnd"
@@ -240,10 +241,11 @@ class intData: # if I name it as int I think is like self but with a better name
 #             l_time_points = (map(int, (str(row[0]).replace(".", "")  for row in self.read(fields=_time_points))))
 #             l_startChrom, l_endChrom = interv(l_time_points)
             self.fieldsG.append(f_int_end)
+            print "::::::::::::jjjjjjjjjjj",self.fieldsG     
             i_new_field = [len(self.fieldsG) - 1]
         
         try:            
-            print "llllllllllll",f,_int_points,self.fieldsG
+#             print "llllllllllll",f,_int_points,self.fieldsG
             f=""
             name_fields2mult = [f for f in _int_points if f in self.fieldsG] 
             print ".........",name_fields2mult           
@@ -294,7 +296,7 @@ class intData: # if I name it as int I think is like self but with a better name
             else:               
                 yield(tuple(p_temp)) 
                 p_temp = temp
-                         
+        print "::::::::::::::::::::::::",self.fieldsG                 
         self.inFile.close()
     
 #     def _meta_read_init (self, indexL, idx_fields2rel, idx_fields2int,l_startChrom, l_endChrom):
@@ -328,59 +330,59 @@ class intData: # if I name it as int I think is like self but with a better name
         
         
         
-    def get_min_max(self, fields=None, **kwargs): 
-        """
-        Return the minimun and maximun of two given fields by default set to chromStart and chromEnd
-        """
-                
-        pMinMax = [None,None]
-        
-        if kwargs.get('intervals', True):
-        
-            if fields is None:
-                _f = ["chromStart","chromEnd"]
-                            
-                for row in self.read(fields=_f):
-                    
-                    row = map(int, [ i.replace(".", "") for i in map(str, row)])
-                    
-                    if pMinMax[0] is None: pMinMax = list(row)
-                    if pMinMax[0] > row[0]: pMinMax[0] = row[0]
-                    if pMinMax[1] < row[1]: pMinMax[1] = row[1]
-            else:
-                if isinstance(fields, basestring): fields = [fields]
-                _f = [f for f in fields if f in self.fieldsG]
-                if len(_f) == 0:
-                    raise ValueError("Fields %s not in track: %s" % (fields, self.fieldsG))
-                elif len(_f) != 2:
-                    raise ValueError("Only two fields can be consider for get_min_max %s: %s" % (fields, self.fieldsG))
-            
-            for row in self.read(fields=_f):
-                row = map(int, [ i.replace(".", "") for i in map(str, row)])
-#                 print "33333",row#del
-                          
-                if pMinMax[0] is None: pMinMax = list(row)
-                if pMinMax[0] > row[0]: pMinMax[0] = row[0]
-                if pMinMax[1] < row[1]: pMinMax[1] = row[1]
-            
-        else:
-            p_min = None
-            p_max = None
-            
-            _f = ["chromStart"]
-            
-            for row in self.read(fields=_f):
-                
-                row = map(int, [ i.replace(".", "") for i in map(str, row)])
-                 
-#                 print "33333",row#del                          
-                if p_min is None: p_min = row[0]
-                elif p_min > row: p_min = row[0]
-                elif p_max < row: p_max = row[0]
-                
-                pMinMax = p_min, p_max
-
-        return pMinMax
+#     def get_min_max(self, fields=None, **kwargs): 
+#         """
+#         Return the minimun and maximun of two given fields by default set to chromStart and chromEnd
+#         """
+#                 
+#         pMinMax = [None,None]
+#         
+#         if kwargs.get('intervals', True):
+#         
+#             if fields is None:
+#                 _f = ["chromStart","chromEnd"]
+#                             
+#                 for row in self.read(fields=_f):
+#                     
+#                     row = map(int, [ i.replace(".", "") for i in map(str, row)])
+#                     
+#                     if pMinMax[0] is None: pMinMax = list(row)
+#                     if pMinMax[0] > row[0]: pMinMax[0] = row[0]
+#                     if pMinMax[1] < row[1]: pMinMax[1] = row[1]
+#             else:
+#                 if isinstance(fields, basestring): fields = [fields]
+#                 _f = [f for f in fields if f in self.fieldsG]
+#                 if len(_f) == 0:
+#                     raise ValueError("Fields %s not in track: %s" % (fields, self.fieldsG))
+#                 elif len(_f) != 2:
+#                     raise ValueError("Only two fields can be consider for get_min_max %s: %s" % (fields, self.fieldsG))
+#             
+#             for row in self.read(fields=_f):
+#                 row = map(int, [ i.replace(".", "") for i in map(str, row)])
+# #                 print "33333",row#del
+#                           
+#                 if pMinMax[0] is None: pMinMax = list(row)
+#                 if pMinMax[0] > row[0]: pMinMax[0] = row[0]
+#                 if pMinMax[1] < row[1]: pMinMax[1] = row[1]
+#             
+#         else:
+#             p_min = None
+#             p_max = None
+#             
+#             _f = ["chromStart"]
+#             
+#             for row in self.read(fields=_f):
+#                 
+#                 row = map(int, [ i.replace(".", "") for i in map(str, row)])
+#                  
+# #                 print "33333",row#del                          
+#                 if p_min is None: p_min = row[0]
+#                 elif p_min > row: p_min = row[0]
+#                 elif p_max < row: p_max = row[0]
+#                 
+#                 pMinMax = p_min, p_max
+# 
+#         return pMinMax
     
     def get_field_items(self, field="dataTypes"): 
         """
