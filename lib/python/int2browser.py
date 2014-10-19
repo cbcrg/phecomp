@@ -80,13 +80,11 @@ class intData: # if I name it as int I think is like self but with a better name
         self.header = kwargs.get('header',True)
         self.fieldsB = self._set_fields_b(kwargs.get ('fields'))
         self.fieldsG = [ontology_dict [k] for k in self.fieldsB]
-        self.data, self.min, self.max = self._new_read(multiply_t = kwargs.get ('multiply_t', 1), intervals=kwargs.get ('intervals', False))        
-        #igual llamandola con una segunda funcion como hacia antes con read
-        
+        self.data, self.min, self.max = self._new_read(multiply_t = kwargs.get ('multiply_t', 1), intervals=kwargs.get ('intervals', False))   
+        self.dataTypes = self.get_field_items (field="dataTypes", data=self.data)
 #         self.data = self._new_read(multiply_t = kwargs.get ('multiply_t', 1), intervals=kwargs.get ('intervals', False))
-        print ".......",self.max
+
 #         self._new_read(multiply_t = kwargs.get ('multiply_t', 1), intervals=kwargs.get ('intervals', False))
-        self.data
 #         self.min, self.max =  self.get_min_max(**kwargs)
 #         self.tracks  =  self.get_field_items (field="track")
 #         self.dataTypes = self.get_field_items (field="dataTypes")
@@ -372,7 +370,7 @@ class intData: # if I name it as int I think is like self but with a better name
 # 
 #         return pMinMax
     
-    def get_field_items(self, field="dataTypes"): 
+    def get_field_items(self, data, field="dataTypes"): 
         """
         Return a list with all the possible data types present in the column that was set as dataTypes
         """
@@ -381,14 +379,13 @@ class intData: # if I name it as int I think is like self but with a better name
         except ValueError:
             raise ValueError("Field '%s' not in file %s." % (field, self.path))
         
-        idx_field = self.fieldsG.index (field)
+        idx_field = self.fieldsG.index(field)
         field = [field]    
         set_fields = set()
-               
-        for row in self.read():
-#             if row[idx_field] not in set_fields: # Not needed
+        
+        for row in data:
             set_fields.add(row[idx_field])
-                    
+            
         return set_fields
                      
     def writeChr(self, mode="w"):
