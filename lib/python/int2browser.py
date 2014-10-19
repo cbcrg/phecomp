@@ -83,14 +83,7 @@ class intData: # if I name it as int I think is like self but with a better name
         self.data, self.min, self.max = self._new_read(multiply_t = kwargs.get ('multiply_t', 1), intervals=kwargs.get ('intervals', False))   
         self.dataTypes = self.get_field_items (field="dataTypes", data=self.data)
         self.tracks  =  self.get_field_items (field="track", data=self.data)
-#         self.data = self._new_read(multiply_t = kwargs.get ('multiply_t', 1), intervals=kwargs.get ('intervals', False))
 
-#         self._new_read(multiply_t = kwargs.get ('multiply_t', 1), intervals=kwargs.get ('intervals', False))
-#         self.min, self.max =  self.get_min_max(**kwargs)
-#         self.tracks  =  self.get_field_items (field="track")
-#         self.dataTypes = self.get_field_items (field="dataTypes")
-#         self.format = "csv"
-  
     def _check_delimiter (self, path):
         """ Check whether the delimiter works, if delimiter is not set
         then tries ' ', '\t' and ';'"""
@@ -275,7 +268,7 @@ class intData: # if I name it as int I think is like self but with a better name
         
         for interv in self.reader:            
             temp = []            
-#             print ":::::::::::::::::::::",idx_fields2int
+
             for i in range(len(self.fieldsG)): 
                 if i in idx_fields2mult and i in idx_fields2int:
                     v = int(float(interv[i]) * multiply_t)
@@ -313,10 +306,9 @@ class intData: # if I name it as int I think is like self but with a better name
                 p_temp = temp
                          
         self.inFile.close()
-#         print "::::::::", p_max
+
         return (iter(list_data), p_min, p_max)         
-#         self.max = 33333
-#         print self.max
+
 #     def get_min_max(self, fields=None, **kwargs): 
 #         """
 #         Return the minimun and maximun of two given fields by default set to chromStart and chromEnd
