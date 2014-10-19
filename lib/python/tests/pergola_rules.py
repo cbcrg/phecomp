@@ -68,7 +68,8 @@ def ranges(i):
         
         yield tuple(temp_list)
         temp_list = []
-print "?????????????????",(list(ranges([0, 1, 3, 4, 7, 8, 9, 11,12,13])))
+        
+print "?????????????????",(list(int2browser.interv([0, 1, 3, 4, 7, 8, 9, 11,12,13])))
 # print ">>>>>>>>>>>>>>>>>>",list(enumerate([0, 1, 3, 4, 7, 8, 9, 11,12,13]))
 # out.append(abc[0])
 # for item in abc[1:]:
@@ -116,11 +117,15 @@ print >>sys.stderr, "@@@Pergola_rules.py format to write files: ", write_format
 #End  of options
 print >>sys.stderr, "@@@Print all the options set by pergola_rules end here!"
 
-intData = int2browser.intData(path, ontology_dict=configFileDict.correspondence, intervals=False)
+intData = int2browser.intData(path, ontology_dict=configFileDict.correspondence, intervals=True, multiply_t=1000)
+intData = int2browser.intData(path, ontology_dict=configFileDict.correspondence, multiply_t=1000)
 print intData.min
 print intData.max
 
-iter=intData.read(relative_coord=False, intervals=False)
+for i in intData.data:
+    pass
+    print i
+# iter=intData.read(relative_coord=True, intervals=True)
 #buscar al manera de que si esta timepoint en el configuration file entonces crea de uno 
 # for  i in iter:
 #     print i
