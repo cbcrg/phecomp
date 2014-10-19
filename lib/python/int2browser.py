@@ -222,8 +222,7 @@ class intData: # if I name it as int I think is like self but with a better name
                         
         _int_points = ["chromStart", "chromEnd"]
         idx_fields2int = [10000000000000]
-        i_new_field = [10000000000000]
-        print "::::::::::::jjjjjjjjjjj",self.fieldsG                         
+        i_new_field = [10000000000000]                        
         
         if intervals:             
             print >>sys.stderr, "Intervals inferred from timepoints"
@@ -238,14 +237,10 @@ class intData: # if I name it as int I think is like self but with a better name
             except ValueError:
                 raise ValueError("Field '%s' not in file %s." % (f, self.path))
             
-#             l_time_points = (map(int, (str(row[0]).replace(".", "")  for row in self.read(fields=_time_points))))
-#             l_startChrom, l_endChrom = interv(l_time_points)
-            self.fieldsG.append(f_int_end)
-            print "::::::::::::jjjjjjjjjjj",self.fieldsG     
+            self.fieldsG.append(f_int_end)   
             i_new_field = [len(self.fieldsG) - 1]
         
         try:            
-#             print "llllllllllll",f,_int_points,self.fieldsG
             f=""
             name_fields2mult = [f for f in _int_points if f in self.fieldsG] 
             print ".........",name_fields2mult           
@@ -253,18 +248,7 @@ class intData: # if I name it as int I think is like self but with a better name
                  
         except ValueError:
             raise ValueError("Field '%s' not in file %s." % (f, self.path))
-             
-        
-#         
-#         list_chromStart.append(v)
-#         
-#         if (i < len(n_list)-1):
-#             list_chromEnd.append(n_list[i+1]-1)
-#         else:
-#             list_chromEnd.append(n_list[i]+1)
-#         
-#         
-#         range = range(len(self.fieldsG))
+
         v = 0
         p_v = 0
         first = True
@@ -296,39 +280,8 @@ class intData: # if I name it as int I think is like self but with a better name
             else:               
                 yield(tuple(p_temp)) 
                 p_temp = temp
-        print "::::::::::::::::::::::::",self.fieldsG                 
+                                 
         self.inFile.close()
-    
-#     def _meta_read_init (self, indexL, idx_fields2rel, idx_fields2int,l_startChrom, l_endChrom):
-#         pass
-#         self.inFile  = open(self.path, "rb")
-#         self.reader = csv.reader(self.inFile, delimiter='\t')
-#         self.reader.next() #modify if header true or something similar
-#         
-#         pMinMax = [None,None]
-#         
-#         if kwargs.get('intervals', True):
-#             
-#         for interv in self.reader:
-#             j = self.reader.line_num -2 #header removed and list starts at 0 #modify
-#             temp = []            
-#             for i in indexL:                                
-#                 if i in idx_fields2int and i in idx_fields2rel:
-#                     temp.append(l_startChrom[j] - self.min + 1)
-#                     temp.append(l_endChrom[j] - self.min + 1) 
-#                 elif i in idx_fields2int and not i in idx_fields2rel:
-#                     temp.append(l_startChrom[j])
-#                     temp.append(l_endChrom[j]) 
-#                 elif i not in idx_fields2int and i in idx_fields2rel:
-#                     temp.append(int(interv[i]) - self.min + 1)
-#                 elif i not in idx_fields2int and not i in idx_fields2rel:    
-#                     temp.append(interv[i])  
-#             
-#             yield(tuple(temp))
-#                          
-#         self.inFile.close()
-        
-        
         
 #     def get_min_max(self, fields=None, **kwargs): 
 #         """
