@@ -264,41 +264,34 @@ class intData: # if I name it as int I think is like self but with a better name
 #         
 #         range = range(len(self.fieldsG))
         v = 0
-        pv = 0
+        p_v = 0
+        first = True
+        p_temp = []
         
         for interv in self.reader:            
-            temp = []  
-            p_temp = []
-            first = True
-            
+            temp = []            
                       
             for i in range(len(self.fieldsG)): 
-#                 print "''''''''''''''''",i,idx_fields2mult, idx_fields2int, i_new_field
-#                 if i in idx_fields2mult and i in idx_fields2int:
                 if i in idx_fields2mult and i in idx_fields2int:
                     v = int(float(interv[i]) * multiply_t)
+                    temp.append(v)
+                    p_v = v -1 
                 elif i in i_new_field and i in idx_fields2mult:
                     if first:
-                        p_v =v
                         pass
                     else:
-#                         v = int(float(interv[i]+1) * multiply_t)
-                        p_temp.append(pv)
-                        p_temp = temp
-                        pv = v 
+                        p_temp.append(p_v)                        
                 elif i in idx_fields2mult and i not in idx_fields2int:
                     v = int(float(interv[i]) * multiply_t)
-                
-#                 elif i in i_new_field:
-#                     print "he pasado"
-#                     v=p_v-1
+                    temp.append(v)
                 else: 
                     v = interv[i]              
-                  
+                    temp.append(v)
                     
             if first:
-                first = False                
-            else:                
+                first = False 
+                p_temp = temp
+            else:               
                 yield(tuple(p_temp)) 
                 p_temp = temp
                          
