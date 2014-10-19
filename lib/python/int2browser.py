@@ -78,11 +78,11 @@ class intData: # if I name it as int I think is like self but with a better name
         self.delimiter = kwargs.get('delimiter',"\t")
         self.delimiter = self._check_delimiter(self.path)
         self.header = kwargs.get('header',True)
-        self.fieldsB = self._set_fields_b(kwargs.get ('fields'))
+        self.fieldsB = self._set_fields_b(kwargs.get('fields'))
         self.fieldsG = [ontology_dict [k] for k in self.fieldsB]
-        self.data, self.min, self.max = self._new_read(multiply_t = kwargs.get ('multiply_t', 1), intervals=kwargs.get ('intervals', False))   
-        self.dataTypes = self.get_field_items (field="dataTypes", data=self.data)
-        self.tracks  =  self.get_field_items (field="track", data=self.data)
+        self.data, self.min, self.max = self._new_read(multiply_t = kwargs.get('multiply_t', 1), intervals=kwargs.get('intervals', False))  
+        self.dataTypes = self.get_field_items(field="dataTypes")
+        self.tracks  =  self.get_field_items(field="track")
 
     def _check_delimiter (self, path):
         """ Check whether the delimiter works, if delimiter is not set
@@ -105,6 +105,7 @@ class intData: # if I name it as int I think is like self but with a better name
             if row.count(";") > 1:
                 self.delimiter = "\t"
                 break      
+            
         return self.delimiter
     
     def _set_fields_b(self, fields):
@@ -306,7 +307,8 @@ class intData: # if I name it as int I think is like self but with a better name
                 p_temp = temp
                          
         self.inFile.close()
-
+        
+#         print list_data #del
         return (iter(list_data), p_min, p_max)         
 
 #     def get_min_max(self, fields=None, **kwargs): 
@@ -363,10 +365,12 @@ class intData: # if I name it as int I think is like self but with a better name
 # 
 #         return pMinMax
     
-    def get_field_items(self, data, field="dataTypes"): 
+    def get_field_items(self, field="dataTypes"): 
         """
         Return a list with all the possible data types present in the column that was set as dataTypes
         """
+        self.data, data_clon = itertools.tee(self.data)
+        
         try:
             field in self.fieldsG                
         except ValueError:
@@ -376,9 +380,11 @@ class intData: # if I name it as int I think is like self but with a better name
         field = [field]    
         set_fields = set()
         
-        for row in data:
+        for row in data_clon:
             set_fields.add(row[idx_field])
             
+#         for it in data:
+#             print it    
         return set_fields
                      
     def writeChr(self, mode="w"):
