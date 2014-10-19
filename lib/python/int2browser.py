@@ -80,10 +80,9 @@ class intData: # if I name it as int I think is like self but with a better name
         self.header = kwargs.get('header',True)
         self.fieldsB = self._set_fields_b(kwargs.get ('fields'))
         self.fieldsG = [ontology_dict [k] for k in self.fieldsB]
-        self.min = 0
-        self.max = 0
-        self.data = self._new_read(multiply_t = kwargs.get ('multiply_t', 1), intervals=kwargs.get ('intervals', False))        
-       
+        self.data, self.min, self.max = self._new_read(multiply_t = kwargs.get ('multiply_t', 1), intervals=kwargs.get ('intervals', False))        
+        #igual llamandola con una segunda funcion como hacia antes con read
+        
 #         self.data = self._new_read(multiply_t = kwargs.get ('multiply_t', 1), intervals=kwargs.get ('intervals', False))
         print ".......",self.max
 #         self._new_read(multiply_t = kwargs.get ('multiply_t', 1), intervals=kwargs.get ('intervals', False))
@@ -221,6 +220,7 @@ class intData: # if I name it as int I think is like self but with a better name
         y luego si se pide el cambio de coordenadas 
         entonces el dataIter modificarlo
         """
+        list_data = list()
         self.inFile  = open(self.path, "rb")
         self.reader = csv.reader(self.inFile, delimiter='\t')
         self.reader.next()
@@ -310,13 +310,13 @@ class intData: # if I name it as int I think is like self but with a better name
                 first = False 
                 p_temp = temp
             else:               
-                yield(tuple(p_temp)) 
+                list_data.append((tuple(p_temp))) 
                 p_temp = temp
                          
         self.inFile.close()
 #         print "::::::::", p_max
-        self.min = p_min         
-        self.max = 33333
+        return (iter(list_data), p_min, p_max)         
+#         self.max = 33333
 #         print self.max
 #     def get_min_max(self, fields=None, **kwargs): 
 #         """
