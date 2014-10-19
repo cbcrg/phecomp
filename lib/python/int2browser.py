@@ -80,9 +80,10 @@ class intData: # if I name it as int I think is like self but with a better name
         self.header = kwargs.get('header',True)
         self.fieldsB = self._set_fields_b(kwargs.get('fields'))
         self.fieldsG = [ontology_dict [k] for k in self.fieldsB]
-        self.data, self.min, self.max = self._new_read(multiply_t = kwargs.get('multiply_t', 1), intervals=kwargs.get('intervals', False))  
-        self.dataTypes = self.get_field_items(field="dataTypes")
-        self.tracks  =  self.get_field_items(field="track")
+        self.data, self.min, self.max = self._new_read(multiply_t = kwargs.get('multiply_t', 1), intervals=kwargs.get('intervals', False))
+#         print ":::::::::::::::::::",type(self.data)  
+        self.dataTypes = self.get_field_items(field ="dataTypes", data = self.data)
+        self.tracks  =  self.get_field_items(field="track", data = self.data)
 
     def _check_delimiter (self, path):
         """ Check whether the delimiter works, if delimiter is not set
@@ -307,9 +308,8 @@ class intData: # if I name it as int I think is like self but with a better name
                 p_temp = temp
                          
         self.inFile.close()
-        
-#         print list_data #del
-        return (iter(list_data), p_min, p_max)         
+#         dataIter(self._read(indexL, idx_fields2rel, idx_fields2int, l_startChrom, l_endChrom, multiply_t), self.fieldsG)
+        return (list_data, p_min, p_max)         
 
 #     def get_min_max(self, fields=None, **kwargs): 
 #         """
@@ -365,14 +365,14 @@ class intData: # if I name it as int I think is like self but with a better name
 # 
 #         return pMinMax
     
-    def get_field_items(self, field="dataTypes"): 
+    def get_field_items(self, data, field="dataTypes"): 
         """
         Return a list with all the possible data types present in the column that was set as dataTypes
         """
-        self.data, data_clon = itertools.tee(self.data)
         
         try:
-            field in self.fieldsG                
+#             [self.fieldsG.index(f) for f in _bed_fields] 
+            [self.fieldsG.index(field)]                
         except ValueError:
             raise ValueError("Field '%s' not in file %s." % (field, self.path))
         
@@ -380,7 +380,7 @@ class intData: # if I name it as int I think is like self but with a better name
         field = [field]    
         set_fields = set()
         
-        for row in data_clon:
+        for row in self.data:
             set_fields.add(row[idx_field])
             
 #         for it in data:
