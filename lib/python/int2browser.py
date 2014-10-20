@@ -412,7 +412,7 @@ class intData: # if I name it as int I think is like self but with a better name
         
         print "=========================", self.data#del
         print "**********************", self.tracks#del
-        dict_tracks = (self._convert2single_track(self.data, mode, **kwargs))
+        dict_tracks = (self._convert2single_track(self.data, mode, **kwargs))#modify #del
 #         dict_tracks = (self._convert2single_track(self.read(**kwargs), mode, **kwargs))
         
 #         dict_tracks = (self._convert2single_track(self.data, mode, **kwargs))
@@ -491,15 +491,18 @@ class intData: # if I name it as int I think is like self but with a better name
                 print "Is a dictionary"
                                    
         window = kwargs.get("window", 300)
-
+        
+        print "========here dataTypes", self.dataTypes #del
+        
         _dict_col_grad = assign_color (self.dataTypes)
         
         #Output    
         for k, d in d_dataTypes_merge.items():
             for k_2, d_2 in d.items():
-                track_dict[k,k_2] = globals()[_dict_file[mode][0]](getattr(self,_dict_file[mode][1])(d_2, True, window), track=k, dataType=k_2, color=_dict_col_grad[k_2])
-#                 track_dict[k,k_2] = globals()[_dict_file[mode][0]](getattr(self,_dict_file[mode][1])(d_2, True, window), track=k, dataType=k_2)
-        print "track_dict=", (track_dict)           
+                print ":::::::::: k_2",k_2
+#                 track_dict[k,k_2] = globals()[_dict_file[mode][0]](getattr(self,_dict_file[mode][1])(d_2, True, window), track=k, dataType=k_2, color=_dict_col_grad[k_2])
+                track_dict[k,k_2] = globals()[_dict_file[mode][0]](getattr(self,_dict_file[mode][1])(d_2, True, window), track=k, dataType=k_2)
+        print "track_dict=", (track_dict) #del          
         return (track_dict)
 
     def join_by_track (self, dict_t, tracks2join):  
@@ -579,6 +582,7 @@ class intData: # if I name it as int I think is like self but with a better name
         i_data_types = self.fieldsG.index("dataTypes")
         
         #Generate dictionary of field and color gradients
+        print "%%%%%%%%%%%", self.dataTypes#del
         _dict_col_grad = assign_color (self.dataTypes)
             
         for row in track:
@@ -712,8 +716,7 @@ class intData: # if I name it as int I think is like self but with a better name
                         end_w = end_w + delta_window
             
             else:
-#                 print ("FATAL ERROR: Something went wrong")
-                 pass#modify                                 
+                print ("FATAL ERROR: Something went wrong")                               
     def _error (self, data_tuple):
         raise ValueError("Fatal error")
          
