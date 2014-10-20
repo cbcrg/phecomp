@@ -164,7 +164,9 @@ class intData: # if I name it as int I think is like self but with a better name
                 idx_fields2rel = [self.fieldsG.index(f) for f in _f2rel]                
             except ValueError:
                 raise ValueError("Field '%s' not in file %s mandatory when option relative_coord=T." % (f, self.path))
-        
+            
+            self.data = self.time2rel_time(idx_fields2rel)
+            
         idx_fields2int = [10000000000000]
         
 #         l_startChrom = l_endChrom = []
@@ -185,6 +187,22 @@ class intData: # if I name it as int I think is like self but with a better name
 #         return dataIter(self._read(indexL, idx_fields2rel, idx_fields2int, l_startChrom, l_endChrom, multiply_t), self.fieldsG)
         return self.data
 #         return dataIter(self._new_read(indexL, idx_fields2rel, idx_fields2int, l_startChrom, l_endChrom, multiply_t), self.fieldsG)
+    def time2rel_time(self, i_fields):
+        list_rel = list()
+        print "ooooooooooooooooooooooooooooooo was here", i_fields
+        for row in self.data:
+            temp = []
+            for i in range(len(row)):
+                if i in i_fields:
+                    temp.append(row[i]- self.min + 1)
+                else:
+                    temp.append(row[i])
+        
+        list_rel.append((tuple(temp)))   
+            
+        return (list_rel)
+#         list_rel.append((tuple(p_temp))) 
+    
     
     def _read(self, indexL, idx_fields2rel, idx_fields2int,l_startChrom, l_endChrom, multiply_t):
         self.inFile  = open(self.path, "rb")
@@ -311,8 +329,9 @@ class intData: # if I name it as int I think is like self but with a better name
                          
         self.inFile.close()
 #         dataIter(self._read(indexL, idx_fields2rel, idx_fields2int, l_startChrom, l_endChrom, multiply_t), self.fieldsG)
-        return (list_data, p_min, p_max)         
-
+        return (list_data, p_min, p_max)
+             
+    
 #     def get_min_max(self, fields=None, **kwargs): 
 #         """
 #         Return the minimun and maximun of two given fields by default set to chromStart and chromEnd
@@ -414,8 +433,8 @@ class intData: # if I name it as int I think is like self but with a better name
         
         print "=========================", self.data#del
         print "**********************", self.tracks#del
-        dict_tracks = (self._convert2single_track(self.data, mode, **kwargs))#modify #del
-#         dict_tracks = (self._convert2single_track(self.read(**kwargs), mode, **kwargs))
+#         dict_tracks = (self._convert2single_track(self.data, mode, **kwargs))#modify #del
+        dict_tracks = (self._convert2single_track(self.read(**kwargs), mode, **kwargs))
         
 #         dict_tracks = (self._convert2single_track(self.data, mode, **kwargs))
         
@@ -502,6 +521,7 @@ class intData: # if I name it as int I think is like self but with a better name
         for k, d in d_dataTypes_merge.items():
             for k_2, d_2 in d.items():
                 print ":::::::::: k_2",k_2
+                print  ":::::::::: k_2",window
 #                 track_dict[k,k_2] = globals()[_dict_file[mode][0]](getattr(self,_dict_file[mode][1])(d_2, True, window), track=k, dataType=k_2, color=_dict_col_grad[k_2])
                 track_dict[k,k_2] = globals()[_dict_file[mode][0]](getattr(self,_dict_file[mode][1])(d_2, True, window), track=k, dataType=k_2)
         print "track_dict=", (track_dict) #del          
@@ -607,7 +627,7 @@ class intData: # if I name it as int I think is like self but with a better name
             
             yield(tuple(temp_list))
                     
-    def track_convert2bedGraph(self, track, in_call=False, window=300):
+    def track_convert2bedGraph(self, track, in_call=False, window=50): #modify
         _bed_fields = ["track","chromStart","chromEnd","dataValue"] 
         
         #Check whether these fields are in the original otherwise raise exception
@@ -624,7 +644,7 @@ class intData: # if I name it as int I think is like self but with a better name
         i_chr_end = self.fieldsG.index("chromEnd")
         i_data_value = self.fieldsG.index("dataValue")
         ini_window = 1
-        delta_window = window        
+        delta_window = window      
         end_window = delta_window
         partial_value = 0 
         cross_interv_dict = {}
@@ -638,6 +658,7 @@ class intData: # if I name it as int I think is like self but with a better name
             
             chr_start = row[i_chr_start]
             chr_end = row[i_chr_end]
+            print chr_end#del
 #             print type(chr_start)#del
 #             print type(end_window)#del
             data_value = float(row[i_data_value])
@@ -645,6 +666,7 @@ class intData: # if I name it as int I think is like self but with a better name
 
             #Intervals happening after the current window
             #if there is a value accumulated it has to be dumped otherwise 0
+            print "@@@@@@@@@@@@@@@@@@",chr_start, end_window
             if chr_start > end_window:
                 while (end_window < chr_start):                                      
                     partial_value = partial_value + cross_interv_dict.get(ini_window,0)
@@ -718,7 +740,8 @@ class intData: # if I name it as int I think is like self but with a better name
                         end_w = end_w + delta_window
             
             else:
-                print ("FATAL ERROR: Something went wrong")                               
+                print ("FATAL ERROR: Something went wrong")
+                               
     def _error (self, data_tuple):
         raise ValueError("Fatal error")
          
@@ -772,10 +795,10 @@ class dataIter(object):
             annotation_track = 'track type=' + self.format + " " + 'name=\"' + self.track + "_" + self.dataType + '\"' + " " + '\"description=' + self.track + "_" + self.dataType + '\"' + " " + 'visibility=full color=' + self.color[7] + ' altColor=' + self.color[8] + ' priority=20'        
         
             track_file.write (annotation_track + "\n")
-        print "I   was here" #del
+        print "I   was here", self.data #del
            
         for row in self.data: 
-            print "I   was here" #dels 
+#             print "I   was here" #dels 
             track_file.write('\t'.join(str(i) for i in row))
             track_file.write("\n")      
         track_file.close()
