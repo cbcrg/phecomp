@@ -148,7 +148,7 @@ class intData: # if I name it as int I think is like self but with a better name
                 raise ValueError("Field '%s' not in file %s." % (f, self.path))
            
         idx_fields2rel = [10000000000000]
-            
+        print >>sys.stderr, ("Relative coordinates is true", relative_coord)#del    
         if relative_coord:             
             print >>sys.stderr, "Relative coordinates is true"
             
@@ -166,7 +166,9 @@ class intData: # if I name it as int I think is like self but with a better name
                 raise ValueError("Field '%s' not in file %s mandatory when option relative_coord=T." % (f, self.path))
             
             self.data = self.time2rel_time(idx_fields2rel)
-            
+#             for i in self.data:#del
+#                 print "--------------------",i#del
+                
         idx_fields2int = [10000000000000]
         
 #         l_startChrom = l_endChrom = []
@@ -185,20 +187,26 @@ class intData: # if I name it as int I think is like self but with a better name
         
                                                   
 #         return dataIter(self._read(indexL, idx_fields2rel, idx_fields2int, l_startChrom, l_endChrom, multiply_t), self.fieldsG)
+#         for i in self.data: #del
+#             print i
         return self.data
 #         return dataIter(self._new_read(indexL, idx_fields2rel, idx_fields2int, l_startChrom, l_endChrom, multiply_t), self.fieldsG)
     def time2rel_time(self, i_fields):
         list_rel = list()
-        print "ooooooooooooooooooooooooooooooo was here", i_fields
+        print "ooooooooooooooooooooooooooooooo was here", i_fields#del
+        print "min is " ,self.min#del
         for row in self.data:
             temp = []
             for i in range(len(row)):
+                
                 if i in i_fields:
+#                     print "resta es ", (row[i] , self.min)
+#                     print "resta es ", (row[i] - self.min +1) #del
                     temp.append(row[i]- self.min + 1)
                 else:
                     temp.append(row[i])
-        
-        list_rel.append((tuple(temp)))   
+#             print temp #del
+            list_rel.append((tuple(temp)))   
             
         return (list_rel)
 #         list_rel.append((tuple(p_temp))) 
@@ -434,6 +442,7 @@ class intData: # if I name it as int I think is like self but with a better name
         print "=========================", self.data#del
         print "**********************", self.tracks#del
 #         dict_tracks = (self._convert2single_track(self.data, mode, **kwargs))#modify #del
+#         return (self.read(**kwargs))
         dict_tracks = (self._convert2single_track(self.read(**kwargs), mode, **kwargs))
         
 #         dict_tracks = (self._convert2single_track(self.data, mode, **kwargs))
@@ -509,7 +518,7 @@ class intData: # if I name it as int I think is like self but with a better name
         #mirar si es un diccionario de diccionarios la primera validacion hay que desarrolarla 
         for k, v in d_track_merge.items():
             if isinstance(v,dict):
-                print "Is a dictionary"
+                print "Is a dictionary"#del
                                    
         window = kwargs.get("window", 300)
         
@@ -524,7 +533,7 @@ class intData: # if I name it as int I think is like self but with a better name
                 print  ":::::::::: k_2",window
 #                 track_dict[k,k_2] = globals()[_dict_file[mode][0]](getattr(self,_dict_file[mode][1])(d_2, True, window), track=k, dataType=k_2, color=_dict_col_grad[k_2])
                 track_dict[k,k_2] = globals()[_dict_file[mode][0]](getattr(self,_dict_file[mode][1])(d_2, True, window), track=k, dataType=k_2)
-        print "track_dict=", (track_dict) #del          
+#         print "track_dict=", (track_dict) #del          
         return (track_dict)
 
     def join_by_track (self, dict_t, tracks2join):  
@@ -627,7 +636,7 @@ class intData: # if I name it as int I think is like self but with a better name
             
             yield(tuple(temp_list))
                     
-    def track_convert2bedGraph(self, track, in_call=False, window=50): #modify
+    def track_convert2bedGraph(self, track, in_call=False, window=300): #modify
         _bed_fields = ["track","chromStart","chromEnd","dataValue"] 
         
         #Check whether these fields are in the original otherwise raise exception
@@ -651,14 +660,14 @@ class intData: # if I name it as int I think is like self but with a better name
         
         #When the tracks have been join it is necessary to order by chr_start
         track = sorted(track, key=operator.itemgetter(*[i_chr_start]))
-        print track
+        print "track---------------------------------------------------",track
                                      
         for row in track:
             temp_list = []
-            
+#             print "row is:", row # del
             chr_start = row[i_chr_start]
             chr_end = row[i_chr_end]
-            print chr_end#del
+#             print "start    end:", chr_start, chr_end#del
 #             print type(chr_start)#del
 #             print type(end_window)#del
             data_value = float(row[i_data_value])
@@ -666,7 +675,7 @@ class intData: # if I name it as int I think is like self but with a better name
 
             #Intervals happening after the current window
             #if there is a value accumulated it has to be dumped otherwise 0
-            print "@@@@@@@@@@@@@@@@@@",chr_start, end_window
+#             print "@@@@@@@@@@@@@@@@@@",chr_start, end_window
             if chr_start > end_window:
                 while (end_window < chr_start):                                      
                     partial_value = partial_value + cross_interv_dict.get(ini_window,0)
@@ -795,7 +804,7 @@ class dataIter(object):
             annotation_track = 'track type=' + self.format + " " + 'name=\"' + self.track + "_" + self.dataType + '\"' + " " + '\"description=' + self.track + "_" + self.dataType + '\"' + " " + 'visibility=full color=' + self.color[7] + ' altColor=' + self.color[8] + ' priority=20'        
         
             track_file.write (annotation_track + "\n")
-        print "I   was here", self.data #del
+#         print "I   was here", self.data #del
            
         for row in self.data: 
 #             print "I   was here" #dels 
