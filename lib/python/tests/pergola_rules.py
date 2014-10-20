@@ -16,7 +16,9 @@ def parseNumRange(string):
     start = m.group(1)
     end = m.group(2) or start
     list_range=list(range(int(start,10), int(end,10)+1))
-    set_range=set(["{}".format(t) for t in list_range]) #modify probably I should change or set of tracks to integers and not string
+#     set_range = set(list_range)
+#     print "************##############",list_range
+    set_range=set(['{0}'.format(t) for t in list_range]) #modify probably I should change or set of tracks to integers and not string
     
     return set_range
 
@@ -117,15 +119,23 @@ print >>sys.stderr, "@@@Pergola_rules.py format to write files: ", write_format
 #End  of options
 print >>sys.stderr, "@@@Print all the options set by pergola_rules end here!"
 
-intData = int2browser.intData(path, ontology_dict=configFileDict.correspondence, intervals=True, multiply_t=1000)
-intData = int2browser.intData(path, ontology_dict=configFileDict.correspondence, multiply_t=1000)
-print intData.min
-print intData.max
+# intData = int2browser.intData(path, ontology_dict=configFileDict.correspondence, intervals=True, multiply_t=1000, window=30)
+intData = int2browser.intData(path, ontology_dict=configFileDict.correspondence)
+
+
+print intData.fieldsG
+
+# print intData.data
 
 for i in intData.data:
+#     print i
     pass
-    print i
-# iter=intData.read(relative_coord=True, intervals=True)
+
+print intData.min
+print intData.max
+#     print i
+# iter=intData.read()
+# iter=intData.read(relative_coord=True, intervals=False)
 #buscar al manera de que si esta timepoint en el configuration file entonces crea de uno 
 # for  i in iter:
 #     print i
@@ -141,9 +151,11 @@ for i in intData.data:
 # # print >>sys.stderr, "@@@Pergola_rules.py Tracks2merge=",tracks2merge
 # # # tracks2merge=2       
 # # # Generation of the files set by the user by command line
-# bed_str =  intData.convert(mode = write_format, relative_coord = True, dataTypes_actions=dataTypes_act, tracks=sel_tracks, tracks_merge=tracks2merge)
-#  
-# for key in bed_str:
-#     print "key.......: ",key
-#     bedSingle = bed_str[key]
-#     bedSingle.write()
+# print ":::::::::::::::::::::::::::::::::", write_format 
+# print "===================$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$", tracks2merge
+bed_str =  intData.convert(mode = write_format, relative_coord = True, dataTypes_actions=dataTypes_act, tracks=sel_tracks, tracks_merge=tracks2merge, window=300)
+for key in bed_str:
+    print "key.......: ",key
+    bedSingle = bed_str[key]
+    print bedSingle
+    bedSingle.write()
