@@ -408,8 +408,15 @@ class intData: # if I name it as int I think is like self but with a better name
             
         if mode not in _dict_file: 
             raise ValueError("Mode \'%s\' not available. Possible convert() modes are %s"%(mode,', '.join(['{}'.format(m) for m in _dict_file.keys()])))
+        ### el self.read!!!! AQUI ESTA EL PRINCIPIO DE TODO LOS MALES
         
-        dict_tracks = (self._convert2single_track(self.read(**kwargs), mode, **kwargs))
+        print "=========================", self.data#del
+        print "**********************", self.tracks#del
+        dict_tracks = (self._convert2single_track(self.data, mode, **kwargs))
+#         dict_tracks = (self._convert2single_track(self.read(**kwargs), mode, **kwargs))
+        
+#         dict_tracks = (self._convert2single_track(self.data, mode, **kwargs))
+        
         return (dict_tracks)
         
     def _convert2single_track (self, data_tuple,  mode=None, **kwargs):
@@ -420,8 +427,12 @@ class intData: # if I name it as int I think is like self but with a better name
         
         ###################
         ### Data is separated by track and dataTypes
+#         print "############::::::::data tuple ",data_tuple#del
+#         for i in data_tuple:
+#             print "000000000000000",i
         idx_fields2split = [self.fieldsG.index("track"), self.fieldsG.index("dataTypes")]
         data_tuple = sorted(data_tuple,key=operator.itemgetter(*idx_fields2split))
+        print "::::::::data tuple ",data_tuple
         
         for key,group in itertools.groupby(data_tuple, operator.itemgetter(*idx_fields2split)):
             if not dict_split.has_key(key[0]):
@@ -450,7 +461,8 @@ class intData: # if I name it as int I think is like self but with a better name
             d_track_merge = dict_split
         else:
             tracks_merge = kwargs.get('tracks_merge',self.tracks)
-            
+            print "**********************", self.tracks#del
+            print "**********************", tracks_merge#del
             if not all(tracks in self.tracks for tracks in tracks_merge):
                 raise ValueError ("Tracks to merge: %s, are not in the track list: " % ",".join("'{0}'".format(n) for n in tracks_merge), ",".join("'{0}'".format(n) for n in self.tracks))
             print >>sys.stderr, "Tracks that will be merged are: ",tracks_merge
@@ -467,7 +479,7 @@ class intData: # if I name it as int I think is like self but with a better name
             d_dataTypes_merge = d_track_merge
         elif kwargs.get('dataTypes_actions') == 'all':
             d_dataTypes_merge = self.join_by_dataType(d_track_merge, mode)
-            
+        print "dict_dataTypes_merge=", (d_dataTypes_merge)     
         track_dict = {}                        
    
         #######
@@ -487,7 +499,7 @@ class intData: # if I name it as int I think is like self but with a better name
             for k_2, d_2 in d.items():
                 track_dict[k,k_2] = globals()[_dict_file[mode][0]](getattr(self,_dict_file[mode][1])(d_2, True, window), track=k, dataType=k_2, color=_dict_col_grad[k_2])
 #                 track_dict[k,k_2] = globals()[_dict_file[mode][0]](getattr(self,_dict_file[mode][1])(d_2, True, window), track=k, dataType=k_2)
-                
+        print "track_dict=", (track_dict)           
         return (track_dict)
 
     def join_by_track (self, dict_t, tracks2join):  
@@ -613,12 +625,15 @@ class intData: # if I name it as int I think is like self but with a better name
         
         #When the tracks have been join it is necessary to order by chr_start
         track = sorted(track, key=operator.itemgetter(*[i_chr_start]))
+        print track
                                      
         for row in track:
             temp_list = []
             
             chr_start = row[i_chr_start]
             chr_end = row[i_chr_end]
+#             print type(chr_start)#del
+#             print type(end_window)#del
             data_value = float(row[i_data_value])
             self.fieldsG.index(f) 
 
@@ -697,8 +712,8 @@ class intData: # if I name it as int I think is like self but with a better name
                         end_w = end_w + delta_window
             
             else:
-                print ("FATAL ERROR: Something went wrong")
-                                                  
+#                 print ("FATAL ERROR: Something went wrong")
+                 pass#modify                                 
     def _error (self, data_tuple):
         raise ValueError("Fatal error")
          
