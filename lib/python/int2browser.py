@@ -167,7 +167,7 @@ class intData: # if I name it as int I think is like self but with a better name
         
         idx_fields2int = [10000000000000]
         
-        l_startChrom = l_endChrom = []
+#         l_startChrom = l_endChrom = []
         
 #         if not intervals:             
 #             print >>sys.stderr, "Intervals inferred from timepoints"
@@ -182,8 +182,10 @@ class intData: # if I name it as int I think is like self but with a better name
 #             self.fieldsG.append("chromEnd")
         
                                                   
-        return dataIter(self._read(indexL, idx_fields2rel, idx_fields2int, l_startChrom, l_endChrom, multiply_t), self.fieldsG)
-       
+#         return dataIter(self._read(indexL, idx_fields2rel, idx_fields2int, l_startChrom, l_endChrom, multiply_t), self.fieldsG)
+        return self.data
+#         return dataIter(self._new_read(indexL, idx_fields2rel, idx_fields2int, l_startChrom, l_endChrom, multiply_t), self.fieldsG)
+    
     def _read(self, indexL, idx_fields2rel, idx_fields2int,l_startChrom, l_endChrom, multiply_t):
         self.inFile  = open(self.path, "rb")
         self.reader = csv.reader(self.inFile, delimiter='\t')
@@ -761,19 +763,23 @@ class dataIter(object):
         print >>sys.stderr, "File %s generated" % name_file       
 
         track_file = open(os.path.join(_pwd, name_file), mode)
-
+                
         #Annotation track to set the genome browser interface
         annotation_track = ''
         if self.format == 'bed':
             annotation_track = 'track type=' + self.format + " " + 'name=\"' +  self.track + "_" + self.dataType + '\"' + " " + '\"description=' + self.track + " " + self.dataType + '\"' + " " + "visibility=2 itemRgb=\"On\" priority=20" 
         elif self.format == 'bedGraph':
             annotation_track = 'track type=' + self.format + " " + 'name=\"' + self.track + "_" + self.dataType + '\"' + " " + '\"description=' + self.track + "_" + self.dataType + '\"' + " " + 'visibility=full color=' + self.color[7] + ' altColor=' + self.color[8] + ' priority=20'        
+        
             track_file.write (annotation_track + "\n")
+        print "I   was here" #del
            
         for row in self.data: 
+            print "I   was here" #dels 
             track_file.write('\t'.join(str(i) for i in row))
             track_file.write("\n")      
         track_file.close()
+#         print "I   was here" #del
                                      
 ################################ Bed ##########################################
 
