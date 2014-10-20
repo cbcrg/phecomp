@@ -148,7 +148,7 @@ class intData: # if I name it as int I think is like self but with a better name
                 raise ValueError("Field '%s' not in file %s." % (f, self.path))
            
         idx_fields2rel = [10000000000000]
-        print >>sys.stderr, ("Relative coordinates is true", relative_coord)#del    
+        print >>sys.stderr, ("Relative coordinates is true", relative_coord)    
         if relative_coord:             
             print >>sys.stderr, "Relative coordinates is true"
             
@@ -166,8 +166,6 @@ class intData: # if I name it as int I think is like self but with a better name
                 raise ValueError("Field '%s' not in file %s mandatory when option relative_coord=T." % (f, self.path))
             
             self.data = self.time2rel_time(idx_fields2rel)
-#             for i in self.data:#del
-#                 print "--------------------",i#del
                 
         idx_fields2int = [10000000000000]
         
@@ -187,30 +185,24 @@ class intData: # if I name it as int I think is like self but with a better name
         
                                                   
 #         return dataIter(self._read(indexL, idx_fields2rel, idx_fields2int, l_startChrom, l_endChrom, multiply_t), self.fieldsG)
-#         for i in self.data: #del
-#             print i
+
         return self.data
 #         return dataIter(self._new_read(indexL, idx_fields2rel, idx_fields2int, l_startChrom, l_endChrom, multiply_t), self.fieldsG)
     def time2rel_time(self, i_fields):
         list_rel = list()
-        print "ooooooooooooooooooooooooooooooo was here", i_fields#del
-        print "min is " ,self.min#del
+
         for row in self.data:
             temp = []
             for i in range(len(row)):
                 
                 if i in i_fields:
-#                     print "resta es ", (row[i] , self.min)
-#                     print "resta es ", (row[i] - self.min +1) #del
                     temp.append(row[i]- self.min + 1)
                 else:
                     temp.append(row[i])
-#             print temp #del
+
             list_rel.append((tuple(temp)))   
             
         return (list_rel)
-#         list_rel.append((tuple(p_temp))) 
-    
     
     def _read(self, indexL, idx_fields2rel, idx_fields2int,l_startChrom, l_endChrom, multiply_t):
         self.inFile  = open(self.path, "rb")
@@ -270,7 +262,6 @@ class intData: # if I name it as int I think is like self but with a better name
         try:            
             f=""
             name_fields2mult = [f for f in _int_points if f in self.fieldsG] 
-            print ".........",name_fields2mult           
             idx_fields2mult = [self.fieldsG.index(f) for f in name_fields2mult]
                  
         except ValueError:
@@ -437,15 +428,8 @@ class intData: # if I name it as int I think is like self but with a better name
             
         if mode not in _dict_file: 
             raise ValueError("Mode \'%s\' not available. Possible convert() modes are %s"%(mode,', '.join(['{}'.format(m) for m in _dict_file.keys()])))
-        ### el self.read!!!! AQUI ESTA EL PRINCIPIO DE TODO LOS MALES
         
-        print "=========================", self.data#del
-        print "**********************", self.tracks#del
-#         dict_tracks = (self._convert2single_track(self.data, mode, **kwargs))#modify #del
-#         return (self.read(**kwargs))
         dict_tracks = (self._convert2single_track(self.read(**kwargs), mode, **kwargs))
-        
-#         dict_tracks = (self._convert2single_track(self.data, mode, **kwargs))
         
         return (dict_tracks)
         
@@ -457,12 +441,9 @@ class intData: # if I name it as int I think is like self but with a better name
         
         ###################
         ### Data is separated by track and dataTypes
-#         print "############::::::::data tuple ",data_tuple#del
-#         for i in data_tuple:
-#             print "000000000000000",i
         idx_fields2split = [self.fieldsG.index("track"), self.fieldsG.index("dataTypes")]
         data_tuple = sorted(data_tuple,key=operator.itemgetter(*idx_fields2split))
-        print "::::::::data tuple ",data_tuple
+#         print "::::::::data tuple ",data_tuple #del
         
         for key,group in itertools.groupby(data_tuple, operator.itemgetter(*idx_fields2split)):
             if not dict_split.has_key(key[0]):
@@ -491,15 +472,14 @@ class intData: # if I name it as int I think is like self but with a better name
             d_track_merge = dict_split
         else:
             tracks_merge = kwargs.get('tracks_merge',self.tracks)
-            print "**********************", self.tracks#del
-            print "**********************", tracks_merge#del
+
             if not all(tracks in self.tracks for tracks in tracks_merge):
                 raise ValueError ("Tracks to merge: %s, are not in the track list: " % ",".join("'{0}'".format(n) for n in tracks_merge), ",".join("'{0}'".format(n) for n in self.tracks))
             print >>sys.stderr, "Tracks that will be merged are: ",tracks_merge
             
             d_track_merge = self.join_by_track(dict_split, tracks_merge)
                                 
-        print "dict_track_merge=", (d_track_merge)        
+#         print "dict_track_merge=", (d_track_merge)#del        
         
         d_dataTypes_merge = {}
         
@@ -509,7 +489,7 @@ class intData: # if I name it as int I think is like self but with a better name
             d_dataTypes_merge = d_track_merge
         elif kwargs.get('dataTypes_actions') == 'all':
             d_dataTypes_merge = self.join_by_dataType(d_track_merge, mode)
-        print "dict_dataTypes_merge=", (d_dataTypes_merge)     
+#         print "dict_dataTypes_merge=", (d_dataTypes_merge)#del     
         track_dict = {}                        
    
         #######
@@ -521,19 +501,15 @@ class intData: # if I name it as int I think is like self but with a better name
                 print "Is a dictionary"#del
                                    
         window = kwargs.get("window", 300)
-        
-        print "========here dataTypes", self.dataTypes #del
-        
-        _dict_col_grad = assign_color (self.dataTypes)
+
+#         _dict_col_grad = assign_color (self.dataTypes) #now inside convert2bed
         
         #Output    
         for k, d in d_dataTypes_merge.items():
             for k_2, d_2 in d.items():
-                print ":::::::::: k_2",k_2
-                print  ":::::::::: k_2",window
 #                 track_dict[k,k_2] = globals()[_dict_file[mode][0]](getattr(self,_dict_file[mode][1])(d_2, True, window), track=k, dataType=k_2, color=_dict_col_grad[k_2])
                 track_dict[k,k_2] = globals()[_dict_file[mode][0]](getattr(self,_dict_file[mode][1])(d_2, True, window), track=k, dataType=k_2)
-#         print "track_dict=", (track_dict) #del          
+                       
         return (track_dict)
 
     def join_by_track (self, dict_t, tracks2join):  
@@ -613,7 +589,6 @@ class intData: # if I name it as int I think is like self but with a better name
         i_data_types = self.fieldsG.index("dataTypes")
         
         #Generate dictionary of field and color gradients
-        print "%%%%%%%%%%%", self.dataTypes#del
         _dict_col_grad = assign_color (self.dataTypes)
             
         for row in track:
@@ -660,16 +635,11 @@ class intData: # if I name it as int I think is like self but with a better name
         
         #When the tracks have been join it is necessary to order by chr_start
         track = sorted(track, key=operator.itemgetter(*[i_chr_start]))
-        print "track---------------------------------------------------",track
                                      
         for row in track:
             temp_list = []
-#             print "row is:", row # del
             chr_start = row[i_chr_start]
             chr_end = row[i_chr_end]
-#             print "start    end:", chr_start, chr_end#del
-#             print type(chr_start)#del
-#             print type(end_window)#del
             data_value = float(row[i_data_value])
             self.fieldsG.index(f) 
 
@@ -804,14 +774,11 @@ class dataIter(object):
             annotation_track = 'track type=' + self.format + " " + 'name=\"' + self.track + "_" + self.dataType + '\"' + " " + '\"description=' + self.track + "_" + self.dataType + '\"' + " " + 'visibility=full color=' + self.color[7] + ' altColor=' + self.color[8] + ' priority=20'        
         
             track_file.write (annotation_track + "\n")
-#         print "I   was here", self.data #del
            
         for row in self.data: 
-#             print "I   was here" #dels 
             track_file.write('\t'.join(str(i) for i in row))
             track_file.write("\n")      
         track_file.close()
-#         print "I   was here" #del
                                      
 ################################ Bed ##########################################
 
@@ -919,7 +886,7 @@ class ConfigInfo():
         with open(path) as config_file:
             #We eliminate possible empty lines at the end
             config_file_list = filter(lambda x:  not match(r'^\s*$', x), config_file)
-            print "llll",config_file_list
+            print "llll",config_file_list#del
             
             if config_file_list[0][0] == '#':
                 del config_file_list [0]
