@@ -641,19 +641,21 @@ class intData: # if I name it as int I think is like self but with a better name
         
         #When the tracks have been join it is necessary to order by chr_start
         track = sorted(track, key=operator.itemgetter(*[i_chr_start]))
-                                     
+        for row in track:
+            print "row in convert is:",row                            
         for row in track:
             temp_list = []
             chr_start = row[i_chr_start]
             chr_end = row[i_chr_end]
             data_value = float(row[i_data_value])
             self.fieldsG.index(f) 
-
+            print "type &&&&&&&&&", type(row[i_data_value])#del
             #Intervals happening after the current window
             #if there is a value accumulated it has to be dumped otherwise 0
-#             print "@@@@@@@@@@@@@@@@@@",chr_start, end_window
+            print "@@@@@@@@@@@@@@@@@@chr_start > end_window",chr_start, end_window
             if chr_start > end_window:
                 while (end_window < chr_start):                                      
+                    print "that is rounded",type(cross_interv_dict.get(ini_window,0))
                     partial_value = partial_value + cross_interv_dict.get(ini_window,0)
                     temp_list.append("chr1")
                     temp_list.append(ini_window)
@@ -666,7 +668,8 @@ class intData: # if I name it as int I think is like self but with a better name
                     temp_list = []
                     
                 #Value must to be weighted between intervals
-                if chr_end > end_window:                 
+                if chr_end > end_window:
+                    print "@@@@@@@@@@@@@@@@@@chr_end > end_window",chr_end, end_window                 
                     value2weight = data_value
                     end_w = end_window
                     start_new = chr_start
@@ -681,7 +684,7 @@ class intData: # if I name it as int I think is like self but with a better name
                             weighted_value = (end_w - start_new) / (end_new - start_new)
                             
                         weighted_value *= value2weight
-                        cross_interv_dict[start_w] = int(cross_interv_dict.get(start_w,0)) + float(weighted_value)                      
+                        cross_interv_dict[start_w] = float(cross_interv_dict.get(start_w,0)) + float(weighted_value)                      
                         start_new = end_w
                         value2weight = value2weight - weighted_value                        
 
