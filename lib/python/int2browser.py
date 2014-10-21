@@ -654,7 +654,7 @@ class intData: # if I name it as int I think is like self but with a better name
             print "type &&&&&&&&&", type(row[i_data_value])#del
             #Intervals happening after the current window
             #if there is a value accumulated it has to be dumped otherwise 0
-            print "@@@@@@@@@@@@@@@@@@chr_start > end_window",chr_start, end_window
+            print "@@@@@@@@@@@@@@@@@@chr_start > end_window",chr_start, end_window#del
             if chr_start > end_window:
                 while (end_window < chr_start):                                      
                     print "that is rounded",type(cross_interv_dict.get(ini_window,0))
@@ -696,7 +696,7 @@ class intData: # if I name it as int I think is like self but with a better name
                             break
                         
                         end_w = end_w + delta_window
-                        print "end_w after adding delta_w is:", end_w
+                        print "end_w after adding delta_w is:", end_w#del
                 else:
                     partial_value = partial_value + data_value
                             
@@ -732,6 +732,14 @@ class intData: # if I name it as int I think is like self but with a better name
                         print "end_w after adding delta_w is:", end_w
             else:
                 print ("FATAL ERROR: Something went wrong")
+        
+        #Last value just printed out
+        temp_list.append("chr1")
+        temp_list.append(ini_window)
+        temp_list.append(end_window)
+        temp_list.append(data_value)
+        yield(tuple(temp_list))
+        print data_value, end_window, chr_start, ini_window
                                
     def _error (self, data_tuple):
         raise ValueError("Fatal error")
