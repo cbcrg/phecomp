@@ -1,6 +1,8 @@
-Phase	chrom 
+#config
+CAGE	track
 StartT	chromStart
 EndT	chromEnd
 Nature	dataTypes
-Value	dataValue 
-CAGE	track
+Value	dataValue
+Phase	chrom
+
