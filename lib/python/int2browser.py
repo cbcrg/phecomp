@@ -295,6 +295,7 @@ class intData: # if I name it as int I think is like self but with a better name
                     v = int(float(interv[i]) * multiply_t)
                     temp.append(v)
                     p_v = v - 1
+                    if intervals: last_start = v
                 elif i in i_new_field and i in idx_fields2mult:
                     if first:
                         pass
@@ -325,7 +326,12 @@ class intData: # if I name it as int I think is like self but with a better name
             else:               
                 list_data.append((tuple(p_temp))) 
                 p_temp = temp
-                         
+            
+        # last line of the file when intervals are generated
+        if intervals: temp.append(last_start + 1)
+
+        list_data.append((tuple(temp)))             
+
         self.inFile.close()
 #         dataIter(self._read(indexL, idx_fields2rel, idx_fields2int, l_startChrom, l_endChrom, multiply_t), self.fieldsG)
         return (list_data, p_min, p_max)
