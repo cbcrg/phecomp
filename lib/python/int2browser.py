@@ -148,7 +148,8 @@ class intData: # if I name it as int I think is like self but with a better name
                 raise ValueError("Field '%s' not in file %s." % (f, self.path))
            
         idx_fields2rel = [10000000000000]
-        print >>sys.stderr, ("Relative coordinates is true", relative_coord)    
+        print >>sys.stderr, ("Relative coordinates is true", relative_coord) 
+           
         if relative_coord:             
             print >>sys.stderr, "Relative coordinates is true"
             
@@ -196,7 +197,8 @@ class intData: # if I name it as int I think is like self but with a better name
             for i in range(len(row)):
                 
                 if i in i_fields:
-                    temp.append(row[i]- self.min + 1)
+#                     temp.append(row[i]- self.min + 1)
+                    temp.append(row[i]- self.min)
                 else:
                     temp.append(row[i])
 
@@ -633,7 +635,7 @@ class intData: # if I name it as int I think is like self but with a better name
         i_chr_start = self.fieldsG.index("chromStart")
         i_chr_end = self.fieldsG.index("chromEnd")
         i_data_value = self.fieldsG.index("dataValue")
-        ini_window = 1
+        ini_window = 0
         delta_window = window      
         end_window = delta_window
         partial_value = 0 
@@ -662,11 +664,11 @@ class intData: # if I name it as int I think is like self but with a better name
                     temp_list.append(end_window)
                     temp_list.append(partial_value)
                     partial_value = 0
-                    ini_window += delta_window
-                    end_window += delta_window                                 
+                    ini_window += delta_window + 1
+                    end_window += delta_window + 1                                 
                     yield(tuple(temp_list))
                     temp_list = []
-                    
+                    print "end_window after adding delta_w is:", end_window    
                 #Value must to be weighted between intervals
                 if chr_end > end_window:
                     print "@@@@@@@@@@@@@@@@@@chr_end > end_window",chr_end, end_window                 
@@ -694,6 +696,7 @@ class intData: # if I name it as int I think is like self but with a better name
                             break
                         
                         end_w = end_w + delta_window
+                        print "end_w after adding delta_w is:", end_w
                 else:
                     partial_value = partial_value + data_value
                             
@@ -706,7 +709,7 @@ class intData: # if I name it as int I think is like self but with a better name
                     end_w = end_window
                     start_new = chr_start
                     end_new = chr_end
-                    
+                    print "end_w after adding delta_w is:", end_w
                     for start_w in range (ini_window, chr_end, delta_window):
                         weighted_value = 0
                         
@@ -726,7 +729,7 @@ class intData: # if I name it as int I think is like self but with a better name
                             break
                         
                         end_w = end_w + delta_window
-            
+                        print "end_w after adding delta_w is:", end_w
             else:
                 print ("FATAL ERROR: Something went wrong")
                                
