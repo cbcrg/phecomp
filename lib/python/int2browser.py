@@ -410,16 +410,13 @@ class intData: # if I name it as int I think is like self but with a better name
         
         for row in self.data:
             set_fields.add(row[idx_field])
-            
-#         for it in data:
-#             print it    
+  
         return set_fields
                      
     def writeChr(self, mode="w"):
         chrom = 'chr1'
         genomeFile = open(os.path.join(_pwd, chrom + _genomeFileExt), mode)        
         genomeFile.write(">" + chrom + "\n")
-#         print(self.max - self.min)
         genomeFile.write (genericNt * (self.max - self.min))
         genomeFile.close()
         print('Genome fasta file created: %s' % (chrom + _genomeFileExt))
@@ -451,7 +448,6 @@ class intData: # if I name it as int I think is like self but with a better name
         ### Data is separated by track and dataTypes
         idx_fields2split = [self.fieldsG.index("track"), self.fieldsG.index("dataTypes")]
         data_tuple = sorted(data_tuple,key=operator.itemgetter(*idx_fields2split))
-#         print "::::::::data tuple ",data_tuple #del
         
         for key,group in itertools.groupby(data_tuple, operator.itemgetter(*idx_fields2split)):
             if not dict_split.has_key(key[0]):
@@ -485,9 +481,7 @@ class intData: # if I name it as int I think is like self but with a better name
                 raise ValueError ("Tracks to merge: %s, are not in the track list: " % ",".join("'{0}'".format(n) for n in tracks_merge), ",".join("'{0}'".format(n) for n in self.tracks))
             print >>sys.stderr, "Tracks that will be merged are: ",tracks_merge
             
-            d_track_merge = self.join_by_track(dict_split, tracks_merge)
-                                
-#         print "dict_track_merge=", (d_track_merge)#del        
+            d_track_merge = self.join_by_track(dict_split, tracks_merge)       
         
         d_dataTypes_merge = {}
         
@@ -497,7 +491,7 @@ class intData: # if I name it as int I think is like self but with a better name
             d_dataTypes_merge = d_track_merge
         elif kwargs.get('dataTypes_actions') == 'all':
             d_dataTypes_merge = self.join_by_dataType(d_track_merge, mode)
-#         print "dict_dataTypes_merge=", (d_dataTypes_merge)#del     
+    
         track_dict = {}                        
    
         #######
@@ -509,8 +503,6 @@ class intData: # if I name it as int I think is like self but with a better name
                 print "Is a dictionary"#del
                                    
         window = kwargs.get("window", 300)
-
-#         _dict_col_grad = assign_color (self.dataTypes) #now inside convert2bed
         
         #Output    
         for k, d in d_dataTypes_merge.items():
@@ -669,6 +661,7 @@ class intData: # if I name it as int I think is like self but with a better name
                     yield(tuple(temp_list))
                     temp_list = []
                     print "end_window after adding delta_w is:", end_window    
+                
                 #Value must to be weighted between intervals
                 if chr_end > end_window:
                     print "@@@@@@@@@@@@@@@@@@chr_end > end_window",chr_end, end_window                 
