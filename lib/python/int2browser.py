@@ -82,7 +82,7 @@ class intData: # if I name it as int I think is like self but with a better name
         self.fieldsG = [ontology_dict [k] for k in self.fieldsB]
         self.data, self.min, self.max = self._new_read(multiply_t = kwargs.get('multiply_t', 1), intervals=kwargs.get('intervals', False))
         self.dataTypes = self.get_field_items(field ="dataTypes", data = self.data, default="a")
-#         self.tracks  =  self.get_field_items(field="track", data = self.data)
+        self.tracks  =  self.get_field_items(field="track", data = self.data, default=1)
 
     def _check_delimiter (self, path):
         """ Check whether the delimiter works, if delimiter is not set
