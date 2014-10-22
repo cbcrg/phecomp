@@ -82,7 +82,7 @@ class intData: # if I name it as int I think is like self but with a better name
         self.fieldsG = [ontology_dict [k] for k in self.fieldsB]
         self.data, self.min, self.max = self._new_read(multiply_t = kwargs.get('multiply_t', 1), intervals=kwargs.get('intervals', False))
         self.dataTypes = self.get_field_items(field ="dataTypes", data = self.data, default="a")
-        self.tracks  =  self.get_field_items(field="track", data = self.data, default=1)
+        self.tracks  =  self.get_field_items(field="track", data = self.data, default="1")
 
     def _check_delimiter (self, path):
         """ Check whether the delimiter works, if delimiter is not set
@@ -411,23 +411,20 @@ class intData: # if I name it as int I think is like self but with a better name
             for row in self.data:
                 set_fields.add(row[idx_field])    
         elif default:
-            i = len(self.fieldsG)
             new_data = list()
             new_field = (default,)
             
-            set_fields.add(new_field)
+            set_fields.add(default)
             
             for row in self.data:
                 row = row + new_field
                 new_data.append(row)    
             
             self.data = new_data
-            self.fieldsG.append(field)
+            self.fieldsG.append(str(field))
         else:
             raise ValueError("Data has not field \'%s\' and no default value has been set \'%s\'"%(field, default)) 
-        for i in self.data: #del
-            print i
-            
+        print "...............................", set_fields
         return set_fields
                      
     def writeChr(self, mode="w"):
@@ -493,7 +490,9 @@ class intData: # if I name it as int I think is like self but with a better name
             d_track_merge = dict_split
         else:
             tracks_merge = kwargs.get('tracks_merge',self.tracks)
-
+            
+            print "tracks:::::::::::::::::::::",self.tracks
+            print "tracks_merge:::::::::::::::", tracks_merge
             if not all(tracks in self.tracks for tracks in tracks_merge):
                 raise ValueError ("Tracks to merge: %s, are not in the track list: " % ",".join("'{0}'".format(n) for n in tracks_merge), ",".join("'{0}'".format(n) for n in self.tracks))
             print >>sys.stderr, "Tracks that will be merged are: ",tracks_merge

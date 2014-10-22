@@ -119,8 +119,8 @@ print >>sys.stderr, "@@@Pergola_rules.py format to write files: ", write_format
 #End  of options
 print >>sys.stderr, "@@@Print all the options set by pergola_rules end here!"
 
-# intData = int2browser.intData(path, ontology_dict=configFileDict.correspondence, intervals=True, multiply_t=1000, window=30)
-intData = int2browser.intData(path, ontology_dict=configFileDict.correspondence)
+intData = int2browser.intData(path, ontology_dict=configFileDict.correspondence, intervals=True, multiply_t=1000, window=30)
+# intData = int2browser.intData(path, ontology_dict=configFileDict.correspondence)
 
 
 print intData.fieldsG
@@ -128,7 +128,7 @@ print intData.fieldsG
 # print intData.data
 
 for i in intData.data:
-#     print i
+    print "row in intData.data:", i
     pass
 
 print intData.min
@@ -153,7 +153,11 @@ print intData.max
 # # # Generation of the files set by the user by command line
 # print ":::::::::::::::::::::::::::::::::", write_format 
 # print "===================$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$", tracks2merge
-bed_str =  intData.convert(mode = write_format, relative_coord = True, dataTypes_actions=dataTypes_act, tracks=sel_tracks, tracks_merge=tracks2merge, window=300)
+
+# bed_str =  intData.convert(mode = write_format, relative_coord = True, dataTypes_actions=dataTypes_act, tracks=sel_tracks, tracks_merge=tracks2merge, window=300)
+print "el problema puede estar aqui...............",tracks2merge
+bed_str =  intData.convert(mode = write_format, relative_coord = True, dataTypes_actions=dataTypes_act, tracks=sel_tracks, tracks_merge=tracks2merge, window=9)
+# 
 for key in bed_str:
     print "key.......: ",key
     bedSingle = bed_str[key]
