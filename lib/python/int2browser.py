@@ -83,7 +83,7 @@ class intData: # if I name it as int I think is like self but with a better name
         self.data, self.min, self.max = self._new_read(multiply_t = kwargs.get('multiply_t', 1), intervals=kwargs.get('intervals', False))
 #         print ":::::::::::::::::::",type(self.data)  
         self.dataTypes = self.get_field_items(field ="dataTypes", data = self.data)
-        self.tracks  =  self.get_field_items(field="track", data = self.data)
+#         self.tracks  =  self.get_field_items(field="track", data = self.data)
 
     def _check_delimiter (self, path):
         """ Check whether the delimiter works, if delimiter is not set
@@ -398,19 +398,42 @@ class intData: # if I name it as int I think is like self but with a better name
         Return a list with all the possible data types present in the column that was set as dataTypes
         """
         
-        try:
-#             [self.fieldsG.index(f) for f in _bed_fields] 
-            [self.fieldsG.index(field)]                
-        except ValueError:
-            raise ValueError("Field '%s' not in file %s." % (field, self.path))
-        
-        idx_field = self.fieldsG.index(field)
-        field = [field]    
+#         try:
+#             [self.fieldsG.index(field)]                
+#         except ValueError:
+#             raise ValueError("Field '%s' not in file %s." % (field, self.path))
         set_fields = set()
         
-        for row in self.data:
-            set_fields.add(row[idx_field])
+        if field in self.fieldsG:
+            i =  self.fieldsG.index(field)
+            print self.fieldsG.index(field)
+            
+            idx_field = self.fieldsG.index(field)
+            field = [field]    
+            
+            
+            for row in self.data:
+                set_fields.add(row[idx_field])
   
+        else: 
+            i = len(self.fieldsG)
+#             print i
+            new_data = list()
+            new_data_type = ("a",)
+            
+            
+            set_fields.add(new_data_type)
+            
+            for row in self.data:
+                row = row + new_data_type
+                
+                print row
+                new_data.append(row)    
+            
+            self.data = new_data
+            
+        for i in self.data:
+            print i
         return set_fields
                      
     def writeChr(self, mode="w"):
@@ -768,7 +791,7 @@ class dataIter(object):
         except KeyError:
             raise ValueError("File types not supported \'%s\'"%(self.format))
                                                            
-        if self.track is "": 
+        if self.track is "":  # modify
             self.track = "1"
         
         if self.dataType is "":
