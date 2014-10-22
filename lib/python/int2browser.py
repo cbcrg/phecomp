@@ -81,7 +81,6 @@ class intData: # if I name it as int I think is like self but with a better name
         self.fieldsB = self._set_fields_b(kwargs.get('fields'))
         self.fieldsG = [ontology_dict [k] for k in self.fieldsB]
         self.data, self.min, self.max = self._new_read(multiply_t = kwargs.get('multiply_t', 1), intervals=kwargs.get('intervals', False))
-#         print ":::::::::::::::::::",type(self.data)  
         self.dataTypes = self.get_field_items(field ="dataTypes", data = self.data)
 #         self.tracks  =  self.get_field_items(field="track", data = self.data)
 
@@ -395,13 +394,9 @@ class intData: # if I name it as int I think is like self but with a better name
     
     def get_field_items(self, data, field="dataTypes"): 
         """
-        Return a list with all the possible data types present in the column that was set as dataTypes
+        Returns a set with all  items present in a field
         """
-        
-#         try:
-#             [self.fieldsG.index(field)]                
-#         except ValueError:
-#             raise ValueError("Field '%s' not in file %s." % (field, self.path))
+
         set_fields = set()
         
         if field in self.fieldsG:
@@ -417,7 +412,6 @@ class intData: # if I name it as int I think is like self but with a better name
   
         else: 
             i = len(self.fieldsG)
-#             print i
             new_data = list()
             new_data_type = ("a",)
             
