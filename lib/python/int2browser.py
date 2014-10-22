@@ -81,7 +81,7 @@ class intData: # if I name it as int I think is like self but with a better name
         self.fieldsB = self._set_fields_b(kwargs.get('fields'))
         self.fieldsG = [ontology_dict [k] for k in self.fieldsB]
         self.data, self.min, self.max = self._new_read(multiply_t = kwargs.get('multiply_t', 1), intervals=kwargs.get('intervals', False))
-        self.dataTypes = self.get_field_items(field ="dataTypes", data = self.data)
+        self.dataTypes = self.get_field_items(field ="dataTypes", data = self.data, default="a")
 #         self.tracks  =  self.get_field_items(field="track", data = self.data)
 
     def _check_delimiter (self, path):
@@ -392,9 +392,11 @@ class intData: # if I name it as int I think is like self but with a better name
 # 
 #         return pMinMax
     
-    def get_field_items(self, data, field="dataTypes"): 
+    def get_field_items(self, data, field="dataTypes", default=None): 
         """
         Returns a set with all  items present in a field
+        :param data: list of tuples read from data (field_1, field_2, field_3) 
+        :param set_def: (str) add this value as default to the field that is being checked
         """
 
         set_fields = set()
@@ -406,28 +408,26 @@ class intData: # if I name it as int I think is like self but with a better name
             idx_field = self.fieldsG.index(field)
             field = [field]    
             
-            
             for row in self.data:
-                set_fields.add(row[idx_field])
-  
-        else: 
+                set_fields.add(row[idx_field])    
+        elif default:
             i = len(self.fieldsG)
             new_data = list()
-            new_data_type = ("a",)
+            new_field = (default,)
             
-            
-            set_fields.add(new_data_type)
+            set_fields.add(new_field)
             
             for row in self.data:
-                row = row + new_data_type
-                
-                print row
+                row = row + new_field
                 new_data.append(row)    
             
             self.data = new_data
-            
-        for i in self.data:
+            self.fieldsG.append(field)
+        else:
+            raise ValueError("Data has not field \'%s\' and no default value has been set \'%s\'"%(field, default)) 
+        for i in self.data: #del
             print i
+            
         return set_fields
                      
     def writeChr(self, mode="w"):
