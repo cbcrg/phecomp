@@ -94,16 +94,16 @@ class intData: # if I name it as int I think is like self but with a better name
         self.inFile  = open(path, "rb")
         
         for row in self.inFile:            
-            if row.count(self.delimiter) > 1: break
+            if row.count(self.delimiter) >= 1: break
             else: raise ValueError("Input delimiter does not correspond to delimiter found in file \'%s\'"%(self.delimiter))
             
-            if row.count(" ") > 1:
+            if row.count(" ") >= 1:
                 self.delimiter = " "
                 break
-            if row.count("\t") > 1:
+            if row.count("\t") >= 1:
                 self.delimiter = "\t"
                 break
-            if row.count(";") > 1:
+            if row.count(";") >= 1:
                 self.delimiter = "\t"
                 break      
             
