@@ -719,7 +719,7 @@ class intData: # if I name it as int I think is like self but with a better name
                             weighted_value = (end_w - start_new) / (end_new - start_new)
                             
                         weighted_value *= value2weight
-                        cross_interv_dict[start_w] = int(cross_interv_dict.get(start_w,0)) + float(weighted_value)
+                        cross_interv_dict[start_w] = float(cross_interv_dict.get(start_w,0)) + float(weighted_value)
                         start_new = end_w
                         value2weight = value2weight - weighted_value
                         
@@ -774,11 +774,11 @@ class dataIter(object):
         except KeyError:
             raise ValueError("File types not supported \'%s\'"%(self.format))
                                                            
-        if self.track is "":  # modify
-            self.track = "1"
+#         if self.track is "":  # modify
+#             self.track = "1"
         
-        if self.dataType is "":
-            self.dataType = "a"
+#         if self.dataType is "":
+#             self.dataType = "a"
                 
         name_file = "tr_" + self.track + "_dt_" + self.dataType + file_ext
         print >>sys.stderr, "File %s generated" % name_file       
