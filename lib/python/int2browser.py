@@ -651,18 +651,16 @@ class intData: # if I name it as int I think is like self but with a better name
         
         #When the tracks have been join it is necessary to order by chr_start
         track = sorted(track, key=operator.itemgetter(*[i_chr_start]))
-        for row in track:
-            print "row in convert is:",row                            
+                              
         for row in track:
             temp_list = []
             chr_start = row[i_chr_start]
             chr_end = row[i_chr_end]
             data_value = float(row[i_data_value])
             self.fieldsG.index(f) 
-            print "type &&&&&&&&&", type(row[i_data_value])#del
+            
             #Intervals happening after the current window
             #if there is a value accumulated it has to be dumped otherwise 0
-            print "@@@@@@@@@@@@@@@@@@chr_start > end_window",chr_start, end_window#del
             if chr_start > end_window:
                 while (end_window < chr_start):                                      
                     print "that is rounded",type(cross_interv_dict.get(ini_window,0))
@@ -705,7 +703,6 @@ class intData: # if I name it as int I think is like self but with a better name
                             break
                         
                         end_w = end_w + delta_window
-                        print "end_w after adding delta_w is:", end_w#del
                 else:
                     partial_value = partial_value + data_value
                             
@@ -915,7 +912,6 @@ class ConfigInfo():
         with open(path) as config_file:
             #We eliminate possible empty lines at the end
             config_file_list = filter(lambda x:  not match(r'^\s*$', x), config_file)
-            print "llll",config_file_list#del
             
             if config_file_list[0][0] == '#':
                 del config_file_list [0]
