@@ -51,12 +51,6 @@ print("Track actions is: %s" % args.track_actions)
 
 path = args.input
 
-# abc = [chr(x) for x in range(97, 123)]
-# 
-# print "#############", abc
-# out = []
-
-# import random
 import itertools
 # 
 def ranges(i):
@@ -70,20 +64,12 @@ def ranges(i):
         
         yield tuple(temp_list)
         temp_list = []
-        
-print "?????????????????",(list(int2browser.interv([0, 1, 3, 4, 7, 8, 9, 11,12,13])))
-# print ">>>>>>>>>>>>>>>>>>",list(enumerate([0, 1, 3, 4, 7, 8, 9, 11,12,13]))
-# out.append(abc[0])
-# for item in abc[1:]:
-#     out += [''] * random.randrange(4, 8)
-#     out.append(item)
-# 
-# print "+++++++++++++++++++++++++++++++",out     
+     
 ## CONFIGURATION FILE
 configFilePath = args.config_file
 configFileDict = int2browser.ConfigInfo(configFilePath)
 
-print "########" , configFileDict.correspondence
+# print "########" , configFileDict.correspondence
 # Handling Argument tracks
 sel_tracks = args.tracks 
 print >>sys.stderr, "@@@Pergola_rules.py Selected tracks are: ", sel_tracks
@@ -100,8 +86,8 @@ else:
 if tracks2merge and args.track_actions:
     raise ValueError ("Options --list -l or --range -r are incompatible with --track_actions -t, please change your options")
 if tracks2merge:
-    print tracks2merge
-    print ' '.join(str(i) for i in tracks2merge)
+#     print tracks2merge
+#     print ' '.join(str(i) for i in tracks2merge)
     print >>sys.stderr, "@@@Pergola_rules.py Tracks to join are: %s"%(",".join("'{0}'".format(t) for t in tracks2merge))
 
 # Handling argument track actions
@@ -123,16 +109,16 @@ intData = int2browser.intData(path, ontology_dict=configFileDict.correspondence,
 # intData = int2browser.intData(path, ontology_dict=configFileDict.correspondence)
 
 
-print intData.fieldsG
+# print intData.fieldsG
 
 # print intData.data
 
 for i in intData.data:
-    print "row in intData.data:", i
+#     print "row in intData.data:", i
     pass
 
-print intData.min
-print intData.max
+# print intData.min
+# print intData.max
 #     print i
 # iter=intData.read()
 # iter=intData.read(relative_coord=True, intervals=False)
@@ -155,11 +141,11 @@ print intData.max
 # print "===================$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$", tracks2merge
 
 # bed_str =  intData.convert(mode = write_format, relative_coord = True, dataTypes_actions=dataTypes_act, tracks=sel_tracks, tracks_merge=tracks2merge, window=300)
-print "el problema puede estar aqui...............",tracks2merge
+
 bed_str =  intData.convert(mode = write_format, relative_coord = True, dataTypes_actions=dataTypes_act, tracks=sel_tracks, tracks_merge=tracks2merge, window=9)
-# 
+
 for key in bed_str:
     print "key.......: ",key
     bedSingle = bed_str[key]
-    print bedSingle
+#     print bedSingle
     bedSingle.write()
