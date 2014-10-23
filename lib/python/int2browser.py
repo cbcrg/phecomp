@@ -147,7 +147,7 @@ class intData: # if I name it as int I think is like self but with a better name
                 raise ValueError("Field '%s' not in file %s." % (f, self.path))
            
         idx_fields2rel = [10000000000000]
-        print >>sys.stderr, ("Relative coordinates is true", relative_coord) 
+        print >>sys.stderr, "Relative coordinates set true", relative_coord 
            
         if relative_coord:             
             print >>sys.stderr, "Relative coordinates is true"
@@ -403,7 +403,7 @@ class intData: # if I name it as int I think is like self but with a better name
         
         if field in self.fieldsG:
             i =  self.fieldsG.index(field)
-            print self.fieldsG.index(field)
+#             print self.fieldsG.index(field) #del
             
             idx_field = self.fieldsG.index(field)
             field = [field]    
@@ -490,12 +490,9 @@ class intData: # if I name it as int I think is like self but with a better name
             d_track_merge = dict_split
         else:
             tracks_merge = kwargs.get('tracks_merge',self.tracks)
-            
-            print "tracks:::::::::::::::::::::",self.tracks
-            print "tracks_merge:::::::::::::::", tracks_merge
             if not all(tracks in self.tracks for tracks in tracks_merge):
                 raise ValueError ("Tracks to merge: %s, are not in the track list: " % ",".join("'{0}'".format(n) for n in tracks_merge), ",".join("'{0}'".format(n) for n in self.tracks))
-            print >>sys.stderr, "Tracks that will be merged are: ",tracks_merge
+            print >>sys.stderr, ("Tracks that will be merged are: %s" %  " ".join(tracks_merge))
             
             d_track_merge = self.join_by_track(dict_split, tracks_merge)       
         
@@ -673,8 +670,7 @@ class intData: # if I name it as int I think is like self but with a better name
                     end_window += delta_window + 1                                 
                     yield(tuple(temp_list))
                     temp_list = []
-                    print "end_window after adding delta_w is:", end_window    
-                
+
                 #Value must to be weighted between intervals
                 if chr_end > end_window:                
                     value2weight = data_value
@@ -733,7 +729,6 @@ class intData: # if I name it as int I think is like self but with a better name
                             break
                         
                         end_w = end_w + delta_window
-                        print "end_w after adding delta_w is:", end_w
             else:
                 print >>sys.stderr,("FATAL ERROR: Something went wrong")
         
@@ -743,7 +738,7 @@ class intData: # if I name it as int I think is like self but with a better name
         temp_list.append(end_window)
         temp_list.append(data_value)
         yield(tuple(temp_list))
-        print data_value, end_window, chr_start, ini_window
+#         print data_value, end_window, chr_start, ini_window
                                
     def _error (self, data_tuple):
         raise ValueError("Fatal error")
@@ -935,7 +930,6 @@ class ConfigInfo():
        
         for row in file_map:
             l=row.split(">")
-            print "row is",l[1].split(":")[1].rstrip()
             dict_correspondence[l[0].split(":")[1].rstrip()] = l[1].split(":")[1].rstrip('\t\n')        
 
         return (dict_correspondence)   
