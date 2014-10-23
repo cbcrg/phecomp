@@ -79,7 +79,10 @@ class intData: # if I name it as int I think is like self but with a better name
         self.delimiter = self._check_delimiter(self.path)
         self.header = kwargs.get('header',True)
         self.fieldsB = self._set_fields_b(kwargs.get('fields'))
+        print "self.fieldsB    :",self.fieldsB 
+#         self.fieldsG = self._set_fields_b(kwargs.get('fields')) 
         self.fieldsG = [ontology_dict [k] for k in self.fieldsB]
+        print "self.fieldsG    :",self.fieldsG
         self.data, self.min, self.max = self._new_read(multiply_t = kwargs.get('multiply_t', 1), intervals=kwargs.get('intervals', False))
         self.dataTypes = self.get_field_items(field ="dataTypes", data = self.data, default="a")
         self.tracks  =  self.get_field_items(field="track", data = self.data, default="1")
@@ -113,27 +116,52 @@ class intData: # if I name it as int I think is like self but with a better name
         Reading the behavioral fields from the header file or otherwise setting  
         the fields to numeric values corresponding the column index starting at 0    
         """ 
-        if fields:
-            pass
-        elif self.header == True:       
-            self.inFile  = open(self.path, "rb")
-            self.reader = csv.reader(self.inFile, delimiter=self.delimiter)
+        self.inFile  = open(self.path, "rb")
+        self.reader = csv.reader(self.inFile, delimiter=self.delimiter)
+        
+        if self.header:            
             header = self.reader.next()
             first_r = self.reader.next()
-            if len(header) == len(first_r):
-                fieldsB = [header[0].strip('# ')]+header[1:]
-            else:
-                raise ValueError("Number of fields in header '%d' does not match number of fields in first row '%d'" % (len(header), len(first_r)))     
-                #Achtung if I use open the I would have to get rid of \n
+            
+            if len(header) != len(first_r):
+                raise ValueError("Number of fields in header '%d' does not match number of fields in first row '%d'" % (len(header), len(first_r)))
+            
+            if fields:
+                if len(fields) > len(first_r):
+                    raise ValueError("Input field list \"%s\" is longer than totals fields available in file \'%s\'" % ("\",\"".join(fields), len(first_r)))            
+                fieldsB = fields
+                     
+            else:       
+                #Attetion if I use open the I would have to get rid of \n
                 #fieldsB=[header[0].strip('# ')]+header[1:-1]+[header[-1][:-1]]
-            self.inFile.close()
+                fieldsB = [header[0].strip('# ')]+header[1:]        
         else:
-            self.inFile  = open(self.path, "rb")
-            self.reader = csv.reader(self.inFile, delimiter=self.delimiter)
             first_r = self.reader.next()
-            fieldsB = range(0,len(first_r))  
+            
+            if fields:
+                if len(fields) > len(first_r):
+                    raise ValueError("Input field list \"%s\" is longer than totals fields available in file \'%s\'" % ("\",\"".join(fields), len(first_r)))            
+                
+                fieldsB = fields
+            
+            fieldsB = range(0,len(first_r))            
+                #coger los que quiera de ellos, pero debe ser una lista numerica porque no tengo la
+                #lista de nombres
+                #fieldsB[listOfSelected]
+#                 pass
+                    
+        
+        self.inFile.close()
+        
         return fieldsB
-       
+    
+    def _set_fields_g(self, fields):
+        """
+        Reading the behavioral fields from the header file or otherwise setting  
+        the fields to numeric values corresponding the column index starting at 0    
+        """
+        pass 
+           
     def read(self, fields=None, relative_coord=False, intervals=True, fields2rel=None, multiply_t=1,**kwargs):
         # If I don't have fields then I get all the columns of the file
         if fields is None:
@@ -290,7 +318,7 @@ class intData: # if I name it as int I think is like self but with a better name
         
         for interv in self.reader:            
             temp = []            
-
+            print "range of data is : ", range(len(self.fieldsG))#del
             for i in range(len(self.fieldsG)): 
                 if i in idx_fields2mult and i in idx_fields2int:
                     v = int(float(interv[i]) * multiply_t)
@@ -305,7 +333,9 @@ class intData: # if I name it as int I think is like self but with a better name
                 elif i in idx_fields2mult and i not in idx_fields2int:
                     v = int(float(interv[i]) * multiply_t)
                     temp.append(v)
-                else: 
+                else:
+                    print interv #del
+                    print "i is out of range??? ", i  #del 
                     v = interv[i]              
                     temp.append(v)
                 
@@ -624,7 +654,7 @@ class intData: # if I name it as int I think is like self but with a better name
             
             yield(tuple(temp_list))
                     
-    def track_convert2bedGraph(self, track, in_call=False, window=300): #modify
+    def track_convert2bedGraph(self, track, in_call=False, window=300):
         _bed_fields = ["track","chromStart","chromEnd","dataValue"] 
         
         #Check whether these fields are in the original otherwise raise exception
