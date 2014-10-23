@@ -88,19 +88,6 @@ class intData: # if I name it as int I think is like self but with a better name
         self.dataTypes = self.get_field_items(field ="dataTypes", data = self.data, default="a")
         self.tracks  =  self.get_field_items(field="track", data = self.data, default="1")
     
-    def _set_fields_g (self, ontology_dict):
-        """
-        Extract the correspondence of the field in the file in genomic grammar using
-        :param ontology_dict: (dict) relationship between genomic and behavioral data
-        """
-        if all(field_b in ontology_dict for field_b in self.fieldsB):
-            name_fields_g = [ontology_dict [k] for k in self.fieldsB]
-        else:    
-            raise ValueError("Fields param \"%s\" contains a field not present in config_file \"%s\"" % ("\",\"".join(self.fieldsB), "\",\"".join(ontology_dict.keys())))
-#                                                                                             ("\",\"".join(fields), len(first_r)))            
-        
-        return name_fields_g
-    
     def _check_delimiter (self, path):
         """ Check whether the delimiter works, if delimiter is not set
         then tries ' ', '\t' and ';'"""
@@ -156,18 +143,29 @@ class intData: # if I name it as int I think is like self but with a better name
                 if len(fields) > len(first_r):
                     raise ValueError("Input field list \"%s\" is longer than totals fields available in file \'%s\'" % ("\",\"".join(fields), len(first_r)))            
                 
-                fieldsB = fields
-            
-            fieldsB = range(0,len(first_r))            
+                #modify this has to be changed
                 #coger los que quiera de ellos, pero debe ser una lista numerica porque no tengo la
                 #lista de nombres
                 #fieldsB[listOfSelected]
-#                 pass
+                fieldsB = fields
+            
+            fieldsB = range(0,len(first_r))            
                     
-        
         self.inFile.close()
         
         return fieldsB
+    
+    def _set_fields_g (self, ontology_dict):
+        """
+        Extract the correspondence of the field in the file in genomic grammar using
+        :param ontology_dict: (dict) relationship between genomic and behavioral data
+        """
+        if all(field_b in ontology_dict for field_b in self.fieldsB):
+            name_fields_g = [ontology_dict [k] for k in self.fieldsB]
+        else:    
+            raise ValueError("Fields param \"%s\" contains a field not present in config_file \"%s\"" % ("\",\"".join(self.fieldsB), "\",\"".join(ontology_dict.keys())))
+
+        return name_fields_g
            
     def read(self, fields=None, relative_coord=False, intervals=True, fields2rel=None, multiply_t=1,**kwargs):
         # If I don't have fields then I get all the columns of the file
@@ -325,7 +323,7 @@ class intData: # if I name it as int I think is like self but with a better name
         
         for interv in self.reader:            
             temp = []            
-            print "range of data is : ", range(len(self.fieldsG))#del
+            
             for i in range(len(self.fieldsG)): 
                 if i in idx_fields2mult and i in idx_fields2int:
                     v = int(float(interv[i]) * multiply_t)
@@ -341,8 +339,6 @@ class intData: # if I name it as int I think is like self but with a better name
                     v = int(float(interv[i]) * multiply_t)
                     temp.append(v)
                 else:
-                    print interv #del
-                    print "i is out of range??? ", i  #del 
                     v = interv[i]              
                     temp.append(v)
                 
@@ -440,7 +436,6 @@ class intData: # if I name it as int I think is like self but with a better name
         
         if field in self.fieldsG:
             i =  self.fieldsG.index(field)
-#             print self.fieldsG.index(field) #del
             
             idx_field = self.fieldsG.index(field)
             field = [field]    
