@@ -424,7 +424,7 @@ class intData: # if I name it as int I think is like self but with a better name
             self.fieldsG.append(str(field))
         else:
             raise ValueError("Data has not field \'%s\' and no default value has been set \'%s\'"%(field, default)) 
-        print "...............................", set_fields
+        
         return set_fields
                      
     def writeChr(self, mode="w"):
@@ -663,7 +663,6 @@ class intData: # if I name it as int I think is like self but with a better name
             #if there is a value accumulated it has to be dumped otherwise 0
             if chr_start > end_window:
                 while (end_window < chr_start):                                      
-                    print "that is rounded",type(cross_interv_dict.get(ini_window,0))
                     partial_value = partial_value + cross_interv_dict.get(ini_window,0)
                     temp_list.append("chr1")
                     temp_list.append(ini_window)
@@ -677,8 +676,7 @@ class intData: # if I name it as int I think is like self but with a better name
                     print "end_window after adding delta_w is:", end_window    
                 
                 #Value must to be weighted between intervals
-                if chr_end > end_window:
-                    print "@@@@@@@@@@@@@@@@@@chr_end > end_window",chr_end, end_window                 
+                if chr_end > end_window:                
                     value2weight = data_value
                     end_w = end_window
                     start_new = chr_start
@@ -715,7 +713,7 @@ class intData: # if I name it as int I think is like self but with a better name
                     end_w = end_window
                     start_new = chr_start
                     end_new = chr_end
-                    print "end_w after adding delta_w is:", end_w
+                    
                     for start_w in range (ini_window, chr_end, delta_window):
                         weighted_value = 0
                         
@@ -737,7 +735,7 @@ class intData: # if I name it as int I think is like self but with a better name
                         end_w = end_w + delta_window
                         print "end_w after adding delta_w is:", end_w
             else:
-                print ("FATAL ERROR: Something went wrong")
+                print >>sys.stderr,("FATAL ERROR: Something went wrong")
         
         #Last value just printed out
         temp_list.append("chr1")
