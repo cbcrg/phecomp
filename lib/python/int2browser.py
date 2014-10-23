@@ -79,14 +79,28 @@ class intData: # if I name it as int I think is like self but with a better name
         self.delimiter = self._check_delimiter(self.path)
         self.header = kwargs.get('header',True)
         self.fieldsB = self._set_fields_b(kwargs.get('fields'))
-        print "self.fieldsB    :",self.fieldsB 
-#         self.fieldsG = self._set_fields_b(kwargs.get('fields')) 
-        self.fieldsG = [ontology_dict [k] for k in self.fieldsB]
+        print "self.fieldsB    :",self.fieldsB
+        print "ontology dictionary:       ",ontology_dict
+        self.fieldsG = self._set_fields_g(ontology_dict) 
+#         self.fieldsG = [ontology_dict [k] for k in self.fieldsB]
         print "self.fieldsG    :",self.fieldsG
         self.data, self.min, self.max = self._new_read(multiply_t = kwargs.get('multiply_t', 1), intervals=kwargs.get('intervals', False))
         self.dataTypes = self.get_field_items(field ="dataTypes", data = self.data, default="a")
         self.tracks  =  self.get_field_items(field="track", data = self.data, default="1")
-
+    
+    def _set_fields_g (self, ontology_dict):
+        """
+        Extract the correspondence of the field in the file in genomic grammar using
+        :param ontology_dict: (dict) relationship between genomic and behavioral data
+        """
+        if all(field_b in ontology_dict for field_b in self.fieldsB):
+            name_fields_g = [ontology_dict [k] for k in self.fieldsB]
+        else:    
+            raise ValueError("Fields param \"%s\" contains a field not present in config_file \"%s\"" % ("\",\"".join(self.fieldsB), "\",\"".join(ontology_dict.keys())))
+#                                                                                             ("\",\"".join(fields), len(first_r)))            
+        
+        return name_fields_g
+    
     def _check_delimiter (self, path):
         """ Check whether the delimiter works, if delimiter is not set
         then tries ' ', '\t' and ';'"""
@@ -154,13 +168,6 @@ class intData: # if I name it as int I think is like self but with a better name
         self.inFile.close()
         
         return fieldsB
-    
-    def _set_fields_g(self, fields):
-        """
-        Reading the behavioral fields from the header file or otherwise setting  
-        the fields to numeric values corresponding the column index starting at 0    
-        """
-        pass 
            
     def read(self, fields=None, relative_coord=False, intervals=True, fields2rel=None, multiply_t=1,**kwargs):
         # If I don't have fields then I get all the columns of the file
