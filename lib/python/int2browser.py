@@ -158,8 +158,9 @@ class intData: # if I name it as int I think is like self but with a better name
                 #fieldsB[listOfSelected]
                 fieldsB = fields
                 print "------------------fields are", fieldsB
-            
-            fieldsB = range(0,len(first_r))            
+                
+            else:                
+                fieldsB = range(0,len(first_r))            
                     
         self.inFile.close()
         
@@ -170,6 +171,7 @@ class intData: # if I name it as int I think is like self but with a better name
         Extract the correspondence of the field in the file in genomic grammar using
         :param ontology_dict: (dict) relationship between genomic and behavioral data
         """
+            
         if all(field_b in ontology_dict for field_b in self.fieldsB):
             name_fields_g = [ontology_dict [k] for k in self.fieldsB]
         else:    
