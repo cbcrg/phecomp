@@ -129,7 +129,11 @@ class intData: # if I name it as int I think is like self but with a better name
             
             if fields:
                 if len(fields) > len(first_r):
-                    raise ValueError("Input field list \"%s\" is longer than totals fields available in file \'%s\'" % ("\",\"".join(fields), len(first_r)))            
+                    raise ValueError("Input field list \"%s\" is longer than totals fields available in file \'%s\'" % ("\",\"".join(fields), len(first_r)))
+                
+                if not all(field in header for field in fields):
+                    raise ValueError("Input field list \"%s\" has items not present in file header \'%s\'" % ("\",\"".join(fields), "\",\"".join(header)))
+                
                 fieldsB = fields
                      
             else:       
@@ -148,6 +152,7 @@ class intData: # if I name it as int I think is like self but with a better name
                 #lista de nombres
                 #fieldsB[listOfSelected]
                 fieldsB = fields
+                print "------------------fields are", fieldsB
             
             fieldsB = range(0,len(first_r))            
                     
