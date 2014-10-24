@@ -295,7 +295,8 @@ class intData: # if I name it as int I think is like self but with a better name
             try:
                 idx_fields2int = [self.fieldsG.index(f) for f in _time_points]              
             except ValueError:
-                raise ValueError("Field '%s' not in file %s." % (f, self.path))
+                raise ValueError("Parameter intervals=True needs that field '%s' is in file is not missing %s." 
+                                 % (f, self.path))
             
             self.fieldsG.append(f_int_end)   
             i_new_field = [len(self.fieldsG) - 1]
