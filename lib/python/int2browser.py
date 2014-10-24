@@ -125,14 +125,19 @@ class intData: # if I name it as int I think is like self but with a better name
             first_r = self.reader.next()
             
             if len(header) != len(first_r):
-                raise ValueError("Number of fields in header '%d' does not match number of fields in first row '%d'" % (len(header), len(first_r)))
+                raise ValueError("Number of fields in header '%d' does not match number of fields in first row '%d'" 
+                                 % (len(header), len(first_r)))
             
             if fields:
                 if len(fields) > len(first_r):
-                    raise ValueError("Input field list \"%s\" is longer than totals fields available in file \'%s\'" % ("\",\"".join(fields), len(first_r)))
+                    raise ValueError("Input field list \"%s\" is longer than totals fields available in file \'%s\'" 
+                                     % ("\",\"".join(fields), len(first_r)))
                 
                 if not all(field in header for field in fields):
-                    raise ValueError("Input field list \"%s\" has items not present in file header \'%s\'" % ("\",\"".join(fields), "\",\"".join(header)))
+                    raise ValueError("Input field list \"%s\" has items not present in file header \'%s " 
+                                     '\n'
+                                     "Also make sure you don't need to set header=False"
+                                     % ("\",\"".join(fields), "\",\"".join(header)))
                 
                 fieldsB = fields
                      
