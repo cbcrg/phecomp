@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 from __future__ import division
+from test.test_itertools import take
 
 __author__ = 'Jose Espinosa-Carrasco'
 
@@ -78,7 +79,7 @@ class intData: # if I name it as int I think is like self but with a better name
         self.delimiter = kwargs.get('delimiter',"\t")
         self.delimiter = self._check_delimiter(self.path)
         self.header = kwargs.get('header',True)
-        self.fieldsB = self._set_fields_b(kwargs.get('fields'))
+        self.fieldsB = self._set_fields_b(fields=kwargs.get('fields'), ontology_dict=ontology_dict)
         print "self.fieldsB    :",self.fieldsB
         print "ontology dictionary:       ",ontology_dict
         self.fieldsG = self._set_fields_g(ontology_dict) 
@@ -112,13 +113,13 @@ class intData: # if I name it as int I think is like self but with a better name
             
         return self.delimiter
     
-    def _set_fields_b(self, fields):
+    def _set_fields_b(self, ontology_dict, fields):
         """
         Reading the behavioral fields from the header file or otherwise setting  
         the fields to numeric values corresponding the column index starting at 0    
         """ 
         self.inFile  = open(self.path, "rb")
-        self.reader = csv.reader(self.inFile, delimiter=self.delimiter)
+        self.reader = csv.reader(self.inFile, delimiter=self.delimiter)       
         
         if self.header:            
             header = self.reader.next()
@@ -147,7 +148,7 @@ class intData: # if I name it as int I think is like self but with a better name
                 fieldsB = [header[0].strip('# ')]+header[1:]        
         else:
             first_r = self.reader.next()
-            
+            print "------------------fields before  are", fields
             if fields:
                 if len(fields) > len(first_r):
                     raise ValueError("Input field list \"%s\" is longer than totals fields available in file \'%s\'" % ("\",\"".join(fields), len(first_r)))            
@@ -157,11 +158,15 @@ class intData: # if I name it as int I think is like self but with a better name
                 #lista de nombres
                 #fieldsB[listOfSelected]
                 fieldsB = fields
+                print ("WARNING: As header=False you col names set by fields will be consider to have the order "
+                        "you provided: %s" 
+                        %"\",\"".join(fields)) 
                 print "------------------fields are", fieldsB
                 
-            else:                
-                fieldsB = range(0,len(first_r))            
-                    
+            else:                                
+                raise ValueError ('File should have a header, otherwise you should set ' 
+                                  'an ordered list of columns names using fields')     
+                
         self.inFile.close()
         
         return fieldsB
@@ -175,7 +180,8 @@ class intData: # if I name it as int I think is like self but with a better name
         if all(field_b in ontology_dict for field_b in self.fieldsB):
             name_fields_g = [ontology_dict [k] for k in self.fieldsB]
         else:    
-            raise ValueError("Fields param \"%s\" contains a field not present in config_file \"%s\"" % ("\",\"".join(self.fieldsB), "\",\"".join(ontology_dict.keys())))
+            raise ValueError("Fields param \"%s\" contains a field not present in config_file \"%s\"" 
+                             % ("\",\"".join(self.fieldsB), "\",\"".join(ontology_dict.keys())))
 
         return name_fields_g
            
