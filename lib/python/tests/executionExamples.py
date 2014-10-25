@@ -55,7 +55,7 @@ configFileDict.write()
 
 ## Generation of a genome file
 intData = int2browser.intData(path, ontology_dict=configFileDict.correspondence, relative_coord=True)
-
+print intData.min
 ## Checking type
 # Now before applying read it has not class data_iter ask someone whether this is ok or not
 print ("Min value in the file %i" % (intData.min))
@@ -63,15 +63,15 @@ print intData.min
 print("Type intData %s" % (type(intData)))
 intData_data_iter = intData.read()
 print("====")
-print intData_data_iter.next()
-print intData_data_iter.format
-print intData_data_iter.track
+# print intData_data_iter.next()
+# print intData_data_iter.format
+# print intData_data_iter.track
 
-intData_data_iter.write()
+# intData_data_iter.write()
 
 print("####END")
 
-# print("Type intData after method read applied %s" % type(intData_data_iter))
+print("Type intData after method read applied %s" % type(intData_data_iter))
 # for x in intData_data_iter:
 #     print x
     
