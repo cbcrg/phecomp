@@ -68,7 +68,10 @@ class intData: # if I name it as int I think is like self but with a better name
     """
     Generic class for data
     Possible thinks to implement
-    .. attribute:: fieldsB 
+    
+    .. attribute:: path
+    .. attribute:: fieldsB
+    .. attribute:: 
     
     list with the behavioral fields corresponding each column in the original file
      
@@ -76,8 +79,7 @@ class intData: # if I name it as int I think is like self but with a better name
     #le meto el diccionario entre behavior and genomic data como un parametro y por defecto le pongo el diccionario del ejemplo
     def __init__(self, path, ontology_dict, **kwargs):
         self.path = check_path(path)
-        self.delimiter = kwargs.get('delimiter',"\t")
-        self.delimiter = self._check_delimiter(self.path)
+        self.delimiter = self._check_delimiter(self.path, kwargs.get('delimiter',"\t"))
         self.header = kwargs.get('header',True)
         self.fieldsB = self._set_fields_b(kwargs.get('fields'))
         self.fieldsG = self._set_fields_g(ontology_dict) 
@@ -85,16 +87,16 @@ class intData: # if I name it as int I think is like self but with a better name
         self.dataTypes = self.get_field_items(field ="dataTypes", data = self.data, default="a")
         self.tracks  =  self.get_field_items(field="track", data = self.data, default="1")
     
-    def _check_delimiter (self, path):
+    def _check_delimiter (self, path, delimiter):
         """ Check whether the delimiter works, if delimiter is not set
         then tries ' ', '\t' and ';'"""
-        if self.delimiter is None: 
-            raise ValueError("Delimiter must be set \'%s\'"%(self.delimiter))
+        if delimiter is None: 
+            raise ValueError("Delimiter must be set \'%s\'"%(delimiter))
         
         self.inFile  = open(path, "rb")
         
         for row in self.inFile:            
-            if row.count(self.delimiter) >= 1: break
+            if row.count(delimiter) >= 1: break
             else: raise ValueError("Input delimiter does not correspond to delimiter found in file \'%s\'"%(self.delimiter))
             
             if row.count(" ") >= 1:
@@ -107,7 +109,7 @@ class intData: # if I name it as int I think is like self but with a better name
                 self.delimiter = "\t"
                 break      
             
-        return self.delimiter
+        return delimiter
     
     def _set_fields_b(self, fields):
         """
