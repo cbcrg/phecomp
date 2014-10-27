@@ -96,7 +96,10 @@ class intData: # if I name it as int I think is like self but with a better name
     
     def _check_delimiter (self, path, delimiter):
         """ Check whether the delimiter works, if delimiter is not set
-        then tries ' ', '\t' and ';'"""
+        then tries ' ', '\t' and ';'
+        :param path: (str) name of path to a behavioral file in the form of a csv file
+        :param delimiter (str) delimiter used in the file ("\t", ";", " ") 
+        """
         if delimiter is None: 
             raise ValueError("Delimiter must be set \'%s\'"%(delimiter))
         
