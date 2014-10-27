@@ -70,8 +70,15 @@ class intData: # if I name it as int I think is like self but with a better name
     Possible thinks to implement
     
     .. attribute:: path
+    .. attribute:: delimiter
+    .. attribute:: header
     .. attribute:: fieldsB
-    .. attribute:: 
+    .. attribute:: fieldsG
+    .. attribute:: data
+    .. attribute:: min
+    .. attribute:: max
+    .. attribute:: dataTypes
+    .. attribute:: tracks
     
     list with the behavioral fields corresponding each column in the original file
      
