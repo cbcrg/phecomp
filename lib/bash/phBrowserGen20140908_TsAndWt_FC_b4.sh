@@ -13,7 +13,7 @@
 #################################################################################
 
 ###Setting Source files paths
-bashScDir=/users/cn/jespinosa/workspaceEclipse/phecomp/lib/bash
+bashScDir=/users/cn/jespinosa/workspaceEclipse/phecomp/lib/bash/
 
 ## Functions
 source ${bashScDir}generalFunctions.sh
