@@ -13,11 +13,10 @@
 #################################################################################
 
 ###Setting Source files paths
-bashCommonDir=/users/cn/jespinosa/lib/bash/
-bashScDir=/users/cn/jespinosa/phecomp/lib/bash/
+bashScDir=/users/cn/jespinosa/workspaceEclipse/phecomp/lib/bash
 
 ## Functions
-source ${bashCommonDir}generalFunctions.sh
+source ${bashScDir}generalFunctions.sh
 
 # Queue variables
 nameQ="short-sl65"
