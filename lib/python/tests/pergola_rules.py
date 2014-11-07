@@ -32,11 +32,13 @@ tr_act_options = ['split_all', 'join_all', 'join_odd', 'join_even', 'join_list']
 parser = ArgumentParser(description = 'Script to transform behavioral data into GB readable data')
 parser.add_argument('-i','--input', help='Input file name',required=True)
 parser.add_argument('-c','--config_file',help='Configuration file with genome browser fields correspondence', required=False)
+#### CHANGE CONFIG_FILE BY ONTOLOGY_FILE
+# parser.add_argument('-c','--config_file',help='Configuration file with genome browser fields correspondence', required=False)
 parser.add_argument('-t','--tracks', help='List of selected tracks', required=False, type=int, nargs='+')
 parser.add_argument('-a','--track_actions', help='Option of action with tracks selected, split_all, join_all, join_odd, join_even, join_range or join_list', required=False, choices=tr_act_options)
 parser.add_argument('-d','--dataTypes_actions', help='Unique values of the field should dump on different data structures or not', required=False, choices=dt_act_options)
 parser.add_argument('-r','--range', help='Numeric range of tracks', required=False, type=parseNumRange)
-parser.add_argument('-l','--list', help='Numeric list of tracks', required=False, type=str, nargs='+')
+parser.add_argument('-l','--list', help='Numeric list of tracks', required=False, type=str, nargs='+')### tiene que poder ser tambien strings track_1, track2....
 parser.add_argument('-f','--format', help='Write file output format f', required=False, type=str)
 
 # parser.add_argument('-c','--chrom_rules', help='Unique values of the field chrom should be dump on different data structures or not', required=False)
@@ -105,8 +107,8 @@ print >>sys.stderr, "@@@Pergola_rules.py format to write files: ", write_format
 #End  of options
 print >>sys.stderr, "@@@Print all the options set by pergola_rules end here!"
 
-intData = int2browser.intData(path, ontology_dict=configFileDict.correspondence, intervals=True, multiply_t=1000, window=30)
-# intData = int2browser.intData(path, ontology_dict=configFileDict.correspondence)
+# intData = int2browser.intData(path, ontology_dict=configFileDict.correspondence, intervals=True, multiply_t=1000, window=30)
+intData = int2browser.intData(path, ontology_dict=configFileDict.correspondence)
 
 
 # print intData.fieldsG
@@ -142,7 +144,11 @@ for i in intData.data:
 
 # bed_str =  intData.convert(mode = write_format, relative_coord = True, dataTypes_actions=dataTypes_act, tracks=sel_tracks, tracks_merge=tracks2merge, window=300)
 
-bed_str =  intData.convert(mode = write_format, relative_coord = True, dataTypes_actions=dataTypes_act, tracks=sel_tracks, tracks_merge=tracks2merge, window=9)
+## Tracks in sel_tracks is just to set tracks to be kept and which ones to be remove
+## Quiza en tracks tambien deberia permitir que se metieran list y ranges pero entonces lo que deberia hacer es poner una
+## funcion comun para procesar esto en las dos opciones
+## however tracks_merge are the trakcs to be join
+bed_str =  intData.convert(intervals=True, mode=write_format, relative_coord = True, dataTypes_actions=dataTypes_act, tracks=sel_tracks, tracks_merge=tracks2merge, window=9)
 
 for key in bed_str:
     print "key.......: ",key

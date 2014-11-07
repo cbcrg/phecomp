@@ -186,7 +186,7 @@ class intData: # if I name it as int I think is like self but with a better name
 
         return name_fields_g
            
-    def read(self, fields=None, relative_coord=False, intervals=True, fields2rel=None, multiply_t=1,**kwargs):
+    def read(self, fields=None, relative_coord=False, intervals=False, fields2rel=None, multiply_t=1,**kwargs):
         # If I don't have fields then I get all the columns of the file
         if fields is None:
             fields = self.fieldsG
@@ -478,7 +478,8 @@ class intData: # if I name it as int I think is like self but with a better name
             raise ValueError("Data has not field \'%s\' and no default value has been set \'%s\'"%(field, default)) 
         
         return set_fields
-                     
+    
+### copied input                    
     def writeChr(self, mode="w"):
         chrom = 'chr1'
         genomeFile = open(os.path.join(_pwd, chrom + _genomeFileExt), mode)        
@@ -486,7 +487,9 @@ class intData: # if I name it as int I think is like self but with a better name
         genomeFile.write (genericNt * (self.max - self.min))
         genomeFile.close()
         print('Genome fasta file created: %s' % (chrom + _genomeFileExt))
-              
+### copied
+
+### copied              
     def convert(self, mode = 'bed', **kwargs):
         """
         Returns an object/s of the class set by mode
@@ -503,7 +506,9 @@ class intData: # if I name it as int I think is like self but with a better name
         dict_tracks = (self._convert2single_track(self.read(**kwargs), mode, **kwargs))
         
         return (dict_tracks)
-        
+### copied
+
+### copied        
     def _convert2single_track (self, data_tuple,  mode=None, **kwargs):
         """
         Transform data into a bed file if all the necessary fields present
@@ -528,7 +533,7 @@ class intData: # if I name it as int I think is like self but with a better name
         else:
             sel_tracks = map(str, kwargs.get("tracks",[]))
                 
-        #When any tracks are selected we consider that any track should be removed
+        ### When any tracks are selected we consider that no track should be removed
         if sel_tracks != []:
             tracks2rm = self.tracks.difference(sel_tracks)            
             dict_split = self.remove (dict_split, tracks2rm)
@@ -576,7 +581,9 @@ class intData: # if I name it as int I think is like self but with a better name
                 track_dict[k,k_2] = globals()[_dict_file[mode][0]](getattr(self,_dict_file[mode][1])(d_2, True, window), track=k, dataType=k_2)
                        
         return (track_dict)
+### copied
 
+### copied
     def join_by_track (self, dict_t, tracks2join):  
         
         d_track_merge = {} 
@@ -600,7 +607,8 @@ class intData: # if I name it as int I think is like self but with a better name
 
         self.tracks = new_tracks            
         return (d_track_merge)
-    
+ ### copied   
+ 
     def join_by_dataType (self, dict_d, mode):
         
         d_dataTypes_merge = {}
@@ -623,7 +631,8 @@ class intData: # if I name it as int I think is like self but with a better name
             self.dataTypes = new_dataTypes
 
         return (d_dataTypes_merge)
-    
+ 
+  ### copied   
     def remove (self, dict_t, tracks2remove):
         for key in tracks2remove:
             key = str(key)
@@ -633,7 +642,8 @@ class intData: # if I name it as int I think is like self but with a better name
             if key in self.tracks:
                 self.tracks.remove(key)
         return (dict_t) 
-               
+ ### copied
+  
     def track_convert2bed (self, track, in_call=False, restrictedColors=None, **kwargs):
         #fields pass to read should be the ones of bed file
         _bed_fields = ["track","chromStart","chromEnd","dataTypes", "dataValue"]
@@ -861,6 +871,7 @@ class Bed(dataIter):
         
          ['chr','start','end','name','score','strand',
           'thick_start','thick_end','item_rgb']
+        
           
     """
     def __init__(self, data, **kwargs):
@@ -877,6 +888,7 @@ class BedGraph(dataIter):
     Fields used in this application are:
         
          ['chr','start','end', 'score']
+      
           
     """
     def __init__(self,data,**kwargs):
@@ -927,6 +939,7 @@ def assign_color (set_dataTypes, color_restrictions=None):
             
     return d_dataType_color
 
+### copied input
 def check_path(path):
     """ 
     Check whether the input file exists and is accessible and if OK returns path
@@ -938,7 +951,10 @@ def check_path(path):
     except IOError:
         raise IOError('File does not exist: %s' % path)
     return path      
-    
+
+### copied
+
+### Copied in input
 class ConfigInfo():
     """
     Class holds a dictionary with the ontology between the genomic fields and the phenomics fields
@@ -994,7 +1010,9 @@ class ConfigInfo():
                 self.write(value, indent+1)
             else:
                 print '\t' * (indent+1) + str(value)
+### Copied
 
+### Copied
 def read_track_actions (tracks, track_action = "split_all"):
     """ 
     Read track actions and returns a set with the tracks to be joined
@@ -1022,6 +1040,7 @@ def read_track_actions (tracks, track_action = "split_all"):
         print >>sys.stderr,("No track action applied as track actions \'%s\' can not be applied to list of tracks provided \'%s\'"%(track_action, " ".join(tracks)))
         
     return (tracks2merge)
+### Copied
 
 def read_dataTypes_actions (tracks, dt_action = "split_all"):
     """ 
