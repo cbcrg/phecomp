@@ -248,7 +248,7 @@ optInt2browserTblPh=${field2Window}" -winMode discrete -winFile dailyAverage -ws
 # # Samething joining channels
 # qsub -q $typeQ,$nameQ $timeQ -cwd -o ${path2GenBrowser} -e ${path2GenBrowser} ${bashScDir}int2browserCallFromQsub.sh "${path2IntFileFilter}" "${optInt2browserTblPhJoinedCh}" ${path2GenBrTblPh} "${errorTblPh}"      
 
-# ${bashScDir}int2browserCallFromQsub.sh "${path2IntFileFilter}" "${optInt2browserSplitCh}" ${path2GenBrSplit} "${errorSplitChGBrowser}" > ${path2GenBrowser}"GBsplitCh.out" 2> ${path2GenBrowser}"GBsplitCh.err"
+${bashScDir}int2browserCallFromQsub.sh "${path2IntFileFilter}" "${optInt2browserSplitCh}" ${path2GenBrSplit} "${errorSplitChGBrowser}" > ${path2GenBrowser}"GBsplitCh.out" 2> ${path2GenBrowser}"GBsplitCh.err"
 
 ${bashScDir}int2browserCallFromQsub.sh "${path2IntFileFilter}" "${optInt2browserCombCh}" ${path2GenBrCombCh} "${errorCombChGBrowser}" > ${path2GenBrowser}"GBcombCh.out" 2> ${path2GenBrowser}"GBcombCh.err"
 
