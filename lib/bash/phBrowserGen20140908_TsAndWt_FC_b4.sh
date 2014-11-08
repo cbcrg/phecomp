@@ -13,11 +13,10 @@
 #################################################################################
 
 ###Setting Source files paths
-bashCommonDir=/users/cn/jespinosa/lib/bash/
-bashScDir=/users/cn/jespinosa/phecomp/lib/bash/
+bashScDir=/users/cn/jespinosa/workspaceEclipse/phecomp/lib/bash/
 
 ## Functions
-source ${bashCommonDir}generalFunctions.sh
+source ${bashScDir}generalFunctions.sh
 
 # Queue variables
 nameQ="short-sl65"
@@ -43,5 +42,7 @@ qsub -q $nameQ $timeQ -cwd -o ${mtbLogFolder} -e ${mtbLogFolder} -v aryMtbFiles=
 ## Ary with development files
 ## Still summer at the beginning iniLight=6 
 ## changed on 26 of October iniLight=7
-qsub -q $nameQ $timeQ -cwd -o ${mtbLogFolder} -e ${mtbLogFolder} -v aryMtbFiles="${aryMtbFilesHab[*]}" -v dumpDir="/users/cn/jespinosa/phecomp/processedData/" -v iniLight=6  -v phaseTag="_hab" -v par2int2browser="value"  -v winSize=300 ${bashScDir}mtb2GBNoQsubIn.sh
+
+aryMtbFilesDev=( $( ls ${mtbFilesDir}*Development*.mtb ) ) 
+qsub -q $nameQ $timeQ -cwd -o ${mtbLogFolder} -e ${mtbLogFolder} -v aryMtbFiles="${aryMtbFilesDev[*]}" -v dumpDir="/users/cn/jespinosa/phecomp/processedData/" -v iniLight=6  -v phaseTag="_dev" -v par2int2browser="value"  -v winSize=300 ${bashScDir}mtb2GBNoQsubIn.sh
 
