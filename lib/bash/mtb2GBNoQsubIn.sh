@@ -216,6 +216,8 @@ checkCreateDir $path2GenBrCombChSign
 checkCreateDir $path2GenBrGroups
 checkCreateDir $path2GenBrTblPh
 
+sleep 10
+
 # Eventually do this in parallel with a qsub call
 errorSplitChGBrowser=${path2GenBrSplit}${expName}"FilterGBrowserSplitCh"".err"
 errorCombChGBrowser=${path2GenBrSplit}${expName}"FilterGBrowserCombCh"".err"
