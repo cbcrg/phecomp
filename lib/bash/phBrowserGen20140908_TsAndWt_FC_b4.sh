@@ -46,3 +46,10 @@ qsub -q $nameQ $timeQ -cwd -o ${mtbLogFolder} -e ${mtbLogFolder} -v aryMtbFiles=
 aryMtbFilesDev=( $( ls ${mtbFilesDir}*Development*.mtb ) ) 
 qsub -q $nameQ $timeQ -cwd -o ${mtbLogFolder} -e ${mtbLogFolder} -v aryMtbFiles="${aryMtbFilesDev[*]}" -v dumpDir="/users/cn/jespinosa/phecomp/processedData/" -v iniLight=6  -v phaseTag="_dev" -v par2int2browser="value"  -v winSize=300 ${bashScDir}mtb2GBNoQsubIn.sh
 
+## Ary with all files
+## Still summer at the beginning iniLight=6 
+## changed on 26 of October iniLight=7
+
+aryMtbFilesDev=( $( ls ${mtbFilesDir}*.mtb ) ) 
+qsub -q $nameQ $timeQ -cwd -o ${mtbLogFolder} -e ${mtbLogFolder} -v aryMtbFiles="${aryMtbFilesDev[*]}" -v dumpDir="/users/cn/jespinosa/phecomp/processedData/" -v iniLight=6  -v phaseTag="_dev" -v par2int2browser="value"  -v winSize=300 ${bashScDir}mtb2GBNoQsubIn.sh
+
