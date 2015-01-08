@@ -10,6 +10,7 @@ library (ggplot2)
 library (plyr)
 #install.packages("reshape")
 library (reshape) #melt
+#install.packages("gtools")
 library (gtools) #foldchange
 
 ##Getting HOME directory
@@ -17,7 +18,7 @@ home <- Sys.getenv("HOME")
 # weekStatsData <- args[5]
 
 ##Loading functions
-source ("/Users/jespinosa/phecomp/lib/R/heatMapFunctions.R")
+source ("/Users/jespinosa/git/phecomp/lib/R/heatMapFunctions.R")
 
 setwd ("/Users/jespinosa/dropboxTCoffee/Dropbox/jespinosa/2013phecomp2shareFinal/drafts_paper/figures/fig4ANDfigS4Dev")
 
@@ -128,6 +129,7 @@ df.meanCase.CD.m$variable [which (df.meanCase.CD.m$variable == "Number" & df.mea
 
 
 setwd ("/Users/jespinosa/dropboxTCoffee/Dropbox/jespinosa/2013phecomp2shareFinal/drafts_paper/figures/fig4ANDfigS4Dev")
+source ("/Users/jespinosa/git/phecomp/lib/R/heatMapFunctions.R")
 heatMapPlotter (df.meanCase.SC.m, main="Free-Choice SC\n",  weekNotation="N", legPos="right",
                 xlab="\nDevelopment Phase (weeks)", ylab="Eating Behavior                          Drinking Behavior\n")
 heatMapPlotter (df.meanCase.CD.m, main="Free-Choice CM\n",  weekNotation="N", legPos="right",
@@ -157,7 +159,7 @@ df.meanCase.CDvsSC.m <- df.meanCase.CDvsSC.m [with (df.meanCase.CDvsSC.m, order 
 df.meanCase.CDvsSC.m$variable [which (df.meanCase.CDvsSC.m$variable == "Number" & df.meanCase.CDvsSC.m$channel == "food_cd")] <-  "Meal Number"
 df.meanCase.CDvsSC.m$variable [which (df.meanCase.CDvsSC.m$variable == "Number" & df.meanCase.CDvsSC.m$channel == "water")] <-  "Drink Number"
 
-heatMapPlotter (df.meanCase.CDvsSC.m, main="Free-Choice CM\n",  weekNotation="N", legPos="right",
+heatMapPlotter (df.meanCase.CDvsSC.m, main="Free-Choice CM vs SC channel inside group\n",  weekNotation="N", legPos="right",
                 xlab="\nDevelopment Phase (weeks)", ylab="Eating Behavior                          Drinking Behavior\n")
 
 
