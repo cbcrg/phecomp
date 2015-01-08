@@ -2125,7 +2125,9 @@ sub data2display_period_stat
           		      elsif ($f eq "InterTime")
           		        {
           			       printf "- %8s: %6.2f ",$f."T",$S->{$c}{$ch}{$f};
-          			       $S->{$c}{$ch}{$f}/=$countInterTime;          			       
+          			       $S->{$c}{$ch}{$f}/=$countInterTime;
+          			       #Expressed in minutes like compulse
+          			       $S->{$c}{$ch}{$f}/=60;          			       
           		        }
 
 		              printf "- %8s: %6.2f ",$f,$S->{$c}{$ch}{$f};
@@ -2167,7 +2169,9 @@ sub data2display_period_stat
 		              	   
 		              	   if ($f eq "InterTime")
 			                 {
-			                   $S->{$c}{$ch}{$f}/=$countInterTime;			                   			                  
+			                   $S->{$c}{$ch}{$f}/=$countInterTime;
+			                   #Expressed in minutes like compulse
+			                   $S->{$c}{$ch}{$f}/=60;			                   			                  
 			                 }
 			               else
 			                 {  	
