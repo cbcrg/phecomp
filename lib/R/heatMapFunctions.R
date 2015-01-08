@@ -140,30 +140,31 @@ heatMapPlotter <- function (table, main="", weekNotation=F, legPos="right", mode
                            name = legName,
                            rescaler = function(x,...) x,
                            #                                   oob = identity)+ opts (title = main))#with legend
-                           oob = identity) + opts (title = main, legend.position = "none"))#no legend
-  
+                           # oob = identity) + opts (title = main, legend.position = "none"))#no legend
+                           oob = identity) + ggtitle(main) + theme (legend.position = "none"))
   base_size <- 9
   
   p + theme_grey (base_size = base_size) + labs (x = xlab,
                                                  y = ylab) + scale_x_discrete (expand = c(0, 0)) +
     scale_y_discrete (expand = c(0, 0), labels = table$variable) + 
-    opts (axis.ticks = theme_blank(),
+    theme (axis.ticks = element_blank(),
           legend.position = legPos,
-          panel.border = theme_blank(),
-          panel.background = theme_blank(),
-          axis.title.x =  theme_text (size = base_size * 1.4, face = "bold"),
-          axis.title.y =  theme_text (size = base_size * 1.4, face = "bold", angle = 90),
-          axis.text.x = theme_text(size = base_size * 1.4, angle = angleY,
+          panel.border = element_blank(),
+          panel.background = element_blank(),
+          axis.title.x =  element_text (size = base_size * 1.4, face = "bold"),
+          axis.title.y =  element_text (size = base_size * 1.4, face = "bold", angle = 90),
+          axis.text.x = element_text(size = base_size * 1.4, angle = angleY,
                                    #1.2, angle = 330,                     
                                    #hjust = 0, colour = "grey50", face = "bold"), #labels=c("Control", "Treat 1", "Treat 2")),
                                    hjust = 0, face = "bold"),                           
-          #axis.text.y = theme_text (size = base_size * 1.2,hjust = 0, colour = "grey50"))
-          legend.text = theme_text (size = base_size * 1.2),      
-          legend.title = theme_text (size = base_size *1.2, face = "bold"),      
-          legend.hjust = theme_text (hjust=c(0, 0.5, 1)),
-          plot.title = theme_text (size=base_size * 1.5, face="bold"),
-          #axis.text.y = theme_text (size = base_size * 1.4,hjust = 0, colour = "grey50", face = "bold"))
-          axis.text.y = theme_text (size = base_size * 1.4,hjust = 0, face = "bold"))                          
+          #axis.text.y = element_text (size = base_size * 1.2,hjust = 0, colour = "grey50"))
+          legend.text = element_text (size = base_size * 1.2),      
+          legend.title = element_text (size = base_size *1.2, face = "bold"),      
+          #legend.hjust = element_text (hjust=c(0, 0.5, 1)),
+          legend.text = element_text (hjust=c(0, 0.5, 1)),
+          plot.title = element_text (size=base_size * 1.5, face="bold"),
+          #axis.text.y = element_text (size = base_size * 1.4,hjust = 0, colour = "grey50", face = "bold"))
+          axis.text.y = element_text (size = base_size * 1.4,hjust = 0, face = "bold"))                          
 }
 
 #Function for significancy heatmap generation only for HABITUATION PHASE
@@ -258,24 +259,24 @@ heatMapPlotterHab <- function (table, main="", weekNotation=F, legPos="right", m
   p + theme_grey (base_size = base_size) + labs (x = xlab,
                                                  y = ylab) + scale_x_discrete (expand = c(0, 0)) +
     scale_y_discrete (expand = c(0, 0), labels = table$variable) + 
-    opts (axis.ticks = theme_blank(),
+    opts (axis.ticks = element_text,
           legend.position = legPos,
-          panel.border = theme_blank(),
-          panel.background = theme_blank(),
-          axis.title.x =  theme_text (size = base_size * 1.4, face = "bold"),
-          axis.title.y =  theme_text (size = base_size * 1.4, face = "bold", angle = 90),
-          axis.text.x = theme_text(size = base_size * 1.4, angle = angleY,
+          panel.border = element_text,
+          panel.background = element_text,
+          axis.title.x =  element_text (size = base_size * 1.4, face = "bold"),
+          axis.title.y =  element_text (size = base_size * 1.4, face = "bold", angle = 90),
+          axis.text.x = element_text(size = base_size * 1.4, angle = angleY,
                                    #1.2, angle = 330,                     
                                    #hjust = 0, colour = "grey50", face = "bold"), #labels=c("Control", "Treat 1", "Treat 2")),
                                    hjust = 0, face = "bold"),
-          #                           axis.text.x = theme_blank(),
-          #axis.text.y = theme_text (size = base_size * 1.2,hjust = 0, colour = "grey50"))
-          legend.text = theme_text (size=base_size * 1.2),      
-          legend.title = theme_text (size = base_size *1.2, face = "bold"),      
-          legend.hjust = theme_text (hjust=c(0, 0.5, 1)),
-          plot.title = theme_text (size=base_size * 1.5, face="bold"),
-          #axis.text.y = theme_text (size = base_size * 1.4,hjust = 0, colour = "grey50", face = "bold"))
-          axis.text.y = theme_text (size = base_size * 1.4,hjust = 0, face = "bold"))                          
+          #                           axis.text.x = element_text,
+          #axis.text.y = element_text (size = base_size * 1.2,hjust = 0, colour = "grey50"))
+          legend.text = element_text (size=base_size * 1.2),      
+          legend.title = element_text (size = base_size *1.2, face = "bold"),      
+          legend.hjust = element_text (hjust=c(0, 0.5, 1)),
+          plot.title = element_text (size=base_size * 1.5, face="bold"),
+          #axis.text.y = element_text (size = base_size * 1.4,hjust = 0, colour = "grey50", face = "bold"))
+          axis.text.y = element_text (size = base_size * 1.4,hjust = 0, face = "bold"))                          
 }
 
 ##############################
