@@ -18,11 +18,12 @@ home <- Sys.getenv("HOME")
 # weekStatsData <- args[5]
 
 ##Loading functions
-source ("/Users/jespinosa/phecomp/lib/R/heatMapFunctions.R")
+source ("/Users/jespinosa/git/phecomp/lib/R/heatMapFunctions.R")
 
 ###### HIGH FAT GROUP 
 #We use all the HF data
-weekStatsData <- "/phecomp/20121128_heatMapPhecomp/tblFiles/20120502to0706_FDF_CRG_HabDevFilt_DelCage6InterMealMinSep120Nature2.tbl"
+#weekStatsData <- "/phecomp/20121128_heatMapPhecomp/tblFiles/20120502to0706_FDF_CRG_HabDevFilt_DelCage6InterMealMinSep120Nature2.tbl"
+weekStatsData <- "/phecomp/20121128_heatMapPhecomp/tblFiles/20120502to0706_FDF_CRG_HabDevFilt_DelCage6_TwoMinFilt.tbl"
 df.weekStats <- read.table (paste (home, weekStatsData, sep = ""), sep="\t", dec=".", header=T, stringsAsFactors=F)
 head (df.weekStats)
 
@@ -42,10 +43,14 @@ df.weekStats <- merge (df.weekStats, df.miceGroup, by.x= "cage", by.y = "cage")
 
 ##Labels version for paper
 ##CTRL
-df.meanControl <- with (df.weekStats [which (df.weekStats$group == controlGroupLabel),] , aggregate (cbind (Number, Avg_Duration, Avg_Intake, Rate), list(channel=channel, group=group, period=period), mean))
+#df.meanControl <- with (df.weekStats [which (df.weekStats$group == controlGroupLabel),] , aggregate (cbind (Number, Avg_Duration, Avg_Intake, Rate), list(channel=channel, group=group, period=period), mean))
+#with intermeal interval
+df.meanControl <- with (df.weekStats [which (df.weekStats$group == controlGroupLabel),] , aggregate (cbind (Number, Avg_Duration, Avg_Intake, Rate, Avg_Intermeal_Duration), list(channel=channel, group=group, period=period), mean))
 
 ##CASE
-df.meanCase <- with (df.weekStats [which (df.weekStats$group == caseGroupLabel),] , aggregate (cbind (Number, Avg_Duration, Avg_Intake, Rate), list(channel=channel, group=group, period=period), mean))
+#df.meanCase <- with (df.weekStats [which (df.weekStats$group == caseGroupLabel),] , aggregate (cbind (Number, Avg_Duration, Avg_Intake, Rate), list(channel=channel, group=group, period=period), mean))
+#with intermeal interval
+df.meanCase <- with (df.weekStats [which (df.weekStats$group == caseGroupLabel),] , aggregate (cbind (Number, Avg_Duration, Avg_Intake, Rate, Avg_Intermeal_Duration), list(channel=channel, group=group, period=period), mean))
 
 # Correction if we take into account that 20 per cent of the food was on the floor of the cage
 #df.meanCase$Avg_Intake <- df.meanCase$Avg_Intake * 0.80
@@ -55,7 +60,8 @@ df.meanControl.m <- melt (df.meanControl, id.vars=c("channel", "group", "period"
 df.meanCase.m <- melt (df.meanCase, id.vars=c("channel", "group", "period"))
 
 df.meanCase.m$foldChange <- foldchange (df.meanCase.m$value,df.meanControl.m$value)
-
+length(df.meanCase.m$value)
+length(df.meanControl.m$value)
 df.meanCase.m$week <-df.meanCase.m$period
 df.meanCase.m$week <- paste ("week", df.meanCase.m$period, sep = "_")   
 
@@ -68,16 +74,18 @@ df.meanCase.m$week <- with (df.meanCase.m, reorder (week, period,))
 df.meanCase.m$variable <-  gsub ("_", " ", df.meanCase.m$variable, ignore.case = TRUE)
 
 #I want to insert this order Avg Intake, number, avg duration and rate, so the order is the same as in the other plots
-# ggplot takes inverse order so I have to label this way rate, avg duration, number, avg intake
+df.meanCase.m$varOrder [which (df.meanCase.m$variable == "Avg Intermeal Duration")] <-  "e"
 df.meanCase.m$varOrder [which (df.meanCase.m$variable == "Rate")] <-  "a"
 df.meanCase.m$varOrder [which (df.meanCase.m$variable == "Avg Duration")] <-  "b"
 df.meanCase.m$varOrder [which (df.meanCase.m$variable == "Number")] <-  "c"
 df.meanCase.m$varOrder [which (df.meanCase.m$variable == "Avg Intake")] <-  "d"
 
+df.meanCase.m$orderOut [which (df.meanCase.m$variable == "Avg Intermeal Duration")] <-  "5"
 df.meanCase.m$orderOut [which (df.meanCase.m$variable == "Rate")] <-  "1"
 df.meanCase.m$orderOut [which (df.meanCase.m$variable == "Avg Duration")] <-  "2"
 df.meanCase.m$orderOut [which (df.meanCase.m$variable == "Number")] <-  "3"
 df.meanCase.m$orderOut [which (df.meanCase.m$variable == "Avg Intake")] <-  "4"
+
 
 #Old command to order
 # df.meanCase.m <- df.meanCase.m [with (df.meanCase.m, order (period, channel, variable)),]
