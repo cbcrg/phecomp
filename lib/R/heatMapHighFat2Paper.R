@@ -74,17 +74,17 @@ df.meanCase.m$week <- with (df.meanCase.m, reorder (week, period,))
 df.meanCase.m$variable <-  gsub ("_", " ", df.meanCase.m$variable, ignore.case = TRUE)
 
 #I want to insert this order Avg Intake, number, avg duration and rate, so the order is the same as in the other plots
-df.meanCase.m$varOrder [which (df.meanCase.m$variable == "Avg Intermeal Duration")] <-  "e"
-df.meanCase.m$varOrder [which (df.meanCase.m$variable == "Rate")] <-  "a"
-df.meanCase.m$varOrder [which (df.meanCase.m$variable == "Avg Duration")] <-  "b"
-df.meanCase.m$varOrder [which (df.meanCase.m$variable == "Number")] <-  "c"
-df.meanCase.m$varOrder [which (df.meanCase.m$variable == "Avg Intake")] <-  "d"
+df.meanCase.m$varOrder [which (df.meanCase.m$variable == "Avg Intermeal Duration")] <-  "a"
+df.meanCase.m$varOrder [which (df.meanCase.m$variable == "Rate")] <-  "b"
+df.meanCase.m$varOrder [which (df.meanCase.m$variable == "Avg Duration")] <-  "c"
+df.meanCase.m$varOrder [which (df.meanCase.m$variable == "Number")] <-  "d"
+df.meanCase.m$varOrder [which (df.meanCase.m$variable == "Avg Intake")] <-  "e"
 
-df.meanCase.m$orderOut [which (df.meanCase.m$variable == "Avg Intermeal Duration")] <-  "5"
-df.meanCase.m$orderOut [which (df.meanCase.m$variable == "Rate")] <-  "1"
-df.meanCase.m$orderOut [which (df.meanCase.m$variable == "Avg Duration")] <-  "2"
-df.meanCase.m$orderOut [which (df.meanCase.m$variable == "Number")] <-  "3"
-df.meanCase.m$orderOut [which (df.meanCase.m$variable == "Avg Intake")] <-  "4"
+df.meanCase.m$orderOut [which (df.meanCase.m$variable == "Avg Intermeal Duration")] <-  "1"
+df.meanCase.m$orderOut [which (df.meanCase.m$variable == "Rate")] <-  "2"
+df.meanCase.m$orderOut [which (df.meanCase.m$variable == "Avg Duration")] <-  "3"
+df.meanCase.m$orderOut [which (df.meanCase.m$variable == "Number")] <-  "4"
+df.meanCase.m$orderOut [which (df.meanCase.m$variable == "Avg Intake")] <-  "5"
 
 
 #Old command to order
@@ -102,8 +102,9 @@ df.meanCase.m.Dev$period
 tail(df.meanCase.m.Dev)
 
 #Forced diet heat map
+setwd("/Users/jespinosa/dropboxTCoffee/Dropbox/jespinosa/2013phecomp2shareFinal/drafts_paper/figures/fig3ANDfigS1Dev/20150109_includingInterMealInterv")
 heatMapPlotter (df.meanCase.m, main="Fold Change Force diet vs Control",  weekNotation=T)
-class (df.meanCase.m.Dev$variable)
+
 heatMapPlotter (df.meanCase.m.Dev, main="Forced-Diet High Fat\n",  weekNotation="N", legPos="right",
                 xlab="\nDevelopment Phase (weeks)", ylab="Eating Behavior                          Drinking Behavior\n")
 
