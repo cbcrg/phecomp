@@ -92,6 +92,7 @@ df.meanCase.m$orderOut [which (df.meanCase.m$variable == "Avg Intake")] <-  "5"
 df.meanCase.m <- df.meanCase.m [with (df.meanCase.m, order (period, channel, orderOut) ),]
 
 # Changing label Number by Number of Meals and Number of Drinks
+# To plot significance this must be comment because meal number and drink number won't be recognized #Tag_sig
 df.meanCase.m$variable [which (df.meanCase.m$variable == "Number" & df.meanCase.m$channel == "food")] <-  "Meal Number"
 df.meanCase.m$variable [which (df.meanCase.m$variable == "Number" & df.meanCase.m$channel == "water")] <-  "Drink Number"
 
@@ -142,13 +143,15 @@ df.sigResults$foldChange <- as.numeric (df.sigResults$foldChange)
 ## First df.meanCase.m has to be created
 # to yellow significancies and the positive to blue -->  the trick is to set the significancies related to a negative fold change
 # to negative values, eg 0.001 --> -0.001 and use the yellow scale for the negative values 
+
+#Tag_sig If it doesn't work go to #Tag_sig
 for (i in c (1: length (df.sigResults [,1])))
   {
-    print (i)
+    print (paste("i is", i))
     foldChange <- df.meanCase.m [df.meanCase.m$channel == df.sigResults$channel [i] 
-                   & df.meanCase.m$group == df.sigResults$group [i]
-                   & df.meanCase.m$period == df.sigResults$period [i]
-                   & df.meanCase.m$variable == df.sigResults$variable [i], "foldChange"]
+                                 & df.meanCase.m$group == df.sigResults$group [i]
+                                 & df.meanCase.m$period == df.sigResults$period [i]
+                                 & df.meanCase.m$variable == df.sigResults$variable [i], "foldChange"]
     print (foldChange)
     if (foldChange < 0) {print (as.numeric (-df.sigResults$foldChange [i]))}
     if (foldChange < 0) {df.sigResults$foldChange [i] <- as.numeric(-df.sigResults$foldChange [i]) -1  }

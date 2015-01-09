@@ -31,8 +31,12 @@ pValueCalc <- function (df.weekStatsTbl)
     for (ch in unique (df.weekStatsTbl$channel))
     {
       print (p)
+      
+#       df.subset <- subset (df.weekStatsTbl, period == p & channel == ch, 
+#                            select = c(period, channel, group, cage, Rate, Number, Avg_Intake, Avg_Duration))
+      #with avg intermeal duration
       df.subset <- subset (df.weekStatsTbl, period == p & channel == ch, 
-                           select = c(period, channel, group, cage, Rate, Number, Avg_Intake, Avg_Duration))
+                           select = c(period, channel, group, cage, Avg_Intermeal_Duration, Rate, Number, Avg_Intake, Avg_Duration))
       
       #The first columns with categorical data do not need to be include in signif calculation
       signWater <- t (sapply (df.subset [c(-1, -2, -3, -4)], 
@@ -48,8 +52,9 @@ pValueCalc <- function (df.weekStatsTbl)
       rAvgDuration <- c (ch, caseGroupLabel, p, "Avg_Duration",as.numeric (signWater ["Avg_Duration","p.value"]))
       rAvgIntake <- c (ch, caseGroupLabel, p, "Avg_Intake", as.numeric (signWater ["Avg_Intake","p.value"]))
       rRate <- c (ch, caseGroupLabel, p, "Rate", as.numeric(signWater ["Rate","p.value"]))
-      
-      sigResults <- rbind (sigResults, rRate, rNmeals, rAvgIntake, rAvgDuration)
+      rAvgIntermeal <- c (ch, caseGroupLabel, p, "Avg_Intermeal_Duration", as.numeric(signWater ["Avg_Intermeal_Duration","p.value"]))
+#       sigResults <- rbind (sigResults, rRate, rNmeals, rAvgIntake, rAvgDuration)
+      sigResults <- rbind (sigResults, rAvgIntermeal, rRate, rNmeals, rAvgIntake, rAvgDuration)
     }
   }
   return (sigResults)
