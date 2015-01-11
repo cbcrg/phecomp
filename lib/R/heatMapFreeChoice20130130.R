@@ -57,10 +57,12 @@ head (df.weekStats [which (df.weekStats$channel == "food_sc" & df.weekStats$grou
 
 #############
 #CASE
-df.meanCase <- with (df.weekStats [which (df.weekStats$group == caseGroupLabel),] , aggregate (cbind (Number, Avg_Duration, Avg_Intake, Rate), list(channel=channel, group=group, period=period), mean))
+#############
+#CASE
+df.meanCase <- with (df.weekStats [which (df.weekStats$group == caseGroupLabel),] , aggregate (cbind (Number, Avg_Duration, Avg_Intake, Rate, Avg_Intermeal_Duration), list(channel=channel, group=group, period=period), mean))
 
 #CTRL
-df.meanControl <- with (df.weekStats [which (df.weekStats$group == controlGroupLabel),] , aggregate (cbind (Number, Avg_Duration, Avg_Intake, Rate), list(channel=channel, group=group, period=period), mean))
+df.meanControl <- with (df.weekStats [which (df.weekStats$group == controlGroupLabel),] , aggregate (cbind (Number, Avg_Duration, Avg_Intake, Rate, Avg_Intermeal_Duration), list(channel=channel, group=group, period=period), mean))
 
 #CASE do eat SC and CD two separated heat maps
 df.meanCase.SC <- df.meanCase [which (df.meanCase$channel == "food_sc" |  df.meanCase$channel == "water"),]
@@ -94,25 +96,29 @@ df.meanCase.CD.m$variable <-  gsub ("_", " ", df.meanCase.CD.m$variable, ignore.
 #I want to insert this order Avg Intake, number, avg duration and rate, so the order is the same as in the other plots
 # ggplot takes inverse order so I have to label this way rate, avg duration, number, avg intake
 
-df.meanCase.SC.m$varOrder [which (df.meanCase.SC.m$variable == "Rate")] <-  "a"
-df.meanCase.SC.m$varOrder [which (df.meanCase.SC.m$variable == "Avg Duration")] <-  "b"
-df.meanCase.SC.m$varOrder [which (df.meanCase.SC.m$variable == "Number")] <-  "c"
-df.meanCase.SC.m$varOrder [which (df.meanCase.SC.m$variable == "Avg Intake")] <-  "d"
+df.meanCase.SC.m$varOrder [which (df.meanCase.SC.m$variable == "Avg Intermeal Duration")] <-  "a"
+df.meanCase.SC.m$varOrder [which (df.meanCase.SC.m$variable == "Rate")] <-  "b"
+df.meanCase.SC.m$varOrder [which (df.meanCase.SC.m$variable == "Avg Duration")] <-  "c"
+df.meanCase.SC.m$varOrder [which (df.meanCase.SC.m$variable == "Number")] <-  "d"
+df.meanCase.SC.m$varOrder [which (df.meanCase.SC.m$variable == "Avg Intake")] <-  "e"
 
-df.meanCase.SC.m$orderOut [which (df.meanCase.SC.m$variable == "Rate")] <-  "1"
-df.meanCase.SC.m$orderOut [which (df.meanCase.SC.m$variable == "Avg Duration")] <-  "2"
-df.meanCase.SC.m$orderOut [which (df.meanCase.SC.m$variable == "Number")] <-  "3"
-df.meanCase.SC.m$orderOut [which (df.meanCase.SC.m$variable == "Avg Intake")] <-  "4"
+df.meanCase.SC.m$orderOut [which (df.meanCase.SC.m$variable == "Avg Intermeal Duration")] <-  "1"
+df.meanCase.SC.m$orderOut [which (df.meanCase.SC.m$variable == "Rate")] <-  "2"
+df.meanCase.SC.m$orderOut [which (df.meanCase.SC.m$variable == "Avg Duration")] <-  "3"
+df.meanCase.SC.m$orderOut [which (df.meanCase.SC.m$variable == "Number")] <-  "4"
+df.meanCase.SC.m$orderOut [which (df.meanCase.SC.m$variable == "Avg Intake")] <-  "5"
 
-df.meanCase.CD.m$varOrder [which (df.meanCase.CD.m$variable == "Rate")] <-  "a"
-df.meanCase.CD.m$varOrder [which (df.meanCase.CD.m$variable == "Avg Duration")] <-  "b"
-df.meanCase.CD.m$varOrder [which (df.meanCase.CD.m$variable == "Number")] <-  "c"
-df.meanCase.CD.m$varOrder [which (df.meanCase.CD.m$variable == "Avg Intake")] <-  "d"
+df.meanCase.CD.m$varOrder [which (df.meanCase.CD.m$variable == "Avg Intermeal Duration")] <-  "a"
+df.meanCase.CD.m$varOrder [which (df.meanCase.CD.m$variable == "Rate")] <-  "b"
+df.meanCase.CD.m$varOrder [which (df.meanCase.CD.m$variable == "Avg Duration")] <-  "c"
+df.meanCase.CD.m$varOrder [which (df.meanCase.CD.m$variable == "Number")] <-  "d"
+df.meanCase.CD.m$varOrder [which (df.meanCase.CD.m$variable == "Avg Intake")] <-  "e"
 
-df.meanCase.CD.m$orderOut [which (df.meanCase.CD.m$variable == "Rate")] <-  "1"
-df.meanCase.CD.m$orderOut [which (df.meanCase.CD.m$variable == "Avg Duration")] <-  "2"
-df.meanCase.CD.m$orderOut [which (df.meanCase.CD.m$variable == "Number")] <-  "3"
-df.meanCase.CD.m$orderOut [which (df.meanCase.CD.m$variable == "Avg Intake")] <-  "4"
+df.meanCase.CD.m$orderOut [which (df.meanCase.CD.m$variable == "Avg Intermeal Duration")] <-  "1"
+df.meanCase.CD.m$orderOut [which (df.meanCase.CD.m$variable == "Rate")] <-  "2"
+df.meanCase.CD.m$orderOut [which (df.meanCase.CD.m$variable == "Avg Duration")] <-  "3"
+df.meanCase.CD.m$orderOut [which (df.meanCase.CD.m$variable == "Number")] <-  "4"
+df.meanCase.CD.m$orderOut [which (df.meanCase.CD.m$variable == "Avg Intake")] <-  "5"
 
 #Ordering
 df.meanCase.SC.m <- df.meanCase.SC.m [with (df.meanCase.SC.m, order (period, channel, orderOut)),]
@@ -125,8 +131,6 @@ df.meanCase.SC.m$variable [which (df.meanCase.SC.m$variable == "Number" & df.mea
 # Changing label Number by Number of Meals and Number of Drinks
 df.meanCase.CD.m$variable [which (df.meanCase.CD.m$variable == "Number" & df.meanCase.CD.m$channel == "food_cd")] <-  "Meal Number"
 df.meanCase.CD.m$variable [which (df.meanCase.CD.m$variable == "Number" & df.meanCase.CD.m$channel == "water")] <-  "Drink Number"
-
-
 
 setwd ("/Users/jespinosa/dropboxTCoffee/Dropbox/jespinosa/2013phecomp2shareFinal/drafts_paper/figures/fig4ANDfigS4Dev")
 source ("/Users/jespinosa/git/phecomp/lib/R/heatMapFunctions.R")
@@ -142,15 +146,17 @@ df.meanCase.CDvsSC.m$foldChange <- foldchange (df.meanCase.CDvsSC.m$value, df.me
 
 #I want to insert this order Avg Intake, number, avg duration and rate, so the order is the same as in the other plots
 # ggplot takes inverse order so I have to label this way rate, avg duration, number, avg intake
-df.meanCase.CDvsSC.m$varOrder [which (df.meanCase.CDvsSC.m$variable == "Rate")] <-  "a"
-df.meanCase.CDvsSC.m$varOrder [which (df.meanCase.CDvsSC.m$variable == "Avg Duration")] <-  "b"
-df.meanCase.CDvsSC.m$varOrder [which (df.meanCase.CDvsSC.m$variable == "Number")] <-  "c"
-df.meanCase.CDvsSC.m$varOrder [which (df.meanCase.CDvsSC.m$variable == "Avg Intake")] <-  "d"
+df.meanCase.CDvsSC.m$varOrder [which (df.meanCase.CDvsSC.m$variable == "Avg Intermeal Duration")] <-  "a"
+df.meanCase.CDvsSC.m$varOrder [which (df.meanCase.CDvsSC.m$variable == "Rate")] <-  "b"
+df.meanCase.CDvsSC.m$varOrder [which (df.meanCase.CDvsSC.m$variable == "Avg Duration")] <-  "c"
+df.meanCase.CDvsSC.m$varOrder [which (df.meanCase.CDvsSC.m$variable == "Number")] <-  "d"
+df.meanCase.CDvsSC.m$varOrder [which (df.meanCase.CDvsSC.m$variable == "Avg Intake")] <-  "e"
 
-df.meanCase.CDvsSC.m$orderOut [which (df.meanCase.CDvsSC.m$variable == "Rate")] <-  "1"
-df.meanCase.CDvsSC.m$orderOut [which (df.meanCase.CDvsSC.m$variable == "Avg Duration")] <-  "2"
-df.meanCase.CDvsSC.m$orderOut [which (df.meanCase.CDvsSC.m$variable == "Number")] <-  "3"
-df.meanCase.CDvsSC.m$orderOut [which (df.meanCase.CDvsSC.m$variable == "Avg Intake")] <-  "4"
+df.meanCase.CDvsSC.m$orderOut [which (df.meanCase.CDvsSC.m$variable == "Avg Intermeal Duration")] <-  "1"
+df.meanCase.CDvsSC.m$orderOut [which (df.meanCase.CDvsSC.m$variable == "Rate")] <-  "2"
+df.meanCase.CDvsSC.m$orderOut [which (df.meanCase.CDvsSC.m$variable == "Avg Duration")] <-  "3"
+df.meanCase.CDvsSC.m$orderOut [which (df.meanCase.CDvsSC.m$variable == "Number")] <-  "4"
+df.meanCase.CDvsSC.m$orderOut [which (df.meanCase.CDvsSC.m$variable == "Avg Intake")] <-  "5"
 
 #Ordering
 df.meanCase.CDvsSC.m <- df.meanCase.CDvsSC.m [with (df.meanCase.CDvsSC.m, order (period, channel, orderOut) ),]
