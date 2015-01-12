@@ -67,6 +67,6 @@ aryMtbFilesAll=( $( ls ${mtbFilesDir}*.mtb ) )
 ## Ary with hab and first two weeks of development without files with animal dead 
 # Window of 300 seconds
 aryMtbFilesHabW1_W2_NoDead=( $( ls ${mtbFilesDir}20130[0-2]*.mtb | grep -v "20130225" | grep "newMice" ) )
-qsub -q $typeQ,$nameQ $timeQ -cwd -o ${mtbLogFolder} -e ${mtbLogFolder} -v aryMtbFiles="${aryMtbFilesHabW1_W2_NoDead[*]}" -v dumpDir="/users/cn/jespinosa/phecomp/processedData/" -v iniLight=6  -v phaseTag="_hab_Dev_NoDeadMouse" -v par2int2browser="value" -v winSize=300 ${bashScDir}mtb2GBNoQsubIn.sh
+qsub -q $typeQ,$nameQ $timeQ -cwd -o ${mtbLogFolder} -e ${mtbLogFolder} -v aryMtbFiles="${aryMtbFilesHabW1_W2_NoDead[*]}" -v dumpDir="/users/cn/jespinosa/phecomp/processedData/" -v iniLight=6  -v phaseTag="_hab_Dev_NoDeadMouse_w300s" -v par2int2browser="value" -v winSize=300 ${bashScDir}mtb2GBNoQsubIn.sh
 
 
