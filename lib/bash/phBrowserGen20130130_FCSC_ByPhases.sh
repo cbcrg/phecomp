@@ -61,12 +61,18 @@ aryMtbFilesAll=( $( ls ${mtbFilesDir}*.mtb ) )
 
 ## Ary with hab and first two weeks of development without files with animal dead 
 # Window 1800s
-# aryMtbFilesHabW1_W2_NoDead=( $( ls ${mtbFilesDir}20130[0-2]*.mtb | grep -v "20130225" | grep "newMice" ) )
-# qsub -q $typeQ,$nameQ $timeQ -cwd -o ${mtbLogFolder} -e ${mtbLogFolder} -v aryMtbFiles="${aryMtbFilesHabW1_W2_NoDead[*]}" -v dumpDir="/users/cn/jespinosa/phecomp/processedData/" -v iniLight=6  -v phaseTag="_hab_Dev_NoDeadMouse" -v par2int2browser="value" -v winSize=1800 ${bashScDir}mtb2GBNoQsubIn.sh
+aryMtbFilesHabW1_W2_NoDead=( $( ls ${mtbFilesDir}20130[0-2]*.mtb | grep -v "20130225" | grep "newMice" ) )
+# qsub -q $typeQ,$nameQ $timeQ -cwd -o ${mtbLogFolder} -e ${mtbLogFolder} -v aryMtbFiles="${aryMtbFilesHabW1_W2_NoDead[*]}" -v dumpDir="/users/cn/jespinosa/phecomp/processedData/" -v iniLight=6  -v phaseTag="_hab_W1_2_NoDeadMouse" -v par2int2browser="value" -v winSize=1800 ${bashScDir}mtb2GBNoQsubIn.sh
 
 ## Ary with hab and first two weeks of development without files with animal dead 
 # Window of 300 seconds
 aryMtbFilesHabW1_W2_NoDead=( $( ls ${mtbFilesDir}20130[0-2]*.mtb | grep -v "20130225" | grep "newMice" ) )
-qsub -q $typeQ,$nameQ $timeQ -cwd -o ${mtbLogFolder} -e ${mtbLogFolder} -v aryMtbFiles="${aryMtbFilesHabW1_W2_NoDead[*]}" -v dumpDir="/users/cn/jespinosa/phecomp/processedData/" -v iniLight=6  -v phaseTag="_hab_Dev_NoDeadMouse_w300s" -v par2int2browser="value" -v winSize=300 ${bashScDir}mtb2GBNoQsubIn.sh
+# qsub -q $typeQ,$nameQ $timeQ -cwd -o ${mtbLogFolder} -e ${mtbLogFolder} -v aryMtbFiles="${aryMtbFilesHabW1_W2_NoDead[*]}" -v dumpDir="/users/cn/jespinosa/phecomp/processedData/" -v iniLight=6  -v phaseTag="_hab_W1_2_NoDeadMouse_w300s" -v par2int2browser="value" -v winSize=300 ${bashScDir}mtb2GBNoQsubIn.sh
+
+## Ary with all files hab + dev without files with animal dead 
+# Window 1800s
+aryMtbFilesHabDev_NoDead=( $( ls ${mtbFilesDir}20130[0-4]*.mtb | grep "newMice" ) )
+qsub -q $typeQ,$nameQ $timeQ -cwd -o ${mtbLogFolder} -e ${mtbLogFolder} -v aryMtbFiles="${aryMtbFilesHabDev_NoDead[*]}" -v dumpDir="/users/cn/jespinosa/phecomp/processedData/" -v iniLight=6  -v phaseTag="_hab_Dev_NoDeadMouse" -v par2int2browser="value" -v winSize=1800 ${bashScDir}mtb2GBNoQsubIn.sh
+
 
 
