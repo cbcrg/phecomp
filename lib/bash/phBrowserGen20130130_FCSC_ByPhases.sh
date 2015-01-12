@@ -16,11 +16,10 @@ bashScDir=/users/cn/jespinosa/phecomp/lib/bash/
 source ${bashCommonDir}generalFunctions.sh
 
 # Queue variables
-typeQ="short"
-nameQ="cn-el6"
+nameQ="short-sl65"
 # time format HH:MM:SS
 timeQ="-l h_rt=04:00:00"
-amount_of_memoryG=8
+amount_of_memoryG=16
 
 ## Variables
 scriptName=$(basename "$0")
