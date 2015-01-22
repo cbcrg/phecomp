@@ -98,7 +98,8 @@ df.meanCase.m$variable [which (df.meanCase.m$variable == "Number" & df.meanCase.
 
 
 #Filtering habituation phase
-df.meanCase.m.Dev <- df.meanCase.m [df.meanCase.m$period != 1 & df.meanCase.m$period < 9,]
+# df.meanCase.m.Dev <- df.meanCase.m [df.meanCase.m$period != 1 & df.meanCase.m$period < 9,]
+df.meanCase.m.Dev <- df.meanCase.m [df.meanCase.m$period != 1 & df.meanCase.m$period < 10,]
 df.meanCase.m.Dev$period
 tail(df.meanCase.m.Dev)
 
@@ -106,7 +107,7 @@ tail(df.meanCase.m.Dev)
 setwd("/Users/jespinosa/dropboxTCoffee/Dropbox/jespinosa/2013phecomp2shareFinal/drafts_paper/figures/fig3ANDfigS1Dev/20150109_includingInterMealInterv")
 heatMapPlotter (df.meanCase.m, main="Fold Change Force diet vs Control",  weekNotation=T)
 
-heatMapPlotter (df.meanCase.m.Dev, main="Forced-Diet High Fat\n",  weekNotation="N", legPos="right",
+heatMapPlotter (df.meanCase.m.Dev, main="High-Fat Diet\n",  weekNotation="N", legPos="right",
                 xlab="\nDevelopment Phase (weeks)", ylab="Eating Behavior                          Drinking Behavior\n")
 
 ###### HABITUATION PHASE
@@ -114,7 +115,7 @@ df.meanCase.m.habPhase <- df.meanCase.m [df.meanCase.m$period == 1,]
 
 #widthCol is used to specify for each column the percentage of the total width used
 #in this case only one column (habituation phase)
-widthCol <- rep (0.1,length (unique (df.meanCase.m.habPhase$week)))
+widthCol <- rep (0.09,length (unique (df.meanCase.m.habPhase$week)))
 heatMapPlotterHab (df.meanCase.m.habPhase, main="\n",  weekNotation="N", legPos="none",
                 xlab="\nHabituation Phase", ylab="Eating Behavior                          Drinking Behavior\n", widthCol=widthCol)
 
@@ -159,7 +160,7 @@ for (i in c (1: length (df.sigResults [,1])))
 
 #Filtering habituation phase
 df.sigResults.Dev <- df.sigResults [df.sigResults$period != 1 & df.sigResults$period < 9, ]
-heatMapPlotter (df.sigResults.Dev, main="Forced-Diet High Fat\n",  weekNotation="N", legPos="right", mode="pvalues", xlab="\nDevelopment Phase (weeks)", ylab="Food                                                  Water\n")
+heatMapPlotter (df.sigResults.Dev, main="High-Fat diet\n",  weekNotation="N", legPos="right", mode="pvalues", xlab="\nDevelopment Phase (weeks)", ylab="Food                                                  Water\n")
 # heatMapPlotter (df.sigResults4devWeeks, main="Forced-Diet High Fat\n",  weekNotation="N", legPos="right", mode="pvalues", xlab="\nDevelopment week", ylab="Food                                                  Water\n")
 setwd ("/Users/jespinosa/dropboxTCoffee/Dropbox/jespinosa/2013phecomp2shareFinal/drafts_paper/figures/fig4ANDfigS4Dev")
 

@@ -189,6 +189,8 @@ heatMapPlotterHab (df.sigResults.Hab, main="\n",  weekNotation="N", legPos="none
 #DEVELOPMENT
 # weekStatsData <- "/phecomp/20121128_heatMapPhecomp/tblFiles/20130207to0408_FCSC_CRG_DevPhFilter_TwoMinFilt.tbl"
 weekStatsData <- "/phecomp/20121128_heatMapPhecomp/tblFiles/20130207to0408_FCSC_CRG_DevPhFilter_NotTwoMinFilt.tbl"
+# Without animal 1 and 9
+weekStatsData <- "/phecomp/20121128_heatMapPhecomp/tblFiles/20130207to0408_FCSC_CRG_DevPhFilter_NotTwoMinFilt_without_1_9.tbl"
 df.weekStats <- read.table (paste (home, weekStatsData, sep = ""), sep="\t", dec=".", header=T, stringsAsFactors=F)
 
 #Hard code
