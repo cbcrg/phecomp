@@ -184,6 +184,7 @@ pd <- position_dodge(.1)
 colors <- RColorBrewer::brewer.pal (8, "Paired")[3:8]
 meanAll.byWeek
 
+
 # gAllByWeek <- ggplot (meanAll.byWeek10Weeks, aes(x = week, y = mean, colour = groupPhase)) +
 gAllByWeek <- ggplot (meanAll.byWeek10Weeks, aes(x = week-1, y = mean, colour = groupPhase)) + 
   #   scale_x_continuous (breaks=fractHour) + 
@@ -195,12 +196,14 @@ gAllByWeek <- ggplot (meanAll.byWeek10Weeks, aes(x = week-1, y = mean, colour = 
   #   geom_point (position=pd) +
   geom_line (size=1)  + 
   geom_point () +
-  scale_y_continuous (limits = c(0, 0.22)) 
+  #scale like in HF 0, 0.6
+  #   scale_y_continuous (limits = c(0, 0.22)) 
+  scale_y_continuous (limits = c(0, 0.6)) 
 
 gAllByWeek <- gAllByWeek  + scale_colour_manual (#name="conditions",
   name="",
-  values = colors) + 
-  theme (legend.key.height = unit (1, "line")) #distance between lines in legend
+  values = colors, labels=c("Control day", "Control Night", "CM day\n(CM channel)","CM Night\n(CM channel)", "CM day\n(SC channel)","CM Night\n(SC channel)")) + 
+  theme (legend.key.height = unit (2, "line")) #distance between lines in legend
 gAllByWeek
 
 ## Ratio between day and night
@@ -241,7 +244,9 @@ gFCByWeek <- ggplot (meanFC.byWeek8Weeks, aes(x = week, y = mean, colour = group
   # geom_point (position=pd) +
   geom_line (size=1)  + 
   geom_point () +
-  scale_y_continuous (limits = c(0, 0.22)) 
+  #scale like in HF 0, 0.6
+#   scale_y_continuous (limits = c(0, 0.22)) 
+  scale_y_continuous (limits = c(0, 0.6)) 
 
 gFCByWeek <- gFCByWeek + scale_colour_manual (#name="conditions",
   name="",
