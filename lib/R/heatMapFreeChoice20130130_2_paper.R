@@ -540,7 +540,7 @@ df.sigResults.CD.Dev <- df.sigResults.CD [df.sigResults.CD$period > 1 & df.sigRe
 
 # heatMapPlotter (df.sigResults.CD.Dev, main="Free choice Diet CD vs Control SC",   mode="pvalues")
 # heatMapPlotter (df.sigResults.CD, main="Free-choice CM\n",   weekNotation = "N", mode="pvalues", xlab="\nDevelopment Phase (weeks)",ylab="Food                                                  Water\n")
-heatMapPlotter (df.sigResults.CD.Dev, main="Free-choice CM\n",   weekNotation = "N", legPos="right", mode="pvalues", xlab="\nDevelopment phase (weeks)", ylab="Eating Behavior                          Drinking Behavior\n")
+heatMapPlotter (df.sigResults.CD.Dev, main="CM vs SC Channel (Significance Level)\n",   weekNotation = "N", legPos="right", mode="pvalues", xlab="\nDevelopment phase (weeks)", ylab="Eating Behavior                          Drinking Behavior\n")
 
 #####################
 #####################
