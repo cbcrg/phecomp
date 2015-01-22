@@ -6,6 +6,7 @@
 ### A script to read genome browser files in order to     ###
 ### statistically compare the night periods of the control###
 ### with respect to the case                              ###
+### Cage 6 out Problems in signal, deleted from folder    ###
 #############################################################
 
 ##Loading libraries
@@ -22,10 +23,14 @@ home <- Sys.getenv("HOME")
 
 ## Functions
 ## Functions for GB files reading
-source ("/Users/jespinosa/phecomp/lib/R/f_readGBFiles.R")
-source ("/Users/jespinosa/phecomp/lib/R/plotParamPublication.R")
+# source ("/Users/jespinosa/phecomp/lib/R/f_readGBFiles.R")
+source ("/Users/jespinosa/git/phecomp/lib/R/f_readGBFiles.R")
+# source ("/Users/jespinosa/phecomp/lib/R/plotParamPublication.R")
+source ("/Users/jespinosa/git/phecomp/lib/R/plotParamPublication.R")
 #Path to folder with intervals files for each cage
 path2Tbls <- paste (home, "/phecomp/processedData/201205_FDF_CRG/GBfilesSync8AM/20140310_habDev/combCh/", sep = "")
+
+colors <- RColorBrewer::brewer.pal (8, "Paired")[3:6]
 
 ### HF
 # Animal 6 tbl file has been eliminated from the folder
@@ -60,14 +65,14 @@ tblAll$group <- as.factor (tblAll$group)
 ## BOXPLOT SHOWING THE AVERAGE INTAKE OF 30 MINUTES PERIOD ALONG THE WEEKS AND SEPARATED BY DAY AND NIGHT
 boxPlots <- ggplot(tblAll, aes (week, value, fill = group)) + 
             geom_boxplot() +          
-#           scale_fill_manual(name = "Group", values = c("green", "brown"), labels = c ("Control", "Free Choice")) +
-            scale_fill_manual (name = "", values = colors [c(2,4)], labels = c ("Control", "Free Choice")) +
+#           scale_fill_manual(name = "Group", values = c("green", "brown"), labels = c ("Control", "High-fat")) +
+            scale_fill_manual (name = "", values = colors [c(2,4)], labels = c ("Control", "High-fat")) +
             #scale_fill_manual (name = "Group", values = c ("green", "brown")) +
-            opts (title = "Average intake during 30 min periods\n") +
+            labs (title = "Average intake during 30 min periods\n") +
             scale_y_continuous (limits=c(0, 1)) 
           
 #legend
-boxPlots + opts (legend.key.height = unit (1,"line")) + facet_wrap (~phase) 
+boxPlots + theme (legend.key.height = unit (1,"line")) + facet_wrap (~phase) 
 
 head (tblAll,50)
 
@@ -75,14 +80,14 @@ head (tblAll,50)
 tblAll$indexPh <- as.factor (tblAll$indexPh)
 boxPlots <- ggplot (tblAll, aes (indexPh, value, fill = group)) + 
                     geom_boxplot() +
-                    scale_fill_manual(name = "", values = colors [c(2,4)], labels = c ("Control", "Free Choice")) +
-                    opts (title = "Average intake during 30 min periods\n")+  
+                    scale_fill_manual(name = "", values = colors [c(2,4)], labels = c ("Control", "High-fat")) +
+                    labs (title = "Average intake during 30 min periods\n")+  
                     labs (x = "\nDay phases", y = "intake (g)\n", fill = NULL) +
                     scale_y_continuous(limits=c(0, 1)) +
                     facet_wrap (~phase)
 
 #legend
-boxPlots + opts (legend.key.height = unit (1,"line")) + 
+boxPlots + theme (legend.key.height = unit (1,"line")) + 
            scale_x_discrete(labels = tblAll$timeDay)
 
 # Mean Calculation by different grouping factors
@@ -126,15 +131,20 @@ meanAll.byWeek$ymax <- meanAll.byWeek$mean + meanAll.byWeek$std.error
 meanAll.byWeek$ymin <- meanAll.byWeek$mean - meanAll.byWeek$std.error
 
 # I filter only 9 weeks of the experiment, hab + 7 weeks as in the heatmap
-meanAll.byWeek8Weeks <- meanAll.byWeek [meanAll.byWeek$week < 9 , ]
+# meanAll.byWeek8Weeks <- meanAll.byWeek [meanAll.byWeek$week < 9 , ]
+
+# In the new version no hab and 8 weeks
+meanAll.byWeek8Weeks <- meanAll.byWeek [meanAll.byWeek$week < 10 & meanAll.byWeek$week != 1 , ]
+
 meanAll.byWeek8Weeks$week <- meanAll.byWeek8Weeks$week -1 
+
 pd <- position_dodge(.1)
 colors <- RColorBrewer::brewer.pal (8, "Paired")[3:6]
 meanAll.byWeek
 
 gAllByWeek <- ggplot (meanAll.byWeek8Weeks, aes(x = week, y = mean, colour = groupPhase)) + 
   #   scale_x_continuous (breaks=fractHour) + 
-                      opts (title = "Average intake during\n30 min periods\n") +  
+                      labs (title = "Average intake during\n30 min periods\n") +  
                       labs (x = "\nDevelopment phase (weeks)", y = "g/30 min\n", fill = NULL) + 
                       geom_errorbar (aes (ymin=ymin, ymax=ymax), colour = "black", width=.1) +
                       #   geom_line (position=pd, size=1)  + 
@@ -142,12 +152,13 @@ gAllByWeek <- ggplot (meanAll.byWeek8Weeks, aes(x = week, y = mean, colour = gro
                       geom_line (size=1)  + 
                       geom_point () +
                       scale_y_continuous (limits = c(0, 0.6005)) +
-                      scale_x_continuous (breaks = c(0:7)) 
+#                       scale_x_continuous (breaks = c(0:7)) 
+                      scale_x_continuous (breaks = c(1:9)) 
 
 gAllByWeek <- gAllByWeek  + scale_colour_manual (#name="conditions",
                                    name="",
                                    values = colors) + 
-                                   opts (legend.key.height = unit (1, "line")) #distance between lines in legend
+                                   theme (legend.key.height = unit (1, "line")) #distance between lines in legend
 gAllByWeek
 
 ## Ratio between day and night
