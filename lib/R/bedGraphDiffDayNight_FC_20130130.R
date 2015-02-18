@@ -15,7 +15,7 @@ library (plyr)
 #install.packages("reshape")
 library (reshape) #melt
 library (gtools) #foldchange
-library (plotrix) 
+library (plotrix) #std.error
 library (grid) #unit function
 
 ## In this case I treat the channels chocolate and SC separated
