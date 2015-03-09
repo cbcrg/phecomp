@@ -142,10 +142,10 @@ df.miceGroup$group [c(2, 4, 6, 8, 10, 12, 14, 16)] <- caseGroupLabel
 # Joining labels
 df.weekStats <- merge (df.weekStats, df.miceGroup, by.x= "cage", by.y = "cage")
 head (df.weekStats)
-tail (df.weekStats,100)
+tail (df.weekStats)
 df.weekStats$channel
 
-### DEVELOPMENT
+### HABITUATION
 #CASE ts65dn
 df.meanCase <- with (df.weekStats [which (df.weekStats$group == caseGroupLabel),] , aggregate (cbind (Number, Avg_Duration, Avg_Intake, Rate, Avg_Intermeal_Duration), list(channel=channel, group=group, period=period), mean))
 
@@ -192,17 +192,11 @@ df.meanCase.m <- df.meanCase.m [with (df.meanCase.m, order (period, channel, ord
 
 # Changing label Number by Number of Meals and Number of Drinks
 # To plot significance this must be comment because meal number and drink number won't be recognized #Tag_sig
-# df.meanCase.m$variable [which (df.meanCase.m$variable == "Number" & df.meanCase.m$channel == "food_fat")] <-  "Meal Number"
+# df.meanCase.m$variable [which (df.meanCase.m$variable == "Number" & df.meanCase.m$channel == "food_sc")] <-  "Meal Number"
 # df.meanCase.m$variable [which (df.meanCase.m$variable == "Number" & df.meanCase.m$channel == "water")] <-  "Drink Number"
 
-
-
-
-
-
-
-
-# df.meanCase.m.Hab <- df.meanCase.m [df.meanCase.m$period == 1,]
+# I take last habituation week for the plot (they are quite similar, there is only a small intensification of the signal)
+df.meanCase.m.Hab <- df.meanCase.m [df.meanCase.m$period == 3,]
 
 #widthCol is used to specify for each column the percentage of the total width used
 #in this case only one column (habituation phase)
@@ -214,7 +208,6 @@ heatMapPlotterHab (df.meanCase.m.Hab, main="\n",  weekNotation="N", legPos="none
 
 ggsave("20140318_ts65_HF_heatMap_hab.pdf", width=10, height=8)
 # ggsave("20140318_ts65_HF_heatMap_dev.png", width=10, height=8, dpi=100)
-
 
 #####################################
 ### Significance
