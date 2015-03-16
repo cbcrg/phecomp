@@ -139,6 +139,7 @@ load_tbl_measure <- function (pattern="30min_sum") {
 # tag = "sum"
 # tag = "mean"
 # tag = "cov"
+# tag = "count"
 
 pattern = paste("30min_", tag, sep="")
 #pattern = "30min_cov" 
@@ -169,10 +170,10 @@ tbl_24h_less <- rbind(tbl_24h_less, c("chr1", 1530455, 1532255, NA, 1000, "+", 1
 
 tbl_24h_less$V9 <- as.numeric(tbl_24h_less$V9)
 tbl_24h_less$index <- as.numeric(tbl_24h_less$index)
-class(tbl_24h_less[tbl_24h_less$id==18 & tbl_24h_less$index==2,"V9"])
+
 tbl_stat <- c()
 tbl_stat <- rbind (tbl_30min, tbl_24h, tbl_24h_less)
-head (tbl_stat)
+# head (tbl_stat)
 
 #Calculate mean and stderror of the mean
 tbl_stat_mean <-with (tbl_stat, aggregate (cbind (V9), list (group=group, index=index), FUN=function (x) c (mean=mean(x), std.error=std.error(x))))
@@ -196,22 +197,26 @@ var_labels<-switch(tag,
            },
            mean={
            
-             c("Mean intake ", "mean_intake")    
+             c("Mean intake ", "mean_intake", "(g)\n")    
            },
            cov={
            
-             c("Coverage ", "coverage")
+             c("Coverage ", "coverage", "(g)\n")
+           },
+           count={
+             
+             c("Number of meals ", "count", "\n")
            },
            {
-             c("Not defined ", "not_defined")
+             c("Not defined ", "not_defined", "NA")
            }
           )
 
 title_beg <- var_labels[1]
 file_name <- var_labels[2]
-
+unit <- var_labels[3]
 title_plot = paste (title_beg[1], "during first 30 min after clean,\n24h before and 24h after\n", sep="")
-y_lab = paste (title_beg, "(g)\n")
+y_lab = paste (title_beg, unit)
 
 # Order for plotting
 tbl_stat_mean$group2 <- factor(tbl_stat_mean$group, levels=c(paste("Ctrl24h_less_", tag, sep=""),paste("Ctrl24h_", tag, sep=""),
