@@ -52,7 +52,7 @@ parseArgs <- function(x)
 argsDF <- as.data.frame (do.call("rbind", parseArgs(args)))
 argsL <- as.list (as.character(argsDF$V2))
 names (argsL) <- argsDF$V1
-print (argsL)
+# print (argsL)
 
 # tag is mandatory
 {
@@ -65,8 +65,6 @@ print (argsL)
     tag <- argsL$tag
   }
 }
-
-print (tag)
 
 {
   if (is.null (argsL$path2files)) 
@@ -98,7 +96,8 @@ source ("/Users/jespinosa/phecomp/lib/R/plotParamPublication.R")
 # setwd("/Users/jespinosa/phecomp/20140807_pergola/bedtools_ex/starting_regions_file_vs_24h")
 
 load_tbl_measure <- function (pattern="30min_sum") {
-  print(files <- list.files(pattern=paste(pattern, ".bed$", sep="")))
+  #print(files <- list.files(pattern=paste(pattern, ".bed$", sep="")))
+  files <- list.files(pattern=paste(pattern, ".bed$", sep=""))
   group <- c()
   HF_lab <- paste ("HF", pattern,  sep="")
   ctrl_lab <- paste ("Ctrl", pattern,  sep="")
@@ -152,7 +151,7 @@ pattern = paste("24h_", tag, sep="")
 tbl_24h <- load_tbl_measure (pattern)
 
 # In the last post 24 hours guy 18 is an outliers 
-tbl_24h[tbl_24h$index==9 & tbl_24h$group==paste("HF24h_", tag, sep=""), ]
+# tbl_24h[tbl_24h$index==9 & tbl_24h$group==paste("HF24h_", tag, sep=""), ]
 tbl_24h <- tbl_24h [!(tbl_24h$index==9 & tbl_24h$group=="HF24h_mean" & tbl_24h$id == "18"),]
 
 pattern = paste("24h_less_", tag, sep="")
@@ -161,7 +160,7 @@ tbl_24h_less <- load_tbl_measure (pattern)
 
 # First period can not be calculated because there is no 24 hours before frist file,
 # thus I have to add +1 to the index
-tbl_24h_less$index <- tbl_24h_less$index+1
+tbl_24h_less$index <- tbl_24h_less$index + 1
 
 # I include a fake values for 24hours before in the first file, otherwise only 4 bars are plot and the width of the bars
 # differ from the rest
