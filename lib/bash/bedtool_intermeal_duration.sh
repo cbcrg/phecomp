@@ -29,14 +29,14 @@ do
 	filename=$(basename "$track")
 	filename="${filename%.*}"
 	
-	bedtools complement -i ${track} -g ${path2files}all_mice.chromsizes | awk '{OFS="\t"; print $1,$2,$3,$3-$2}' > ${filename}.compl
-	echo -e "Track is ${track}"
-	awk '{OFS="\t"; print $1,$2,$3}' ${filename}.compl > ${filename}.compl.bed
+	bedtools complement -i ${track} -g ${path2files}all_mice.chromsizes | awk '{OFS="\t"; print $1,$2,$3,$3-$2}' > ${filename}_compl.bedGraph
+	echo -e "Track is ${filename}_compl.bedGraph"
+	awk '{OFS="\t"; print $1,$2,$3,"\"\"",$4,"+",$2,$3,"178,254,178"}' ${filename}_compl.bedGraph > ${filename}_compl.bed
 	
 	# Get the intermeal intervals of habituation
-	bedtools intersect -a ${track} -b ${path2files}exp_phases_hab.bed > ${filename}"_compl_hab.bed"
+	bedtools intersect -a ${filename}_compl.bed -b ${path2files}exp_phases_hab.bed > ${filename}"_compl_hab.bed"
 	
 	# Get the intermeal intervals of development
-	bedtools intersect -a ${track} -b ${path2files}exp_phases_dev.bed > ${filename}"_compl_dev.bed"
+	bedtools intersect -a ${filename}_compl.bed -b ${path2files}exp_phases_dev.bed > ${filename}"_compl_dev.bed"
 	
 done
