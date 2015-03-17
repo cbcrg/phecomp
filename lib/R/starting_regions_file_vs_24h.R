@@ -207,6 +207,10 @@ var_labels<-switch(tag,
              
              c("Number of meals ", "count", "\n")
            },
+           max={
+             
+             c("Biggest meal ", "max", "(g)\n")
+           },
            {
              c("Not defined ", "not_defined", "NA")
            }

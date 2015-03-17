@@ -60,8 +60,11 @@ createBedFilesAnalyze () {
 	# Get the summatory of the overlaping regions
 	bedtools map -a ${track2map} -b ${track} -c 5 -o sum -null 0 > ${filename}${tag}"_sum.bed"
 	
-	# Get the summatory of the overlaping regions
+	# Get the counts of the overlaping regions
 	bedtools map -a ${track2map} -b ${track} -c 5 -o count -null 0 > ${filename}${tag}"_count.bed"
+	
+	# Get the maximum of the overlaping regions
+	bedtools map -a ${track2map} -b ${track} -c 5 -o max -null 0 > ${filename}${tag}"_max.bed"
 }
 
 for track in ${path2files}tr*.bed
@@ -75,5 +78,6 @@ done
 Rscript ${RScDir}starting_regions_file_vs_24h.R --tag="mean" --path2files="/Users/jespinosa/phecomp/20140807_pergola/bedtools_ex/starting_regions_file_vs_24h/" --path2plot="/Users/jespinosa/phecomp/20140807_pergola/bedtools_ex/starting_regions_file_vs_24h/"
 Rscript ${RScDir}starting_regions_file_vs_24h.R --tag="sum" --path2files="/Users/jespinosa/phecomp/20140807_pergola/bedtools_ex/starting_regions_file_vs_24h/" --path2plot="/Users/jespinosa/phecomp/20140807_pergola/bedtools_ex/starting_regions_file_vs_24h/"
 Rscript ${RScDir}starting_regions_file_vs_24h.R --tag="count" --path2files="/Users/jespinosa/phecomp/20140807_pergola/bedtools_ex/starting_regions_file_vs_24h/" --path2plot="/Users/jespinosa/phecomp/20140807_pergola/bedtools_ex/starting_regions_file_vs_24h/"
+Rscript ${RScDir}starting_regions_file_vs_24h.R --tag="max" --path2files="/Users/jespinosa/phecomp/20140807_pergola/bedtools_ex/starting_regions_file_vs_24h/" --path2plot="/Users/jespinosa/phecomp/20140807_pergola/bedtools_ex/starting_regions_file_vs_24h/"
 
 exit 0
