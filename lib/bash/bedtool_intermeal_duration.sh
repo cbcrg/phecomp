@@ -41,10 +41,13 @@ do
 	
 	# Separate habituation by light and dark phases
 	bedtools intersect -a ${filename}"_compl_hab.bed" -b ${path2files}phases_dark.bed > ${filename}"_compl_hab_dark.bed"
+	# bedtools map -a ${path2files}phases_dark.bed -b ${filename}"_compl_hab.bed" -c 5 -o mean -null 0 > ${filename}"_compl_hab_dark_sum.bed"
 	bedtools intersect -a ${filename}"_compl_hab.bed" -b ${path2files}phases_light.bed > ${filename}"_compl_hab_light.bed"
+	# bedtools map -a ${path2files}phases_light.bed -b ${filename}"_compl_hab.bed" -c 5 -o mean -null 0 > ${filename}"_compl_hab_light_sum.bed"
 	
 	# Separate development by light and dark phases
 	bedtools intersect -a ${filename}"_compl_dev.bed" -b ${path2files}phases_dark.bed > ${filename}"_compl_dev_dark.bed"
+	# bedtools map -a ${path2files}phases_dark.bed -b ${filename}"_compl_dev.bed" -c 5 -o mean -null 0 > ${filename}"_compl_dev_dark_sum.bed"
 	bedtools intersect -a ${filename}"_compl_dev.bed" -b ${path2files}phases_light.bed > ${filename}"_compl_dev_light.bed"
-	
+	# bedtools map -a ${path2files}phases_light.bed -b ${filename}"_compl_dev.bed" -c 5 -o mean -null 0 > ${filename}"_compl_dev_light_sum.bed"
 done
