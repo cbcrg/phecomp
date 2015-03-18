@@ -9,11 +9,12 @@ base_size <- 12
 
 dailyInt_theme <- theme_update (
 #axis.text.x = element_text (angle = 90, hjust = 1, size = base_size * 1.5),
-  axis.text.x = element_text (hjust = 1, size = base_size * 1.5),
+  #axis.text.x = element_text (hjust = 1, size = base_size * 1.5),
+  axis.text.x = element_text (size = base_size * 1.5),
   axis.text.y = element_text (size = base_size * 1.5),
   axis.title.x = element_text (size=base_size * 1.5, face="bold"),
   axis.title.y = element_text (size=base_size * 1.5, angle = 90, face="bold"),
-  strip.text.x = element_text (size=base_size * 1.3, face="bold"),#facet titles size 
+  #strip.text.x = element_text (size=base_size * 1.3, face="bold"),#facet titles size 
   strip.text.y = element_text (size=base_size * 1.3, face="bold", angle=90),
   plot.title = element_text (size=base_size * 1.5, face="bold"), 
   legend.text = element_text (size=base_size * 1.2),             
