@@ -91,7 +91,7 @@ names (argsL) <- argsDF$V1
 
 
 # Loading functions:
-source ("/Users/jespinosa/phecomp/lib/R/plotParamPublication.R")
+source ("/Users/jespinosa/git/phecomp/lib/R/plotParamPublication.R")
 
 # setwd("/Users/jespinosa/phecomp/20140807_pergola/bedtools_ex/starting_regions_file_vs_24h")
 
