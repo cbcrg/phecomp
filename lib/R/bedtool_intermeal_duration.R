@@ -32,6 +32,11 @@ load_tbl_comp <- function (pattern="30min_sum") {
   pattern2grep <- paste ("_dt_food_fat_food_sc_", pattern, "\\.bed",sep="")
   group <- sapply (files, y <- function (x) {if (grepl(pattern2grep, x)) return (HF_lab) else {return (ctrl_lab)}})
   
+  group_mice <- c()
+  HF_lab <- "HF"
+  ctrl_lab <- "Ctrl"
+  group_mice <- sapply (files, y <- function (x) {if (grepl(pattern2grep, x)) return (HF_lab) else {return (ctrl_lab)}})
+  
   labs<-gsub("tr_", "", files, perl=TRUE)
   labs<-gsub(paste ("_dt_food_sc_", pattern,  "\\.bed", sep=""), "", labs, perl=TRUE)
   labs<-gsub(paste ("_dt_food_fat_food_sc_", pattern,  "\\.bed", sep=""), "", labs, perl=TRUE)
@@ -46,13 +51,15 @@ load_tbl_comp <- function (pattern="30min_sum") {
   
   comp_all <- comp[[1]]
   comp_all$id <- labs[1]
-  comp_all$group <- group[1]  
+  comp_all$group <- group[1]
+  comp_all$group_mice <- group_mice[1]
   comp_all$index <- c(1:length(comp_all[,1]))
   
   for (i in 2:length(comp)) {
     comp_gr <- comp[[i]] 
     comp_gr$id <- labs[i]
     comp_gr$group <- group[i]
+    comp_gr$group_mice <- group_mice[i]
     comp_gr$index <- c(1:length(comp[[i]][,1]))
     comp_all<-rbind (comp_all, comp_gr)    
   }
@@ -85,9 +92,9 @@ tbl_dev_light$gr_dayphase <- gsub("compl_dev_","",tbl_dev_light$group)
 
 tbl_hab_dev <- rbind (tbl_hab_dark, tbl_hab_light, tbl_dev_light, tbl_dev_dark)
 
-head (tbl_hab_dev)
+head (tbl_hab_dev,100)
 
-#Calculate mean and stderror of the mean
+# Calculate mean and stderror of the mean
 tbl_stat_mean <-with (tbl_hab_dev, aggregate (cbind (V5), list (group=group, gr_dayphase=gr_dayphase, phase=phase), FUN=function (x) c (mean=mean(x), std.error=std.error(x))))
 tbl_stat_mean
 
@@ -162,12 +169,36 @@ ggplot(data=tbl_stat_mean, aes(x=phase, y=mean, fill=gr_dayphase)) +
 
 ggsave(file=paste(file_name, "_error_bar", ".pdf", sep=""), width=10, height=8)
 
+# Checking mean of the group of mice
+tbl_stat_gr_mean <-with (tbl_hab_dev, aggregate (cbind (V5), list (group_mice=group_mice), FUN=function (x) c (mean=mean(x), std.error=std.error(x))))
+tbl_stat_gr_mean
+
+tbl_stat_gr_mean$mean <- tbl_stat_gr_mean$V5 [,1]
+tbl_stat_gr_mean$std.error <- tbl_stat_gr_mean$V5 [,2]
+
+# Prettier colors:
+# Reordering colors for showing dark periods as dark colors
+cols <- RColorBrewer::brewer.pal (8, "Paired")[3:8]
+cols <- c(cols[2],cols[4])
+cols
+
+ggplot(data=tbl_stat_gr_mean, aes(x=group_mice, y=mean, fill=group_mice)) + 
+  geom_bar(stat="identity", position=position_dodge()) +
+  geom_errorbar(aes(ymin=mean-std.error, ymax=mean+std.error),
+                width=.2,                    # Width of the error bars
+                position=position_dodge(.9)) +
+  scale_y_continuous(limits=c(0,1650))+
+  labs (title = "Intermeal Duration\n") +  
+  labs (x = "\nGroup (s)\n", y="Intermeal Duration (s)\n") +
+  scale_fill_manual(values=cols) +
+  theme(legend.title=element_blank())
 
 
 
 
 
 
+setwd("/Users/jespinosa/phecomp/20140807_pergola/bedtools_ex/intermeal_duration/data")
 
 print(files_ctrl <- list.files(pattern="Ctrl.compl$"))
 
@@ -196,7 +227,7 @@ for (i in 1:length(files_HF)) {
 intermeal_HF$group <- "HF"
 
 intermeal <- rbind(intermeal_ctrl, intermeal_HF)
-head (intermeal)
+tail (intermeal[intermeal$id==11,],100)
 
 
 # with (intermeal , aggregate (cbind (V4), list (id=id, group=group), FUN=function (x) c (mean=mean(x))))

@@ -39,11 +39,11 @@ do
 	# Get the intermeal intervals of development
 	bedtools intersect -a ${filename}_compl.bed -b ${path2files}exp_phases_dev.bed > ${filename}"_compl_dev.bed"
 	
-	# Separate now them by light and dark phases
+	# Separate habituation by light and dark phases
 	bedtools intersect -a ${filename}"_compl_hab.bed" -b ${path2files}phases_dark.bed > ${filename}"_compl_hab_dark.bed"
 	bedtools intersect -a ${filename}"_compl_hab.bed" -b ${path2files}phases_light.bed > ${filename}"_compl_hab_light.bed"
 	
-	# Separate now them by light and dark phases
+	# Separate development by light and dark phases
 	bedtools intersect -a ${filename}"_compl_dev.bed" -b ${path2files}phases_dark.bed > ${filename}"_compl_dev_dark.bed"
 	bedtools intersect -a ${filename}"_compl_dev.bed" -b ${path2files}phases_light.bed > ${filename}"_compl_dev_light.bed"
 	
