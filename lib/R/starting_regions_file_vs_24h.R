@@ -192,7 +192,7 @@ cols <- c(col_greenish[c(4,7,10)], col_redish[c(4,7,10)])
 var_labels<-switch(tag, 
            sum={
                  
-            c("Accumulated intake ","accu_intake")
+            c("Accumulated intake ","accu_intake", "(g)\n")
            },
            mean={
            
