@@ -1,3 +1,5 @@
+#!/usr/bin/env Rscript
+
 ############################################################
 ### Jose A Espinosa. CSN/CB-CRG Group. March 2015        ###
 ############################################################
@@ -8,7 +10,7 @@
 ### Coverage                                             ###
 ############################################################
 ### Calling this script in iOS:                          ###
-### Rscript starting_regions_file_vs_24h.R               ###
+### Rscript ./bedtool_intermeal_duration.R               ###
 ############################################################
 
 ##Loading libraries
@@ -152,6 +154,9 @@ tbl_stat_mean$group2 <- factor(tbl_stat_mean$group, levels=c("Ctrlcompl_hab_ligh
                                                              "Ctrlcompl_dev_light", "HFcompl_dev_light", 
                                                              "Ctrlcompl_dev_dark", "HFcompl_dev_dark"))
 
+tbl_stat_mean$gr_dayphase <- factor(tbl_stat_mean$gr_dayphase, levels=c("Ctrllight", "HFlight", 
+                                                                  "Ctrldark", "HFdark"))
+                                                                  
 tbl_stat_mean$phase <- factor(tbl_stat_mean$phase, levels=c("Habituation", "Development"))
 
 ggplot(data=tbl_stat_mean, aes(x=phase, y=mean, fill=gr_dayphase)) + 
@@ -189,15 +194,16 @@ ggplot(data=tbl_stat_gr_mean, aes(x=group_mice, y=mean, fill=group_mice)) +
                 position=position_dodge(.9)) +
   scale_y_continuous(limits=c(0,1650))+
   labs (title = "Intermeal Duration\n") +  
-  labs (x = "\nGroup (s)\n", y="Intermeal Duration (s)\n") +
+  labs (x = "\nGroup\n", y="Intermeal Duration (s)\n") +
   scale_fill_manual(values=cols) +
   theme(legend.title=element_blank())
 
+ggsave(file=paste(file_name, "2groups_error_bar", ".pdf", sep=""), width=10, height=8)
 
+stop("Execution finished correctly")
 
-
-
-
+############################
+# Original developing of the script
 setwd("/Users/jespinosa/phecomp/20140807_pergola/bedtools_ex/intermeal_duration/data")
 
 print(files_ctrl <- list.files(pattern="Ctrl.compl$"))
