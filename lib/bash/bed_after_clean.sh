@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+# Calling the script
+# ~/git/phecomp/lib/bash/bed_after_clean.sh
+
 path2files="/Users/jespinosa/phecomp/20140807_pergola/bedtools_ex/starting_regions_file_vs_24h/data/"
 
 RScDir="/Users/jespinosa/git/phecomp/lib/R/"
