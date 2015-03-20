@@ -67,7 +67,7 @@ load_tbl_latency <- function (pattern="latency") {
 tag = "mean"
 
 pattern="latency"
-tbl_latency <- load_tbl_comp(pattern)
+tbl_latency <- load_tbl_latency(pattern)
 head (tbl_latency)
 tail (tbl_latency)
 
@@ -86,15 +86,23 @@ tbl_stat_mean
 tbl_stat_mean$mean <- tbl_stat_mean$V18 [,1]
 tbl_stat_mean$std.error <- tbl_stat_mean$V18 [,2]
 
+### Plots
+# Prettier colors:
+# Reordering colors for showing dark periods as dark colors
+cols <- RColorBrewer::brewer.pal (8, "Paired")[3:8]
+cols <- c(cols[2],cols[4])
+
 ggplot(data=tbl_stat_mean, aes(x=index, y=mean, fill=group)) + 
   geom_bar(stat="identity", position=position_dodge()) +
   geom_errorbar(aes(ymin=mean-std.error, ymax=mean+std.error),
                 width=.2,                    # Width of the error bars
                 position=position_dodge(.9)) +
   scale_x_continuous(breaks=1:9, limits=c(0,10))+
-  #        scale_y_continuous(limits=c(0,0.8))+
+  scale_y_continuous(limits=c(0,3350))+
   labs (title = "Latency First Meal\n") +  
   labs (x = "\nFile Number\n", y="Latency (s)\n",fill = NULL) +
   scale_fill_manual(values=cols, labels=c("Ctrl", "HF"))
 
 ggsave(file="bed_latency_after_clean.pdf",width=10, height=8)
+
+stop ("Execution finished correctly!")
