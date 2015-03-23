@@ -9,6 +9,9 @@
 ###                                                                                     ###
 ###########################################################################################
 
+# Calling the script
+# ~/git/phecomp/lib/bash/bedtool_intermeal_duration.sh
+
 path2files="/Users/jespinosa/phecomp/20140807_pergola/bedtools_ex/intermeal_duration/data/"
 
 RScDir="/Users/jespinosa/git/phecomp/lib/R/"
@@ -51,3 +54,5 @@ do
 	bedtools intersect -a ${filename}"_compl_dev.bed" -b ${path2files}phases_light.bed > ${filename}"_compl_dev_light.bed"
 	# bedtools map -a ${path2files}phases_light.bed -b ${filename}"_compl_dev.bed" -c 5 -o mean -null 0 > ${filename}"_compl_dev_light_sum.bed"
 done
+
+${RScDir}bedtool_intermeal_duration.R
