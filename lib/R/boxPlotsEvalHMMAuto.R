@@ -116,6 +116,7 @@ names (argsL) <- argsDF$V1
 setwd (path2plot)
 
 # path2TblScores <- "/Users/jespinosa/phecomp/20131106_HMM/20130610_HMMfourSignal/results4/20120502_FDF_CRG_HabFiltWs1800/evaluation/evalfour1800.tbl"
+# path2TblScores <- "/Users/jespinosa/phecomp/20130610_HMMfourSignal/resultsMunchen/20120502_FDF_CRG_hab_filt/20120502_FDF_CRG_hab_DevW1_W2_filtWs300/evaluation/evalfour300.tbl"
 # print (path2plot)
 # print (path2TblScores)
 
