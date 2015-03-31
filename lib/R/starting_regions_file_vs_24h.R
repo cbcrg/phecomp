@@ -93,6 +93,7 @@ names (argsL) <- argsDF$V1
 # Loading functions:
 source ("/Users/jespinosa/git/phecomp/lib/R/plotParamPublication.R")
 
+# manual execution, uncomment
 # setwd("/Users/jespinosa/phecomp/20140807_pergola/bedtools_ex/starting_regions_file_vs_24h")
 
 load_tbl_measure <- function (pattern="30min_sum") {
@@ -139,6 +140,8 @@ load_tbl_measure <- function (pattern="30min_sum") {
 # tag = "mean"
 # tag = "cov"
 # tag = "count"
+
+# path2files <- "/Users/jespinosa/phecomp/20140807_pergola/bedtools_ex/starting_regions_file_vs_24h"
 
 pattern = paste("30min_", tag, sep="")
 #pattern = "30min_cov" 
@@ -216,7 +219,7 @@ var_labels<-switch(tag,
           )
 
 title_beg <- var_labels[1]
-file_name <- var_labels[2]
+file_name <- paste ("new_", var_labels[2], sep="")
 unit <- var_labels[3]
 title_plot = paste (title_beg[1], "during first 30 min after clean,\n24h before and 24h after\n", sep="")
 y_lab = paste (title_beg, unit)
@@ -231,14 +234,15 @@ geom_bar(stat="identity", position=position_dodge()) +
 geom_errorbar(aes(ymin=mean-std.error, ymax=mean+std.error),
               width=.2,                    # Width of the error bars
               position=position_dodge(.9)) +
-              scale_x_continuous(breaks=1:9, limits=c(0,10))+
+              scale_x_continuous(breaks=1:9, limits=c(0.6,9.5))+
               scale_y_continuous(limits=c(0, max(tbl_stat_mean$V9)+max(tbl_stat_mean$V9)/5)) +                
               labs (title = title_plot) +  
               labs (x = "\nFile number\n", y=y_lab, fill = NULL) +
               scale_fill_manual(values=cols, labels=c("Ctrl 24h before", "Ctrl after cleaning", "Ctrl 24h after", 
                        "HF 24h before", "HF after cleaning", "HF 24h after"))
 
-ggsave(file=paste(file_name, "_error_bar", ".pdf", sep=""), width=10, height=8)
+# ggsave(file=paste(file_name, "_error_bar", ".pdf", sep=""), width=10, height=8)
+ggsave(file=paste(file_name, "_error_bar", ".pdf", sep=""), width=16, height=8)
 
 # Order for plotting
 tbl_stat$group2 <- factor(tbl_stat$group, levels=c(paste("Ctrl24h_less_", tag, sep=""),paste("Ctrl24h_", tag, sep=""),
@@ -247,7 +251,7 @@ tbl_stat$group2 <- factor(tbl_stat$group, levels=c(paste("Ctrl24h_less_", tag, s
 
 ggplot(data=tbl_stat, aes(x=index, y=V9, fill=group2)) + 
   geom_bar(stat="identity", position=position_dodge()) +      
-  scale_x_continuous(breaks=1:9, limits=c(0,10))+
+  scale_x_continuous(breaks=1:9, limits=c(0.6,9.5))+
   scale_y_continuous(limits=c(0, max(tbl_stat$V9) + max(tbl_stat$V9)/10)) +
   labs (title = title_plot) +
   labs (x = "\nFile number\n", y=y_lab, fill = NULL) +
