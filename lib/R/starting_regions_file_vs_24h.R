@@ -219,7 +219,11 @@ var_labels<-switch(tag,
           )
 
 title_beg <- var_labels[1]
-file_name <- paste ("new_", var_labels[2], sep="")
+file_name <- var_labels[2]
+
+# Save file with prefix new_ not to overwrite old plots
+#file_name <- paste ("new_", var_labels[2], sep="")
+
 unit <- var_labels[3]
 title_plot = paste (title_beg[1], "during first 30 min after clean,\n24h before and 24h after\n", sep="")
 y_lab = paste (title_beg, unit)
