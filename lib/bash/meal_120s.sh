@@ -27,8 +27,11 @@ do
 	# col 4 = label
 	# col 5 = value
 	# col 6 = strand
-	# col 9 = color
-	mergeBed -i ${track} -d 120 -S + -c 4,5,6,9 -o distinct,sum,distinct,distinct -delim ";" > ${filename}_joined.bed
+	# col 9 = color => collapse will give the color even if they are repeated
+	# this way whenever they are joined the color will not be shown, otherwise 
+	# with unique was misleading, because intervals with same color intensity maintained
+	# this color intensity
+	mergeBed -i ${track} -d 120 -S + -c 4,5,6,9 -o distinct,sum,distinct,collapse -delim ";" > ${filename}_joined.bed
 	
 	awk '{OFS="\t"; print $1,$2,$3,$4,$5,$6,$2,$3,$7}' ${filename}_joined.bed > ${filename}_joined_all.bed
 	
