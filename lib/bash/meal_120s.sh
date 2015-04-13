@@ -22,7 +22,12 @@ do
 	
 	# This way merged I take the color of first meal when they are different 
 	#mergeBed -i ${track} -d 120 -S + -c 4,5,6,9 -o distinct,sum,distinct,distinct -delim " " > ${filename}_joined.bed
-	# This way merged if merged colors have the same color it is shown but if they have different colors it will be shown as black
+	# This way if the merged colors have the same color it is shown but if they have different colors it will be shown as black
+	# distinct takes a list of the possible values in the field
+	# col 4 = label
+	# col 5 = value
+	# col 6 = strand
+	# col 9 = color
 	mergeBed -i ${track} -d 120 -S + -c 4,5,6,9 -o distinct,sum,distinct,distinct -delim ";" > ${filename}_joined.bed
 	
 	awk '{OFS="\t"; print $1,$2,$3,$4,$5,$6,$2,$3,$7}' ${filename}_joined.bed > ${filename}_joined_all.bed
