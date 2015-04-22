@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <math.h>
 
 /* Reading tac files
  *
@@ -146,6 +147,7 @@ char * returnTimeString (double EPOCHseconds, int n);
 void printTrackHeaders (FILE * fd, int tracks, char * fileName);
 char * addEnd2string (char * string, int size);
 int getNumbFiles (char ** argList, int startPos, int endList);
+double CalculateDistance(double x1, double y1, double x2, double y2);
 int fileCheck (char **fl, int start, int nFiles);
 
 /************************************************************************************************************
@@ -1060,3 +1062,21 @@ int getNumbFiles (char ** argList, int startPos, int endList)
 	return nFiles;
 }
 
+double CalculateDistance(double x1, double y1, double x2, double y2)
+
+	{
+
+	    double diffx = x1 - x2;
+
+	    double diffy = y1 - y2;
+
+	    double diffx_sqr = diffx*diffx;
+
+	    double diffy_sqr = diffy*diffy;
+
+	    double distance = sqrt (diffx_sqr + diffy_sqr);
+
+
+
+	return distance;
+	}
