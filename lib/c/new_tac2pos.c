@@ -147,7 +147,7 @@ char * returnTimeString (double EPOCHseconds, int n);
 void printTrackHeaders (FILE * fd, int tracks, char * fileName);
 char * addEnd2string (char * string, int size);
 int getNumbFiles (char ** argList, int startPos, int endList);
-double CalculateDistance(double x1, double y1, double x2, double y2);
+double euclideanDistance(double x1, double y1, double x2, double y2);
 int fileCheck (char **fl, int start, int nFiles);
 
 /************************************************************************************************************
@@ -975,9 +975,22 @@ void readCoordinates (int size, FILE *fd, info2coord * info)
   point = 1; //first index position 1
   i = size/2 ;
 
+  //Initializing coordinates to first occurrence
+  double pXPos = 0;
+  double pYPos = 0;
+  pXPos = PointsBuff[0] * info->hCal;
+  pYPos = PointsBuff[1] * info->vCal;
+  double XPos = 0;
+  double YPos = 0;
+  double eucDistance = 0;
+
   for (n=0; n<=i; n+=10)
 	{
 	   //printf ("n is  -------------:%d\t %i\n", n, i);
+	   XPos = PointsBuff[n] * info->hCal;
+	   YPos = PointsBuff[n+1] * info->vCal;
+
+//	   fprintf (stderr, "X  ------------->XPos;%2.4f;\n", XPos);
 
 	   fprintf (stdout, "#d;CAGE;%i;",info->nTrack); //#del igual es mejor pasarle una estructura con todos los datos
 	   fprintf (stdout, "Index;%i;", point);
@@ -986,7 +999,11 @@ void readCoordinates (int size, FILE *fd, info2coord * info)
 	   fprintf (stdout, "YPos;%2.4f;", PointsBuff[n+1] * info->vCal);
 	   fprintf (stdout, "Type;2;");
 	   fprintf (stdout, "File;%s\n", info->fileName);
+	   eucDistance = euclideanDistance(pXPos, pYPos, XPos, YPos);
+	   fprintf (stderr, "Euclidena Distance  -------------> %2.4f;\n", eucDistance);
 	   point +=1;
+	   pXPos = XPos;
+	   pYPos = YPos;
 	};
 
   free (PointsBuff);
@@ -1062,21 +1079,13 @@ int getNumbFiles (char ** argList, int startPos, int endList)
 	return nFiles;
 }
 
-double CalculateDistance(double x1, double y1, double x2, double y2)
-
-	{
-
-	    double diffx = x1 - x2;
-
-	    double diffy = y1 - y2;
-
-	    double diffx_sqr = diffx*diffx;
-
-	    double diffy_sqr = diffy*diffy;
-
-	    double distance = sqrt (diffx_sqr + diffy_sqr);
-
-
+double euclideanDistance(double x1, double y1, double x2, double y2)
+{
+	double diffx = x1 - x2;
+	double diffy = y1 - y2;
+	double diffx_sqr = diffx*diffx;
+	double diffy_sqr = diffy*diffy;
+	double distance = sqrt (diffx_sqr + diffy_sqr);
 
 	return distance;
-	}
+}
