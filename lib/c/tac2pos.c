@@ -10,7 +10,13 @@
 #include <string.h>
 #include <time.h>
 
-/* Reading tac files */
+/* Reading tac files
+ *
+ * Compilation:
+ * gcc tac2pos.c -o tac2pos
+ * Execution tac2pos -file foo.tac -action position
+ *
+ * */
 
 //Header for the declaration decl.h
 
