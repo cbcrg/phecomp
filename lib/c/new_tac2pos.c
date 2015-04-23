@@ -170,6 +170,7 @@ int main (int argc, char *argv[])
   int startListFiles = 0;
   int nFiles = 0;
   int i = 0;
+  int n_cages = 0;
   //int endFileList = 0;//#del
 
   for (i = 1; i < argc; i++)
@@ -216,7 +217,7 @@ int main (int argc, char *argv[])
 		  {
 			  //fprintf (stderr, "Chosen option is position\n");//#del
 
-			  readHeader (argv, startListFiles, nFiles);
+			  n_cages = readHeader (argv, startListFiles, nFiles);
 			  readCoord (argv, startListFiles, nFiles);
 			  return (EXIT_SUCCESS);
 		  }
@@ -419,6 +420,8 @@ int printHeader (FILE *fd, char * name)
 //	fprintf (stdout, "#h;%s;TRACKING FILE;TRACKING FILE;Code;%s\n", name, name2print);
 //	fprintf (stdout, "#h;%s;TRACKING FILE;TRACKING FILE;File Creation Date & Time;%s", name, date2printCreation);
 //	fprintf (stdout, "#h;%s;TRACKING FILE;TRACKING FILE;Number of Trackings;%i\n", name, expHeader.trajectories);
+	fprintf (stderr, "#h;%s;TRACKING FILE;TRACKING FILE;Number of Trackings;%i\n", name, expHeader.trajectories);
+	fprintf (stderr, "----------%s\t%i\n",name, expHeader.trajectories);
 //	fprintf (stdout, "#h;%s;TRACKING FILE;TRACKING FILE;Last Modification Date & Time;%s", name, date2printMod);
 //	fprintf (stdout, "#h;%s;TRACKING FILE;TRACKING FILE;File Name;%s\n", name, name);
 //	fprintf (stdout, "#h;%s;HEADER;EHEADER;Ncages;%i\n", name, expHeader.trajectories);//DO THE ASSIGMENT OF THE END STRING
