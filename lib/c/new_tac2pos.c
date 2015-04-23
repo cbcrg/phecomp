@@ -984,23 +984,38 @@ void readCoordinates (int size, FILE *fd, info2coord * info)
   double YPos = 0;
   double eucDistance = 0;
 
+  //File header
+  fprintf (stdout, "Cage;Index;Time;XPos;YPos;File;EucDistance\n");
   for (n=0; n<=i; n+=10)
 	{
 	   //printf ("n is  -------------:%d\t %i\n", n, i);
 	   XPos = PointsBuff[n] * info->hCal;
 	   YPos = PointsBuff[n+1] * info->vCal;
+	   eucDistance = euclideanDistance (XPos, YPos, pXPos, pYPos);
 
 //	   fprintf (stderr, "X  ------------->XPos;%2.4f;\n", XPos);
 
-	   fprintf (stdout, "#d;CAGE;%i;",info->nTrack); //#del igual es mejor pasarle una estructura con todos los datos
-	   fprintf (stdout, "Index;%i;", point);
-	   fprintf (stdout, "Time;%i;", info->iniTrTime + point);
-	   fprintf (stdout, "XPos;%2.4f;", PointsBuff[n] * info->hCal);
-	   fprintf (stdout, "YPos;%2.4f;", PointsBuff[n+1] * info->vCal);
-	   fprintf (stdout, "Type;2;");
-	   fprintf (stdout, "File;%s\n", info->fileName);
-	   eucDistance = euclideanDistance(pXPos, pYPos, XPos, YPos);
-	   fprintf (stderr, "Euclidena Distance  -------------> %2.4f;\n", eucDistance);
+//	   fprintf (stdout, "#d;CAGE;%i;",info->nTrack); //#del igual es mejor pasarle una estructura con todos los datos
+//	   fprintf (stdout, "Index;%i;", point);
+//	   fprintf (stdout, "Time;%i;", info->iniTrTime + point);
+//	   fprintf (stdout, "XPos;%2.4f;", PointsBuff[n] * info->hCal);
+//	   fprintf (stdout, "YPos;%2.4f;", PointsBuff[n+1] * info->vCal);
+//	   fprintf (stdout, "Type;2;");
+//	   fprintf (stdout, "File;%s;", info->fileName);
+//	   fprintf (stderr, "Euclidena Distance  -------------> %2.4f;\n", eucDistance);
+//	   fprintf (stdout, "Dist;%2.4f\n", eucDistance);
+
+	   fprintf (stdout, "%i;",info->nTrack); //#del igual es mejor pasarle una estructura con todos los datos
+	   fprintf (stdout, "%i;", point);
+	   fprintf (stdout, "%i;", info->iniTrTime + point);
+	   fprintf (stdout, "%2.4f;", PointsBuff[n] * info->hCal);
+	   fprintf (stdout, "%2.4f;", PointsBuff[n+1] * info->vCal);
+   //	   fprintf (stdout, "2;");
+	   fprintf (stdout, "%s;", info->fileName);
+
+   //	   fprintf (stderr, "Euclidena Distance  -------------> %2.4f;\n", eucDistance);
+	   fprintf (stdout, "%2.4f\n", eucDistance);
+
 	   point +=1;
 	   pXPos = XPos;
 	   pYPos = YPos;
