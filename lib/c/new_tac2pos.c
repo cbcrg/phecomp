@@ -415,19 +415,19 @@ int printHeader (FILE *fd, char * name)
 	date2printCreation = returnTimeString (expHeader.creationDate, 80);
 	date2printMod = returnTimeString (expHeader.modDate, 80);
 
-	fprintf (stdout, "#h;%s;TRACKING FILE;TRACKING FILE;Comments;%s\n", name, comments2print);
-	fprintf (stdout, "#h;%s;TRACKING FILE;TRACKING FILE;Code;%s\n", name, name2print);
-	fprintf (stdout, "#h;%s;TRACKING FILE;TRACKING FILE;File Creation Date & Time;%s", name, date2printCreation);
-	fprintf (stdout, "#h;%s;TRACKING FILE;TRACKING FILE;Number of Trackings;%i\n", name, expHeader.trajectories);
-	fprintf (stdout, "#h;%s;TRACKING FILE;TRACKING FILE;Last Modification Date & Time;%s", name, date2printMod);
-	fprintf (stdout, "#h;%s;TRACKING FILE;TRACKING FILE;File Name;%s\n", name, name);
-	fprintf (stdout, "#h;%s;HEADER;EHEADER;Ncages;%i\n", name, expHeader.trajectories);//DO THE ASSIGMENT OF THE END STRING
+//	fprintf (stdout, "#h;%s;TRACKING FILE;TRACKING FILE;Comments;%s\n", name, comments2print);
+//	fprintf (stdout, "#h;%s;TRACKING FILE;TRACKING FILE;Code;%s\n", name, name2print);
+//	fprintf (stdout, "#h;%s;TRACKING FILE;TRACKING FILE;File Creation Date & Time;%s", name, date2printCreation);
+//	fprintf (stdout, "#h;%s;TRACKING FILE;TRACKING FILE;Number of Trackings;%i\n", name, expHeader.trajectories);
+//	fprintf (stdout, "#h;%s;TRACKING FILE;TRACKING FILE;Last Modification Date & Time;%s", name, date2printMod);
+//	fprintf (stdout, "#h;%s;TRACKING FILE;TRACKING FILE;File Name;%s\n", name, name);
+//	fprintf (stdout, "#h;%s;HEADER;EHEADER;Ncages;%i\n", name, expHeader.trajectories);//DO THE ASSIGMENT OF THE END STRING
 
 
 	//TRACK STUFF BEGINS HERE, IT SHOULD BE IN A LOOP OF THE NUMBER O TRACKS (NUMBER OF TRAJECTORIES WILL BE THE COUNTER)
 	//Printing tracks header first
 
-	printTrackHeaders (fd, expHeader.trajectories, name);
+//	printTrackHeaders (fd, expHeader.trajectories, name);
 
 	//infoFile->fileId = 1;
 	//return 0;
