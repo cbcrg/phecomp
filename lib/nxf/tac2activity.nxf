@@ -1,0 +1,106 @@
+/*
+#################################################################################
+### Jose Espinosa-Carrasco. CB/CSN-CRG. April 2015                            ### 
+#################################################################################
+### Code : 23.01                                                              ###
+### Position from tac files                                                   ### 
+### ./nextflow tac2activity.nxf --tac_files '*.tac'
+#################################################################################
+*/
+
+params.tac_files = "phecomp/data/CRG/20120502_FDF_CRG/*.tac"
+//params.tac_files = "/users/cn/jespinosa/phecomp/data/CRG/20120502_FDF_CRG/20120502_FDF_CRG/*.tac"
+
+tac_files_path = "$HOME/${params.tac_files}"
+
+println "path: $tac_files_path"
+
+tac_files = Channel.fromPath(tac_files_path)
+
+path_tac2pos = "/Users/jespinosa/git/phecomp/lib/c/"
+
+// Creating results folder
+dump_dir = file("$HOME/phecomp/processedData/201205_FDF_CRG/tac2activity/")
+
+dump_dir.with {
+     if( !empty() ) { deleteDir() }
+     mkdirs()
+     println "Created: $dump_dir"
+}
+
+//binFileSingleCage = binFileSingle.flatten().map { binSingleCage -> 
+//  def pattern = binSingleCage.name =~/^cage(\d+).*$/
+//  println binSingleCage.name
+//  println pattern [0][1]
+//  def cage = pattern[0][1]
+//  [ cage, binSingleCage ]
+//}
+//
+process extractPosition {
+// echo true
+ 
+ input:
+ file tac from tac_files
+ 
+ output:
+// set '*.pos' into act_file
+ file '*.pos' into pos_file
+ 
+ script:
+  println tac.name
+//  def pattern = tac.name =~/^cage(\d+).*$/
+//  println binSingleCage.name
+//  println pattern [0][1]
+//  singleCage = pattern[0][1]
+  
+ """
+ ${path_tac2pos}new_tac2pos -file $tac -action position > ${tac}.pos 
+ """
+// """
+// ${path_tac2pos}new_tac2pos -file file_tac -action position > act_file.pos
+// """
+}
+
+
+pos_file
+  .subscribe {
+      println "Copying pos file: $it"
+      it.copyTo( dump_dir.resolve ( it.name ) )
+//      pos_file.copyTo( "${dump_dir}${it}"
+  }
+  
+//pos_file.each { file ->
+//  result_file = dump_dir.resolve(file.name)
+//  println "Copying pos file: file.name"
+//  result_file.text = file.text
+//}
+//
+//pos_file.subscribe { 
+//  println it.name 
+//  outFileModR.copyTo( "${dump_dir}${it}" )
+//}
+//
+//pos_file.each { file ->
+//  result_file = dump_dir.resolve(file.name)
+//  result_file.text = file.text
+//  println "Copying pos file: $file.name"
+//}
+//
+//pos_file.subscribe { 
+//  println "Copying pos file: $it[1]"
+//  println "kkkkkk: $it[0]"
+//  pos_file = it[1]
+////  pos_file.copyTo( "${resultDir}/${outFileModR.name}_cage${it[0]}" )
+//}
+
+// /Users/jespinosa/git/phecomp/lib/c/new_tac2pos -file tac -action position > act_file 
+ 
+
+//act_file.subscribe { println it }
+//
+//act_file.subscribe { 
+//  println "Copying ******: $it"
+//  outActFile = it
+//  outActFile.copyTo( dump_dir.resolve ( outActFile.name ) ) // Here you pass an object that is way you need resolve
+//}
+//
