@@ -215,13 +215,7 @@ int main (int argc, char *argv[])
 
 		  else if (strcmp (argv[i+1], "position") == 0)
 		  {
-			  //fprintf (stderr, "Chosen option is position\n");//#del
-
 			  n_tracks = readHeader (argv, startListFiles, nFiles);
-
-//			  for (i = 0; i < nFiles; i++) //#delH
-//			          fprintf(stderr ,"------index-%d--%d\n ", i,n_tracks[i]);
-//			      printf("\n");
 
 			  readCoord (argv, startListFiles, nFiles, n_tracks);
 			  return (EXIT_SUCCESS);
@@ -310,9 +304,7 @@ int * readHeader (char **fl, int start, int nFiles)
 	int end = 0;
 
 	end = start + nFiles;
-	fprintf (stderr, "---start----%i---nFiles----%i---end---%i\n", start, nFiles, end);//#del
 	int *n_tracks = malloc(end * sizeof(int));
-//	int n_tracks[end];
 
 	for (fc = start; fc < end; fc += 1)
 	{
@@ -320,9 +312,7 @@ int * readHeader (char **fl, int start, int nFiles)
 
 		 char * fileName;
 		 fileName = fl[fc];
-//		 int n_tracks = 0;
 
-		 //fprintf (stderr, "--------filenames is --- %s---------\n", fileName);//#del
 		 fd = fopen (fileName, "rb");
 
 		 if ( fd == NULL )
@@ -332,13 +322,10 @@ int * readHeader (char **fl, int start, int nFiles)
 	     }
 
 		 n_tracks[fc] = printHeader (fd, fileName);
-//		 n_tracks[0] = 1;
-		 fprintf (stderr, "kdkdkdkd %i %i\n", n_tracks[fc], fc);
+
 		 fclose (fd);
 	}
 
-//	return 0; #delH
-	fprintf (stderr, "kdkdkdkd %i\n", n_tracks[2]);
 	return n_tracks;
   }
 
@@ -431,8 +418,8 @@ int printHeader (FILE *fd, char * name)
 //	fprintf (stdout, "#h;%s;TRACKING FILE;TRACKING FILE;Code;%s\n", name, name2print);
 //	fprintf (stdout, "#h;%s;TRACKING FILE;TRACKING FILE;File Creation Date & Time;%s", name, date2printCreation);
 //	fprintf (stdout, "#h;%s;TRACKING FILE;TRACKING FILE;Number of Trackings;%i\n", name, expHeader.trajectories);
-	fprintf (stderr, "#h;%s;TRACKING FILE;TRACKING FILE;Number of Trackings;%i\n", name, expHeader.trajectories);
-	fprintf (stderr, "----------%s\t%i\n",name, expHeader.trajectories);
+//	fprintf (stderr, "#h;%s;TRACKING FILE;TRACKING FILE;Number of Trackings;%i\n", name, expHeader.trajectories);
+//	fprintf (stderr, "----------%s\t%i\n",name, expHeader.trajectories);
 //	fprintf (stdout, "#h;%s;TRACKING FILE;TRACKING FILE;Last Modification Date & Time;%s", name, date2printMod);
 //	fprintf (stdout, "#h;%s;TRACKING FILE;TRACKING FILE;File Name;%s\n", name, name);
 //	fprintf (stdout, "#h;%s;HEADER;EHEADER;Ncages;%i\n", name, expHeader.trajectories);//DO THE ASSIGMENT OF THE END STRING
@@ -444,8 +431,7 @@ int printHeader (FILE *fd, char * name)
 //	printTrackHeaders (fd, expHeader.trajectories, name);
 
 	//infoFile->fileId = 1;
-	//return 0;
-	//return infoFile;
+
 //	return EXIT_SUCCESS;
 	return expHeader.trajectories;
 }
@@ -456,11 +442,7 @@ int readCoord (char **fl, int start, int nFiles, int * n_tracks)
 	int end = 0;
 
 	end = start + nFiles;
-	//fprintf (stderr, "---start----%i---nFiles----%i---end---%i\n", start, nFiles, end); //#del
 	int i = 0;
-	for (i = start; i < end; i++)//#del
-				          fprintf(stderr ,"------index-%d--%d\n ", i,n_tracks[i]);
-				      printf("\n");
 
 	for (fc = start; fc < end; fc += 1)
 	{
@@ -470,7 +452,7 @@ int readCoord (char **fl, int start, int nFiles, int * n_tracks)
 		 fileName = fl[fc];
 
 		 fd = fopen (fileName, "rb");
-		 fprintf(stderr ,"-----inside for -%i--%d\n ", fc,n_tracks[fc]);//#delH
+
 		 if ( fd == NULL )
 		 {
 			 fprintf (stderr, "FATAL ERROR:Cannot open file %s!\n", fileName);
@@ -491,7 +473,6 @@ int printCoord (FILE *fd, char *fileName, int n_tr_file)
 {
 	chunk fileHeader;
 	fileHeader = returnChunkHeader (fd);
-	fprintf (stderr, "************%i\n", n_tr_file);//#delH
 	chunk experimentInfo;
 	experimentInfo = returnChunkHeader (fd);
 	experimentHeader expHeader;
@@ -505,9 +486,6 @@ int printCoord (FILE *fd, char *fileName, int n_tr_file)
 		  //for (Ntrack=1; Ntrack <= 12; Ntrack +=1)
 	  for (Ntrack=1; Ntrack <= expHeader.trajectories; Ntrack +=1)
 	  {
-		  /*#del
-		  fprintf (stderr, "Track being SKIPPED +++++++++++++++++++++++++ : %d \n\n\n", Ntrack);
-		  */
 
 		  trackInfo trInfo;
 		  fread (&trInfo, sizeof trInfo, 1, fd);
@@ -581,7 +559,6 @@ int printCoord (FILE *fd, char *fileName, int n_tr_file)
 
 		  //readCoordinates (trPointList.size, fd, horCal, verCal, Ntrack, fileName );
 		  readCoordinates (trPointList.size, fd, &info2readCoord, n_tr_file);
-		  //readCoordinates (trPointList.size, fd, );
 		  //fseek (fd, trPointList.size, SEEK_CUR); //only take comment if debugging and not reading coordinates
 
 		  trackPointList events;
@@ -606,7 +583,7 @@ int readDate (char **fl, int start, int nFiles)
 	int end = 0;
 
 	end = start + nFiles;
-	//fprintf (stderr, "---start----%i---nFiles----%i---end---%i\n", start, nFiles, end);//#del
+
 	fprintf (stderr, "---------- Reading date! -----------\n");
 
 	for (fc = start; fc < end; fc += 1)
