@@ -14,7 +14,7 @@
 /* Reading tac files
  *
  * Compilation:
- * gcc tac2pos.c -o tac2pos
+ * gcc new_tac2pos.c -o new_tac2pos -lm
  * Execution tac2pos -file foo.tac -action position
  *
  * */
@@ -127,11 +127,11 @@ typedef struct
 
 //Function declaration
 //functions should be inside decl.c
-int readHeader (char **fl, int start, int nFiles);
+int * readHeader (char **fl, int start, int nFiles);
 int printHeader (FILE *fd, char * name);
 //readOnce * printHeader (FILE *fd, char * name);
-int readCoord (char **fl, int start, int nFiles);
-int printCoord (FILE *fd, char *fileName);
+int readCoord (char **fl, int start, int nFiles, int *n_tracks);
+int printCoord (FILE *fd, char *fileName, int n_tr_file);
 int readDate (char **fl, int start, int nFiles);
 int getDate (FILE *fd, char * name);
 //void printDate (FILE *fd, int tracks, char * fileName);
@@ -141,7 +141,7 @@ chunk returnChunkHeader (FILE *fd);
 int countBytes (FILE *fd);
 void asessTag (char fileTag[], char Tag[]);
 //void readCoordinates (int size, FILE *fd, float hCal, float vCal, int nTrack, char * fileName);//#del
-void readCoordinates (int size, FILE *fd, info2coord * info);
+void readCoordinates (int size, FILE *fd, info2coord * info, int n_tr_file);
 int excelTime2EPOCH (double dateTrack);
 char * returnTimeString (double EPOCHseconds, int n);
 void printTrackHeaders (FILE * fd, int tracks, char * fileName);
@@ -170,7 +170,7 @@ int main (int argc, char *argv[])
   int startListFiles = 0;
   int nFiles = 0;
   int i = 0;
-  int n_cages = 0;
+  int *n_tracks;
   //int endFileList = 0;//#del
 
   for (i = 1; i < argc; i++)
@@ -217,8 +217,13 @@ int main (int argc, char *argv[])
 		  {
 			  //fprintf (stderr, "Chosen option is position\n");//#del
 
-			  n_cages = readHeader (argv, startListFiles, nFiles);
-			  readCoord (argv, startListFiles, nFiles);
+			  n_tracks = readHeader (argv, startListFiles, nFiles);
+
+//			  for (i = 0; i < nFiles; i++) //#delH
+//			          fprintf(stderr ,"------index-%d--%d\n ", i,n_tracks[i]);
+//			      printf("\n");
+
+			  readCoord (argv, startListFiles, nFiles, n_tracks);
 			  return (EXIT_SUCCESS);
 		  }
 
@@ -299,13 +304,15 @@ int fileCheck (char **fl, int start, int nFiles)
 	return 0;
 }
 
-int readHeader (char **fl, int start, int nFiles)
+int * readHeader (char **fl, int start, int nFiles)
   {
 	int fc = 0;
 	int end = 0;
 
 	end = start + nFiles;
-	//fprintf (stderr, "---start----%i---nFiles----%i---end---%i\n", start, nFiles, end);//#del
+	fprintf (stderr, "---start----%i---nFiles----%i---end---%i\n", start, nFiles, end);//#del
+	int *n_tracks = malloc(end * sizeof(int));
+//	int n_tracks[end];
 
 	for (fc = start; fc < end; fc += 1)
 	{
@@ -313,6 +320,8 @@ int readHeader (char **fl, int start, int nFiles)
 
 		 char * fileName;
 		 fileName = fl[fc];
+//		 int n_tracks = 0;
+
 		 //fprintf (stderr, "--------filenames is --- %s---------\n", fileName);//#del
 		 fd = fopen (fileName, "rb");
 
@@ -322,12 +331,15 @@ int readHeader (char **fl, int start, int nFiles)
 		   exit (EXIT_FAILURE);
 	     }
 
-		 printHeader (fd, fileName);
-
+		 n_tracks[fc] = printHeader (fd, fileName);
+//		 n_tracks[0] = 1;
+		 fprintf (stderr, "kdkdkdkd %i %i\n", n_tracks[fc], fc);
 		 fclose (fd);
 	}
 
-	return 0;
+//	return 0; #delH
+	fprintf (stderr, "kdkdkdkd %i\n", n_tracks[2]);
+	return n_tracks;
   }
 
 
@@ -336,7 +348,6 @@ int printHeader (FILE *fd, char * name)
 {
 	//char msg[]="test";//#del
 	//fprintf (stderr, "%s\n", msg);
-
 	//readOnce * infoFile;
 	chunk fileHeader;
 	fileHeader = returnChunkHeader (fd);
@@ -435,16 +446,21 @@ int printHeader (FILE *fd, char * name)
 	//infoFile->fileId = 1;
 	//return 0;
 	//return infoFile;
-	return EXIT_SUCCESS;
+//	return EXIT_SUCCESS;
+	return expHeader.trajectories;
 }
 
-int readCoord (char **fl, int start, int nFiles)
+int readCoord (char **fl, int start, int nFiles, int * n_tracks)
   {
 	int fc =0;
 	int end = 0;
 
 	end = start + nFiles;
 	//fprintf (stderr, "---start----%i---nFiles----%i---end---%i\n", start, nFiles, end); //#del
+	int i = 0;
+	for (i = start; i < end; i++)//#del
+				          fprintf(stderr ,"------index-%d--%d\n ", i,n_tracks[i]);
+				      printf("\n");
 
 	for (fc = start; fc < end; fc += 1)
 	{
@@ -454,7 +470,7 @@ int readCoord (char **fl, int start, int nFiles)
 		 fileName = fl[fc];
 
 		 fd = fopen (fileName, "rb");
-
+		 fprintf(stderr ,"-----inside for -%i--%d\n ", fc,n_tracks[fc]);//#delH
 		 if ( fd == NULL )
 		 {
 			 fprintf (stderr, "FATAL ERROR:Cannot open file %s!\n", fileName);
@@ -463,7 +479,7 @@ int readCoord (char **fl, int start, int nFiles)
 
 		 fprintf (stderr, "Reading coordinates of file ----%s----\n", fileName);
 
-		 printCoord (fd, fileName);
+		 printCoord (fd, fileName, n_tracks[fc]);
 
 		 fclose (fd);
 	}
@@ -471,10 +487,11 @@ int readCoord (char **fl, int start, int nFiles)
 	return 0;
   }
 
-int printCoord (FILE *fd, char *fileName)
+int printCoord (FILE *fd, char *fileName, int n_tr_file)
 {
 	chunk fileHeader;
 	fileHeader = returnChunkHeader (fd);
+	fprintf (stderr, "************%i\n", n_tr_file);//#delH
 	chunk experimentInfo;
 	experimentInfo = returnChunkHeader (fd);
 	experimentHeader expHeader;
@@ -563,7 +580,7 @@ int printCoord (FILE *fd, char *fileName)
 		  info2readCoord.iniTrTime = excelTime2EPOCH (dateTrack);
 
 		  //readCoordinates (trPointList.size, fd, horCal, verCal, Ntrack, fileName );
-		  readCoordinates (trPointList.size, fd, &info2readCoord);
+		  readCoordinates (trPointList.size, fd, &info2readCoord, n_tr_file);
 		  //readCoordinates (trPointList.size, fd, );
 		  //fseek (fd, trPointList.size, SEEK_CUR); //only take comment if debugging and not reading coordinates
 
@@ -965,7 +982,7 @@ void printTrackHeaders (FILE *fd, int tracks, char * fileName)
 
 //info2coord//#del
 //void readCoordinates (int size, FILE *fd, float hCal, float vCal, int nTrack, char * fileName)
-void readCoordinates (int size, FILE *fd, info2coord * info)
+void readCoordinates (int size, FILE *fd, info2coord * info, int n_tr_file)
 {
   //pasarle el tiempo inicial printar t + ctr y el ctr aprovecharlo para printar el index!! #del
   short * PointsBuff;
@@ -987,6 +1004,16 @@ void readCoordinates (int size, FILE *fd, info2coord * info)
   double YPos = 0;
   double eucDistance = 0;
 
+  //I do not sume anything to cages from 1 to 12, cages from 1 to 6 will be 7 to 18
+  if (n_tr_file == 12)
+  	   {
+  		   n_tr_file = 0;
+  	   }
+  else if (n_tr_file == 6)
+  	  {
+	  	  n_tr_file = 12;
+  	  }
+
   //File header
   fprintf (stdout, "Cage;Index;Time;XPos;YPos;File;EucDistance\n");
   for (n=0; n<=i; n+=10)
@@ -999,6 +1026,7 @@ void readCoordinates (int size, FILE *fd, info2coord * info)
 //	   fprintf (stderr, "X  ------------->XPos;%2.4f;\n", XPos);
 
 //	   fprintf (stdout, "#d;CAGE;%i;",info->nTrack); //#del igual es mejor pasarle una estructura con todos los datos
+//	   fprintf (stdout, "#d;CAGE;%i;",info->nTrack + n_tr_file);
 //	   fprintf (stdout, "Index;%i;", point);
 //	   fprintf (stdout, "Time;%i;", info->iniTrTime + point);
 //	   fprintf (stdout, "XPos;%2.4f;", PointsBuff[n] * info->hCal);
@@ -1008,7 +1036,7 @@ void readCoordinates (int size, FILE *fd, info2coord * info)
 //	   fprintf (stderr, "Euclidena Distance  -------------> %2.4f;\n", eucDistance);
 //	   fprintf (stdout, "Dist;%2.4f\n", eucDistance);
 
-	   fprintf (stdout, "%i;",info->nTrack); //#del igual es mejor pasarle una estructura con todos los datos
+	   fprintf (stdout, "%i;", info->nTrack + n_tr_file); //#del igual es mejor pasarle una estructura con todos los datos
 	   fprintf (stdout, "%i;", point);
 	   fprintf (stdout, "%i;", info->iniTrTime + point);
 	   fprintf (stdout, "%2.4f;", PointsBuff[n] * info->hCal);
