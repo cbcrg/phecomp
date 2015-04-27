@@ -28,7 +28,6 @@ dump_dir.with {
 }
 
 process extractPosition {
-// echo true
  
  input:
  file tac from tac_files
@@ -38,13 +37,13 @@ process extractPosition {
  file '*.pos' into pos_file
  
  script:
-  println "input name is $tac.name"
-
+  println "Input name is $tac.name"
   
+ 
  """
  ${path_tac2pos}new_tac2pos -file $tac -action position > ${tac}.pos 
  """
-"
+
 }
 
 pos_file
