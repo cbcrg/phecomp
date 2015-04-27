@@ -18,6 +18,11 @@ tac_files = Channel.fromPath(tac_files_path)
 
 path_tac2pos = "/Users/jespinosa/git/phecomp/lib/c/"
 
+correspondence_f_path = "$HOME/git/pergola/test/position2pergola.txt"
+correspondence_f = file(correspondence_f_path)
+
+//path_pergola_scr = "${HOME}/"
+
 /* 
  * Creating results folder
  */
@@ -37,14 +42,15 @@ process extractPosition {
  input:
  file tac from tac_files
  
+ // I duplicate the output, one for writing file and one for continue pipe
  output:
 // set '*.pos' into act_file
- file '*.pos' into pos_file
+ file '*.pos' into pos_files1
+ file '*.pos' into pos_files2
  
  script:
   println "Input name is $tac.name"
-  
- 
+   
  """
  ${path_tac2pos}new_tac2pos -file $tac -action position > ${tac}.pos 
  """
@@ -52,10 +58,45 @@ process extractPosition {
 }
 
 /*
+Another way of duplicating the channels
+pos_files1 = Channel.create() 
+pos_files2 = Channel.create() 
+
+pos_file.into(pos_files1, pos_files2) 
+*/ 
+//(pos_file_g, pos_file2bedGr) = pos_file.split (2)
+//
+
+/*
  * Writing position file
  */
-pos_file
-  .subscribe {
-      println "Copying pos file: $it"
-      it.copyTo( dump_dir.resolve ( it.name ) )
+
+pos_files1
+    .subscribe {
+        println "Copying pos file: $it"
+        it.copyTo( dump_dir.resolve ( it.name ) )
   }
+  
+/*
+ * Join position files
+ * Puedo hacer los archivos uno a uno y luego unirlos dejando siempre la coordinadas como las originales
+ * Se puede unir despues y hacer luego la coordinadas relativas???
+ * Puedo leer directamente el bed o el bed graph no deja de ser un archivo csv
+ */
+
+process joinPosCh {
+    
+    input: 
+    file f_pos from pos_files2
+    
+    output:
+    file '*.bedGraph' into bedGraph
+    
+    //pergola_rules.py -i "/Users/jespinosa/phecomp/processedData/201205_FDF_CRG/tac2activity/20120502_FDF_CRG_c6.tac.pos" -o "/Users/jespinosa/git/pergola/test/position2pergola.txt" -fs ";" -n
+
+    """
+    pergola_rules.py -i $f_pos -o $correspondence_f -fs ";" -n -f bedGraph
+    """
+}
+
+ 
