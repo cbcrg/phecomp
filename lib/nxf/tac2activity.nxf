@@ -18,7 +18,9 @@ tac_files = Channel.fromPath(tac_files_path)
 
 path_tac2pos = "/Users/jespinosa/git/phecomp/lib/c/"
 
-// Creating results folder
+/* 
+ * Creating results folder
+ */
 dump_dir = file("$HOME/phecomp/processedData/201205_FDF_CRG/tac2activity/")
 
 dump_dir.with {
@@ -27,6 +29,9 @@ dump_dir.with {
      println "Created: $dump_dir"
 }
 
+/*
+ * Extract postion from tac files
+ */
 process extractPosition {
  
  input:
@@ -46,6 +51,9 @@ process extractPosition {
 
 }
 
+/*
+ * Writing position file
+ */
 pos_file
   .subscribe {
       println "Copying pos file: $it"
