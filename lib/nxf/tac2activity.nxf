@@ -69,14 +69,14 @@ pos_file.into(pos_files1, pos_files2)
 
 /*
  * Writing position file
- 
+*/ 
 
 pos_files1
     .subscribe {
         println "Copying pos file: $it"
         it.copyTo( dump_dir.resolve ( it.name ) )
   }
-*/
+
   
 /*
  * Join position files
