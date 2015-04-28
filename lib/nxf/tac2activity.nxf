@@ -138,14 +138,42 @@ bedGraph_tr = bedGraph.map {pos_file, bedGraph_files ->
         }
     }
     .flatMap()
-    //.println()
+//    .println()
  
-bedGraph_tr    
+bG_by_track = bedGraph_tr    
     .collectFile { pos, track, file -> 
-       [ "name_$track", file ]    
+       [ "bedGraph_$track", file ]   
     }
-    .println() 
-       
+   // .println() 
+
+// Esto fuera si hago lo de abajo un channel cuando se utiliza queda vacio
+//bG_by_track.subscribe  {  
+//    println ">>>> name file ${it}"
+//}    
+
+
+process bG_to_relative_coord {       
+
+    input: 
+    set val(pos_name), val (track), file ('bedGraph_f') from bG_by_track
+//    set val (cage), val (step),
+    output:
+    set val(track), stdout into rel_coord_bG
+    
+    println ">>>> name file track"
+    
+    """
+    cat ${bedGraph_f} > /dev/stdout
+    """
+
+}
+
+/*
+rel_coord_bG.subscribe  {  
+//    println ">>>> ${it}"
+    println "Copying pos file: $it.name"
+}
+
 /*
   
 // I could or generate bed files then it would be simple to join by cage just by column
