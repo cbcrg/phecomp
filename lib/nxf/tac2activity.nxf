@@ -103,31 +103,72 @@ process joinPosCh {
     output:
     set val(f_pos_name), file('*.bedGraph') into bedGraph
     set val(f_pos_name), file('*.bedGraph') into bedGraph2
+//    set val(f_pos_name), file('*.bed') into bedGraph
+//    set val(f_pos_name), file('*.bed') into bedGraph2
 //    set val(f_pos_name), file('bedGraph_file') into bedGraph
     //pergola_rules.py -i "/Users/jespinosa/phecomp/processedData/201205_FDF_CRG/tac2activity/20120502_FDF_CRG_c6.tac.pos" -o "/Users/jespinosa/git/pergola/test/position2pergola.txt" -fs ";" -n -nt
 
-    """
+//    #cat *.bedGraph > bedGraph_file
+//    pergola_rules.py -i $f_pos -o $correspondence_f -fs ";" -n -f bed -nt 
+
+    """ 
     pergola_rules.py -i $f_pos -o $correspondence_f -fs ";" -n -f bedGraph -nt
     """
 }
 
 bedGraph2 
     .subscribe { pos_file, bedGraph_files -> 
-        println "pos_file*********** ${pos_file}"
-        println "bedgraph files ****** ${bedGraph_files}"
+//        println "pos_file*********** ${pos_file}"
+//        println "bedgraph files ****** ${bedGraph_files}"
         
         for ( it in bedGraph_files ) {
-            println "^^^^^^^^^^^^^^$it"
+//            println "^^^^^^^^^^^^^^$it"
             it.copyTo( dump_dir.resolve ( "${pos_file}${it.name}" ) )
             }  
     }
-
-
+    
+bedGraph_tr = bedGraph.map {pos_file, bedGraph_files ->
+        bedGraph_files .collect {
+            def pattern = it.name =~/^tr_(\d+).*$/
+            //println "##########$it.name"
+            //println pattern[0][1]
+            def track = pattern[0][1]
+            //println "########## ${pos_file} ${track}   ${it}"
+            [ pos_file, track,  it ]
+        }
+    }
+    .flatMap()
+    //.println()
+ 
+bedGraph_tr    
+    .collectFile { pos, track, file -> 
+       [ "name_$track", file ]    
+    }
+    .println() 
+       
+/*
+  
 // I could or generate bed files then it would be simple to join by cage just by column
 // or I i continue using bedgraph (more compress) then I have to get all bedGraph of a single cage
 // read them and generate a new bedGraph file this time with relative coordinates
 
-//    #cat *.bedGraph > bedGraph_file
+
+
+process joinData {
+//    
+//    input: 
+//    set val (f_pos_name), val (track), file ('bG_file') from bedGraph_tr
+//    file f_pos from pos_files2
+    
+    output:
+    set val(f_pos_name), file('*.bedGraph') into bedGraph
+    
+    """
+    cat $bG_file | grep $track >>   
+    pergola_rules.py -i $f_pos -o $correspondence_f -fs ";" -n -f bedGraph -nt
+    """
+    
+}
 
 //bedGraph_flat = bedGraph2.map { it ->
 //   
