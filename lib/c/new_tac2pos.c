@@ -443,6 +443,8 @@ int readCoord (char **fl, int start, int nFiles, int * n_tracks)
 
 	end = start + nFiles;
 	int i = 0;
+	//File header
+	fprintf (stdout, "Cage;Index;Time;XPos;YPos;File;EucDistance\n");
 
 	for (fc = start; fc < end; fc += 1)
 	{
@@ -991,8 +993,6 @@ void readCoordinates (int size, FILE *fd, info2coord * info, int n_tr_file)
 	  	  n_tr_file = 12;
   	  }
 
-  //File header
-  fprintf (stdout, "Cage;Index;Time;XPos;YPos;File;EucDistance\n");
   for (n=0; n<=i; n+=10)
 	{
 	   //printf ("n is  -------------:%d\t %i\n", n, i);
