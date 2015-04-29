@@ -8,7 +8,7 @@
 #################################################################################
 */
 
-params.tac_files = "phecomp/data/CRG/20120502_FDF_CRG/*.tac"
+params.tac_files = "/phecomp/data/CRG/20120502_FDF_CRG/20120502_FDF_CRG/test/*.tac"
 
 tac_files_path = "$HOME/${params.tac_files}"
 
@@ -64,15 +64,11 @@ process extractPosition {
 Another way of duplicating the channels
 pos_files1 = Channel.create() 
 pos_files2 = Channel.create() 
-
-pos_file.into(pos_files1, pos_files2) 
-*/ 
-//(pos_file_g, pos_file2bedGr) = pos_file.split (2)
-//
+ */
 
 /*
  * Writing position file
-*/ 
+ */ 
 
 pos_files1
     .subscribe {
@@ -87,11 +83,7 @@ pos_files1
  * Se puede unir despues y hacer luego la coordinadas relativas???
  * Puedo leer directamente el bed o el bed graph no deja de ser un archivo csv
  */
-pos_files2Flat = pos_files2.flatten().map { single_pos_file ->
-   
-   println ">>>>>>>>>>>>>${single_pos_file.name}"
-//   println ">>>>>>>>>>>>>${single_pos_file.text}"
-   
+pos_files2Flat = pos_files2.flatten().map { single_pos_file ->   
    def name = single_pos_file.name
    def content = single_pos_file
    [ name,  content ]
@@ -101,18 +93,13 @@ process joinPosCh {
     
     input: 
     set val (f_pos_name), file ('f_pos') from pos_files2Flat
-//    file f_pos from pos_files2
     
     output:
     set val(f_pos_name), file('*.bedGraph') into bedGraph
     set val(f_pos_name), file('*.bedGraph') into bedGraph2
-//    set val(f_pos_name), file('*.bed') into bedGraph
-//    set val(f_pos_name), file('*.bed') into bedGraph2
-//    set val(f_pos_name), file('bedGraph_file') into bedGraph
-    //pergola_rules.py -i "/Users/jespinosa/phecomp/processedData/201205_FDF_CRG/tac2activity/20120502_FDF_CRG_c6.tac.pos" -o "/Users/jespinosa/git/pergola/test/position2pergola.txt" -fs ";" -n -nt
 
-//    #cat *.bedGraph > bedGraph_file
-//    pergola_rules.py -i $f_pos -o $correspondence_f -fs ";" -n -f bed -nt 
+    // Command example
+    //pergola_rules.py -i "/Users/jespinosa/phecomp/processedData/201205_FDF_CRG/tac2activity/20120502_FDF_CRG_c6.tac.pos" -o "/Users/jespinosa/git/pergola/test/position2pergola.txt" -fs ";" -n -nt
 
     """ 
     pergola_rules.py -i $f_pos -o $correspondence_f -fs ";" -n -f bedGraph -nt
@@ -120,12 +107,8 @@ process joinPosCh {
 }
 
 bedGraph2 
-    .subscribe { pos_file, bedGraph_files -> 
-//        println "pos_file*********** ${pos_file}"
-//        println "bedgraph files ****** ${bedGraph_files}"
-        
+    .subscribe { pos_file, bedGraph_files ->   
         for ( it in bedGraph_files ) {
-//            println "^^^^^^^^^^^^^^$it"
             it.copyTo( dump_dir.resolve ( "${pos_file}${it.name}" ) )
             }  
     }
@@ -133,10 +116,8 @@ bedGraph2
 bedGraph_tr = bedGraph.map {pos_file, bedGraph_files ->
         bedGraph_files .collect {
             def pattern = it.name =~/^tr_(\d+).*$/
-            //println "##########$it.name"
-            //println pattern[0][1]
             def track = pattern[0][1]
-            //println "########## ${pos_file} ${track}   ${it}"
+
             [ pos_file, track,  it ]
         }
     }
