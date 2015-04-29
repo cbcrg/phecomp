@@ -16,7 +16,7 @@ println "path: $tac_files_path"
 
 tac_files = Channel.fromPath(tac_files_path)
 
-path_tac2pos = "/Users/jespinosa/git/phecomp/lib/c/"
+path_tac2pos = "$HOME/git/phecomp/lib/c/"
 
 correspondence_f_path = "$HOME/git/pergola/test/position2pergola.txt"
 correspondence_f = file(correspondence_f_path)
