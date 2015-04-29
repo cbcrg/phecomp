@@ -25,6 +25,8 @@ correspondence_f = file(correspondence_f_path)
 correspondence_f_bG_path = "$HOME/git/pergola/test/bedGraph2pergola.txt"
 correspondence_f_bG = file(correspondence_f_bG_path)
 
+correspondence_f_bG_tr_path = "$HOME/git/pergola/test/bedGraphWithTr2pergola.txt"
+correspondence_f_bG_tr = file(correspondence_f_bG_tr_path)
 
 /* 
  * Creating results folder
@@ -132,17 +134,34 @@ bG_by_track = bedGraph_tr
    .map { file -> tuple( file, file.baseName.tokenize('_')[1]) }
 //   .println() 
 
+process add_track2file {
+    input:
+    set file ('bedGraph_f'), val(tr) from bG_by_track
+    
+    output:
+    set file ('*.txt'), val(tr) into bG_by_track_col
+    
+    
+    """
+    awk '{OFS="\t"; print \$1,\$2,\$3,\$4, ${tr}}' ${bedGraph_f} > tr_${tr}.txt   
+    """        
+}
+
+/*
+bG_by_track_col
+    .println()
+*/
 
 process bG_to_relative_coord {       
 
     input:
-    set file ('bedGraph_f'), val(tr) from bG_by_track
+    set file ('bedGraph_f'), val(tr) from bG_by_track_col
     
     output:
     set file ('*.bedGraph'), val(tr) into bG_rel_coord
     
     """ 
-    pergola_rules.py -i $bedGraph_f -o $correspondence_f_bG -f bedGraph -nh -s 'chrm' 'start' 'end' 'value' -e
+    pergola_rules.py -i $bedGraph_f -o $correspondence_f_bG_tr -f bedGraph -nh -s 'chrm' 'start' 'end' 'value' 'tr' -e 
     """ 
     
 }
@@ -151,4 +170,4 @@ bG_rel_coord
     .subscribe  {  
         println "Copying %%%%%%%%%%%%%: ${it[1]}_relCoord.bedGraph"
         it[0].copyTo( dump_dir.resolve ( "tr_${it[1]}_relCoord.bedGraph" ) )
-    }   
+    }  
