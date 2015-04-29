@@ -142,32 +142,49 @@ bedGraph_tr = bedGraph.map {pos_file, bedGraph_files ->
  
 bG_by_track = bedGraph_tr    
     .collectFile { pos, track, file -> 
-       [ "bedGraph_$track", file ]   
+       [ "bedGraph_$track", file, "$track" ]
+//       println "--------track is $track"
     }
-   // .println() 
-
+   .flatMap() 
+   .map { file -> tuple( file, file.baseName.tokenize('_')[1]) }
+   .println() 
+   
+//bG_by_track
+//    .subscribe { println "ddddddddd ${it.name}"}
 // Esto fuera si hago lo de abajo un channel cuando se utiliza queda vacio
-//bG_by_track.subscribe  {  
-//    println ">>>> name file ${it}"
-//}    
-
-
+/*
+bG_by_track.subscribe  {  
+    println "###### name file ${it}"
+}    
+*/
+/*
 process bG_to_relative_coord {       
 
     input: 
-    set val(pos_name), val (track), file ('bedGraph_f') from bG_by_track
+//    set val(pos_name), val (track), file ('bedGraph_f') from bG_by_track
 //    set val (cage), val (step),
-    output:
-    set val(track), stdout into rel_coord_bG
+    set file ('bedGraph_f'), val(tr) from bG_by_track
     
-    println ">>>> name file track"
+    output:
+//    set val(track), stdout into rel_coord_bG
+    set stdout, tr into rel_coord_bG
+    
+//    println ">>>> name file track"
     
     """
-    cat ${bedGraph_f} > /dev/stdout
+    pergola_rules.py -i $f_pos -o $correspondence_f -fs ";" -n -f bedGraph -nt
     """
 
 }
 
+rel_coord_bG
+    . println()
+    
+/*    
+    .subscribe {
+        println ">>>>>file relative coord ${it}"
+//        it.copyTo( dump_dir.resolve ( it[1] ) ) 
+    }
 /*
 rel_coord_bG.subscribe  {  
 //    println ">>>> ${it}"
