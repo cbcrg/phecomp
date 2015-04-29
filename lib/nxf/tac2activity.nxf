@@ -21,7 +21,10 @@ path_tac2pos = "/Users/jespinosa/git/phecomp/lib/c/"
 correspondence_f_path = "$HOME/git/pergola/test/position2pergola.txt"
 correspondence_f = file(correspondence_f_path)
 
-//path_pergola_scr = "${HOME}/"
+// Correspondence file for bedGraph files
+correspondence_f_bG_path = "$HOME/git/pergola/test/bedGraph2pergola.txt"
+correspondence_f_bG = file(correspondence_f_bG_path)
+
 
 /* 
  * Creating results folder
@@ -142,132 +145,29 @@ bedGraph_tr = bedGraph.map {pos_file, bedGraph_files ->
  
 bG_by_track = bedGraph_tr    
     .collectFile { pos, track, file -> 
-       [ "bedGraph_$track", file, "$track" ]
-//       println "--------track is $track"
+       [ "bedGraph_$track", file ]
     }
    .flatMap() 
    .map { file -> tuple( file, file.baseName.tokenize('_')[1]) }
-   .println() 
-   
-//bG_by_track
-//    .subscribe { println "ddddddddd ${it.name}"}
-// Esto fuera si hago lo de abajo un channel cuando se utiliza queda vacio
-/*
-bG_by_track.subscribe  {  
-    println "###### name file ${it}"
-}    
-*/
-/*
+//   .println() 
+
+
 process bG_to_relative_coord {       
 
-    input: 
-//    set val(pos_name), val (track), file ('bedGraph_f') from bG_by_track
-//    set val (cage), val (step),
+    input:
     set file ('bedGraph_f'), val(tr) from bG_by_track
     
     output:
-//    set val(track), stdout into rel_coord_bG
-    set stdout, tr into rel_coord_bG
+    set file ('*.bedGraph'), val(tr) into bG_rel_coord
     
-//    println ">>>> name file track"
-    
-    """
-    pergola_rules.py -i $f_pos -o $correspondence_f -fs ";" -n -f bedGraph -nt
-    """
-
-}
-
-rel_coord_bG
-    . println()
-    
-/*    
-    .subscribe {
-        println ">>>>>file relative coord ${it}"
-//        it.copyTo( dump_dir.resolve ( it[1] ) ) 
-    }
-/*
-rel_coord_bG.subscribe  {  
-//    println ">>>> ${it}"
-    println "Copying pos file: $it.name"
-}
-
-/*
-  
-// I could or generate bed files then it would be simple to join by cage just by column
-// or I i continue using bedgraph (more compress) then I have to get all bedGraph of a single cage
-// read them and generate a new bedGraph file this time with relative coordinates
-
-
-
-process joinData {
-//    
-//    input: 
-//    set val (f_pos_name), val (track), file ('bG_file') from bedGraph_tr
-//    file f_pos from pos_files2
-    
-    output:
-    set val(f_pos_name), file('*.bedGraph') into bedGraph
-    
-    """
-    cat $bG_file | grep $track >>   
-    pergola_rules.py -i $f_pos -o $correspondence_f -fs ";" -n -f bedGraph -nt
-    """
+    """ 
+    pergola_rules.py -i $bedGraph_f -o $correspondence_f_bG -f bedGraph -nh -s 'chrm' 'start' 'end' 'value' -e
+    """ 
     
 }
-
-//bedGraph_flat = bedGraph2.map { it ->
-//   
-//   println "flat ???????????????????${it[1]}"
-//   println "??????????? ${it.name}"
-////   println ">>>>>>>>>>>>>${single_pos_file.text}"
-   
-
-//}
-/*
-bedGraph.subscribe  {  
-    println ">>>> ${it[0]}"
-    println "Copying pos file: $it[1]"
-    
-    file_bedGr = it[1]
-    file_bedGr.copyTo( dump_dir.resolve ( "${it[0]}${file_bedGr.name}.bedGraph" ) )
-//    oneOutFile.copyTo( resultDirFileOneOut.resolve ( "cage${it[0]}.int" ) )
-}
-
-/*
-bedGraph2
-    .subscribe  {  println "##################### ${it[0]}" }
-
-/*    
-//        println ">>>> {bedGr_file}{it[0]}.{bedGr_file}"
-//        bedGr_file = it[1]
-//        oneOutFile.copyTo( resultDirFileOneOut.resolve ( "{bedGr_file}{it[0]}.{bedGr_file}" ) )
-}
-
-/*
- * Writing bedGraph file
- */ 
-/* 
-bedGraph2
-    .flatMap()
-    .subscribe { println "File: ${it.name} => ${it.text}" 
-        it.copyTo( dump_dir.resolve ( it.name ) ) }
-/*    
-bedGraph2
-    .subscribe {
-        println "Copying pos file: $it"
-        it.copyTo( dump_dir.resolve ( it.name ) )
-  }
-*/
-  
-
-/*
-process {
-
-    input:
-    bedGr from bedGraph
-    
-    output:
-    
-    
-}
-*/ 
+       
+bG_rel_coord
+    .subscribe  {  
+        println "Copying %%%%%%%%%%%%%: ${it[1]}_relCoord.bedGraph"
+        it[0].copyTo( dump_dir.resolve ( "tr_${it[1]}_relCoord.bedGraph" ) )
+    }   
