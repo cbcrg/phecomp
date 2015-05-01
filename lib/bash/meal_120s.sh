@@ -35,5 +35,8 @@ do
 	
 	awk '{OFS="\t"; print $1,$2,$3,$4,$5,$6,$2,$3,$7}' ${filename}_joined.bed > ${filename}_joined_all.bed
 	
+	# Removing raw file 
+	rm ${filename}_joined.bed
+	
 done
 	
