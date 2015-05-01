@@ -63,7 +63,7 @@ process extractPosition {
  ini_name="\${name_file:0:8}" 
  if [[ "\${ini_name}" = "20120502" ]] ; then
     cat ${tac}.pos | head -1 > ${tac}pos
-    cat ${tac}.pos | awk '{ if (\$3 > 1335985200) print; }' >> ${tac}pos
+    cat ${tac}.pos | awk '{ if (\$3 > 1335985200) print; }' >> ${tac}.pos
  else
     echo -e "No changes in this files\\n"
  fi
