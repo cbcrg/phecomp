@@ -16,17 +16,17 @@ source ("/Users/jespinosa/git/phecomp/lib/R/plotParamPublication.R")
 
 home <- Sys.getenv("HOME")
 
-path2Tbl <- "/phecomp/20140512_probOfIncreasingInt/20120502_FDF_habDevW1_W2/prob/tableResults.tbl"
-# path2Tbl <- "/phecomp/20140512_probOfIncreasingInt/20130130_FCSC_habDevW1_W2/prob/tableResults.tbl"
+# path2Tbl <- "/phecomp/20140512_probOfIncreasingInt/20120502_FDF_habDevW1_W2/prob/tableResults.tbl"
+path2Tbl <- "/phecomp/20140512_probOfIncreasingInt/20130130_FCSC_habDevW1_W2/prob/tableResults.tbl"
 df.probSeq <- read.table (paste (home, path2Tbl, sep = ""), sep="\t", dec=".", header=T, stringsAsFactors=T)
 head (df.probSeq)
 df.probSeq$time <- df.probSeq$step * 300 / (3600*24) 
 
 # For high-fat food
-df.probSeq <- labelGroups (df.probSeq)
+# df.probSeq <- labelGroups (df.probSeq)
 
 # For free-choice
-# df.probSeq <- labelGroups (df.probSeq, ctrlGroup = "even", labelCase = "FC diet")
+df.probSeq <- labelGroups (df.probSeq, ctrlGroup = "even", labelCase = "FC diet")
 
 df.probSeq$cage <- as.factor (df.probSeq$cage)
 df.probSeq$diet <- as.factor (df.probSeq$diet)
