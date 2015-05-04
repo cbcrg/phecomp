@@ -63,7 +63,7 @@ process extractPosition {
  ini_name="\${name_file:0:8}" 
  if [[ "\${ini_name}" = "20120502" ]] ; then
     cat ${tac}.pos | head -1 > ${tac}pos
-    tail -n +2 ${tac}.pos | sed 's/;/ /g' | awk '{ if (\$3 > 1335985200) print; }' | sed 's/ /;/g' >> ${tac}.pos
+    tail -n +2 ${tac}.pos | awk -F  ";" '{ if (\$3 > 1335985200) print; }' >> ${tac}.pos
  else
     echo -e "No changes in this files\\n"
  fi
@@ -181,3 +181,4 @@ bG_rel_coord
         println "Copying %%%%%%%%%%%%%: ${it[1]}_relCoord.bedGraph"
         it[0].copyTo( dump_dir.resolve ( "tr_${it[1]}_relCoord.bedGraph" ) )
     }  
+*/
