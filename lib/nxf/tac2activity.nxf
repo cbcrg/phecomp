@@ -124,6 +124,11 @@ bedGraph2
             it.copyTo( dump_dir.resolve ( "${pos_file}${it.name}" ) )
             }  
     }
+
+// Collects here just get after flatting the correspondece bw
+// position and bedgraph files 
+// pos1; tr_1.bedGraph
+// pos1; tr_2.bedGraph...
     
 bedGraph_tr = bedGraph.map {pos_file, bedGraph_files ->
         bedGraph_files .collect {
@@ -135,7 +140,9 @@ bedGraph_tr = bedGraph.map {pos_file, bedGraph_files ->
     }
     .flatMap()
 //    .println()
- 
+
+// Here with collect file as bedgraph files have the same name I can
+// group them by this name and of course their content
 bG_by_track = bedGraph_tr    
     .collectFile { pos, track, file -> 
        [ "bedGraph_$track", file ]
