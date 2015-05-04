@@ -79,7 +79,8 @@ process extractPosition {
 /*
 Another way of duplicating the channels
 pos_files1 = Channel.create() 
-pos_files2 = Channel.create() 
+pos_files2 = Channel.create()
+pos_files.into(pos_files1, pos_files2) 
  */
 
 /*
