@@ -68,7 +68,8 @@ process extractPosition {
     tail -n +2 ${tac}.txt | awk -F ";" '{ if (\$7 != 0) print; }' > temp.txt
     awk -F  ";" '{ if (\$3 > 1335985200) print; }' temp.txt >> ${tac}.pos
  else
-    mv  ${tac}.txt ${tac}.pos
+ 	cat ${tac}.txt | head -1 > ${tac}.pos
+    tail -n +2 ${tac}.txt | awk -F ";" '{ if (\$7 != 0) print; }' >> ${tac}.pos
     echo -e "No changes in this files\\n"
  fi
  """
