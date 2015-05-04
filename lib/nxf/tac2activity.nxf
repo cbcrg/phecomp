@@ -58,11 +58,15 @@ process extractPosition {
    
  """
  ${path_tac2pos}new_tac2pos -file $tac -action position > ${tac}.txt
+ 
  name_file=${tac}.txt
  ini_name="\${name_file:0:8}" 
  if [[ "\${ini_name}" = "20120502" ]] ; then
     cat ${tac}.txt | head -1 > ${tac}.pos
-    tail -n +2 ${tac}.txt | awk -F  ";" '{ if (\$3 > 1335985200) print; }' >> ${tac}.pos
+    # tail -n +2 ${tac}.txt | awk -F ";" '{ if (\$7 != 0) print; }' | awk -F  ";" '{ if (\$3 > 1335985200) print; }' >> ${tac}.pos
+    # I eliminate all zeros, files much smaller, two awk, otherwise to much memory
+    tail -n +2 ${tac}.txt | awk -F ";" '{ if (\$7 != 0) print; }' > temp.txt
+    awk -F  ";" '{ if (\$3 > 1335985200) print; }' temp.txt >> ${tac}.pos
  else
     mv  ${tac}.txt ${tac}.pos
     echo -e "No changes in this files\\n"
