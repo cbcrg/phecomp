@@ -63,7 +63,7 @@ process extractPosition {
  ini_name="\${name_file:0:8}" 
  if [[ "\${ini_name}" = "20120502" ]] ; then
     cat ${tac}.pos | head -1 > ${tac}pos
-    cat ${tac}.pos | awk '{ if (\$3 > 1335985200) print; }' >> ${tac}.pos
+    tail -n +2 ${tac}.pos | sed 's\/;\/ \/g' | awk '{ if (\$3 > 1335985200) print; }' | sed 's\/ \/;\/g' >> ${tac}.pos
  else
     echo -e "No changes in this files\\n"
  fi
@@ -94,6 +94,7 @@ pos_files1
  * Se puede unir despues y hacer luego la coordinadas relativas???
  * Puedo leer directamente el bed o el bed graph no deja de ser un archivo csv
  */
+/* del
 pos_files2Flat = pos_files2.flatten().map { single_pos_file ->   
    def name = single_pos_file.name
    def content = single_pos_file
@@ -160,7 +161,7 @@ process add_track2file {
 bG_by_track_col
     .println()
 */
-
+/* del
 process bG_to_relative_coord {       
 
     input:
