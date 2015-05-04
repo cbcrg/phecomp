@@ -57,14 +57,14 @@ process extractPosition {
  println "Input name is $tac.name"
    
  """
- ${path_tac2pos}new_tac2pos -file $tac -action position > ${tac}.pos
- 
- name_file=${tac}.pos
+ ${path_tac2pos}new_tac2pos -file $tac -action position > ${tac}.txt
+ name_file=${tac}.txt
  ini_name="\${name_file:0:8}" 
  if [[ "\${ini_name}" = "20120502" ]] ; then
-    cat ${tac}.pos | head -1 > ${tac}pos
-    tail -n +2 ${tac}.pos | awk -F  ";" '{ if (\$3 > 1335985200) print; }' >> ${tac}.pos
+    cat ${tac}.txt | head -1 > ${tac}.pos
+    tail -n +2 ${tac}.txt | awk -F  ";" '{ if (\$3 > 1335985200) print; }' >> ${tac}.pos
  else
+    mv  ${tac}.txt ${tac}.pos
     echo -e "No changes in this files\\n"
  fi
  """
@@ -94,7 +94,7 @@ pos_files1
  * Se puede unir despues y hacer luego la coordinadas relativas???
  * Puedo leer directamente el bed o el bed graph no deja de ser un archivo csv
  */
-/* del
+// /* del
 pos_files2Flat = pos_files2.flatten().map { single_pos_file ->   
    def name = single_pos_file.name
    def content = single_pos_file
@@ -161,7 +161,7 @@ process add_track2file {
 bG_by_track_col
     .println()
 */
-/* del
+// /* del
 process bG_to_relative_coord {       
 
     input:
@@ -181,4 +181,5 @@ bG_rel_coord
         println "Copying %%%%%%%%%%%%%: ${it[1]}_relCoord.bedGraph"
         it[0].copyTo( dump_dir.resolve ( "tr_${it[1]}_relCoord.bedGraph" ) )
     }  
-*/
+//del
+// */ 
