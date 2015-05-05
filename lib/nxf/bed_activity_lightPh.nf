@@ -18,7 +18,8 @@ tac_files = Channel.fromPath(tac_files_path)
 
 path_tac2pos = "$HOME/git/phecomp/lib/c/"
 
-correspondence_f_path = "$HOME/git/pergola/test/position2pergola.txt"
+//correspondence_f_path = "$HOME/git/pergola/test/position2pergola.txt"
+correspondence_f_path = "$HOME/git/pergola/test/pos_short2pergola.txt"
 correspondence_f = file(correspondence_f_path)
 
 /* 
@@ -43,6 +44,7 @@ process extractPosition {
  output:
  file '*.pos' into pos_files
  file '*.pos' into pos_files1
+ file 'min_max.txt' into min_max
      
  script:
  println "Input name is $tac.name"
@@ -62,27 +64,70 @@ process extractPosition {
      tail -n +2 tmp.txt | awk -F ";" '{ if (\$3 != 0) print; }' >> ${tac}.pos
      echo -e "No changes in this files\\n"
  fi     
-     
- """
+
+tail -n +2 ${tac}.pos | awk -F ";"  'BEGIN{OFS=";";} { if (min=="") { min=max=\$2 }; if(\$2>max){ max=\$2 }; if(\$2< min) { min=\$2 }; total+=\$2; count+=1 } END { print "1",min,"0",max }' >> min_max.txt    
+"""
+}
+
+/*      
+min_max
+    .collectFile(name: 'sample.txt')
+    .splitCsv(header: ['Cage', 'Time', 'EucDistance', 'TimeEnd'], skip: 0 ) 
+    .subscribe { it ->
+        println "Entries are saved to file: $it"
+        it.copyTo( dump_dir_bed.resolve ( "file.txt" ) )
+//        println "File content is: ${it.text}"
+    }
+*/
+
+process join_min_max {
+
+    input:
+    file min_max from min_max
+    
+    output:
+    file 'min_max.bed' into min_max_bed
+    
+    """
+    cat $min_max >> min_max.bed
+    """ 
 }
 
 
+mix_max_joined = min_max_bed
+    .collectFile(name: 'sample.txt')
+    
 
+
+process get_phases {
+    input:
+    file min_max from mix_max_joined
+ 
+    output:
+    set file('phases_light_inverted.bed') into light_phases
+    set file('phases_dark_inverted.bed') into dark_phases
+    
+    """ 
+    pergola_rules.py -i $min_max -o $correspondence_f -fs ";" -f bed -nh -s 'Cage' 'Time' 'EucDistance' 'TimeEnd' -e
+    sed 's/dark/light/' phases_dark.bed > phases_light_inverted.bed
+    sed 's/light/dark/' phases_light.bed > phases_dark_inverted.bed   
+    """ 
+    }
 /*
- * Writing position file
- */ 
+ * Writing the files in the stdout to see how it looks like
+ */
+/*
+light_phases
+ .subscribe {
+        println "Entries are saved to file: $it"
+        println "File content is: ${it.text}"
+    }
 
-pos_files1
-    .subscribe {
-        println "Copying pos file: $it"
-        it.copyTo( dump_dir_bed.resolve ( it.name ) )
-  }
-  
-// I need to now from which pos files the tr files have being generated
-// otherwise tr_1 from pos-2 will overwrite tr_1 from pos_1
-pos_files_flat = pos_files.flatten().map { single_pos_file ->   
-   def name = single_pos_file.name
-   def content = single_pos_file
-   [ name,  content ]
-}
+dark_phases
+ .subscribe {
+        println "Entries are saved to file: $it"
+        println "File content is: ${it.text}"
+    }
+*/
 
+   
