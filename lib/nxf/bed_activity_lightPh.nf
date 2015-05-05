@@ -113,6 +113,7 @@ process get_phases {
     sed 's/light/dark/' phases_light.bed > phases_dark_inverted.bed   
     """ 
     }
+
 /*
  * Writing the files in the stdout to see how it looks like
  */
@@ -161,8 +162,7 @@ process pos_to_bed {
     // I only collect tracks not phases
     set val(f_pos_name), file('tr*.bed') into bed
     set val(f_pos_name), file('tr*.bed') into bed_write
-    set file('phases_light.bed') into light_phases
-    set file('phases_dark.bed') into dark_phases
+    
     script:
     println ("***********${f_pos}")
     
@@ -229,6 +229,7 @@ def bed_by_track_d = Channel.create()
 def bed_by_track_to_w = Channel.create()
 bed_by_track_1.into(bed_by_track_l, bed_by_track_d, bed_by_track_to_w) 
 
+
 bed_by_track_to_w.subscribe  {  
         println "Writing: ${it[1]}_pos_filt.bed"
         it[0].copyTo( dump_dir_bed.resolve ( "tr_${it[1]}_pos_filt.bed" ) )
@@ -238,43 +239,32 @@ bed_by_track_to_w.subscribe  {
  * Bedtools intersect light phases with bed activity files
  */ 
 
+//bed_by_track_l
+//    .println()
+    
 process intersect_light_activity {
     input: 
     set file ('bed_tr'), val (tr) from bed_by_track_l
-    set file ('light_phases') from light_phases
+    file ('light_phases') from light_phases.first()
     
     output:
-    set val(tr), file('*.int') into bed
+    set val(tr), file('*.int') into bed_light_activity
     
     //Example command
     // bedtools intersect -a ${filename}_compl.bed -b ${path2files}exp_phases_hab.bed > ${filename}"_compl_hab.bed"
-    
+    script:
+    println( "-------------$tr")
     """
     cat $bed_tr | sort -k1,1 -k2,2n > ${bed_tr}_sorted.bed
     bedtools intersect -a ${bed_tr}_sorted.bed -b ${light_phases} > tr_${tr}_light.int
     """    
 } 
 
-
-
-process intersect_dark_activity {
-    input: 
-    set file ('bed_tr'), val (tr) from bed_by_track_d
-    set file ('dark_phases') from dark_phases
-    
-    output:
-    set val(tr), file('*.int') into bed_dark_intersect
-    
-    //Example command
-    // bedtools intersect -a ${filename}_compl.bed -b ${path2files}exp_phases_hab.bed > ${filename}"_compl_hab.bed"
-    
-    """
-    cat $bed_tr | sort -k1,1 -k2,2n > ${bed_tr}_sorted.bed
-    bedtools intersect -a ${bed_tr}_sorted.bed -b ${dark_phases} > tr_${tr}_dark.int
-    """    
-} 
-
-bed_dark_intersect.subscribe  {  
+bed_light_activity
+    .println()
+/*
+bed_light_activity.subscribe  {  
         println "Writing: ${it[1]}_intersect.bed"
         it[1].copyTo( dump_dir_bed.resolve ( "tr_${it[0]}_intersect.bed" ) )
     }
+*/
