@@ -42,15 +42,42 @@ process extractPosition {
  
  output:
  file '*.pos' into pos_files
- 
+ file '*.pos' into pos_files1
+     
  script:
  println "Input name is $tac.name"
    
  """
- ${path_tac2pos}new_tac2pos -file $tac -action position > ${tac}.pos
+ ${path_tac2pos}new_tac2pos -file $tac -action position > ${tac}.txt
+ cat ${tac}.txt | head -1 | awk -F ";" '{OFS=";"; print \$1,\$3,\$7,"TimeEnd"}'> ${tac}.pos
+ tail -n +2 ${tac}.txt | awk -F ";" '{OFS=";"; print \$1,\$3,\$7,\$3+1}' >> tmp.txt
+ 
+ name_file=${tac}.txt
+ ini_name="\${name_file:0:8}" 
+ 
+ if [[ "\${ini_name}" = "20120502" ]] ; then
+     tail -n +2 tmp.txt | awk -F ";" '{ if (\$3 != 0) print; }' >> tmp_short.txt
+     awk -F  ";" '{ if (\$2 > 1335985200) print; }' tmp_short.txt >> ${tac}.pos
+ else
+     tail -n +2 tmp.txt | awk -F ";" '{ if (\$3 != 0) print; }' >> ${tac}.pos
+     echo -e "No changes in this files\\n"
+ fi     
+     
  """
 }
 
+
+
+/*
+ * Writing position file
+ */ 
+
+pos_files1
+    .subscribe {
+        println "Copying pos file: $it"
+        it.copyTo( dump_dir_bed.resolve ( it.name ) )
+  }
+  
 // I need to now from which pos files the tr files have being generated
 // otherwise tr_1 from pos-2 will overwrite tr_1 from pos_1
 pos_files_flat = pos_files.flatten().map { single_pos_file ->   
@@ -59,96 +86,3 @@ pos_files_flat = pos_files.flatten().map { single_pos_file ->
    [ name,  content ]
 }
 
-/* Generate a bed from each position file
- * Files were already filtered for activities equal to zero
- */
-process pos_to_bed {
-    
-    input: 
-    set val (f_pos_name), file ('f_pos') from pos_files_flat
-    
-    output:
-    // I only collect tracks not phases
-    set val(f_pos_name), file('tr*.bed') into bed
-    set val(f_pos_name), file('tr*.bed') into bed_write
-    set file('phases_light.bed') into light_phases 
-    script:
-    println ("***********${f_pos}")
-    
-    """ 
-    pergola_rules.py -i $f_pos -o $correspondence_f -fs ";" -n -f bed -nt -e
-    """
-}
-
-//bed.println() //del
-
-/*
- * Writing bed files del
- */
-
-/* 
-bed_write 
-    .subscribe { pos_file, bed_files ->   
-        for ( it in bed_files ) {
-            it.copyTo( dump_dir_bed.resolve ( "${pos_file}${it.name}" ) )
-            }  
-    }
-*/
-    
-// Collects here just get after flatting the correspondece bw
-// position and bed files 
-// pos1; tr_1.bed
-// pos1; tr_2.bed...
-
-bed_tr = bed.map {pos_file, bed_files ->
-        bed_files .collect {
-            def pattern = it.name =~/^tr_(\d+).*$/
-            def track = pattern[0][1]
-
-            [ pos_file, track,  it ]
-        }
-    }
-    .flatMap()
-    
-/*
- * I collect all files belonging to the same track 
- */ 
-bed_by_track_1 = bed_tr    
-    .collectFile { pos, track, file -> 
-       [ "bed_$track", file ]
-    }
-   .flatMap() 
-   .map { file -> tuple( file, file.baseName.tokenize('_')[1]) }
-//   .println()
-
-/*
- * Duplicating the channel, to write the file and to continue with bedtools
- */
-def bed_by_track = Channel.create()
-def bed_by_track_to_w = Channel.create()
-bed_by_track_1.into(bed_by_track, bed_by_track_to_w) 
-
-bed_by_track_to_w.subscribe  {  
-        println "Writing: ${it[1]}_pos_filt.bed"
-        it[0].copyTo( dump_dir_bed.resolve ( "tr_${it[1]}_pos_filt.bed" ) )
-    }
-
-/*
- * Bedtools intersect light phases with bed activity files
- */
-process intersect_light_activity {
-    input: 
-    set file ('bed_tr'), val (tr) from bed_by_track
-    set file ('light_phases') from light_phases 
-    
-    output:
-    set val(), file('tr*.bed') into bed
-    
-    //Example command
-    // bedtools intersect -a ${filename}_compl.bed -b ${path2files}exp_phases_hab.bed > ${filename}"_compl_hab.bed"
-    """
-    cat $bed_tr | sort -k1,1 -k2,2n > ${bed_tr}_sorted.bed
-    bedtools intersect -a ${bed_tr}_sorted.bed -b $light_phases > tr_${tr}_light.int
-    """
-    
-} 
