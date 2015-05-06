@@ -257,8 +257,9 @@ process intersect_light_activity {
     file ('light_phases') from light_phases.first()
     
     output:
-    set val(tr), file('*_light.int') into bed_light_activity
-    set val(tr), file('*_light.int') into bed_light_activity_to_w
+    set val(tr), file('*_light.bed') into bed_light_activity
+    set val(tr), file('*_light.bed') into bed_light_activity_to_w
+    set val(tr), file('*_light_sum.bed') into bed_light_activity_sum
     
     //Example command
     // bedtools intersect -a ${filename}_compl.bed -b ${path2files}exp_phases_hab.bed > ${filename}"_compl_hab.bed"
@@ -266,8 +267,10 @@ process intersect_light_activity {
     println( "-------------$tr")
     
     """
-    cat $bed_tr | sort -k1,1 -k2,2n > ${bed_tr}_sorted.bed
-    bedtools intersect -a ${bed_tr}_sorted.bed -b ${light_phases} > tr_${tr}_light.int
+    cat $bed_tr | sort -k1,1 -k2,2n > ${bed_tr}_sorted.tmp
+    bedtools intersect -a ${bed_tr}_sorted.tmp -b ${light_phases} > tr_${tr}_light.bed
+    # Get the summatory of activity during light phases
+    bedtools map -a ${bed_tr}_sorted.tmp -b ${light_phases} -c 5 -o sum -null 0 > tr_${tr}_light_sum.bed
     """    
 } 
 
@@ -276,6 +279,10 @@ bed_light_activity.subscribe  {
         it[1].copyTo( dump_dir_bed.resolve ( "tr_${it[0]}_light_intersect.bed" ) )
     }
 
+bed_light_activity_sum.subscribe  {  
+        println "Writing: ${it[0]}_light_sum.bed"
+        it[1].copyTo( dump_dir_bed.resolve ( "tr_${it[0]}_light_sum.bed" ) )
+    }
 /*
  * Bedtools intersect dark phases with bed activity files
  */    
@@ -285,8 +292,9 @@ process intersect_dark_activity {
     file ('dark_phases') from dark_phases.first()
     
     output:
-    set val(tr), file('*_dark.int') into bed_dark_activity
-    set val(tr), file('*_dark.int') into bed_dark_activity_to_w
+    set val(tr), file('*_dark.bed') into bed_dark_activity
+    set val(tr), file('*_dark.bed') into bed_dark_activity_to_w
+    set val(tr), file('*_dark_sum.bed') into bed_dark_activity_sum
     
     //Example command
     // bedtools intersect -a ${filename}_compl.bed -b ${path2files}exp_phases_hab.bed > ${filename}"_compl_hab.bed"
@@ -294,14 +302,21 @@ process intersect_dark_activity {
     println( "-------------$tr")
     
     """
-    cat $bed_tr | sort -k1,1 -k2,2n > ${bed_tr}_sorted.bed
-    bedtools intersect -a ${bed_tr}_sorted.bed -b ${dark_phases} > tr_${tr}_dark.int
+    cat $bed_tr | sort -k1,1 -k2,2n > ${bed_tr}_sorted.tmp
+    bedtools intersect -a ${bed_tr}_sorted.tmp -b ${dark_phases} > tr_${tr}_dark.bed
+    # Get the summatory of activity during dark phases
+    bedtools map -a ${bed_tr}_sorted.tmp -b ${dark_phases} -c 5 -o sum -null 0 > tr_${tr}_dark_sum.bed
     """    
 } 
 
 bed_dark_activity.subscribe  {  
         println "Writing: ${it[0]}_dark_intersect.bed"
         it[1].copyTo( dump_dir_bed.resolve ( "tr_${it[0]}_dark_intersect.bed" ) )
+    }
+
+bed_dark_activity_sum.subscribe  {  
+        println "Writing: ${it[0]}_dark_sum.bed"
+        it[1].copyTo( dump_dir_bed.resolve ( "tr_${it[0]}_dark_sum.bed" ) )
     }
 
 
