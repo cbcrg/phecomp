@@ -45,7 +45,8 @@ process extractPosition {
  file '*.pos' into pos_files
  file '*.pos' into pos_files1
  file 'min_max.txt' into min_max
-     
+ file 'min_max.txt' into min_max1
+      
  script:
  println "Input name is $tac.name"
    
@@ -93,15 +94,23 @@ process join_min_max {
     """ 
 }
 
-
 mix_max_joined = min_max_bed
     .collectFile(name: 'sample.txt')
-    
 
+mix_max_joined.subscribe  {  
+    println ">>>> ${it.text}"
+    }
+    
+println("=============================")
+def min_max_p = Channel.create()
+def min_max_j = Channel.create()
+
+mix_max_joined.into(min_max_p, min_max_j) 
+mix_max_p.println()
 
 process get_phases {
     input:
-    file min_max from mix_max_joined
+    file min_max from mix_max_j
  
     output:
     set file('phases_light_inverted.bed') into light_phases
