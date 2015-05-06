@@ -94,28 +94,50 @@ process join_min_max {
     """ 
 }
 
+def mix_max_joined = min_max_bed
+                    .reduce([]) { all, line -> all<<line }
+                    .map { it.text.join() }
+    
+//mix_max_joined
+//    .println()    
+/*    
 mix_max_joined = min_max_bed
     .collectFile(name: 'sample.txt')
+
 
 mix_max_joined.subscribe  {  
     println ">>>> ${it.text}"
     }
+*/
     
 println("=============================")
-def min_max_p = Channel.create()
-def min_max_j = Channel.create()
+//def min_max_p = Channel.create()
+//def min_max_j = Channel.create()
 
-mix_max_joined.into(min_max_p, min_max_j) 
-mix_max_p.println()
+//mix_max_joined.into(min_max_p, min_max_j) 
+
+//mix_max_p
+//    .println()
+
+/*
+def bed_by_track_l = Channel.create()
+def bed_by_track_d = Channel.create()
+def bed_by_track_to_w = Channel.create()
+
+bed_by_track_1.into(bed_by_track_l, bed_by_track_d, bed_by_track_to_w) 
+*/
+
+
 
 process get_phases {
     input:
-    file min_max from mix_max_j
+    file min_max from mix_max_joined
  
     output:
     set file('phases_light_inverted.bed') into light_phases
     set file('phases_dark_inverted.bed') into dark_phases
-    
+    set file('phases_light_inverted.bed') into light_phases_p
+    set file('phases_dark_inverted.bed') into dark_phases_p
     """ 
     pergola_rules.py -i $min_max -o $correspondence_f -fs ";" -f bed -nh -s 'Cage' 'Time' 'EucDistance' 'TimeEnd' -e
     sed 's/dark/light/' phases_dark.bed > phases_light_inverted.bed
@@ -123,6 +145,10 @@ process get_phases {
     """ 
     }
 
+light_phases_p
+    .subscribe {
+        println "${it.text}"
+        }
 /*
  * Writing the files in the stdout to see how it looks like
  */
@@ -327,5 +353,3 @@ bed_dark_activity_sum.subscribe  {
         println "Writing: ${it[0]}_dark_sum.bed"
         it[1].copyTo( dump_dir_bed.resolve ( "tr_${it[0]}_dark_sum.bed" ) )
     }
-
-
