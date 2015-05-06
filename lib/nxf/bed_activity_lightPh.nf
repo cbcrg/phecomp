@@ -270,7 +270,7 @@ process intersect_light_activity {
     cat $bed_tr | sort -k1,1 -k2,2n > ${bed_tr}_sorted.tmp
     bedtools intersect -a ${bed_tr}_sorted.tmp -b ${light_phases} > tr_${tr}_light.bed
     # Get the summatory of activity during light phases
-    bedtools map -a ${bed_tr}_sorted.tmp -b ${light_phases} -c 5 -o sum -null 0 > tr_${tr}_light_sum.bed
+    bedtools map -a ${light_phases} -b ${bed_tr}_sorted.tmp -c 5 -o sum -null 0 > tr_${tr}_light_sum.bed
     """    
 } 
 
@@ -305,7 +305,7 @@ process intersect_dark_activity {
     cat $bed_tr | sort -k1,1 -k2,2n > ${bed_tr}_sorted.tmp
     bedtools intersect -a ${bed_tr}_sorted.tmp -b ${dark_phases} > tr_${tr}_dark.bed
     # Get the summatory of activity during dark phases
-    bedtools map -a ${bed_tr}_sorted.tmp -b ${dark_phases} -c 5 -o sum -null 0 > tr_${tr}_dark_sum.bed
+    bedtools map -a ${dark_phases} -b ${bed_tr}_sorted.tmp -c 5 -o sum -null 0 > tr_${tr}_dark_sum.bed
     """    
 } 
 
