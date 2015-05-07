@@ -73,68 +73,10 @@ tail -n +2 ${tac}.pos | awk -F ";"  'BEGIN{OFS=";";} { if (min=="") { min=max=\$
 """
 }
 
-/*      
-min_max
-    .collectFile(name: 'sample.txt')
-    .splitCsv(header: ['Cage', 'Time', 'EucDistance', 'TimeEnd'], skip: 0 ) 
-    .subscribe { it ->
-        println "Entries are saved to file: $it"
-        it.copyTo( dump_dir_bed.resolve ( "file.txt" ) )
-//        println "File content is: ${it.text}"
-    }
-*/
-
-/*
-process join_min_max {
-
-    input:
-    file min_max from min_max
-    
-    output:
-    file 'min_max.bed' into min_max_bed
-    
-    """
-    cat $min_max >> min_max.bed
-    """ 
-}
-*/
-
-
-
 def mix_max_joined = min_max
                         .reduce([]) { all, line -> all<<line.text }
-                        .map { it.join() }
+                        .map { it.join('') }
                     
-//mix_max_joined
-//    .println()    
-/*    
-mix_max_joined = min_max_bed
-    .collectFile(name: 'sample.txt')
-
-
-mix_max_joined.subscribe  {  
-    println ">>>> ${it.text}"
-    }
-*/
-    
-println("=============================")
-//def min_max_p = Channel.create()
-//def min_max_j = Channel.create()
-
-//mix_max_joined.into(min_max_p, min_max_j) 
-
-//mix_max_p
-//    .println()
-
-/*
-def bed_by_track_l = Channel.create()
-def bed_by_track_d = Channel.create()
-def bed_by_track_to_w = Channel.create()
-
-bed_by_track_1.into(bed_by_track_l, bed_by_track_d, bed_by_track_to_w) 
-*/
-
-
 process get_phases {
     input:
     file min_max from mix_max_joined
@@ -206,38 +148,12 @@ process pos_to_bed {
     set val(f_pos_name), file('tr*.bed') into bed
     set val(f_pos_name), file('tr*.bed') into bed_write
     
-    script:
-    println ("***********${f_pos}")
-    
     // Very important not to relative coordinates!!!!
     """ 
     pergola_rules.py -i $f_pos -o $correspondence_f -fs ";" -f bed -nt
     """
 }
 
-
-//Working correctly until here
-
-
-
-
-
-
-
-//bed.println() //del
-
-/*
- * Writing bed files del
- */
-
-/* 
-bed_write 
-    .subscribe { pos_file, bed_files ->   
-        for ( it in bed_files ) {
-            it.copyTo( dump_dir_bed.resolve ( "${pos_file}${it.name}" ) )
-            }  
-    }
-*/
     
 // Collects here just get after flatting the correspondece bw
 // position and bed files 
@@ -290,25 +206,14 @@ def bed_by_track_to_w = Channel.create()
 
 bed_rel_coord.into (bed_by_track_l, bed_by_track_d, bed_by_track_to_w) 
 
-
-
-
 /*
  * Writing bed files for its display
  */
-
 bed_by_track_to_w.subscribe  {  
         println "Writing: ${it[1]}_pos_filt.bed"
         it[0].copyTo( dump_dir_bed.resolve ( "tr_${it[1]}_pos_filt.bed" ) )
     }
-
-/*
-bed_by_track_l
-    .println()
-bed_by_track_d
-    .println()
-*/
-
+    
 /*
  * Bedtools intersect light phases with bed activity files
  */ 
@@ -344,6 +249,7 @@ bed_light_activity_sum.subscribe  {
         println "Writing: ${it[0]}_light_sum.bed"
         it[1].copyTo( dump_dir_bed.resolve ( "tr_${it[0]}_light_sum.bed" ) )
     }
+    
 /*
  * Bedtools intersect dark phases with bed activity files
  */    
