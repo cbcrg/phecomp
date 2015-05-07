@@ -84,13 +84,16 @@ process get_phases {
     output:
     set file('phases_light_inverted.bed') into light_phases
     set file('phases_dark_inverted.bed') into dark_phases
+    set file('phases_inverted.bed') into all_phases
     set file('phases_light_inverted.bed') into light_phases_p
     set file('phases_dark_inverted.bed') into dark_phases_p
     
     """ 
     pergola_rules.py -i $min_max -o $correspondence_f -fs ";" -f bed -nh -s 'Cage' 'Time' 'EucDistance' 'TimeEnd' -e
-    sed 's/dark/light/' phases_dark.bed > phases_light_inverted.bed
-    sed 's/light/dark/' phases_light.bed > phases_dark_inverted.bed   
+    sed 's/dark/light/g' phases_dark.bed > phases_light_inverted.bed
+    sed 's/light/dark/g' phases_light.bed > phases_dark_inverted.bed
+    sed 's/light/da1rk/g' phases.bed | sed 's/dark/light/g' | sed 's/da1rk/dark/g' > phases_inverted.bed
+    
     """ 
     }
 
@@ -202,9 +205,10 @@ process bed_to_rel_coord {
  */
 def bed_by_track_l = Channel.create()
 def bed_by_track_d = Channel.create()
+def bed_by_track_a = Channel.create()
 def bed_by_track_to_w = Channel.create()
 
-bed_rel_coord.into (bed_by_track_l, bed_by_track_d, bed_by_track_to_w) 
+bed_rel_coord.into (bed_by_track_l, bed_by_track_d, bed_by_track_a, bed_by_track_to_w) 
 
 /*
  * Writing bed files for its display
@@ -266,7 +270,7 @@ process intersect_dark_activity {
     //Example command
     // bedtools intersect -a ${filename}_compl.bed -b ${path2files}exp_phases_hab.bed > ${filename}"_compl_hab.bed"
     script:
-    println( "-------------$tr")
+//    println( "-------------$tr")
     
     """
     cat $bed_tr | sort -k1,1 -k2,2n > ${bed_tr}_sorted.tmp
@@ -285,3 +289,37 @@ bed_dark_activity_sum.subscribe  {
         println "Writing: ${it[0]}_dark_sum.bed"
         it[1].copyTo( dump_dir_bed.resolve ( "tr_${it[0]}_dark_sum.bed" ) )
     }
+
+/*
+ * Bedtools intersect dark AND light phases with bed activity files
+ */    
+process intersect_activity {
+    input: 
+    set file ('bed_tr'), val (tr) from bed_by_track_a
+    file ('all_phases') from all_phases.first()
+    
+    output:
+    set val(tr), file('*_all.bed') into bed_activity
+    set val(tr), file('*_all.bed') into bed_activity_to_w
+    set val(tr), file('*_all_sum.bed') into bed_activity_sum
+    
+    //Example command
+    // bedtools intersect -a ${filename}_compl.bed -b ${path2files}exp_phases_hab.bed > ${filename}"_compl_hab.bed"
+//    script:
+//    println( "-------------$tr")
+    
+    """
+    cat $bed_tr | sort -k1,1 -k2,2n > ${bed_tr}_sorted.tmp
+    
+    # Get the summatory of activity during dark phases
+    mapBed -a ${all_phases} -b ${bed_tr}_sorted.tmp -c 5 -o sum -null 0 > tr_${tr}_all_sum.bed
+    """    
+} 
+
+bed_activity_sum.subscribe  {  
+        println "Writing: ${it[0]}_all_phases_sum.bed"
+        it[1].copyTo( dump_dir_bed.resolve ( "tr_${it[0]}_all_phases_sum.bed" ) )
+    }
+
+
+    
