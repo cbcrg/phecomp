@@ -265,6 +265,7 @@ bed_by_track = bed_tr
    .flatMap() 
    .map { file -> tuple( file, file.baseName.tokenize('_')[1]) }
 
+
 process bed_to_rel_coord {       
 
     input:
@@ -273,8 +274,9 @@ process bed_to_rel_coord {
     output:
     set file ('tr*.bed'), val(tr) into bed_rel_coord
     
-    """ 
-    pergola_rules.py -i $bed_f -o $correspondence_f_bed -f bed -nh -s 'chrm' 'start' 'end' 'nature' 'value' 'strain' 'start_rep' 'end_rep' 'color' -e 
+    """
+    sed 's/chr1/${tr}/g' ${bed_f} > bed_tr
+    pergola_rules.py -i bed_tr -o $correspondence_f_bed -f bed -nh -s 'chrm' 'start' 'end' 'nature' 'value' 'strain' 'start_rep' 'end_rep' 'color' -e 
     """ 
     
 }
@@ -288,19 +290,18 @@ def bed_by_track_to_w = Channel.create()
 
 bed_rel_coord.into (bed_by_track_l, bed_by_track_d, bed_by_track_to_w) 
 
-bed_by_track_to_w
-    .println()
+
 
 
 /*
  * Writing bed files for its display
  */
-/*
+
 bed_by_track_to_w.subscribe  {  
-        println "Writing: ${it[0]}_pos_filt.bed"
-        it[1].copyTo( dump_dir_bed.resolve ( "tr_${it[0]}_pos_filt.bed" ) )
+        println "Writing: ${it[1]}_pos_filt.bed"
+        it[0].copyTo( dump_dir_bed.resolve ( "tr_${it[1]}_pos_filt.bed" ) )
     }
-*/
+
 /*
 bed_by_track_l
     .println()
