@@ -22,6 +22,9 @@ path_tac2pos = "$HOME/git/phecomp/lib/c/"
 correspondence_f_path = "$HOME/git/pergola/test/pos_short2pergola.txt"
 correspondence_f = file(correspondence_f_path)
 
+correspondence_f_path_bed = "$HOME/git/pergola/test/bed2pergola.txt"
+correspondence_f_bed = file(correspondence_f_path_bed)
+
 /* 
  * Creating results folder
  */
@@ -81,6 +84,7 @@ min_max
     }
 */
 
+/*
 process join_min_max {
 
     input:
@@ -93,11 +97,14 @@ process join_min_max {
     cat $min_max >> min_max.bed
     """ 
 }
+*/
 
-def mix_max_joined = min_max_bed
-                    .reduce([]) { all, line -> all<<line }
-                    .map { it.text.join() }
-    
+
+
+def mix_max_joined = min_max
+                        .reduce([]) { all, line -> all<<line.text }
+                        .map { it.join() }
+                    
 //mix_max_joined
 //    .println()    
 /*    
@@ -128,7 +135,6 @@ bed_by_track_1.into(bed_by_track_l, bed_by_track_d, bed_by_track_to_w)
 */
 
 
-
 process get_phases {
     input:
     file min_max from mix_max_joined
@@ -138,6 +144,7 @@ process get_phases {
     set file('phases_dark_inverted.bed') into dark_phases
     set file('phases_light_inverted.bed') into light_phases_p
     set file('phases_dark_inverted.bed') into dark_phases_p
+    
     """ 
     pergola_rules.py -i $min_max -o $correspondence_f -fs ";" -f bed -nh -s 'Cage' 'Time' 'EucDistance' 'TimeEnd' -e
     sed 's/dark/light/' phases_dark.bed > phases_light_inverted.bed
@@ -149,6 +156,7 @@ light_phases_p
     .subscribe {
         println "${it.text}"
         }
+       
 /*
  * Writing the files in the stdout to see how it looks like
  */
@@ -169,13 +177,13 @@ dark_phases
 /*
  * Writing position file
  */ 
-/*
+
 pos_files1
     .subscribe {
         println "Copying pos file: $it"
         it.copyTo( dump_dir_bed.resolve ( it.name ) )
     }
-*/
+
 
 // I need to now from which pos files the tr files have being generated
 // otherwise tr_1 from pos-2 will overwrite tr_1 from pos_1
@@ -201,8 +209,9 @@ process pos_to_bed {
     script:
     println ("***********${f_pos}")
     
+    // Very important not to relative coordinates!!!!
     """ 
-    pergola_rules.py -i $f_pos -o $correspondence_f -fs ";" -f bed -nt -e
+    pergola_rules.py -i $f_pos -o $correspondence_f -fs ";" -f bed -nt
     """
 }
 
@@ -248,13 +257,27 @@ bed_tr = bed.map {pos_file, bed_files ->
 /*
  * I collect all files belonging to the same track 
  */ 
-bed_by_track_1 = bed_tr    
-    .collectFile { pos, track, file -> 
+bed_by_track = bed_tr    
+    .collectFile { pos, track, file ->
+//       println ( "it------ $track") 
        [ "bed_$track", file ]
     }
    .flatMap() 
    .map { file -> tuple( file, file.baseName.tokenize('_')[1]) }
-//   .println()
+
+process bed_to_rel_coord {       
+
+    input:
+    set file ('bed_f'), val(tr) from bed_by_track
+    
+    output:
+    set file ('tr*.bed'), val(tr) into bed_rel_coord
+    
+    """ 
+    pergola_rules.py -i $bed_f -o $correspondence_f_bed -f bed -nh -s 'chrm' 'start' 'end' 'nature' 'value' 'strain' 'start_rep' 'end_rep' 'color' -e 
+    """ 
+    
+}
 
 /*
  * Duplicating the channel, to write the file and to continue with bedtools
@@ -263,25 +286,27 @@ def bed_by_track_l = Channel.create()
 def bed_by_track_d = Channel.create()
 def bed_by_track_to_w = Channel.create()
 
-bed_by_track_1.into(bed_by_track_l, bed_by_track_d, bed_by_track_to_w) 
+bed_rel_coord.into (bed_by_track_l, bed_by_track_d, bed_by_track_to_w) 
+
+bed_by_track_to_w
+    .println()
 
 
 /*
  * Writing bed files for its display
  */
+/*
 bed_by_track_to_w.subscribe  {  
-        println "Writing: ${it[1]}_pos_filt.bed"
-        it[0].copyTo( dump_dir_bed.resolve ( "tr_${it[1]}_pos_filt.bed" ) )
+        println "Writing: ${it[0]}_pos_filt.bed"
+        it[1].copyTo( dump_dir_bed.resolve ( "tr_${it[0]}_pos_filt.bed" ) )
     }
-
-
+*/
 /*
 bed_by_track_l
     .println()
 bed_by_track_d
     .println()
 */
-
 
 /*
  * Bedtools intersect light phases with bed activity files
