@@ -299,8 +299,8 @@ process intersect_activity {
     file ('all_phases') from all_phases.first()
     
     output:
-    set val(tr), file('*_all.bed') into bed_activity
-    set val(tr), file('*_all.bed') into bed_activity_to_w
+//    set val(tr), file('*_all.bed') into bed_activity
+//    set val(tr), file('*_all.bed') into bed_activity_to_w
     set val(tr), file('*_all_sum.bed') into bed_activity_sum
     
     //Example command
