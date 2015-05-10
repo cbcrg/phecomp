@@ -97,8 +97,12 @@ load_activity <- function (pattern="sum") {
   return (stats_all)
 }
 
-
 df.act_sum <- load_activity("all_phases_sum")
+head (df.act_sum)
+#tbl_stat_mean <-with (df.act_sum, aggregate (cbind (V6), list (group=group, index=index), FUN=function (x) c (mean=mean(x), std.error=std.error(x))))
+tbl_stat_mean <-with (df.act_sum, aggregate (cbind (V6), list (index=index, V4=V4), FUN=function (x) c (mean=mean(x), std.error=std.error(x))))
+
+
 print (rep (1: 18/2, each=2))
 print (rep (1: 9, each=2))
 stop ("lllll")  
