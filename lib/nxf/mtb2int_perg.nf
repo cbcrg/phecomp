@@ -12,6 +12,8 @@ params.base_dir = "/Users/jespinosa/"
 params.mtb_dir = "phecomp/data/CRG/20120502_FDF_CRG/"
 params.in_file_pattern = "*.mtb"
 mtb_path = "${params.base_dir}${params.mtb_dir}${params.in_file_pattern}"
+correspondence_f_path = "${params.base_dir}git/pergola/test/int_short2pergola.txt"
+correspondence_f = file(correspondence_f_path)
 
 println "path: $mtb_path"
 mtb_files = Channel.fromPath(mtb_path)
@@ -80,7 +82,7 @@ process filter_int {
     int2combo.pl ${f_int} -tag field Value max 0.02 -filter action rm -bin -out > ${f_int}.txt
     cat ${f_int}.txt | grep "#d" | awk -F ";" '{OFS="\t"; print \$3,\$27,\$13,\$21,\$31}' >> ${f_int}.tmp
     
-    if grep -q ""20120502"" "$ini_name_8"; then     
+    if grep -q "20120502" "$ini_name_8"; then     
         awk '{ if (\$2 > 1335985200) print; }' ${f_int}.tmp >> ${ini_n}"_"${f_int}.csv 
     else    
         cat ${f_int}.tmp > ${ini_n}"_"${f_int}.csv
@@ -88,23 +90,33 @@ process filter_int {
     """    
 }
 
+/*
 int_files_filt2
     .subscribe {
         println "Int file is: $it"
         it.copyTo( dump_dir.resolve ( it.name ) )
         
         }
-/*      
+*/
+
+/*
+ * Join all csv file into a single one
+ */
+def int_files_joined = int_files_filt2
+                        .reduce([]) { all, content -> all << content.text }
+                        .map { it.join('') }
+                             
 process int_to_pergola {
 
     input:
-    set file ('f_int_filt') from int_files_filt
+    set file ('f_csv') from int_files_joined
     
     output:
-    set file('*.int') into int_files
+    set file('tr*.bed') into int_files
     
     """
-    cat ${f_int} | grep "#d" > ${tac}.pos 
+    pergola_rules.py -i $f_csv -o $correspondence_f -f bed -nh -s 'cage' 'start_time' 'end_time' 'nature' 'value' -e
     """    
 } 
-*/
+
+
