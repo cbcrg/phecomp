@@ -87,7 +87,8 @@ foreach my $c (@commands)
     
     run_instruction ($d, $A, $c);
   }
-die;
+  
+exit 0;
 
 sub run_instruction
   {
