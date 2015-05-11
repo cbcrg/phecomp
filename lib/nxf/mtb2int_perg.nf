@@ -69,6 +69,7 @@ process filter_int {
     output: 
     set file('*.csv') into int_files_filt   
     set file('*.csv') into int_files_filt2
+    set file('file.date') into file_date
     
     //Command example: 
     // int2combo.pl 20120509to0831_FCSC_UPF_HabDev.int -tag field Value max 0.02 -filter action rm -bin -out > 20120509to0831_FCSC_UPF_HabDevFilt.csv 
@@ -87,8 +88,19 @@ process filter_int {
     else    
         cat ${f_int}.tmp > ${ini_n}"_"${f_int}.csv
     fi
-    """    
+    
+    if [[ "${ini_n}" == *"c1"* ]]; then
+        awk '{ if (min=="") { min=\$2; max=\$3 }; if(\$3>max){ max=\$3 }; if(\$2< min) { min=\$2 } } END {OFS="\t"; print 1, min, max, "record", 1000 }' ${ini_n}"_"${f_int}.csv >> file.date
+    else
+        printf "" >> file.date
+    fi    
+     
+    """   
+    //awk '{ if (min=="") { min=\$2; max=\$3 }; if(\$3>max){ max=\$3 }; if(\$2< min) { min=\$2 } } END {OFS="\t"; print "${ini_n}", min, max, "record", 1000 }' ${ini_n}"_"${f_int}.csv >> file.date 
 }
+//awk ?{if(min==?"){min=max=$1}; if($1>max) {max=$1}; if($1< min) {min=$1}; total+=$1; count+=1} END {print total/count, min, max}?
+//head -1 ${ini_n}"_"${f_int}.csv >> file.date
+//tail -1 ${ini_n}"_"${f_int}.csv >> file.date
 
 /*
 int_files_filt2
@@ -97,15 +109,23 @@ int_files_filt2
         it.copyTo( dump_dir.resolve ( it.name ) )
         
         }
+        
+file_date
+    .subscribe {
+        println "Int file is: $it"
+        it.copyTo( dump_dir.resolve ( it.name ) )
+        
+        }
 */
 
 /*
- * Join all csv file into a single one
+ * Join all csv files into a single one
  */
+
 def int_files_joined = int_files_filt2
                         .reduce([]) { all, content -> all << content.text }
                         .map { it.join('') }
-                             
+
 process int_to_pergola {
 
     input:
@@ -119,4 +139,49 @@ process int_to_pergola {
     """    
 } 
 
+/*
+ * Join all date files into a single one
+ */
+
+def file_date_joined = file_date
+                        .reduce ([]) { all, content -> all << content.text }
+                        .map { it.join('') }
+                        
+/* 
+file_date_joined                      
+    .subscribe { println "----------- ${it}" }
+*/
+
+/*
+file_date_joined                      
+    .subscribe { //println "----------- ${it}" 
+    it.copyTo( dump_dir.resolve ( "name.txt") )
+    }
+    
+//                        it.copyTo( dump_dir.resolve () ) }
+*/
+
+                                                   
+
+
+/*
+ * 
+ */
+
+process recording_files_to_bed {
+    input:
+    set file ('file_date') from file_date_joined 
+    
+    output:
+    set file('tr*.bed') into bed_recordings
+    
+    """
+    pergola_rules.py -i $file_date -o $correspondence_f -f bed -nh -s 'cage' 'start_time' 'end_time' 'nature' 'value' -e -a join_all
+    """    
+}
+
+/*
+bed_recordings
+    .subscribe { it.copyTo( dump_dir.resolve ( "file_recordings.bed") ) }
+*/
 
