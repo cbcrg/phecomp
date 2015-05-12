@@ -208,8 +208,16 @@ bed_recordings
     .subscribe { it.copyTo( dump_dir.resolve ( "file_recordings.bed") ) }
 */
 
+bed_by_tr_flat =  bed_by_tr.flatten().map { bed_tr ->
+      def pattern = bed_tr.name =~/^(.*)\.bed$/
+//      println bed_tr.name
+//      println pattern [0][1]
+
+      def name_file = pattern[0][1]
+      [ bed_tr, name_file ]
+    }
+ 
 bed_by_tr3_flat =  bed_by_tr3.flatten()
-bed_by_tr_flat =  bed_by_tr.flatten()
 
 bed_by_tr3_flat.subscribe {
         println "Contains bed file for tr: $it"
@@ -235,7 +243,7 @@ process test {
 */   
 process bedtools_down_stream {
     input:
-    set file ('bed_by_tr_f') from bed_by_tr_flat
+    set file ('bed_by_tr_f'), val ('name_file') from bed_by_tr_flat
     file ('chromsizes_f') from chromsizes.first()
     file ('bed_record') from bed_recordings.first()
 //    file ('light_phases') from light_phases.first()
@@ -297,9 +305,13 @@ process bedtools_down_stream {
         mapBed -a \${track2map} -b \${track} -c 5 -o max -null 0 > \${tag}max.bed
     }
     
-    half="30min_"
-    day="24h_"
-    day_before="24h_less_"
+#    half=${bed_by_tr_f}"30min_"
+#    day=${bed_by_tr_f}"24h_"
+#    day_before="${bed_by_tr_f}"24h_less_"
+    
+    half="${name_file}_30min_"
+    day="${name_file}_24h_"
+    day_before="${name_file}_24h_less_"
     
     createBedFilesAnalyze ${bed_by_tr_f} 30_min_after_clean \$half
     createBedFilesAnalyze ${bed_by_tr_f} 24h_30_min_after_clean \$day
