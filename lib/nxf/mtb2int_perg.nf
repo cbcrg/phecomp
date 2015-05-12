@@ -81,7 +81,7 @@ process filter_int {
     
     """
     int2combo.pl ${f_int} -tag field Value max 0.02 -filter action rm -bin -out > ${f_int}.txt
-    cat ${f_int}.txt | grep "#d" | awk -F ";" '{OFS="\t"; print \$3,\$27,\$13,\$21,\$31}' >> ${f_int}.tmp
+    cat ${f_int}.txt | grep "#d" | grep "food" | awk -F ";" '{OFS="\t"; print \$3,\$27,\$13,\$21,\$31}' >> ${f_int}.tmp
     
     if grep -q "20120502" "$ini_name_8"; then     
         awk '{ if (\$2 > 1335985200) print; }' ${f_int}.tmp >> ${ini_n}"_"${f_int}.csv 
@@ -134,22 +134,20 @@ process int_to_pergola {
     output:
     set file('tr*.bed') into bed_by_tr
     set file('tr*.bed') into bed_by_tr2
+    set file('tr*.bed') into bed_by_tr3
 //    set file('all_mice.chromsizes') into chromsizes
     
     """
-    pergola_rules.py -i $f_csv -o $correspondence_f -f bed -nh -s 'cage' 'start_time' 'end_time' 'nature' 'value' -e
-    tail -1 $f_csv | awk '{OFS="\t"; print "chr1", \$3-1335985200}' > all_mice.chromsizes
+    pergola_rules.py -i $f_csv -o $correspondence_f -f bed -nh -s 'cage' 'start_time' 'end_time' 'nature' 'value' -e -d all
+    # tail -1 $f_csv | awk '{OFS="\t"; print "chr1", \$3-1335985200}' > all_mice.chromsizes
     """    
 } 
 
+//bed_by_tr3.subscribe { println it }
 /*
- * Join all date files into a single one
+ * Join all bed files to get last interval for chromsize file
  */
-
-def file_date_joined = file_date
-                        .reduce ([]) { all, content -> all << content.text }
-                        .map { it.join('') }
-
+ 
 def file_bed_to_chrom = bed_by_tr2
                             .reduce ([]) { all, content -> all << content.text }
                             .map { it.join('') }                        
@@ -181,7 +179,13 @@ file_date_joined
 */
 
                                                    
+/*
+ * Join all date files into a single one - Generate recordings bed file
+ */
 
+def file_date_joined = file_date
+                        .reduce ([]) { all, content -> all << content.text }
+                        .map { it.join('') }
 
 /*
  * 
@@ -204,13 +208,43 @@ bed_recordings
     .subscribe { it.copyTo( dump_dir.resolve ( "file_recordings.bed") ) }
 */
 
-process bedtools_down_stream {
+bed_by_tr3_flat =  bed_by_tr3.flatten()
+bed_by_tr_flat =  bed_by_tr.flatten()
+
+bed_by_tr3_flat.subscribe {
+        println "Contains bed file for tr: $it"
+        
+    }
+
+/* //del
+process test {
     input:
-    set file ('bed_record') from bed_recordings
-    set file ('chromsizes_f') from chromsizes
-    set file ('bed_by_tr') from bed_by_tr
+    file 'bed_by_tr_f' from bed_by_tr4
+   
     output:
     set file('foo') into bed_recordings
+    
+    script:
+    
+    println ( "++++++++++++++++++$bed_by_tr_f" )
+    
+    """
+    cat ${bed_by_tr_f} > foo
+    """
+    }
+*/   
+process bedtools_down_stream {
+    input:
+    set file ('bed_by_tr_f') from bed_by_tr_flat
+    file ('chromsizes_f') from chromsizes.first()
+    file ('bed_record') from bed_recordings.first()
+//    file ('light_phases') from light_phases.first()
+    
+    output:
+    set file('*24h*') into bed_recordings
+//    set file ('24h_less_mean.bed'
+    script:
+    println ( "Contains bed file for tr: $bed_by_tr_f" )
     
     // Command example
     //bedtools complement -i ${path2files}files_data.bed -g ${path2files}all_mice.chromsizes > ${path2files}files_data_comp.bed
@@ -267,11 +301,11 @@ process bedtools_down_stream {
     day="24h_"
     day_before="24h_less_"
     
-    createBedFilesAnalyze ${bed_by_tr} 30_min_after_clean \$half
-    createBedFilesAnalyze ${bed_by_tr} 24h_30_min_after_clean \$day
-    createBedFilesAnalyze ${bed_by_tr} 23h30min_before_clean \$day_before
+    createBedFilesAnalyze ${bed_by_tr_f} 30_min_after_clean \$half
+    createBedFilesAnalyze ${bed_by_tr_f} 24h_30_min_after_clean \$day
+    createBedFilesAnalyze ${bed_by_tr_f} 23h30min_before_clean \$day_before
     
-    
+    touch foo
     """
 }
 
