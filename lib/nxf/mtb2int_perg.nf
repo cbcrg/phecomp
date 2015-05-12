@@ -8,32 +8,32 @@
 #################################################################################
 */
 
-params.base_dir = "/Users/jespinosa/"
-params.mtb_dir = "phecomp/data/CRG/20120502_FDF_CRG/"
+//params.base_dir = "/Users/jespinosa/"
+params.base_dir = "/users/cn/jespinosa/"
+//params.mtb_dir = "phecomp/data/CRG/20120502_FDF_CRG/"
+params.mtb_dir = "phecomp/data/CRG/20120502_FDF_CRG/20120502_FDF_CRG/"
 params.in_file_pattern = "*.mtb"
+
 mtb_path = "${params.base_dir}${params.mtb_dir}${params.in_file_pattern}"
 println "path: $mtb_path"
 
-params.mtb_dir2 = "phecomp/data/CRG/20120502_FDF_CRG/20120502_FDF_CRG/"
-mtb_path2 = "${params.base_dir}${params.mtb_dir2}${params.in_file_pattern}"
+//mtb_files = Channel.fromPath(mtb_path)
 
-mtb_files = Channel.fromPath(mtb_path)
-
+// List of files from bash script
 //aryMtbFilesDev=( $( ls ${mtbFilesDir}20120*.mtb | grep -v "LAHFD" | grep -v "LASC" | grep -v "LA_to_food" | grep -v "adulteration" | grep -v "quinine" | grep -v "LA" | grep -v "/20120502_FDF_CRG/20120502_FDF_CRG/2012071" ) )
 
-Channel.fromPath (mtb_path2)
-    .filter { def matcher = it =~/.*LAHFD.*/; !matcher.matches() }
-    .filter { def matcher = it =~/.*LASC.*/; !matcher.matches() }
-    .filter { def matcher = it =~/.*LA_to_food.*/; !matcher.matches() }
-    .filter { def matcher = it =~/.*adulteration.*/; !matcher.matches() }
-    .filter { def matcher = it =~/.*LA.*/; !matcher.matches() }
-    .filter { def matcher = it =~/.*quinine.*/; !matcher.matches() }
-    .filter { def matcher = it =~/.*2012071.*/; !matcher.matches() }
-    .subscribe { println it }  
+def mtb_files = Channel.fromPath (mtb_path2)
+                    .filter { def matcher = it =~/.*LAHFD.*/; !matcher.matches() }
+                    .filter { def matcher = it =~/.*LASC.*/; !matcher.matches() }
+                    .filter { def matcher = it =~/.*LA_to_food.*/; !matcher.matches() }
+                    .filter { def matcher = it =~/.*adulteration.*/; !matcher.matches() }
+                    .filter { def matcher = it =~/.*LA.*/; !matcher.matches() }
+                    .filter { def matcher = it =~/.*quinine.*/; !matcher.matches() }
+                    .filter { def matcher = it =~/.*2012071.*/; !matcher.matches() }
+                    .subscribe { println it }  
         
 correspondence_f_path = "${params.base_dir}git/pergola/test/int_short2pergola.txt"
 correspondence_f = file(correspondence_f_path)
-
 
 /* 
  * Creating results folder
@@ -46,9 +46,6 @@ dump_dir.with {
      mkdirs()
      println "Created: $dump_dir"
 }
-
-//## Ary with habituation and development files for paper
-//aryMtbFilesDev=( $( ls ${mtbFilesDir}20120*.mtb | grep -v "LAHFD" | grep -v "LASC" | grep -v "LA_to_food" | grep -v "adulteration" | grep -v "quinine" | grep -v "LA" | grep -v "/20120502_FDF_CRG/20120502_FDF_CRG/2012071" ) )
 
 process mtb_to_int {
 
