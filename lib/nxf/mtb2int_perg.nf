@@ -12,11 +12,28 @@ params.base_dir = "/Users/jespinosa/"
 params.mtb_dir = "phecomp/data/CRG/20120502_FDF_CRG/"
 params.in_file_pattern = "*.mtb"
 mtb_path = "${params.base_dir}${params.mtb_dir}${params.in_file_pattern}"
+println "path: $mtb_path"
+
+params.mtb_dir2 = "phecomp/data/CRG/20120502_FDF_CRG/20120502_FDF_CRG/"
+mtb_path2 = "${params.base_dir}${params.mtb_dir2}${params.in_file_pattern}"
+
+mtb_files = Channel.fromPath(mtb_path)
+
+//aryMtbFilesDev=( $( ls ${mtbFilesDir}20120*.mtb | grep -v "LAHFD" | grep -v "LASC" | grep -v "LA_to_food" | grep -v "adulteration" | grep -v "quinine" | grep -v "LA" | grep -v "/20120502_FDF_CRG/20120502_FDF_CRG/2012071" ) )
+
+Channel.fromPath (mtb_path2)
+    .filter { def matcher = it =~/.*LAHFD.*/; !matcher.matches() }
+    .filter { def matcher = it =~/.*LASC.*/; !matcher.matches() }
+    .filter { def matcher = it =~/.*LA_to_food.*/; !matcher.matches() }
+    .filter { def matcher = it =~/.*adulteration.*/; !matcher.matches() }
+    .filter { def matcher = it =~/.*LA.*/; !matcher.matches() }
+    .filter { def matcher = it =~/.*quinine.*/; !matcher.matches() }
+    .filter { def matcher = it =~/.*2012071.*/; !matcher.matches() }
+    .subscribe { println it }  
+        
 correspondence_f_path = "${params.base_dir}git/pergola/test/int_short2pergola.txt"
 correspondence_f = file(correspondence_f_path)
 
-println "path: $mtb_path"
-mtb_files = Channel.fromPath(mtb_path)
 
 /* 
  * Creating results folder
@@ -41,8 +58,8 @@ process mtb_to_int {
     output:
 //    set file('*.int'), stdout into int_files
 //    set file('*.int'), stdout into int_files2
-    set file('*.int'), stdout, file('ini_name8.txt') into int_files
-    set file('*.int'), stdout, file('ini_name8.txt') into int_files2
+//    set file('*.int'), stdout, file('ini_name8.txt') into int_files
+//    set file('*.int'), stdout, file('ini_name8.txt') into int_files2
 //    set stdout into name 
 
     script:
@@ -249,10 +266,14 @@ process bedtools_down_stream {
 //    file ('light_phases') from light_phases.first()
     
     output:
-    set file('*24h*') into bed_recordings
+    set file('*mean*') into mean
+    set file('*sum*') into sum
+    set file('*count*') into count
+    set file('*max*') into max
+    
 //    set file ('24h_less_mean.bed'
-    script:
-    println ( "Contains bed file for tr: $bed_by_tr_f" )
+//    script:
+//    println ( "Contains bed file for tr: $bed_by_tr_f" )
     
     // Command example
     //bedtools complement -i ${path2files}files_data.bed -g ${path2files}all_mice.chromsizes > ${path2files}files_data_comp.bed
@@ -321,80 +342,42 @@ process bedtools_down_stream {
     """
 }
 
-bed_recordings
-    .subscribe { println "it---------------$it"}
+println "path for mean files: ${params.base_dir}${params.mtb_dir}results/mean"
+dump_dir_mean = file("${params.base_dir}${params.mtb_dir}results/mean/")
 
+dump_dir_mean.with {
+     if( !empty() ) { deleteDir() }
+     mkdirs()
+     println "Created: $dump_dir_mean"
+}
+
+dump_dir_channel = Channel.create()
+
+mean.flatten().subscribe onNext: { 
+    println "it---------------$it"
+    it.copyTo( dump_dir_mean.resolve ( it.name ) )
+    },
+    onComplete: { dump_dir_channel <<  dump_dir_mean << Channel.STOP }
+
+process R_mean {
+     input:
+     file (tr_bed_dir) from dump_dir_channel 
+     
+     output:
+     stdout warnings
+     
+     """
+     Rscript \$HOME/git/phecomp/lib/R/starting_regions_file_vs_24h_nf.R --tag="mean" --path2files=\$(readlink ${tr_bed_dir}) --path2plot=\$(readlink ${tr_bed_dir}) 2>&1
+     """
+}
+
+warnings.println()
 
 
 
 /*
-
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
- 
-    
-    half="_30min"
-    day="_24h"
-    day_before="_24h_less"
-    
-    
-
-createBedFilesAnalyze ${bed_by_tr} 30_min_after_clean \$half
-createBedFilesAnalyze ${bed_by_tr} 24h_30_min_after_clean \$day
-createBedFilesAnalyze ${bed_by_tr} createBedFilesAnalyze \$day_before
-
-
-
-
-
-
-
-
-
-# out_name=`echo \$track | cut -d . -f1`
-        #filename=\$(basename "$track")
-        #filename="\${filename%.*}"
-        #echo -e "Generated file is \${filename}\${tag}.bed"
-
-
-
-
-
-
-
-## UPSTREAM, BEFORE THE CLEAN
-
-flankBed -i file_comp.bed -g ${chromsizes_f} -l 0 -r \$time_after_clean  -s > 30_min_after_clean
-    flankBed -i 30_min_after_clean -g ${chromsizes_f} -l 0 -r \$t_24h_and_30min > 24h_30_min_after_clean
-        t_l_23h_30min=\$(( t_day_s - time_after_clean ))
-complementBed -i 30_min_after_clean -g ${chromsizes_f} -l \$t_l_23h_30min -r 0 > 23h30min_before_clean
-    flankBed -i 23h30min_before_clean -g ${chromsizes_f} -l \$time_after_clean -r 0 > 24h_before_clean
-
-
-awk '{OFS="\t"; print $1,$2,$3,"\"\"",1000,"+",$2,$3}' ${bed_record}.comp > file_comp.bed
-    
-time_after_clean=1800
-time_after_clean_lab="30min"
-
-t_day_s=86400
-t_day_s_lab="24h"
-t_24h_and_30min=$(( t_day_s + time_after_clean ))
-    
-bedFlank -i file_comp.bed -g ${chromsizes_f} -l 0 -r \$time_after_clean  -s > 30_min_after_clean
-
-bedFlank -i 30_min_after_clean -g ${chromsizes_f} -l 0 -r \$t_24h_and_30min > 24h_30_min_after_clean
-    
-## UPSTREAM, BEFORE THE CLEAN
-t_l_23h_30min=$(( t_day_s - time_after_clean ))
-    
-bedtools flank -i 30_min_after_clean -g ${chromsizes_f} -l \$t_l_23h_30min -r 0 > 23h30min_before_clean
-bedtools flank -i 23h30min_before_clean -g ${chromsizes_f} -l \$time_after_clean -r 0 > 24h_before_clean
-*/
+Channel.fromPath ('*')
+       .filter {
+       
+       }
+ */      
