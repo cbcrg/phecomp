@@ -30,7 +30,7 @@ def mtb_files = Channel.fromPath (mtb_path2)
                     .filter { def matcher = it =~/.*LA.*/; !matcher.matches() }
                     .filter { def matcher = it =~/.*quinine.*/; !matcher.matches() }
                     .filter { def matcher = it =~/.*2012071.*/; !matcher.matches() }
-                    .subscribe { println it }  
+//                    .subscribe { println it }  
         
 correspondence_f_path = "${params.base_dir}git/pergola/test/int_short2pergola.txt"
 correspondence_f = file(correspondence_f_path)
@@ -38,7 +38,8 @@ correspondence_f = file(correspondence_f_path)
 /* 
  * Creating results folder
  */
-println "path: ${params.base_dir}${params.mtb_dir}results/"
+params.result_dir = "/phecomp/processedData/20120502_FDF_CRG_peaks_clean/"
+println "path: ${params.base_dir}${params.result_dir}results/"
 dump_dir = file("${params.base_dir}${params.mtb_dir}results/")
 
 dump_dir.with {
