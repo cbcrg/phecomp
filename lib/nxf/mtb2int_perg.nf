@@ -132,10 +132,13 @@ process int_to_pergola {
     set file ('f_csv') from int_files_joined
     
     output:
-    set file('tr*.bed') into int_files
+    set file('tr*.bed') into bed_by_tr
+    set file('tr*.bed') into bed_by_tr2
+//    set file('all_mice.chromsizes') into chromsizes
     
     """
     pergola_rules.py -i $f_csv -o $correspondence_f -f bed -nh -s 'cage' 'start_time' 'end_time' 'nature' 'value' -e
+    tail -1 $f_csv | awk '{OFS="\t"; print "chr1", \$3-1335985200}' > all_mice.chromsizes
     """    
 } 
 
@@ -146,7 +149,23 @@ process int_to_pergola {
 def file_date_joined = file_date
                         .reduce ([]) { all, content -> all << content.text }
                         .map { it.join('') }
-                        
+
+def file_bed_to_chrom = bed_by_tr2
+                            .reduce ([]) { all, content -> all << content.text }
+                            .map { it.join('') }                        
+
+process get_chrom_sizes {
+    input:
+    set file ('bed_join') from file_bed_to_chrom
+    
+    output:
+    set file ('all_mice.chromsizes') into chromsizes
+    
+    """
+    tail -n+2 ${bed_join} | sort -k1,1 -k2,2g > bed_join_sort
+    tail -1 bed_join_sort | awk '{OFS="\t"; print "chr1", \$3}' > all_mice.chromsizes
+    """
+}
 /* 
 file_date_joined                      
     .subscribe { println "----------- ${it}" }
@@ -185,3 +204,131 @@ bed_recordings
     .subscribe { it.copyTo( dump_dir.resolve ( "file_recordings.bed") ) }
 */
 
+process bedtools_down_stream {
+    input:
+    set file ('bed_record') from bed_recordings
+    set file ('chromsizes_f') from chromsizes
+    set file ('bed_by_tr') from bed_by_tr
+    output:
+    set file('24h_30_min_before_clean') into bed_recordings
+    
+    // Command example
+    //bedtools complement -i ${path2files}files_data.bed -g ${path2files}all_mice.chromsizes > ${path2files}files_data_comp.bed
+    
+    //awk '{OFS="\t"; print $1,$2,$3,"\"\"",1000,"+",$2,$3}' ${path2files}files_data_comp.bed > ${path2files}files_data_comp_all_fields.bed
+
+    """    
+    complementBed -i ${bed_record} -g ${chromsizes_f} > file.comp
+    awk '{OFS="\t"; print \$1,\$2,\$3,"\"\"",1000,"+",\$2,\$3}' file.comp > file_comp.bed
+    
+    time_after_clean=1800
+    t_day_s=86400
+    t_24h_and_30min=\$(( t_day_s + time_after_clean ))
+    
+    flankBed -i file_comp.bed -g ${chromsizes_f} -l 0 -r \$time_after_clean  -s > 30_min_after_clean
+    flankBed -i 30_min_after_clean -g ${chromsizes_f} -l 0 -r \$t_24h_and_30min > 24h_30_min_after_clean
+    
+    t_l_23h_30min=\$(( t_day_s - time_after_clean ))   
+    
+    flankBed -i 30_min_after_clean -g ${chromsizes_f} -l \${t_l_23h_30min} -r 0 > 23h30min_before_clean
+    flankBed -i 23h30min_before_clean -g ${chromsizes_f} -l \$time_after_clean -r 0 > 24h_30_min_before_clean
+    
+
+    """
+}
+
+/*
+
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+ createBedFilesAnalyze () {
+        track=\$1
+        track2map=\$2
+        tag=\$3
+        
+        
+        
+        # Get raw bed files with overlaping regions of target files
+        intersectBed -a \${track} -b \${track2map} > \${tag}raw.bed
+        
+        # Get the coverage of the overlaping regions
+        coverageBed -a \${track} -b \${track2map} | sort -k1,1 -k2,2n > \${tag}cov.bed
+        
+        # Get the mean of the overlaping regions
+        mapBed -a \${track2map} -b \${track} -c 5 -o mean -null 0 > \${tag}mean.bed
+        
+        # Get the summatory of the overlaping regions
+        mapBed -a \${track2map} -b \${track} -c 5 -o sum -null 0 > \${tag}sum.bed
+        
+        # Get the counts of the overlaping regions
+        mapBed -a \${track2map} -b \${track} -c 5 -o count -null 0 > \${tag}count.bed
+        
+        # Get the maximum of the overlaping regions
+        mapBed -a \${track2map} -b \${track} -c 5 -o max -null 0 > \${tag}max.bed
+    }
+    
+    half="_30min"
+    day="_24h"
+    day_before="_24h_less"
+    
+    
+
+createBedFilesAnalyze ${bed_by_tr} 30_min_after_clean \$half
+createBedFilesAnalyze ${bed_by_tr} 24h_30_min_after_clean \$day
+createBedFilesAnalyze ${bed_by_tr} createBedFilesAnalyze \$day_before
+
+
+
+
+
+
+
+
+
+# out_name=`echo \$track | cut -d . -f1`
+        #filename=\$(basename "$track")
+        #filename="\${filename%.*}"
+        #echo -e "Generated file is \${filename}\${tag}.bed"
+
+
+
+
+
+
+
+## UPSTREAM, BEFORE THE CLEAN
+
+flankBed -i file_comp.bed -g ${chromsizes_f} -l 0 -r \$time_after_clean  -s > 30_min_after_clean
+    flankBed -i 30_min_after_clean -g ${chromsizes_f} -l 0 -r \$t_24h_and_30min > 24h_30_min_after_clean
+        t_l_23h_30min=\$(( t_day_s - time_after_clean ))
+complementBed -i 30_min_after_clean -g ${chromsizes_f} -l \$t_l_23h_30min -r 0 > 23h30min_before_clean
+    flankBed -i 23h30min_before_clean -g ${chromsizes_f} -l \$time_after_clean -r 0 > 24h_before_clean
+
+
+awk '{OFS="\t"; print $1,$2,$3,"\"\"",1000,"+",$2,$3}' ${bed_record}.comp > file_comp.bed
+    
+time_after_clean=1800
+time_after_clean_lab="30min"
+
+t_day_s=86400
+t_day_s_lab="24h"
+t_24h_and_30min=$(( t_day_s + time_after_clean ))
+    
+bedFlank -i file_comp.bed -g ${chromsizes_f} -l 0 -r \$time_after_clean  -s > 30_min_after_clean
+
+bedFlank -i 30_min_after_clean -g ${chromsizes_f} -l 0 -r \$t_24h_and_30min > 24h_30_min_after_clean
+    
+## UPSTREAM, BEFORE THE CLEAN
+t_l_23h_30min=$(( t_day_s - time_after_clean ))
+    
+bedtools flank -i 30_min_after_clean -g ${chromsizes_f} -l \$t_l_23h_30min -r 0 > 23h30min_before_clean
+bedtools flank -i 23h30min_before_clean -g ${chromsizes_f} -l \$time_after_clean -r 0 > 24h_before_clean
+*/
