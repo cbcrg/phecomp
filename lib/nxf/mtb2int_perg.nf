@@ -58,8 +58,8 @@ process mtb_to_int {
     output:
 //    set file('*.int'), stdout into int_files
 //    set file('*.int'), stdout into int_files2
-//    set file('*.int'), stdout, file('ini_name8.txt') into int_files
-//    set file('*.int'), stdout, file('ini_name8.txt') into int_files2
+    set file('*.int'), stdout, file('ini_name8.txt') into int_files
+    set file('*.int'), stdout, file('ini_name8.txt') into int_files2
 //    set stdout into name 
 
     script:
