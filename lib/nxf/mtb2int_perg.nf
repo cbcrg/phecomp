@@ -210,7 +210,7 @@ process bedtools_down_stream {
     set file ('chromsizes_f') from chromsizes
     set file ('bed_by_tr') from bed_by_tr
     output:
-    set file('24h_30_min_before_clean') into bed_recordings
+    set file('foo') into bed_recordings
     
     // Command example
     //bedtools complement -i ${path2files}files_data.bed -g ${path2files}all_mice.chromsizes > ${path2files}files_data_comp.bed
@@ -226,30 +226,18 @@ process bedtools_down_stream {
     t_24h_and_30min=\$(( t_day_s + time_after_clean ))
     
     flankBed -i file_comp.bed -g ${chromsizes_f} -l 0 -r \$time_after_clean  -s > 30_min_after_clean
-    flankBed -i 30_min_after_clean -g ${chromsizes_f} -l 0 -r \$t_24h_and_30min > 24h_30_min_after_clean
+    flankBed -i 30_min_after_clean -g ${chromsizes_f} -l 0 -r \$t_24h_and_30min > 24h_30_min_after_clean.tmp
     
+    # Last period does not exists because is out of the recording
+    sed '\$d' 24h_30_min_after_clean.tmp > 24h_30_min_after_clean
+        
     t_l_23h_30min=\$(( t_day_s - time_after_clean ))   
     
     flankBed -i 30_min_after_clean -g ${chromsizes_f} -l \${t_l_23h_30min} -r 0 > 23h30min_before_clean
     flankBed -i 23h30min_before_clean -g ${chromsizes_f} -l \$time_after_clean -r 0 > 24h_30_min_before_clean
     
-
-    """
-}
-
-/*
-
-
     
-    
-    
-    
-    
-    
-    
-    
-    
- createBedFilesAnalyze () {
+    createBedFilesAnalyze () {
         track=\$1
         track2map=\$2
         tag=\$3
@@ -274,6 +262,38 @@ process bedtools_down_stream {
         # Get the maximum of the overlaping regions
         mapBed -a \${track2map} -b \${track} -c 5 -o max -null 0 > \${tag}max.bed
     }
+    
+    half="30min_"
+    day="24h_"
+    day_before="24h_less_"
+    
+    createBedFilesAnalyze ${bed_by_tr} 30_min_after_clean \$half
+    createBedFilesAnalyze ${bed_by_tr} 24h_30_min_after_clean \$day
+    createBedFilesAnalyze ${bed_by_tr} 23h30min_before_clean \$day_before
+    
+    
+    """
+}
+
+bed_recordings
+    .subscribe { println "it---------------$it"}
+
+
+
+
+/*
+
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+ 
     
     half="_30min"
     day="_24h"
