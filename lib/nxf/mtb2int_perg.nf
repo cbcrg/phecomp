@@ -22,7 +22,7 @@ println "path: $mtb_path"
 // List of files from bash script
 //aryMtbFilesDev=( $( ls ${mtbFilesDir}20120*.mtb | grep -v "LAHFD" | grep -v "LASC" | grep -v "LA_to_food" | grep -v "adulteration" | grep -v "quinine" | grep -v "LA" | grep -v "/20120502_FDF_CRG/20120502_FDF_CRG/2012071" ) )
 
-def mtb_files = Channel.fromPath (mtb_path2)
+def mtb_files = Channel.fromPath (mtb_path)
                     .filter { def matcher = it =~/.*LAHFD.*/; !matcher.matches() }
                     .filter { def matcher = it =~/.*LASC.*/; !matcher.matches() }
                     .filter { def matcher = it =~/.*LA_to_food.*/; !matcher.matches() }
