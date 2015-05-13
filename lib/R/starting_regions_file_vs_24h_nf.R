@@ -11,6 +11,9 @@
 ### Rscript starting_regions_file_vs_24h.R               ###
 ############################################################
 
+##Getting HOME directory
+home <- Sys.getenv("HOME")
+
 ##Loading libraries
 library ("ggplot2")
 library ("plotrix") #std.error
@@ -91,7 +94,7 @@ names (argsL) <- argsDF$V1
 
 
 # Loading functions:
-source ("/Users/jespinosa/git/phecomp/lib/R/plotParamPublication.R")
+source (paste (home, "/git/phecomp/lib/R/plotParamPublication.R", sep=""))
 
 # manual execution, uncomment
 # setwd("/Users/jespinosa/phecomp/data/CRG/20120502_FDF_CRG/results/mean/")
