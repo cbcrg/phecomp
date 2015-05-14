@@ -55,10 +55,8 @@ process mtb_to_int {
  
     output:
 //    set file('*.int'), stdout into int_files
-//    set file('*.int'), stdout into int_files2
     set file('*.int'), stdout, file('ini_name8.txt') into int_files
     set file('*.int'), stdout, file('ini_name8.txt') into int_files2
-//    set stdout into name 
 
     script:
     println "Input name is $f_mtb.name"
@@ -73,9 +71,6 @@ process mtb_to_int {
     printf \$ini_name8 > ini_name8.txt
     """
 }    
-
-//printf "\$ini_name" > /dev/stdout
-//printf "\$ini_name_8" > ini_name_8
     
 process filter_int {
     input:
@@ -179,6 +174,7 @@ process get_chrom_sizes {
     tail -1 bed_join_sort | awk '{OFS="\t"; print "chr1", \$3}' > all_mice.chromsizes
     """
 }
+
 /* 
 file_date_joined                      
     .subscribe { println "----------- ${it}" }
@@ -239,22 +235,6 @@ bed_by_tr3_flat.subscribe {
         
     }
 
-/* //del
-process test {
-    input:
-    file 'bed_by_tr_f' from bed_by_tr4
-   
-    output:
-    set file('foo') into bed_recordings
-    
-    script:
-    
-    println ( "++++++++++++++++++$bed_by_tr_f" )
-    
-    """
-    cat ${bed_by_tr_f} > foo
-    """
-    }
 */   
 process bedtools_down_stream {
     input:
@@ -268,10 +248,6 @@ process bedtools_down_stream {
     set file('*sum*') into sum
     set file('*count*') into count
     set file('*max*') into max
-    
-//    set file ('24h_less_mean.bed'
-//    script:
-//    println ( "Contains bed file for tr: $bed_by_tr_f" )
     
     // Command example
     //bedtools complement -i ${path2files}files_data.bed -g ${path2files}all_mice.chromsizes > ${path2files}files_data_comp.bed
@@ -303,9 +279,7 @@ process bedtools_down_stream {
         track=\$1
         track2map=\$2
         tag=\$3
-        
-        
-        
+         
         # Get raw bed files with overlaping regions of target files
         intersectBed -a \${track} -b \${track2map} > \${tag}raw.bed
         
@@ -324,10 +298,6 @@ process bedtools_down_stream {
         # Get the maximum of the overlaping regions
         mapBed -a \${track2map} -b \${track} -c 5 -o max -null 0 > \${tag}max.bed
     }
-    
-#    half=${bed_by_tr_f}"30min_"
-#    day=${bed_by_tr_f}"24h_"
-#    day_before="${bed_by_tr_f}"24h_less_"
     
     half="${name_file}_30min_"
     day="${name_file}_24h_"
@@ -371,12 +341,3 @@ process R_mean {
 }
 
 warnings.println()
-
-
-
-/*
-Channel.fromPath ('*')
-       .filter {
-       
-       }
- */      
