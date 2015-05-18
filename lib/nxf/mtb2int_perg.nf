@@ -8,8 +8,8 @@
 #################################################################################
 */
 
-params.base_dir = "/Users/jespinosa/"
-//params.base_dir = "/users/cn/jespinosa/"
+//params.base_dir = "/Users/jespinosa/"
+params.base_dir = "/users/cn/jespinosa/"
 //params.mtb_dir = "phecomp/data/CRG/20120502_FDF_CRG/"
 params.mtb_dir = "phecomp/data/CRG/20120502_FDF_CRG/20120502_FDF_CRG/"
 params.in_file_pattern = "*.mtb"
