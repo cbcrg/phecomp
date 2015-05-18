@@ -97,7 +97,8 @@ names (argsL) <- argsDF$V1
 source (paste (home, "/git/phecomp/lib/R/plotParamPublication.R", sep=""))
 
 # manual execution, uncomment
-# setwd("/Users/jespinosa/phecomp/data/CRG/20120502_FDF_CRG/results/mean/")
+#setwd("/Users/jespinosa/phecomp/data/CRG/20120502_FDF_CRG/20120502_FDF_CRG/results/mean/")
+#path2files <- "/Users/jespinosa/phecomp/data/CRG/20120502_FDF_CRG/20120502_FDF_CRG/results/mean/"
 setwd(path2files)
 
 load_tbl_measure <- function (pattern="30min_sum") {
@@ -141,7 +142,7 @@ load_tbl_measure <- function (pattern="30min_sum") {
 ## PATTERN ==> DEPENDING ON THE PATTERN A DIFFERENT TYPE OF MEASURE WILL BE LOAD: MEAN VALUE, ACCUMULATED VALUE...
 
 # tag = "sum"
-# tag = "mean"
+tag = "mean"
 # tag = "cov"
 # tag = "count"
 
@@ -158,7 +159,7 @@ tbl_24h <- load_tbl_measure (pattern)
 
 # In the last post 24 hours guy 18 is an outliers 
 # tbl_24h[tbl_24h$index==9 & tbl_24h$group==paste("HF24h_", tag, sep=""), ]
-tbl_24h <- tbl_24h [!(tbl_24h$index==9 & tbl_24h$group=="HF24h_mean" & tbl_24h$id == "18"),]
+#tbl_24h <- tbl_24h [!(tbl_24h$index==9 & tbl_24h$group=="HF24h_mean" & tbl_24h$id == "18"),]
 
 pattern = paste("24h_less_", tag, sep="")
 #pattern = "24h_less_sum"
@@ -169,9 +170,13 @@ tbl_24h_less <- load_tbl_measure (pattern)
 tbl_24h_less$index <- tbl_24h_less$index + 1
 
 # I include a fake values for 24hours before in the first file, otherwise only 4 bars are plot and the width of the bars
-# differ from the rest
-# tbl_24h_less <- rbind(tbl_24h_less, c("chr1", 1530455, 1532255, NA, 1000, "+", 1609221, 1616855, 0, 19, paste("Ctrl24h_less_", tag, sep=""), 1))
-# tbl_24h_less <- rbind(tbl_24h_less, c("chr1", 1530455, 1532255, NA, 1000, "+", 1609221, 1616855, 0, 19, paste("HF24h_less_", tag, sep=""), 1))
+# differ from the rest, fake intervals and track
+# chr1 1085008 1086808 1000    + 1171384 1171409     0.056  8   HF24h_less_mean                 6
+# Two values to get a std.error of the mean value of each group
+tbl_24h_less <- rbind(tbl_24h_less, c("chr1", 1530455, 1532255, 1000, "+", 1609221, 1616855, 0, 19, paste("Ctrl24h_less_", tag, sep=""), 1))
+tbl_24h_less <- rbind(tbl_24h_less, c("chr1", 1530455, 1532255, 1000, "+", 1609221, 1616855, 0, 21, paste("Ctrl24h_less_", tag, sep=""), 1))
+tbl_24h_less <- rbind(tbl_24h_less, c("chr1", 1530455, 1532255, 1000, "+", 1609221, 1616855, 0, 20, paste("HF24h_less_", tag, sep=""), 1))
+tbl_24h_less <- rbind(tbl_24h_less, c("chr1", 1530455, 1532255, 1000, "+", 1609221, 1616855, 0, 22, paste("HF24h_less_", tag, sep=""), 1))
 
 tbl_24h_less$V8 <- as.numeric(tbl_24h_less$V8)
 tbl_24h_less$index <- as.numeric(tbl_24h_less$index)
@@ -182,7 +187,7 @@ tbl_stat <- rbind (tbl_30min, tbl_24h, tbl_24h_less)
 
 #Calculate mean and stderror of the mean
 tbl_stat_mean <-with (tbl_stat, aggregate (cbind (V8), list (group=group, index=index), FUN=function (x) c (mean=mean(x), std.error=std.error(x))))
-# tbl_stat_mean
+#tbl_stat_mean
 
 tbl_stat_mean$mean <- tbl_stat_mean$V8 [,1]
 tbl_stat_mean$std.error <- tbl_stat_mean$V8 [,2]
