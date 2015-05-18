@@ -331,12 +331,12 @@ process bedtools_down_stream {
 
 println "path for sum files: ${params.base_dir}${params.result_dir}results/sum"
 println "path for mean files: ${params.base_dir}${params.result_dir}results/mean"
-println "path for sum files: ${params.base_dir}${params.result_dir}results/cov"
+println "path for sum files: ${params.base_dir}${params.result_dir}results/max"
 println "path for sum files: ${params.base_dir}${params.result_dir}results/count"
 
 dump_dir_sum = file("${params.base_dir}${params.mtb_dir}results/sum/")
 dump_dir_mean = file("${params.base_dir}${params.mtb_dir}results/mean/")
-dump_dir_cov = file("${params.base_dir}${params.mtb_dir}results/cov/")
+dump_dir_max = file("${params.base_dir}${params.mtb_dir}results/max/")
 dump_dir_count = file("${params.base_dir}${params.mtb_dir}results/count/")
 
 dump_dir_sum.with {
@@ -349,10 +349,10 @@ dump_dir_mean.with {
      mkdirs()
      println "Created: $dump_dir_mean"
 }
-dump_dir_cov.with {
+dump_dir_max.with {
      if( !empty() ) { deleteDir() }
      mkdirs()
-     println "Created: $dump_dir_cov"
+     println "Created: $dump_dir_max"
 }
 dump_dir_count.with {
      if( !empty() ) { deleteDir() }
@@ -376,13 +376,13 @@ mean.flatten().subscribe onNext: {
     },
     onComplete: { dump_dir_channel_mean <<  dump_dir_mean << Channel.STOP }
 
-dump_dir_channel_cov = Channel.create()
+dump_dir_channel_max = Channel.create()
 
-cov.flatten().subscribe onNext: { 
+max.flatten().subscribe onNext: { 
     println "it---------------$it"
-    it.copyTo( dump_dir_channel_cov.resolve ( it.name ) )
+    it.copyTo( dump_dir_channel_max.resolve ( it.name ) )
     },
-    onComplete: { dump_dir_channel_cov <<  dump_dir_cov << Channel.STOP }
+    onComplete: { dump_dir_channel_max <<  dump_dir_max << Channel.STOP }
 
 dump_dir_channel_count = Channel.create()
 
@@ -420,15 +420,15 @@ process R_mean {
 
 warnings.println()
 
-process R_cov {
+process R_max {
      input:
-     file (tr_bed_dir) from dump_dir_channel_cov 
+     file (tr_bed_dir) from dump_dir_channel_max 
      
      output:
      stdout warnings
      
      """
-     Rscript \$HOME/git/phecomp/lib/R/starting_regions_file_vs_24h_nf.R --tag="cov" --path2files=\$(readlink ${tr_bed_dir}) --path2plot=\$(readlink ${tr_bed_dir}) 2>&1
+     Rscript \$HOME/git/phecomp/lib/R/starting_regions_file_vs_24h_nf.R --tag="max" --path2files=\$(readlink ${tr_bed_dir}) --path2plot=\$(readlink ${tr_bed_dir}) 2>&1
      """
 }
 
