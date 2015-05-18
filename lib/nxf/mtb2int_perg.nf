@@ -276,7 +276,7 @@ process bedtools_down_stream {
     t_24h_and_30min=\$(( t_day_s + time_after_clean ))
     
     # flankBed -i file_comp.bed -g ${chromsizes_f} -l 0 -r \$time_after_clean  -s > 30_min_after_clean
-    flankBed -i file_comp.bed -g ${chromsizes_f} -l 0 -r \$time_after_clean > 30_min_after_clean
+    flankBed -i file_comp.bed -g ${chromsizes_f} -l 0 -r \$time_after_clean -s > 30_min_after_clean
     #flankBed -i 30_min_after_clean -g ${chromsizes_f} -l 0 -r \$time_after_clean > 24h_30_min_after_clean.tmp
     flankBed -i 30_min_after_clean -g ${chromsizes_f} -l 0 -r \$t_day_s > 24h_after_clean.tmp
 
@@ -288,8 +288,10 @@ process bedtools_down_stream {
     t_l_23h_30min=\$(( t_day_s - time_after_clean ))   
     
     flankBed -i 30_min_after_clean -g ${chromsizes_f} -l \${t_l_23h_30min} -r 0 > 23h30min_before_clean
-    flankBed -i 23h30min_before_clean -g ${chromsizes_f} -l \$time_after_clean -r 0 > 24h_30_min_before_clean
+    flankBed -i 23h30min_before_clean -g ${chromsizes_f} -l \$time_after_clean -r 0 > 24h_30_min_before_clean.tmp
     
+    # First line of the file can not occur, no data before, moreover it creates problem with bedtools map
+    tail -n +2 24h_30_min_before_clean.tmp > 24h_30_min_before_clean
     
     createBedFilesAnalyze () {
         track=\$1
