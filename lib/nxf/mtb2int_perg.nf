@@ -8,8 +8,8 @@
 #################################################################################
 */
 
-params.base_dir = "/Users/jespinosa/"
-//params.base_dir = "/users/cn/jespinosa/"
+//params.base_dir = "/Users/jespinosa/"
+params.base_dir = "/users/cn/jespinosa/"
 //params.mtb_dir = "phecomp/data/CRG/20120502_FDF_CRG/"
 params.mtb_dir = "phecomp/data/CRG/20120502_FDF_CRG/20120502_FDF_CRG/"
 params.in_file_pattern = "*.mtb"
@@ -321,7 +321,7 @@ process bedtools_down_stream {
     
     createBedFilesAnalyze ${bed_by_tr_f} 30_min_after_clean \$half
     createBedFilesAnalyze ${bed_by_tr_f} 24h_30_min_after_clean \$day
-    createBedFilesAnalyze ${bed_by_tr_f} 23h30min_before_clean \$day_before
+    createBedFilesAnalyze ${bed_by_tr_f} 24h_30_min_before_clean \$day_before
     
     touch foo
     """
