@@ -51,7 +51,7 @@ correspondence_f = file(correspondence_f_path)
  */
 params.result_dir = "/phecomp/processedData/20120502_FDF_CRG_peaks_clean/"
 println "path: ${params.base_dir}${params.result_dir}results/"
-dump_dir = file("${params.base_dir}${params.mtb_dir}results/")
+dump_dir = file("${params.base_dir}${params.result_dir}results/")
 
 dump_dir.with {
      if( !empty() ) { deleteDir() }
