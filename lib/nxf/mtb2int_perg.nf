@@ -276,7 +276,7 @@ process bedtools_down_stream {
     t_24h_and_30min=\$(( t_day_s + time_after_clean ))
     
     # flankBed -i file_comp.bed -g ${chromsizes_f} -l 0 -r \$time_after_clean  -s > 30_min_after_clean
-    flankBed -i file_comp.bed -g ${chromsizes_f} -l 0 -r \$time_after_clean -s > 30_min_after_clean
+    flankBed -i file_comp.bed -g ${chromsizes_f} -l 0 -r \$time_after_clean > 30_min_after_clean
     #flankBed -i 30_min_after_clean -g ${chromsizes_f} -l 0 -r \$time_after_clean > 24h_30_min_after_clean.tmp
     flankBed -i 30_min_after_clean -g ${chromsizes_f} -l 0 -r \$t_day_s > 24h_after_clean.tmp
 
