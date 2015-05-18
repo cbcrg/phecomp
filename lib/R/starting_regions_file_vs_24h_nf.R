@@ -187,6 +187,15 @@ tbl_stat <- rbind (tbl_30min, tbl_24h, tbl_24h_less)
 
 #Calculate mean and stderror of the mean
 tbl_stat_mean <-with (tbl_stat, aggregate (cbind (V8), list (group=group, index=index), FUN=function (x) c (mean=mean(x), std.error=std.error(x))))
+
+# For the validation of std.error I have created my own function
+# result is actually the same
+# my_std_error <- function(x) {
+#     return (sd(x)/sqrt(length(x)))   
+# }
+# 
+# tbl_stat_mean <-with (tbl_stat, aggregate (cbind (V8), list (group=group, index=index), FUN=function (x) c (mean=mean(x), std.error=my_std_error(x))))
+
 #tbl_stat_mean
 
 tbl_stat_mean$mean <- tbl_stat_mean$V8 [,1]
@@ -245,14 +254,16 @@ tbl_stat_mean$group2 <- factor(tbl_stat_mean$group, levels=c(paste("Ctrl24h_less
 setwd (path2plot)
 
 max_file = max(tbl_stat_mean$index)
-
+lim_max_file = max_file + 0.5
 ggplot(data=tbl_stat_mean, aes(x=index, y=mean, fill=group2)) + 
 geom_bar(stat="identity", position=position_dodge()) +
 geom_errorbar(aes(ymin=mean-std.error, ymax=mean+std.error),
               width=.2,                    # Width of the error bars
               position=position_dodge(.9)) +
-              scale_x_continuous(breaks=1:max_file, limits=c(0.6,9.5))+
-              scale_y_continuous(limits=c(0, max(tbl_stat_mean$V8)+max(tbl_stat_mean$V8)/5)) +                
+              scale_x_continuous(breaks=1:max_file, limits=c(0.6,max_file))+
+              #scale_y_continuous(limits=c(0, max(tbl_stat_mean$V8) + max(tbl_stat_mean$V8)/5)) +
+              #scale_y_continuous(limits=c(0, 1.8)) +  
+              scale_y_continuous(limits=c(0, max(tbl_stat_mean$mean + tbl_stat_mean$std.error)+0.2)) +    
               labs (title = title_plot) +  
               labs (x = "\nFile number\n", y=y_lab, fill = NULL) +
               scale_fill_manual(values=cols, labels=c("Ctrl 24h before", "Ctrl after cleaning", "Ctrl 24h after", 
