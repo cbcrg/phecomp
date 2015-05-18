@@ -8,8 +8,8 @@
 #################################################################################
 */
 
-//params.base_dir = "/Users/jespinosa/"
-params.base_dir = "/users/cn/jespinosa/"
+params.base_dir = "/Users/jespinosa/"
+//params.base_dir = "/users/cn/jespinosa/"
 //params.mtb_dir = "phecomp/data/CRG/20120502_FDF_CRG/"
 params.mtb_dir = "phecomp/data/CRG/20120502_FDF_CRG/20120502_FDF_CRG/"
 params.in_file_pattern = "*.mtb"
@@ -396,13 +396,13 @@ count.flatten().subscribe onNext: {
 
 process R_sum {
      input:
-     file (tr_bed_dir) from dump_dir_channel_sum 
+     file (tr_bed_dir_s) from dump_dir_channel_sum 
      
      output:
      stdout warnings
      
      """
-     Rscript \$HOME/git/phecomp/lib/R/starting_regions_file_vs_24h_nf.R --tag="sum" --path2files=\$(readlink ${tr_bed_dir}) --path2plot=\$(readlink ${tr_bed_dir}) 2>&1
+     Rscript \$HOME/git/phecomp/lib/R/starting_regions_file_vs_24h_nf.R --tag="sum" --path2files=\$(readlink ${tr_bed_dir_s}) --path2plot=\$(readlink ${tr_bed_dir_s}) 2>&1
      """
 }
 
@@ -424,13 +424,13 @@ warnings.println()
 
 process R_max {
      input:
-     file (tr_bed_dir) from dump_dir_channel_max 
+     file (tr_bed_dir_max) from dump_dir_channel_max 
      
      output:
      stdout warnings
      
      """
-     Rscript \$HOME/git/phecomp/lib/R/starting_regions_file_vs_24h_nf.R --tag="max" --path2files=\$(readlink ${tr_bed_dir}) --path2plot=\$(readlink ${tr_bed_dir}) 2>&1
+     Rscript \$HOME/git/phecomp/lib/R/starting_regions_file_vs_24h_nf.R --tag="max" --path2files=\$(readlink ${tr_bed_dir_max}) --path2plot=\$(readlink ${tr_bed_dir_max}) 2>&1
      """
 }
 
@@ -438,13 +438,13 @@ warnings.println()
 
 process R_count {
      input:
-     file (tr_bed_dir) from dump_dir_channel_count 
+     file (tr_bed_dir_c) from dump_dir_channel_count 
      
      output:
      stdout warnings
      
      """
-     Rscript \$HOME/git/phecomp/lib/R/starting_regions_file_vs_24h_nf.R --tag="count" --path2files=\$(readlink ${tr_bed_dir}) --path2plot=\$(readlink ${tr_bed_dir}) 2>&1
+     Rscript \$HOME/git/phecomp/lib/R/starting_regions_file_vs_24h_nf.R --tag="count" --path2files=\$(readlink ${tr_bed_dir_c}) --path2plot=\$(readlink ${tr_bed_dir_c}) 2>&1
      """
 }
 
