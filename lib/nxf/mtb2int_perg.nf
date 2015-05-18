@@ -329,32 +329,120 @@ process bedtools_down_stream {
     """
 }
 
-println "path for mean files: ${params.base_dir}${params.mtb_dir}results/mean"
-dump_dir_mean = file("${params.base_dir}${params.mtb_dir}results/mean/")
+println "path for sum files: ${params.base_dir}${params.result_dir}results/sum"
+println "path for mean files: ${params.base_dir}${params.result_dir}results/mean"
+println "path for sum files: ${params.base_dir}${params.result_dir}results/cov"
+println "path for sum files: ${params.base_dir}${params.result_dir}results/count"
 
+dump_dir_sum = file("${params.base_dir}${params.mtb_dir}results/sum/")
+dump_dir_mean = file("${params.base_dir}${params.mtb_dir}results/mean/")
+dump_dir_cov = file("${params.base_dir}${params.mtb_dir}results/cov/")
+dump_dir_count = file("${params.base_dir}${params.mtb_dir}results/count/")
+
+dump_dir_sum.with {
+     if( !empty() ) { deleteDir() }
+     mkdirs()
+     println "Created: $dump_dir_sum"
+}
 dump_dir_mean.with {
      if( !empty() ) { deleteDir() }
      mkdirs()
      println "Created: $dump_dir_mean"
 }
+dump_dir_cov.with {
+     if( !empty() ) { deleteDir() }
+     mkdirs()
+     println "Created: $dump_dir_cov"
+}
+dump_dir_count.with {
+     if( !empty() ) { deleteDir() }
+     mkdirs()
+     println "Created: $dump_dir_count"
+}
 
-dump_dir_channel = Channel.create()
+dump_dir_channel_sum = Channel.create()
 
+sum.flatten().subscribe onNext: { 
+    println "it---------------$it"
+    it.copyTo( dump_dir_sum.resolve ( it.name ) )
+    },
+    onComplete: { dump_dir_channel_sum <<  dump_dir_sum << Channel.STOP }
+
+dump_dir_channel_mean = Channel.create()
+    
 mean.flatten().subscribe onNext: { 
     println "it---------------$it"
     it.copyTo( dump_dir_mean.resolve ( it.name ) )
     },
-    onComplete: { dump_dir_channel <<  dump_dir_mean << Channel.STOP }
+    onComplete: { dump_dir_channel_mean <<  dump_dir_mean << Channel.STOP }
 
+dump_dir_channel_cov = Channel.create()
+
+cov.flatten().subscribe onNext: { 
+    println "it---------------$it"
+    it.copyTo( dump_dir_channel_cov.resolve ( it.name ) )
+    },
+    onComplete: { dump_dir_channel_cov <<  dump_dir_cov << Channel.STOP }
+
+dump_dir_channel_count = Channel.create()
+
+count.flatten().subscribe onNext: { 
+    println "it---------------$it"
+    it.copyTo( dump_dir_count.resolve ( it.name ) )
+    },
+    onComplete: { dump_dir_channel_count <<  dump_dir_count << Channel.STOP }   
+
+process R_sum {
+     input:
+     file (tr_bed_dir) from dump_dir_channel_sum 
+     
+     output:
+     stdout warnings
+     
+     """
+     Rscript \$HOME/git/phecomp/lib/R/starting_regions_file_vs_24h_nf.R --tag="sum" --path2files=\$(readlink ${tr_bed_dir}) --path2plot=\$(readlink ${tr_bed_dir}) 2>&1
+     """
+}
+
+warnings.println()
+     
 process R_mean {
      input:
-     file (tr_bed_dir) from dump_dir_channel 
+     file (tr_bed_dir) from dump_dir_channel_mean 
      
      output:
      stdout warnings
      
      """
      Rscript \$HOME/git/phecomp/lib/R/starting_regions_file_vs_24h_nf.R --tag="mean" --path2files=\$(readlink ${tr_bed_dir}) --path2plot=\$(readlink ${tr_bed_dir}) 2>&1
+     """
+}
+
+warnings.println()
+
+process R_cov {
+     input:
+     file (tr_bed_dir) from dump_dir_channel_cov 
+     
+     output:
+     stdout warnings
+     
+     """
+     Rscript \$HOME/git/phecomp/lib/R/starting_regions_file_vs_24h_nf.R --tag="cov" --path2files=\$(readlink ${tr_bed_dir}) --path2plot=\$(readlink ${tr_bed_dir}) 2>&1
+     """
+}
+
+warnings.println()
+
+process R_count {
+     input:
+     file (tr_bed_dir) from dump_dir_channel_count 
+     
+     output:
+     stdout warnings
+     
+     """
+     Rscript \$HOME/git/phecomp/lib/R/starting_regions_file_vs_24h_nf.R --tag="count" --path2files=\$(readlink ${tr_bed_dir}) --path2plot=\$(readlink ${tr_bed_dir}) 2>&1
      """
 }
 
