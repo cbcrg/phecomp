@@ -99,6 +99,7 @@ source (paste (home, "/git/phecomp/lib/R/plotParamPublication.R", sep=""))
 # manual execution, uncomment
 #setwd("/Users/jespinosa/phecomp/data/CRG/20120502_FDF_CRG/20120502_FDF_CRG/results/mean/")
 #path2files <- "/Users/jespinosa/phecomp/data/CRG/20120502_FDF_CRG/20120502_FDF_CRG/results/mean/"
+#path2plot <- "/Users/jespinosa/phecomp/data/CRG/20120502_FDF_CRG/20120502_FDF_CRG/results/mean/"
 setwd(path2files)
 
 load_tbl_measure <- function (pattern="30min_sum") {
@@ -159,7 +160,7 @@ tbl_24h <- load_tbl_measure (pattern)
 
 # In the last post 24 hours guy 18 is an outliers 
 # tbl_24h[tbl_24h$index==9 & tbl_24h$group==paste("HF24h_", tag, sep=""), ]
-#tbl_24h <- tbl_24h [!(tbl_24h$index==9 & tbl_24h$group=="HF24h_mean" & tbl_24h$id == "18"),]
+# tbl_24h <- tbl_24h [!(tbl_24h$index==9 & tbl_24h$group=="HF24h_mean" & tbl_24h$id == "18"),]
 
 pattern = paste("24h_less_", tag, sep="")
 #pattern = "24h_less_sum"
@@ -184,6 +185,7 @@ tbl_24h_less$index <- as.numeric(tbl_24h_less$index)
 tbl_stat <- c()
 tbl_stat <- rbind (tbl_30min, tbl_24h, tbl_24h_less)
 # head (tbl_stat)
+tail (tbl_stat,20) 
 
 #Calculate mean and stderror of the mean
 tbl_stat_mean <-with (tbl_stat, aggregate (cbind (V8), list (group=group, index=index), FUN=function (x) c (mean=mean(x), std.error=std.error(x))))
@@ -253,42 +255,62 @@ tbl_stat_mean$group2 <- factor(tbl_stat_mean$group, levels=c(paste("Ctrl24h_less
 # Setting folder to dump plot
 setwd (path2plot)
 
+# Removing last item because there neither first 30 minutes after cleaning nor 24 hours
+# tail(tbl_stat_mean, 10)
+tbl_stat_mean <- tbl_stat_mean [!(tbl_stat_mean$index==max (tbl_stat_mean$index)),]
+
+# Removing habituation week
+# three first files
+tbl_stat_mean <- tbl_stat_mean [!(tbl_stat_mean$index==1 | tbl_stat_mean$index==2 | tbl_stat_mean$index==3),]
+tbl_stat_mean$index <- tbl_stat_mean$index - 3
+
+max_file = max(tbl_stat_mean$index)
+
+# Filtering over 3 weeks intervals
+filter_over <- as.integer(max_file/3) * 3
+tbl_stat_mean <- tbl_stat_mean [tbl_stat_mean$index <= filter_over, ] 
 max_file = max(tbl_stat_mean$index)
 lim_max_file = max_file + 0.5
+
 ggplot(data=tbl_stat_mean, aes(x=index, y=mean, fill=group2)) + 
 geom_bar(stat="identity", position=position_dodge()) +
 geom_errorbar(aes(ymin=mean-std.error, ymax=mean+std.error),
               width=.2,                    # Width of the error bars
               position=position_dodge(.9)) +
-              scale_x_continuous(breaks=1:max_file, limits=c(0.6,max_file))+
+              scale_fill_manual(values=cols, labels=c("Ctrl 24h before", "Ctrl after cleaning", "Ctrl 24h after", 
+                       "HF 24h before", "HF after cleaning", "HF 24h after")) +
+#               scale_x_continuous(breaks=1:max_file, limits=c(0.6, lim_max_file)) +
+              scale_x_continuous(breaks = c(seq(from = 2, to = lim_max_file, by = 3)), limits=c(0.4, lim_max_file), 
+                                 labels = c(seq(from = 1, to = lim_max_file/3, by = 1))) +
+              
               #scale_y_continuous(limits=c(0, max(tbl_stat_mean$V8) + max(tbl_stat_mean$V8)/5)) +
               #scale_y_continuous(limits=c(0, 1.8)) +  
               scale_y_continuous(limits=c(0, max(tbl_stat_mean$mean + tbl_stat_mean$std.error)+0.2)) +    
               labs (title = title_plot) +  
-              labs (x = "\nFile number\n", y=y_lab, fill = NULL) +
-              scale_fill_manual(values=cols, labels=c("Ctrl 24h before", "Ctrl after cleaning", "Ctrl 24h after", 
-                       "HF 24h before", "HF after cleaning", "HF 24h after"))
+              labs (x = "\nDevelopment phase (weeks)\n", y=y_lab, fill = NULL)
 
 # ggsave(file=paste(file_name, "_error_bar", ".pdf", sep=""), width=10, height=8)
 ggsave(file=paste(file_name, "_error_bar", ".pdf", sep=""), width=16, height=8)
 
-# Order for plotting
-tbl_stat$group2 <- factor(tbl_stat$group, levels=c(paste("Ctrl24h_less_", tag, sep=""),paste("Ctrl24h_", tag, sep=""),
-                                                   paste("Ctrl30min_", tag, sep=""), paste("HF24h_less_", tag, sep=""), 
-                                                   paste("HF30min_", tag, sep=""), paste("HF24h_", tag, sep="")))
 
-ggplot(data=tbl_stat, aes(x=index, y=V8, fill=group2)) + 
+ggplot(data=tbl_stat_mean, aes(x=index, y=mean, fill=group)) + 
   geom_bar(stat="identity", position=position_dodge()) +      
-  scale_x_continuous(breaks=1:max_file, limits=c(0.6,9.5))+
-  scale_y_continuous(limits=c(0, max(tbl_stat$V8) + max(tbl_stat$V8)/10)) +
-  labs (title = title_plot) +
-  labs (x = "\nFile number\n", y=y_lab, fill = NULL) +
+#   scale_x_continuous(breaks=1:max_file, limits=c(0.6,9.5))+
+#   scale_x_continuous(breaks=1:max_file, limits=c(0.6, max_file))+
   scale_fill_manual(values=cols, labels=c("Ctrl 24h before", "Ctrl after cleaning", "Ctrl 24h after", 
-           "HF 24h before", "HF after cleaning", "HF 24h after"))
+                                          "HF 24h before", "HF after cleaning", "HF 24h after")) +
+#   scale_x_continuous(breaks = c(seq(from = 1, to = lim_max_file, by = 3)), limits=c(0.4, lim_max_file),
+  scale_x_continuous(breaks = c(seq(from = 2, to = lim_max_file, by = 3)), limits=c(0.4, lim_max_file),
+                     labels = c(seq(from = 1, to = lim_max_file/3, by = 1))) +
+  #scale_y_continuous(limits=c(0, max(tbl_stat$V8) + max(tbl_stat$V8)/10)) +
+  #scale_y_continuous(limits=c(0, 1.8)) +  
+  scale_y_continuous(limits=c(0, max(tbl_stat_mean$mean + tbl_stat_mean$std.error)+0.2)) + 
+  labs (title = title_plot) +
+  labs (x = "\nDevelopment phase (weeks)\n", y=y_lab, fill = NULL)
+  
 
 # ggsave(file=paste(file_name, ".png", sep=""),width=26, height=14, dpi=300, units ="cm")
 #ggsave(file=paste(file_name, ".png", sep=""), width=26, height=14, dpi=300, units ="cm")
-ggsave(file=paste(file_name, ".pdf", sep=""), width=10, height=8)
-
+ggsave(file=paste(file_name, ".pdf", sep=""), width=16, height=8)
 
 warning ("Execution finished correctly")
