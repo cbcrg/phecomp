@@ -244,12 +244,14 @@ tbl_stat_mean$group2 <- factor(tbl_stat_mean$group, levels=c(paste("Ctrl24h_less
 # Setting folder to dump plot
 setwd (path2plot)
 
+max_file = max(tbl_stat_mean$index)
+
 ggplot(data=tbl_stat_mean, aes(x=index, y=mean, fill=group2)) + 
 geom_bar(stat="identity", position=position_dodge()) +
 geom_errorbar(aes(ymin=mean-std.error, ymax=mean+std.error),
               width=.2,                    # Width of the error bars
               position=position_dodge(.9)) +
-              scale_x_continuous(breaks=1:9, limits=c(0.6,9.5))+
+              scale_x_continuous(breaks=1:max_file, limits=c(0.6,9.5))+
               scale_y_continuous(limits=c(0, max(tbl_stat_mean$V8)+max(tbl_stat_mean$V8)/5)) +                
               labs (title = title_plot) +  
               labs (x = "\nFile number\n", y=y_lab, fill = NULL) +
@@ -266,7 +268,7 @@ tbl_stat$group2 <- factor(tbl_stat$group, levels=c(paste("Ctrl24h_less_", tag, s
 
 ggplot(data=tbl_stat, aes(x=index, y=V8, fill=group2)) + 
   geom_bar(stat="identity", position=position_dodge()) +      
-  scale_x_continuous(breaks=1:9, limits=c(0.6,9.5))+
+  scale_x_continuous(breaks=1:max_file, limits=c(0.6,9.5))+
   scale_y_continuous(limits=c(0, max(tbl_stat$V8) + max(tbl_stat$V8)/10)) +
   labs (title = title_plot) +
   labs (x = "\nFile number\n", y=y_lab, fill = NULL) +
