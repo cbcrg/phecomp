@@ -334,10 +334,10 @@ println "path for mean files: ${params.base_dir}${params.result_dir}results/mean
 println "path for sum files: ${params.base_dir}${params.result_dir}results/max"
 println "path for sum files: ${params.base_dir}${params.result_dir}results/count"
 
-dump_dir_sum = file("${params.base_dir}${params.mtb_dir}results/sum/")
-dump_dir_mean = file("${params.base_dir}${params.mtb_dir}results/mean/")
-dump_dir_max = file("${params.base_dir}${params.mtb_dir}results/max/")
-dump_dir_count = file("${params.base_dir}${params.mtb_dir}results/count/")
+dump_dir_sum = file("${params.base_dir}${params.result_dir}results/sum/")
+dump_dir_mean = file("${params.base_dir}${params.result_dir}results/mean/")
+dump_dir_max = file("${params.base_dir}${params.result_dir}results/max/")
+dump_dir_count = file("${params.base_dir}${params.result_dir}results/count/")
 
 dump_dir_sum.with {
      if( !empty() ) { deleteDir() }
@@ -396,13 +396,13 @@ count.flatten().subscribe onNext: {
 
 process R_sum {
      input:
-     file (tr_bed_dir_s) from dump_dir_channel_sum 
+     file (tr_bed_dir) from dump_dir_channel_sum 
      
      output:
      stdout warnings
      
      """
-     Rscript \$HOME/git/phecomp/lib/R/starting_regions_file_vs_24h_nf.R --tag="sum" --path2files=\$(readlink ${tr_bed_dir_s}) --path2plot=\$(readlink ${tr_bed_dir_s}) 2>&1
+     Rscript \$HOME/git/phecomp/lib/R/starting_regions_file_vs_24h_nf.R --tag="sum" --path2files=\$(readlink ${tr_bed_dir}) --path2plot=\$(readlink ${tr_bed_dir}) 2>&1
      """
 }
 
@@ -424,13 +424,13 @@ warnings.println()
 
 process R_max {
      input:
-     file (tr_bed_dir_max) from dump_dir_channel_max 
+     file (tr_bed_dir) from dump_dir_channel_max 
      
      output:
      stdout warnings
      
      """
-     Rscript \$HOME/git/phecomp/lib/R/starting_regions_file_vs_24h_nf.R --tag="max" --path2files=\$(readlink ${tr_bed_dir_max}) --path2plot=\$(readlink ${tr_bed_dir_max}) 2>&1
+     Rscript \$HOME/git/phecomp/lib/R/starting_regions_file_vs_24h_nf.R --tag="max" --path2files=\$(readlink ${tr_bed_dir}) --path2plot=\$(readlink ${tr_bed_dir}) 2>&1
      """
 }
 
@@ -438,13 +438,13 @@ warnings.println()
 
 process R_count {
      input:
-     file (tr_bed_dir_c) from dump_dir_channel_count 
+     file (tr_bed_dir) from dump_dir_channel_count 
      
      output:
      stdout warnings
      
      """
-     Rscript \$HOME/git/phecomp/lib/R/starting_regions_file_vs_24h_nf.R --tag="count" --path2files=\$(readlink ${tr_bed_dir_c}) --path2plot=\$(readlink ${tr_bed_dir_c}) 2>&1
+     Rscript \$HOME/git/phecomp/lib/R/starting_regions_file_vs_24h_nf.R --tag="count" --path2files=\$(readlink ${tr_bed_dir}) --path2plot=\$(readlink ${tr_bed_dir}) 2>&1
      """
 }
 
