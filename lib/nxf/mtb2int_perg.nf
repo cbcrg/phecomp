@@ -260,7 +260,7 @@ process bedtools_down_stream {
     set file('*mean*') into mean
     set file('*sum*') into sum
     set file('*count*') into count
-    set file('*max*') into max
+    set file('*max.bed') into max
     
     // Command example
     //bedtools complement -i ${path2files}files_data.bed -g ${path2files}all_mice.chromsizes > ${path2files}files_data_comp.bed
