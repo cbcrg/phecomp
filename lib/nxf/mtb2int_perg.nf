@@ -260,7 +260,7 @@ process bedtools_down_stream {
     set file('*mean*') into mean
     set file('*sum*') into sum
     set file('*count*') into count
-    set file('*max.bed') into max
+    set file('*max*') into max
     
     // Command example
     //bedtools complement -i ${path2files}files_data.bed -g ${path2files}all_mice.chromsizes > ${path2files}files_data_comp.bed
@@ -349,11 +349,13 @@ dump_dir_mean.with {
      mkdirs()
      println "Created: $dump_dir_mean"
 }
+
 dump_dir_max.with {
      if( !empty() ) { deleteDir() }
      mkdirs()
      println "Created: $dump_dir_max"
 }
+
 dump_dir_count.with {
      if( !empty() ) { deleteDir() }
      mkdirs()
@@ -380,7 +382,7 @@ dump_dir_channel_max = Channel.create()
 
 max.flatten().subscribe onNext: { 
     println "it---------------$it"
-    it.copyTo( dump_dir_channel_max.resolve ( it.name ) )
+    it.copyTo( dump_dir_max.resolve ( it.name ) )
     },
     onComplete: { dump_dir_channel_max <<  dump_dir_max << Channel.STOP }
 
