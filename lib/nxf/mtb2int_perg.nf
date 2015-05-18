@@ -8,8 +8,8 @@
 #################################################################################
 */
 
-//params.base_dir = "/Users/jespinosa/"
-params.base_dir = "/users/cn/jespinosa/"
+params.base_dir = "/Users/jespinosa/"
+//params.base_dir = "/users/cn/jespinosa/"
 //params.mtb_dir = "phecomp/data/CRG/20120502_FDF_CRG/"
 params.mtb_dir = "phecomp/data/CRG/20120502_FDF_CRG/20120502_FDF_CRG/"
 params.in_file_pattern = "*.mtb"
@@ -31,6 +31,17 @@ def mtb_files = Channel.fromPath (mtb_path)
                     .filter { def matcher = it =~/.*quinine.*/; !matcher.matches() }
                     .filter { def matcher = it =~/.*2012071.*/; !matcher.matches() }
 //                    .subscribe { println it }  
+
+// Same stuff but for a print
+def mtb_files2 = Channel.fromPath (mtb_path)
+                    .filter { def matcher = it =~/.*LAHFD.*/; !matcher.matches() }
+                    .filter { def matcher = it =~/.*LASC.*/; !matcher.matches() }
+                    .filter { def matcher = it =~/.*LA_to_food.*/; !matcher.matches() }
+                    .filter { def matcher = it =~/.*adulteration.*/; !matcher.matches() }
+                    .filter { def matcher = it =~/.*LA.*/; !matcher.matches() }
+                    .filter { def matcher = it =~/.*quinine.*/; !matcher.matches() }
+                    .filter { def matcher = it =~/.*2012071.*/; !matcher.matches() }
+                    .subscribe { println "files for bed $it" }  
         
 correspondence_f_path = "${params.base_dir}git/pergola/test/int_short2pergola.txt"
 correspondence_f = file(correspondence_f_path)
@@ -171,6 +182,8 @@ process get_chrom_sizes {
     
     """
     tail -n+2 ${bed_join} | sort -k1,1 -k2,2g > bed_join_sort
+    # tail -1 bed_join_sort | awk '{OFS="\t"; print "chr1", \$3}' > all_mice.chromsizes
+    # End of the last interval and not start
     tail -1 bed_join_sort | awk '{OFS="\t"; print "chr1", \$3}' > all_mice.chromsizes
     """
 }
@@ -227,7 +240,7 @@ bed_by_tr_flat =  bed_by_tr.flatten().map { bed_tr ->
       def name_file = pattern[0][1]
       [ bed_tr, name_file ]
     }
- 
+/* 
 bed_by_tr3_flat =  bed_by_tr3.flatten()
 
 bed_by_tr3_flat.subscribe {
@@ -263,11 +276,14 @@ process bedtools_down_stream {
     t_24h_and_30min=\$(( t_day_s + time_after_clean ))
     
     # flankBed -i file_comp.bed -g ${chromsizes_f} -l 0 -r \$time_after_clean  -s > 30_min_after_clean
-    flankBed -i file_comp.bed -g ${chromsizes_f} -l 0 -r \$time_after_clean > 30_min_after_clean
-    flankBed -i 30_min_after_clean -g ${chromsizes_f} -l 0 -r \$t_24h_and_30min > 24h_30_min_after_clean.tmp
-    
+    flankBed -i file_comp.bed -g ${chromsizes_f} -l 0 -r \$time_after_clean -s > 30_min_after_clean
+    #flankBed -i 30_min_after_clean -g ${chromsizes_f} -l 0 -r \$time_after_clean > 24h_30_min_after_clean.tmp
+    flankBed -i 30_min_after_clean -g ${chromsizes_f} -l 0 -r \$t_day_s > 24h_after_clean.tmp
+
     # Last period does not exists because is out of the recording
-    sed '\$d' 24h_30_min_after_clean.tmp > 24h_30_min_after_clean
+    sed '\$d' 24h_after_clean.tmp > 24h_after_clean
+    
+    flankBed -i 24h_after_clean -g ${chromsizes_f} -l 0 -r \$time_after_clean > 24h_30_min_after_clean
         
     t_l_23h_30min=\$(( t_day_s - time_after_clean ))   
     
