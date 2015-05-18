@@ -100,7 +100,11 @@ source (paste (home, "/git/phecomp/lib/R/plotParamPublication.R", sep=""))
 #setwd("/Users/jespinosa/phecomp/data/CRG/20120502_FDF_CRG/20120502_FDF_CRG/results/mean/")
 #path2files <- "/Users/jespinosa/phecomp/data/CRG/20120502_FDF_CRG/20120502_FDF_CRG/results/mean/"
 #path2plot <- "/Users/jespinosa/phecomp/data/CRG/20120502_FDF_CRG/20120502_FDF_CRG/results/mean/"
+#path2plot <- "/Users/jespinosa/phecomp/data/CRG/20120502_FDF_CRG/20120502_FDF_CRG/results/count/"
+#path2files <- "/Users/jespinosa/phecomp/data/CRG/20120502_FDF_CRG/20120502_FDF_CRG/results/count/"
+#path2files <- "/users/cn/jespinosa/phecomp/data/CRG/20120502_FDF_CRG/20120502_FDF_CRG/results/count/"
 setwd(path2files)
+write(paste("Path to files: ", path2files, sep=""), stderr())
 
 load_tbl_measure <- function (pattern="30min_sum") {
   #print(files <- list.files(pattern=paste(pattern, ".bed$", sep="")))
