@@ -143,7 +143,7 @@ load_tbl_measure <- function (pattern="30min_sum") {
 ## PATTERN ==> DEPENDING ON THE PATTERN A DIFFERENT TYPE OF MEASURE WILL BE LOAD: MEAN VALUE, ACCUMULATED VALUE...
 
 # tag = "sum"
-tag = "mean"
+# tag = "mean"
 # tag = "cov"
 # tag = "count"
 
@@ -290,7 +290,7 @@ geom_errorbar(aes(ymin=mean-std.error, ymax=mean+std.error),
               labs (x = "\nDevelopment phase (weeks)\n", y=y_lab, fill = NULL)
 
 # ggsave(file=paste(file_name, "_error_bar", ".pdf", sep=""), width=10, height=8)
-ggsave(file=paste(file_name, "_error_bar", ".pdf", sep=""), width=16, height=8)
+ggsave(file=paste(file_name, "_error_bar", ".pdf", sep=""), width=18, height=10)
 
 
 ggplot(data=tbl_stat_mean, aes(x=index, y=mean, fill=group)) + 
@@ -311,6 +311,6 @@ ggplot(data=tbl_stat_mean, aes(x=index, y=mean, fill=group)) +
 
 # ggsave(file=paste(file_name, ".png", sep=""),width=26, height=14, dpi=300, units ="cm")
 #ggsave(file=paste(file_name, ".png", sep=""), width=26, height=14, dpi=300, units ="cm")
-ggsave(file=paste(file_name, ".pdf", sep=""), width=16, height=8)
+ggsave(file=paste(file_name, ".pdf", sep=""), width=18, height=10)
 
 warning ("Execution finished correctly")
