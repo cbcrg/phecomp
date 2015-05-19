@@ -321,7 +321,7 @@ ggsave(file=paste(file_name, ".pdf", sep=""), width=18, height=10)
 warning ("Execution finished correctly")
 
 
-# Writing table for excel
+# # Writing table for excel
 # library(xlsx)
 # require(plyr)
 # 
@@ -347,5 +347,9 @@ warning ("Execution finished correctly")
 # means$group <- df.by.index_only_mean_gr[,2]
 # means$id <- df.by_index[,2]
 # means
-# write.xlsx(means, "/Users/jespinosa/phecomp/data/CRG/20120502_FDF_CRG/20120502_FDF_CRG/results/mean/tbl_stat_mean.xlsx") 
+# means$time <- gsub ("Ctrl", "", gsub ("HF", "" ,gsub ("_mean", "", means$group)))
+# means$N_group <- sapply (means$group, y <- function (x) {if (grepl("HF", x)) return (2) else {return (1)}})
+# values_by_time <- dlply(means, .(time))
+# df.values_by_time <- do.call (cbind.data.frame, values_by_time)
+# write.xlsx(df.values_by_time, "/Users/jespinosa/phecomp/data/CRG/20120502_FDF_CRG/20120502_FDF_CRG/results/mean/tbl_stat_mean.xlsx") 
 # 
