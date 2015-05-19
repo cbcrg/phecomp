@@ -273,6 +273,7 @@ max_file = max(tbl_stat_mean$index)
 # Filtering over 3 weeks intervals
 filter_over <- as.integer(max_file/3) * 3
 tbl_stat_mean <- tbl_stat_mean [tbl_stat_mean$index <= filter_over, ] 
+
 max_file = max(tbl_stat_mean$index)
 lim_max_file = max_file + 0.5
 
@@ -318,3 +319,33 @@ ggplot(data=tbl_stat_mean, aes(x=index, y=mean, fill=group)) +
 ggsave(file=paste(file_name, ".pdf", sep=""), width=18, height=10)
 
 warning ("Execution finished correctly")
+
+
+# Writing table for excel
+# library(xlsx)
+# require(plyr)
+# 
+# # Remove duplicated columns 
+# head (tbl_stat)
+# tbl_short <- tbl_stat_mean [,c(-1,-3,-5,-6)]
+# tbl_by_index <- dlply(tbl_short, .(index))
+# df.by_index <- do.call (cbind.data.frame, tbl_by_index)
+# df.by.index_only_mean <-df.by_index [,-seq(1, ncol(df.by_index), by=2)]
+# 
+# tbl_group <- tbl_stat_mean [ which (tbl_stat_mean$index== 1),]$group
+# df.by_index$group <- tbl_group
+# 
+# tbl_short <- tbl_stat [,c(-1,-2,-3,-4,-5,-6,-7)]
+# head(tbl_short)
+# tbl_short <- tbl_short [tbl_short$index <= 24, ] 
+# tbl_short <- tbl_short [tbl_short$index > 1, ] 
+# tbl_by_index <- dlply(tbl_short, .(index))
+# df.by_index <- do.call (cbind.data.frame, tbl_by_index)
+# head (df.by_index)
+# df.by.index_only_mean_gr <- df.by_index [,-seq(2, ncol(df.by_index), by=2)]
+# means <- df.by.index_only_mean_gr [,-seq(2, ncol(df.by.index_only_mean_gr), by=2)]
+# means$group <- df.by.index_only_mean_gr[,2]
+# means$id <- df.by_index[,2]
+# means
+# write.xlsx(means, "/Users/jespinosa/phecomp/data/CRG/20120502_FDF_CRG/20120502_FDF_CRG/results/mean/tbl_stat_mean.xlsx") 
+# 
