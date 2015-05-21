@@ -110,10 +110,20 @@ pos_files2Flat = pos_files2.flatten().map { single_pos_file ->
    [ name,  content ]
 }
 
-process joinPosCh {
+/*
+ * I duplicate the channel because I will use it to generate both bed and bedGraph files
+ */
+pos_files2Flat_bed = Channel.create() 
+pos_files2Flat_bG = Channel.create()
+pos_files2Flat.into(pos_files2Flat_bG, pos_files2Flat_bed) 
+
+/*
+ * Generating bedGraph files from position files
+ */
+process pos_to_bedGraph {
     
     input: 
-    set val (f_pos_name), file ('f_pos') from pos_files2Flat
+    set val (f_pos_name), file ('f_pos') from pos_files2Flat_bG
     
     output:
     set val(f_pos_name), file('*.bedGraph') into bedGraph
@@ -202,4 +212,106 @@ bG_rel_coord
     .subscribe  {  
         println "Copying %%%%%%%%%%%%%: ${it[1]}_relCoord.bedGraph"
         it[0].copyTo( dump_dir.resolve ( "tr_${it[1]}_relCoord.bedGraph" ) )
+    }  
+
+////////////////////////////
+
+/*
+ * Generating bed files from position files
+ */
+process pos_to_bed {
+    
+    input: 
+    set val (f_pos_name), file ('f_pos') from pos_files2Flat_bed
+    
+    output:
+    set val(f_pos_name), file('tr*.bed') into bed
+    set val(f_pos_name), file('tr*.bed') into bed2
+
+    // Command example
+    //pergola_rules.py -i "/Users/jespinosa/phecomp/processedData/201205_FDF_CRG/tac2activity/20120502_FDF_CRG_c6.tac.pos" -o "/Users/jespinosa/git/pergola/test/position2pergola.txt" -fs ";" -n -nt
+
+    """ 
+    pergola_rules.py -i $f_pos -o $correspondence_f -fs ";" -n -f bed -nt
+    """
+}
+
+bed2 
+    .subscribe { pos_file, bed_files ->   
+        for ( it in bed_files ) {
+            it.copyTo( dump_dir.resolve ( "${pos_file}${it.name}" ) )
+            }  
+    }
+
+// Collects here just get after flatting the correspondece bw
+// position and bed files 
+// pos1; tr_1.bed
+// pos1; tr_2.bed...
+// pos2; tr_1.bed
+// pos2; tr_2.bed...
+// ...
+// posN; tr_1.bed
+// posN; tr_2.bed...
+// posN; tr_n.bed  
+    
+bed_tr = bed.map {pos_file, bed_files ->
+        bed_files .collect {
+            def pattern = it.name =~/^tr_(\d+).*$/
+            def track = pattern[0][1]
+
+            [ pos_file, track,  it ]
+        }
+    }
+    .flatMap()
+//    .println()
+
+// Here with collect file as bedgraph files have the same name I can
+// group them by this name and of course their content
+bed_by_track = bed_tr    
+    .collectFile { pos, track, file -> 
+       [ "bed_$track", file ]
+    }
+   .flatMap() 
+   .map { file -> tuple( file, file.baseName.tokenize('_')[1]) }
+//   .println() 
+
+process add_track2file {
+    input:
+    set file ('bed_f'), val(tr) from bed_by_track
+    
+    output:
+    set file ('*.txt'), val(tr) into bed_by_track_col
+    
+    
+    """
+    awk '{OFS="\t"; print ${tr},\$2,\$3,\$4,\$5,\$6,\$7,\$8,\$9}' ${bed_f} > tr_${tr}.txt   
+    """        
+}
+
+/*
+bG_by_track_col
+    .println()
+*/
+
+correspondence_f_path_bed = "$HOME/git/pergola/test/bed2pergola.txt"
+correspondence_f_bed = file(correspondence_f_path_bed)
+
+process bed_to_relative_coord {       
+
+    input:
+    set file ('bed_f'), val(tr) from bed_by_track_col
+    
+    output:
+    set file ('tr*.bed'), val(tr) into bed_rel_coord
+    
+    """ 
+    pergola_rules.py -i $bed_f -o $correspondence_f_bed -f bed -nh -s 'chrm' 'start' 'end' 'nature' 'value' 'strain' 'start_rep' 'end_rep' 'color' -e 
+    """ 
+    
+}
+       
+bed_rel_coord
+    .subscribe  {  
+        println "Copying %%%%%%%%%%%%%: ${it[1]}_relCoord.bed"
+        it[0].copyTo( dump_dir.resolve ( "tr_${it[1]}_relCoord.bed" ) )
     }  
