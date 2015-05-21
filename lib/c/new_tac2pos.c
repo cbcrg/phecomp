@@ -444,7 +444,7 @@ int readCoord (char **fl, int start, int nFiles, int * n_tracks)
 	end = start + nFiles;
 	int i = 0;
 	//File header
-	fprintf (stdout, "Cage;Index;Time;XPos;YPos;File;EucDistance\n");
+	fprintf (stdout, "Cage;Index;TimeStart;TimeEnd;XPos;YPos;File;EucDistance\n");
 
 	for (fc = start; fc < end; fc += 1)
 	{
