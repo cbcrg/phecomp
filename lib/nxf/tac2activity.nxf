@@ -68,7 +68,7 @@ process extractPosition {
     tail -n +2 ${tac}.txt | awk -F ";" '{ if (\$7 != 0) print; }' > temp.txt
     awk -F  ";" '{ if (\$3 > 1335985200) print; }' temp.txt >> ${tac}.pos
  else
- 	cat ${tac}.txt | head -1 > ${tac}.pos
+     cat ${tac}.txt | head -1 > ${tac}.pos
     tail -n +2 ${tac}.txt | awk -F ";" '{ if (\$7 != 0) print; }' >> ${tac}.pos
     echo -e "No changes in this files\\n"
  fi
@@ -135,6 +135,12 @@ bedGraph2
 // position and bedgraph files 
 // pos1; tr_1.bedGraph
 // pos1; tr_2.bedGraph...
+// pos2; tr_1.bedGraph
+// pos2; tr_2.bedGraph...
+// ...
+// posN; tr_1.bedGraph
+// posN; tr_2.bedGraph...
+// posN; tr_n.bedGraph  
     
 bedGraph_tr = bedGraph.map {pos_file, bedGraph_files ->
         bedGraph_files .collect {
@@ -174,7 +180,7 @@ process add_track2file {
 bG_by_track_col
     .println()
 */
-// /* del
+
 process bG_to_relative_coord {       
 
     input:
@@ -194,5 +200,3 @@ bG_rel_coord
         println "Copying %%%%%%%%%%%%%: ${it[1]}_relCoord.bedGraph"
         it[0].copyTo( dump_dir.resolve ( "tr_${it[1]}_relCoord.bedGraph" ) )
     }  
-//del
-// */ 
