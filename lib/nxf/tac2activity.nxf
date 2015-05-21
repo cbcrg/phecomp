@@ -2,7 +2,7 @@
 #################################################################################
 ### Jose Espinosa-Carrasco. CB/CSN-CRG. April 2015                            ### 
 #################################################################################
-### Code : 23.01                                                              ###
+### Code : 23.04                                                              ###
 ### Position from tac files                                                   ### 
 ### ./nextflow tac2activity.nxf --tac_files '*.tac'                           ###
 #################################################################################
@@ -41,6 +41,9 @@ dump_dir.with {
 
 /*
  * Extract postion from tac files
+ * Filtering or zero values, files smaller
+ * Filtering all intervals before 1335985200 (First 8 PM ocurrence, start of dark phase)
+ * Eventually set it as a variable for other data sets #TODO
  */
 process extractPosition {
  
