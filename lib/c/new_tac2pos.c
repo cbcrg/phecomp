@@ -1020,7 +1020,8 @@ void readCoordinates (int size, FILE *fd, info2coord * info, int n_tr_file)
 		   	   fprintf (stdout, "%i;", info->nTrack + n_tr_file); //#del igual es mejor pasarle una estructura con todos los datos
 		   	   fprintf (stdout, "%i;", index);
 		   	   fprintf (stdout, "%i;", first_time);
-		   	   fprintf (stdout, "%i;", info->iniTrTime + point -1);
+		   	   //fprintf (stdout, "%i;", info->iniTrTime + point -1);
+		   	   fprintf (stdout, "%i;", info->iniTrTime + point); //The end of the interval is the following time, otherwise it can be t_start 32 t_end 32
 		   	   fprintf (stdout, "%2.4f;", PointsBuff[n] * info->hCal);
 		   	   fprintf (stdout, "%2.4f;", PointsBuff[n+1] * info->vCal);
 		   	   fprintf (stdout, "%s;", info->fileName);
