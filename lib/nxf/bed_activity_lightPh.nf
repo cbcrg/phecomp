@@ -28,7 +28,7 @@ correspondence_f_bed = file(correspondence_f_path_bed)
 /* 
  * Creating results folder
  */
-dump_dir_bed = file("$HOME/phecomp/processedData/201205_FDF_CRG/activity_vs_ light_phase/")
+dump_dir_bed = file("$HOME/phecomp/processedData/201205_FDF_CRG/activity_vs_light_phase/")
 
 dump_dir_bed.with {
      if( !empty() ) { deleteDir() }
