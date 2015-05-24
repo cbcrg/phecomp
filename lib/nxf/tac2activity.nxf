@@ -348,7 +348,7 @@ process get_phases {
 /*
  * Writing all phases file for its display in the genome browser
  */
-/*
+
 all_phases
  .subscribe {
         println "Phases file saved to file: $it"        
