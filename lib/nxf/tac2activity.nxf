@@ -77,8 +77,9 @@ process extractPosition {
     #tail -n +2 ${tac}.txt | awk -F ";" '{ if (\$7 != 0) print; }' >> ${tac}.pos
     cp ${tac}.txt ${tac}.pos
     echo -e "No changes in this files\\n"
-    tail -n +2 ${tac}.pos | awk -F ";"  'BEGIN{OFS=";";} { if (min=="") { min=max=\$3 }; if(\$3>max){ max=\$3 }; if(\$3< min) { min=\$3 }; total+=\$3; count+=1 } END { print "1",min,"0",max }' >> min_max.txt
  fi
+ 
+ tail -n +2 ${tac}.pos | awk -F ";"  'BEGIN{OFS=";";} { if (min=="") { min=max=\$3 }; if(\$3>max){ max=\$3 }; if(\$3< min) { min=\$3 }; total+=\$3; count+=1 } END { print "1",min,"0",max }' >> min_max.txt
  """
 
 }
