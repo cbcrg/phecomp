@@ -55,6 +55,7 @@ process extractPosition {
 // set '*.pos' into act_file
  file '*.pos' into pos_files1
  file '*.pos' into pos_files2
+ file 'min_max.txt' into min_max
  
  script:
  println "Input name is $tac.name"
@@ -76,6 +77,7 @@ process extractPosition {
     #tail -n +2 ${tac}.txt | awk -F ";" '{ if (\$7 != 0) print; }' >> ${tac}.pos
     cp ${tac}.txt ${tac}.pos
     echo -e "No changes in this files\\n"
+    tail -n +2 ${tac}.pos | awk -F ";"  'BEGIN{OFS=";";} { if (min=="") { min=max=\$3 }; if(\$3>max){ max=\$3 }; if(\$3< min) { min=\$3 }; total+=\$3; count+=1 } END { print "1",min,"0",max }' >> min_max.txt
  fi
  """
 
@@ -316,4 +318,39 @@ bed_rel_coord
     .subscribe  {  
         println "Copying %%%%%%%%%%%%%: ${it[1]}_relCoord.bed"
         it[0].copyTo( dump_dir.resolve ( "tr_${it[1]}_relCoord.bed" ) )
-    }  
+    } 
+    
+/*
+ * Getting phase files from min_max 
+ * I filtered all data before 8PM that is why I have to reverse light and dark
+ * phases
+ */  
+process get_phases {
+    input:
+    file min_max from mix_max_joined
+ 
+    output:
+    set file('phases_light_inverted.bed') into light_phases
+    set file('phases_dark_inverted.bed') into dark_phases
+    set file('phases_inverted.bed') into all_phases
+    set file('phases_light_inverted.bed') into light_phases_p
+    set file('phases_dark_inverted.bed') into dark_phases_p
+    
+    """ 
+    pergola_rules.py -i $min_max -o $correspondence_f -fs ";" -f bed -nh -s 'Cage' 'Time' 'EucDistance' 'TimeEnd' -e
+    sed 's/dark/light/g' phases_dark.bed > phases_light_inverted.bed
+    sed 's/light/dark/g' phases_light.bed > phases_dark_inverted.bed
+    sed 's/light/da1rk/g' phases.bed | sed 's/dark/light/g' | sed 's/da1rk/dark/g' > phases_inverted.bed
+    
+    """ 
+    }
+    
+/*
+ * Writing all phases file for its display in the genome browser
+ */
+/*
+all_phases
+ .subscribe {
+        println "Phases file saved to file: $it"        
+        it.copyTo( dump_dir.resolve ( it.name ) )
+    }
