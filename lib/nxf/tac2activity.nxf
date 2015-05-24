@@ -319,7 +319,14 @@ bed_rel_coord
         println "Copying %%%%%%%%%%%%%: ${it[1]}_relCoord.bed"
         it[0].copyTo( dump_dir.resolve ( "tr_${it[1]}_relCoord.bed" ) )
     } 
-    
+
+/*
+ * Joining all files to get the absolute min and max
+ */    
+def mix_max_joined = min_max
+                        .reduce([]) { all, line -> all<<line.text }
+                        .map { it.join('') }
+                            
 /*
  * Getting phase files from min_max 
  * I filtered all data before 8PM that is why I have to reverse light and dark
@@ -345,12 +352,6 @@ process get_phases {
     """ 
     }
 
-/*
- * Joining all files to get the absolute min and max
- */    
-def mix_max_joined = min_max
-                        .reduce([]) { all, line -> all<<line.text }
-                        .map { it.join('') }
                         
 /*
  * Writing all phases file for its display in the genome browser
