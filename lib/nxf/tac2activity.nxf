@@ -344,7 +344,14 @@ process get_phases {
     
     """ 
     }
-    
+
+/*
+ * Joining all files to get the absolute min and max
+ */    
+def mix_max_joined = min_max
+                        .reduce([]) { all, line -> all<<line.text }
+                        .map { it.join('') }
+                        
 /*
  * Writing all phases file for its display in the genome browser
  */
