@@ -28,6 +28,10 @@ correspondence_f_bG = file(correspondence_f_bG_path)
 correspondence_f_bG_tr_path = "$HOME/git/pergola/test/bedGraphWithTr2pergola.txt"
 correspondence_f_bG_tr = file(correspondence_f_bG_tr_path)
 
+// Correspondence for phases
+correspondence_f_path_phases = "$HOME/git/pergola/test/pos_short2pergola.txt"
+correspondence_f_phases = file(correspondence_f_path_phases)
+
 /* 
  * Creating results folder
  */
@@ -345,7 +349,7 @@ process get_phases {
     set file('phases_dark_inverted.bed') into dark_phases_p
     
     """ 
-    pergola_rules.py -i $min_max -o $correspondence_f -fs ";" -f bed -nh -s 'Cage' 'Time' 'EucDistance' 'TimeEnd' -e
+    pergola_rules.py -i $min_max -o $correspondence_f_phases -fs ";" -f bed -nh -s 'Cage' 'Time' 'EucDistance' 'TimeEnd' -e
     sed 's/dark/light/g' phases_dark.bed > phases_light_inverted.bed
     sed 's/light/dark/g' phases_light.bed > phases_dark_inverted.bed
     sed 's/light/da1rk/g' phases.bed | sed 's/dark/light/g' | sed 's/da1rk/dark/g' > phases_inverted.bed
