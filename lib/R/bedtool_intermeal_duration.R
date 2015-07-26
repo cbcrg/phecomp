@@ -202,6 +202,42 @@ ggsave(file=paste(file_name, "2groups_error_bar", ".pdf", sep=""), width=10, hei
 
 stop("Execution finished correctly")
 
+###
+# Stats
+## TTest
+
+pairwise.t.test(tbl_hab_dev$V5, tbl_hab_dev$group_mice, , p.adj="bonferroni", paired=F)
+
+# ANOVA for the 4 groups NOT FINISHED
+head (tbl_hab_dev)
+class(tbl_hab_dev$group)
+
+df.anova <- within(tbl_hab_dev, {
+  group <- factor(group)
+  id <- factor(id)
+})
+
+demo1.aov <- aov(value ~ group * time + Error(id), data = df.anova)
+
+demo1 <- read.csv("http://www.ats.ucla.edu/stat/data/demo1.csv")
+class(demo1$time)
+# df.plot$time <- as.integer(df.plot$variable)
+# 
+# df.plot [with(df.plot, order(id)), ]
+## Convert variables to factor
+df.anova <- within(df.anova, {
+  group <- factor(group)
+  time <- factor(variable)
+  id <- factor(id)
+})
+
+df.anova
+
+demo1.aov <- aov(value ~ group * time + Error(id), data = df.anova)
+# demo1.aov <- aov(pulse ~ group * time + Error(id), data = demo1)
+# I set the interaction to perform the ttest
+df.anova$interaction <- paste(df.anova$group, df.anova$time, sep="_")
+pairwise.t.test(df.anova$value, df.anova$interaction, , p.adj="hochberg", paired=F)
 ############################
 # Original developing of the script
 setwd("/Users/jespinosa/phecomp/20140807_pergola/bedtools_ex/intermeal_duration/data")
