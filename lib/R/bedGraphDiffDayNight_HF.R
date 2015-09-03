@@ -161,6 +161,10 @@ gAllByWeek <- gAllByWeek  + scale_colour_manual (#name="conditions",
                                    theme (legend.key.height = unit (1, "line")) #distance between lines in legend
 gAllByWeek
 
+setwd("/Users/jespinosa/dropboxTCoffee/Dropbox/jespinosa/2013phecomp2shareFinal/drafts_paper/submissionEuNeuroPsycho")
+ggsave (gAllByWeek, file=paste(home, "/dropboxTCoffee/Dropbox/jespinosa/2013phecomp2shareFinal/drafts_paper/submissionEuNeuroPsycho/", "figS3A.tiff", sep=""), 
+        width=12, height=7, dpi=400)
+
 ## Ratio between day and night
 mean (meanAll.byWeek$mean [meanAll.byWeek$groupPhase == "Ctrl day"] /meanAll.byWeek$mean [meanAll.byWeek$groupPhase == "Ctrl night"])
 mean (meanAll.byWeek$mean [meanAll.byWeek$groupPhase == "HF day"] /meanAll.byWeek$mean [meanAll.byWeek$groupPhase == "HF night"])
