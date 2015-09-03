@@ -27,8 +27,8 @@ colors <- RColorBrewer::brewer.pal (8, "Paired")[3:8]
 
 ## Functions
 ## Functions for GB files reading
-source ("/Users/jespinosa/phecomp/lib/R/f_readGBFiles.R")
-source ("/Users/jespinosa/phecomp/lib/R/plotParamPublication.R")
+source ("/Users/jespinosa/git/phecomp/lib/R/f_readGBFiles.R")
+source ("/Users/jespinosa/git/phecomp/lib/R/plotParamPublication.R")
 
 #Path to folder with intervals files for each cage
 # path2Tbls <- paste (home, "/phecomp/processedData/20120509_FCSC_UPF/GBfilesSync8AM/20140310_dev2/splitCh", sep = "")
@@ -205,6 +205,9 @@ gAllByWeek <- gAllByWeek  + scale_colour_manual (#name="conditions",
   values = colors, labels=c("Control day", "Control Night", "CM day\n(CM channel)","CM Night\n(CM channel)", "CM day\n(SC channel)","CM Night\n(SC channel)")) + 
   theme (legend.key.height = unit (2, "line")) #distance between lines in legend
 gAllByWeek
+setwd("/Users/jespinosa/dropboxTCoffee/Dropbox/jespinosa/2013phecomp2shareFinal/drafts_paper/submissionEuNeuroPsycho")
+ggsave (gAllByWeek, file=paste(home, "/dropboxTCoffee/Dropbox/jespinosa/2013phecomp2shareFinal/drafts_paper/submissionEuNeuroPsycho/", "figS3B.tiff", sep=""), 
+          width=12, height=7, dpi=400)
 
 ## Ratio between day and night
 mean (meanAll.byWeek$mean [meanAll.byWeek$groupPhase == "Ctrl day"] /meanAll.byWeek$mean [meanAll.byWeek$groupPhase == "Ctrl night"])
