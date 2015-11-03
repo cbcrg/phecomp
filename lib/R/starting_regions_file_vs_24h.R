@@ -246,7 +246,7 @@ geom_errorbar(aes(ymin=mean-std.error, ymax=mean+std.error),
                        "HF 24h before", "HF after cleaning", "HF 24h after"))
 
 # ggsave(file=paste(file_name, "_error_bar", ".pdf", sep=""), width=10, height=8)
-ggsave(file=paste(file_name, "_error_bar", ".pdf", sep=""), width=16, height=8)
+ggsave(file=paste(path2plot, file_name, "_error_bar", ".pdf", sep=""), width=16, height=8)
 
 # Order for plotting
 tbl_stat$group2 <- factor(tbl_stat$group, levels=c(paste("Ctrl24h_less_", tag, sep=""),paste("Ctrl24h_", tag, sep=""),
@@ -264,7 +264,7 @@ ggplot(data=tbl_stat, aes(x=index, y=V9, fill=group2)) +
 
 # ggsave(file=paste(file_name, ".png", sep=""),width=26, height=14, dpi=300, units ="cm")
 #ggsave(file=paste(file_name, ".png", sep=""), width=26, height=14, dpi=300, units ="cm")
-ggsave(file=paste(file_name, ".pdf", sep=""), width=10, height=8)
+ggsave(file=paste(path2plot, file_name, ".pdf", sep=""), width=10, height=8)
 
 stop("Execution finished correctly")
 
