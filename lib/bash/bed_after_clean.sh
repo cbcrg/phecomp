@@ -3,7 +3,10 @@
 # Calling the script
 # ~/git/phecomp/lib/bash/bed_after_clean.sh
 
-path2files="/Users/jespinosa/phecomp/20140807_pergola/bedtools_ex/starting_regions_file_vs_24h/data/"
+# Data for pergola paper
+#path2files="/Users/jespinosa/phecomp/20140807_pergola/bedtools_ex/starting_regions_file_vs_24h/data/"
+# Data for validation paper
+path2files="/Users/jespinosa/phecomp/20140807_pergola/20150411_validationPaper/data_bed_format/"
 
 RScDir="/Users/jespinosa/git/phecomp/lib/R/"
 
@@ -27,7 +30,9 @@ awk '{OFS="\t"; print $1,$2,$3,"\"\"",1000,"+",$2,$3}' ${path2files}files_data_c
 
 bedtools flank -i ${path2files}files_data_comp_all_fields.bed -g ${path2files}all_mice.chromsizes -l 0 -r $time_after_clean  -s > ${path2files}files_${time_after_clean_lab}.bed
 
-bedtools flank -i ${path2files}files_${time_after_clean_lab}.bed -g ${path2files}all_mice.chromsizes -l 0 -r $time_after_clean > ${path2files}files_${t_day_s_lab}_plus_${time_after_clean_lab}.bed
+bedtools flank -i ${path2files}files_data_comp_all_fields.bed -g ${path2files}all_mice.chromsizes -l 0 -r $t_day_s  -s > ${path2files}files_${t_day_s_lab}.bed
+
+bedtools flank -i ${path2files}files_${t_day_s_lab}.bed -g ${path2files}all_mice.chromsizes -l 0 -r $time_after_clean > ${path2files}files_${t_day_s_lab}_plus_${time_after_clean_lab}.bed
 
 
 t_l_23h_30min=$(( t_day_s - time_after_clean ))
@@ -78,9 +83,17 @@ do
 done
 
 # Rscript starting_regions_file_vs_24h.R --tag="mean"
-Rscript ${RScDir}starting_regions_file_vs_24h.R --tag="mean" --path2files="/Users/jespinosa/phecomp/20140807_pergola/bedtools_ex/starting_regions_file_vs_24h/" --path2plot="/Users/jespinosa/phecomp/20140807_pergola/bedtools_ex/starting_regions_file_vs_24h/"
-Rscript ${RScDir}starting_regions_file_vs_24h.R --tag="sum" --path2files="/Users/jespinosa/phecomp/20140807_pergola/bedtools_ex/starting_regions_file_vs_24h/" --path2plot="/Users/jespinosa/phecomp/20140807_pergola/bedtools_ex/starting_regions_file_vs_24h/"
-Rscript ${RScDir}starting_regions_file_vs_24h.R --tag="count" --path2files="/Users/jespinosa/phecomp/20140807_pergola/bedtools_ex/starting_regions_file_vs_24h/" --path2plot="/Users/jespinosa/phecomp/20140807_pergola/bedtools_ex/starting_regions_file_vs_24h/"
-Rscript ${RScDir}starting_regions_file_vs_24h.R --tag="max" --path2files="/Users/jespinosa/phecomp/20140807_pergola/bedtools_ex/starting_regions_file_vs_24h/" --path2plot="/Users/jespinosa/phecomp/20140807_pergola/bedtools_ex/starting_regions_file_vs_24h/"
+#Rscript ${RScDir}starting_regions_file_vs_24h.R --tag="mean" --path2files="/Users/jespinosa/phecomp/20140807_pergola/bedtools_ex/starting_regions_file_vs_24h/" --path2plot="/Users/jespinosa/phecomp/20140807_pergola/bedtools_ex/starting_regions_file_vs_24h/20151103_result/"
+#Rscript ${RScDir}starting_regions_file_vs_24h.R --tag="sum" --path2files="/Users/jespinosa/phecomp/20140807_pergola/bedtools_ex/starting_regions_file_vs_24h/" --path2plot="/Users/jespinosa/phecomp/20140807_pergola/bedtools_ex/starting_regions_file_vs_24h/20151103_result/"
+#Rscript ${RScDir}starting_regions_file_vs_24h.R --tag="count" --path2files="/Users/jespinosa/phecomp/20140807_pergola/bedtools_ex/starting_regions_file_vs_24h/" --path2plot="/Users/jespinosa/phecomp/20140807_pergola/bedtools_ex/starting_regions_file_vs_24h/20151103_result/"
+#Rscript ${RScDir}starting_regions_file_vs_24h.R --tag="max" --path2files="/Users/jespinosa/phecomp/20140807_pergola/bedtools_ex/starting_regions_file_vs_24h/" --path2plot="/Users/jespinosa/phecomp/20140807_pergola/bedtools_ex/starting_regions_file_vs_24h/20151103_result/"
+
+path2tbl="/Users/jespinosa/phecomp/20140807_pergola/20150411_validationPaper/"
+path2res="/Users/jespinosa/phecomp/20140807_pergola/20150411_validationPaper/20151103_result/"
+
+Rscript ${RScDir}starting_regions_file_vs_24h.R --tag="mean" --path2files=${path2tbl} --path2plot=${path2res}
+Rscript ${RScDir}starting_regions_file_vs_24h.R --tag="sum" --path2files=${path2tbl} --path2plot=${path2res}
+Rscript ${RScDir}starting_regions_file_vs_24h.R --tag="count" --path2files=${path2tbl} --path2plot=${path2res}
+Rscript ${RScDir}starting_regions_file_vs_24h.R --tag="max" --path2files=${path2tbl} --path2plot=${path2res}
 
 exit 0
