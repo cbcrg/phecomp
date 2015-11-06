@@ -97,7 +97,7 @@ boxPlots <- ggplot(tblAll, aes (week, value, fill = group)) +
   scale_y_continuous (limits=c(0, 1)) 
 
 #legend
-boxPlots + opts (legend.key.height = unit (1,"line")) + facet_wrap (~phase) 
+boxPlots + theme (legend.key.height = unit (1,"line")) + facet_wrap (~phase) 
 
 head (tblAll,50)
 
@@ -112,7 +112,7 @@ boxPlots <- ggplot (tblAll, aes (indexPh, value, fill = group)) +
   facet_wrap (~phase)
 
 #legend
-# boxPlots + opts (legend.key.height = unit (1,"line")) + 
+# boxPlots + theme (legend.key.height = unit (1,"line")) + 
 #    scale_x_discrete(labels = tblAll$timeDay)
 
 # Cleaning controls abnormal values
@@ -206,8 +206,33 @@ gAllByWeek <- gAllByWeek  + scale_colour_manual (#name="conditions",
   theme (legend.key.height = unit (2, "line")) #distance between lines in legend
 gAllByWeek
 setwd("/Users/jespinosa/dropboxTCoffee/Dropbox/jespinosa/2013phecomp2shareFinal/drafts_paper/submissionEuNeuroPsycho")
-ggsave (gAllByWeek, file=paste(home, "/dropboxTCoffee/Dropbox/jespinosa/2013phecomp2shareFinal/drafts_paper/submissionEuNeuroPsycho/", "figS3B.tiff", sep=""), 
+# ggsave (gAllByWeek, file=paste(home, "/dropboxTCoffee/Dropbox/jespinosa/2013phecomp2shareFinal/drafts_paper/submissionEuNeuroPsycho/", "figS3B.tiff", sep=""), 
+#           width=12, height=7, dpi=400)
+
+meanAll.byWeek10Weeks$groupPhase_lab <- factor(meanAll.byWeek10Weeks$groupPhase, levels=c("Ctrl day", "Ctrl night", "FC_SC day", "FC_SC night", "FC_Choc day", "FC_Choc night"), 
+                                           labels=c("Ctrl day", "Ctrl night", "FC SC day", "FC SC night", "FC CM day", "FC CM night"))
+
+########################################
+# New version of the plot (Rafael's way)
+gAllByWeek_blackWhite <- ggplot (meanAll.byWeek10Weeks, aes(x = week-1, y = mean, group = groupPhase_lab)) +
+                                 geom_errorbar (aes (ymin=ymin, ymax=ymax), colour = "black", width=.1) + 
+                                 geom_line (aes(linetype=groupPhase_lab), size=1.2)  +
+                                 geom_point (aes(shape=groupPhase_lab), fill="white",  size=4) +
+                                 scale_linetype_manual (values=rep("solid",6)) +                                 
+                                 scale_shape_manual(values=c(24,17,21,19,22,15)) +
+                                 scale_x_continuous (breaks=c(1:10)) + 
+                                 scale_y_continuous (limits = c(0, 0.6)) +
+                                 labs (title = "Average intake during\n30 min periods\n") +  
+                                 labs (x = "\nDevelopment Weeks", y = "g/30 min\n", fill = NULL) +                                  
+                                 theme (legend.key = element_blank(), legend.key.height = unit (2, "line"), 
+                                        legend.title=element_blank()) 
+
+gAllByWeek_blackWhite
+
+setwd("/Users/jespinosa/dropboxTCoffee_new/Dropbox/jespinosa/2013phecomp2shareFinal/20150902_espinosa_EuNeuroPsycho")
+ggsave (gAllByWeek_blackWhite, file=paste(home, "/dropboxTCoffee_new/Dropbox/jespinosa/2013phecomp2shareFinal/20150902_espinosa_EuNeuroPsycho/", "figS3B.tiff", sep=""), 
           width=12, height=7, dpi=400)
+
 
 ## Ratio between day and night
 mean (meanAll.byWeek$mean [meanAll.byWeek$groupPhase == "Ctrl day"] /meanAll.byWeek$mean [meanAll.byWeek$groupPhase == "Ctrl night"])
