@@ -223,7 +223,7 @@ gAllByWeek_blackWhite <- ggplot (meanAll.byWeek10Weeks, aes(x = week-1, y = mean
                                  scale_x_continuous (breaks=c(1:10)) + 
                                  scale_y_continuous (limits = c(0, 0.6)) +
                                  labs (title = "Average intake during\n30 min periods\n") +  
-                                 labs (x = "\nDevelopment Weeks", y = "g/30 min\n", fill = NULL) +                                  
+                                 labs (x = "\nDevelopment phase (weeks)", y = "g/30 min\n", fill = NULL) +                                  
                                  theme (legend.key = element_blank(), legend.key.height = unit (2, "line"), 
                                         legend.title=element_blank()) 
 

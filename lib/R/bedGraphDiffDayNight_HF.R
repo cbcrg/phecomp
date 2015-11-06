@@ -165,6 +165,28 @@ setwd("/Users/jespinosa/dropboxTCoffee/Dropbox/jespinosa/2013phecomp2shareFinal/
 ggsave (gAllByWeek, file=paste(home, "/dropboxTCoffee/Dropbox/jespinosa/2013phecomp2shareFinal/drafts_paper/submissionEuNeuroPsycho/", "figS3A.tiff", sep=""), 
         width=12, height=7, dpi=400)
 
+########################################
+# New version of the plot (Rafael's way)
+
+gAllByWeek_blackWhite <- ggplot (meanAll.byWeek8Weeks, aes(x = week, y = mean, group = groupPhase)) +
+  geom_errorbar (aes (ymin=ymin, ymax=ymax), colour = "black", width=.1) + 
+  geom_line (aes(linetype=groupPhase), size=1.2)  +
+  geom_point (aes(shape=groupPhase), fill="white",  size=4) +
+  scale_linetype_manual (values=rep("solid",4)) +                                 
+  scale_shape_manual(values=c(24,17,22,15)) +
+  scale_x_continuous (breaks=c(1:10)) + 
+  scale_y_continuous (limits = c(0, 0.6)) +
+  labs (title = "Average intake during\n30 min periods\n") +  
+  labs (x = "\nDevelopment phase (weeks)", y = "g/30 min\n", fill = NULL) +                                  
+  theme (legend.key = element_blank(), legend.key.height = unit (2, "line"), 
+         legend.title=element_blank()) 
+
+gAllByWeek_blackWhite
+
+setwd("/Users/jespinosa/dropboxTCoffee_new/Dropbox/jespinosa/2013phecomp2shareFinal/20150902_espinosa_EuNeuroPsycho")
+ggsave (gAllByWeek_blackWhite, file=paste(home, "/dropboxTCoffee_new/Dropbox/jespinosa/2013phecomp2shareFinal/20150902_espinosa_EuNeuroPsycho/", "figS3A.tiff", sep=""), 
+        width=12, height=7, dpi=400)
+
 ## Ratio between day and night
 mean (meanAll.byWeek$mean [meanAll.byWeek$groupPhase == "Ctrl day"] /meanAll.byWeek$mean [meanAll.byWeek$groupPhase == "Ctrl night"])
 mean (meanAll.byWeek$mean [meanAll.byWeek$groupPhase == "HF day"] /meanAll.byWeek$mean [meanAll.byWeek$groupPhase == "HF night"])
