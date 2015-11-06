@@ -7,6 +7,11 @@
 ###                                                                       ###
 #############################################################################
 
+# TODO
+# I have to analyzed the data form int2combo --> /Users/jespinosa/old_data/lib/HF_reinstatement.sh
+
+#/Users/jespinosa/old_data/lib/HF_reinstatement.sh
+
 # Calling libraries
 library(Hmisc)
 library(calibrate)
@@ -79,18 +84,28 @@ pca_medians_rev
 #####################
 ## PCA of reinstatement matrix
 
-##Getting HOME directory
+##Getting HOME directory 
 home <- Sys.getenv("HOME") 
 
 # Loading functions:
 data_reinst <- read.csv (paste (home, "/old_data/data/Matrix 16_10_15 for CPA Reinstatement.csv", sep=""), dec=",", sep=";")
 head (data_reinst)
 
+# Adding a column with labels of the group as we want them in the plots
+data_reinst$group_lab  <- gsub ("F1", "High fat", data_reinst$Group)
+data_reinst$group_lab  <- gsub ("SC", "SC choc", data_reinst$group_lab)
+data_reinst$group_lab  <- gsub ("Cafeteria diet", "Choc", data_reinst$group_lab)
+data_reinst$group_lab  <- gsub ("C1", "SC fat", data_reinst$group_lab)
+
+data_reinst$group_lab <- factor(data_reinst$group_lab, levels=c("SC choc", "SC fat", "Choc", "High fat"), 
+                         labels=c("SC choc", "SC fat", "Choc", "High fat"))
+
 # data_reinst$X
-data_reinst_filt <- subset (data_reinst, select = -c(X))
+data_reinst_filt <- subset (data_reinst, select = -c(X, group_lab))
 head (data_reinst_filt)
 length_tbl <- dim(data_reinst_filt) [2]
 data_reinst_filt$dep_active_day1
+data_reinst_filt_onlyVar <- data_reinst_filt [ , (7:length_tbl)]
 res = PCA (data_reinst_filt [ , (7:length_tbl)], scale.unit=TRUE)
 
 # Variance of PC1 and PC2
@@ -114,19 +129,27 @@ pca2plot$group  <- gsub ("C1", "SC fat", pca2plot$group)
 pca2plot$group <- factor(pca2plot$group, levels=c("SC choc", "SC fat", "Choc", "High fat"), 
                                                   labels=c("SC choc", "SC fat", "Choc", "High fat"))
 
-pca_medians_rev <- ggplot (pca2plot, aes(x=-Dim.1, y=-Dim.2, colour=group)) + 
+pca2plot$id <- data_reinst$subject
+
+pca_reinstatement <- ggplot (pca2plot, aes(x=Dim.1, y=Dim.2, colour=group)) + 
                            geom_point (size = 3.5, show_guide = T) + 
                            scale_color_manual(values=c("red", "orange","blue" , "magenta")) +
                           #                           geom_text (aes (label=days), vjust=-0.5, hjust=1, size=4, show_guide = T)+
-                        #   geom_text (aes (label=days), vjust=-0.5, hjust=1, size=4, show_guide = F)+
+                           geom_text (aes(label=id), vjust=-0.5, hjust=1, size=4, show_guide = F)+
                            theme(legend.key=element_rect(fill=NA)) +
-                           labs(title = "PCA of group medians\n", x = paste("\nPC1 (", var_PC1, "% of variance)", sep=""), 
+                           labs(title = "PCA reinstatement raw data\n", x = paste("\nPC1 (", var_PC1, "% of variance)", sep=""), 
                                 y=paste("PC2 (", var_PC2, "% of variance)\n", sep = "")) +
                           #                           guides(colour = guide_legend(override.aes = list(size = 10)))+
                            guides(colour = guide_legend(override.aes = list(size = 3)))+
                            theme(legend.key=element_rect(fill=NA))
 
-pca_medians_rev
+pca_reinstatement
+
+# keeping aspect ratio
+pca_reinstatement_aspect_ratio <- pca_reinstatement + coord_fixed()
++ 
+  scale_x_continuous (limits=c(-4, 5), breaks=-4:5) + 
+  scale_y_continuous (limits=c(-2, 3), breaks=-2:3)
 
 ###############
 ### Circle Plot
@@ -170,3 +193,58 @@ dailyInt_theme <- theme_update (axis.title.x = element_text (size=base_size * 2,
                                 plot.title = element_text (size=base_size * 2, face="bold"))
 
 p_circle_plot
+
+library(FactoMineR)
+ca_res <- CA (data_reinst_filt_onlyVar, graph=F)
+plot (ca_res)
+
+# Individuals
+ca2plot_row <- as.data.frame (ca_res$row$coord)
+ca2plot_row$id <-  rownames (ca_res$row$coord)
+ca2plot_row$group <- data_reinst$group_lab
+colnames (ca2plot_row) <- c("Dim.1", "Dim.2", "Dim.3", "Dim.4", "Dim.5", "id", "group")
+
+# Variables
+ca2plot_col <- as.data.frame (ca_res$col$coord)
+ca2plot_col$var <-  rownames (ca_res$col$coord)
+ca2plot_col$var <- gsub ("day", "", ca2plot_col$var)
+ca2plot_col$var <- gsub ("inactive", "inact", ca2plot_col$var)
+ca2plot_col$var <- gsub ("active", "act", ca2plot_col$var)
+ca2plot_col$var <- gsub ("Prog_ratio", "PR", ca2plot_col$var)
+
+ca2plot_col$varGroup <- ca2plot_col$var
+ca2plot_col$varGroup [grep("^dep_act", ca2plot_col$var)] <- "dep_act"
+ca2plot_col$varGroup [grep("^dep_inact", ca2plot_col$var)] <- "dep_in"
+ca2plot_col$varGroup [grep("^adlib_act", ca2plot_col$var)] <- "adlib_act"
+ca2plot_col$varGroup [grep("^adlib_inact", ca2plot_col$var)] <- "adlib_in"
+ca2plot_col$varGroup [grep("^ex_act", ca2plot_col$var)] <- "ex_act"
+ca2plot_col$varGroup [grep("^ex_inact", ca2plot_col$var)] <- "ex_inact"
+ca2plot_col$varGroup [c(81:length(ca2plot_col$varGroup))] <- "others"
+
+colnames (ca2plot_col) <- c("Dim.1", "Dim.2", "Dim.3", "Dim.4", "Dim.5", "var", "varGroup")
+
+# Variance of Dim,1 and Dim.2
+var_dim1 <- round (ca_res$eig [1,2])
+var_dim2 <- round (ca_res$eig [2,2])
+
+ca_reinstatement <- ggplot (ca2plot_row, aes(x=Dim.1, y=Dim.2, colour=group)) + 
+  geom_point (size = 3.5, show_guide = T) + 
+#   scale_color_manual(values=c("red", "orange","blue" , "magenta")) +
+  #                           geom_text (aes (label=days), vjust=-0.5, hjust=1, size=4, show_guide = T)+
+  geom_text (aes(label=id), vjust=-0.5, hjust=1, size=4, show_guide = F) +
+  theme(legend.key=element_rect(fill=NA)) +
+  labs(title = "CA reinstatement raw data\n", x = paste("\nDim 1 (", var_dim1, "% of variance)", sep=""), 
+       y=paste("Dim 2 (", var_dim2, "% of variance)\n", sep = "")) +
+  #                           guides(colour = guide_legend(override.aes = list(size = 10)))+
+  guides(colour = guide_legend(override.aes = list(size = 3), title="Group"))+
+  theme(legend.key=element_rect(fill=NA)) 
+
+# hacer las variables en otro plot asi puedo repetir colores
+ca_reinstatement + geom_point (data=ca2plot_col, aes(x=Dim.1, y=Dim.2), colour="black", shape=17) +
+  geom_text (data=ca2plot_col, aes(x=Dim.1, y=Dim.2, label=var, colour=varGroup)) +
+  scale_color_manual(values=c("red", "orange","blue" , "magenta", "black", "green", "yellow", "gray", "pink", "brown", "cyan")) 
+  
+as.factor(ca2plot_col$varGroup)
+# Agrupar las sessiones de cada tipo y entonces ponerles el color por sesion
+
+ca_reinstatement
