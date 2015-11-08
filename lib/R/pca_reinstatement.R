@@ -93,12 +93,12 @@ head (data_reinst)
 
 # Adding a column with labels of the group as we want them in the plots
 data_reinst$group_lab  <- gsub ("F1", "High fat", data_reinst$Group)
-data_reinst$group_lab  <- gsub ("SC", "SC choc", data_reinst$group_lab)
+data_reinst$group_lab  <- gsub ("SC", "Ctrl choc", data_reinst$group_lab)
 data_reinst$group_lab  <- gsub ("Cafeteria diet", "Choc", data_reinst$group_lab)
-data_reinst$group_lab  <- gsub ("C1", "SC fat", data_reinst$group_lab)
+data_reinst$group_lab  <- gsub ("C1", "Ctrl high fat", data_reinst$group_lab)
 
-data_reinst$group_lab <- factor(data_reinst$group_lab, levels=c("SC choc", "SC fat", "Choc", "High fat"), 
-                         labels=c("SC choc", "SC fat", "Choc", "High fat"))
+data_reinst$group_lab <- factor(data_reinst$group_lab, levels=c("Ctrl choc", "Choc", "Ctrl high fat", "High fat"), 
+                         labels=c("Ctrl choc", "Choc", "Ctrl high fat", "High fat"))
 
 # data_reinst$X
 data_reinst_filt <- subset (data_reinst, select = -c(X, group_lab))
@@ -118,22 +118,22 @@ pca2plot <- as.data.frame (res$ind$coord)
 pca2plot$id <- row.names(pca2plot)
 
 # Changes labels of the groups
-pca2plot$group <- data_reinst_filt$Group
+pca2plot$group <- data_reinst$group_lab
 
-# Changing labels of the group
-pca2plot$group  <- gsub ("F1", "High fat", pca2plot$group)
-pca2plot$group  <- gsub ("SC", "SC choc", pca2plot$group)
-pca2plot$group  <- gsub ("Cafeteria diet", "Choc", pca2plot$group)
-pca2plot$group  <- gsub ("C1", "SC fat", pca2plot$group)
+# # Changing labels of the group
+# pca2plot$group  <- gsub ("F1", "High fat", pca2plot$group)
+# pca2plot$group  <- gsub ("SC", "SC choc", pca2plot$group)
+# pca2plot$group  <- gsub ("Cafeteria diet", "Choc", pca2plot$group)
+# pca2plot$group  <- gsub ("C1", "SC fat", pca2plot$group)
 
-pca2plot$group <- factor(pca2plot$group, levels=c("SC choc", "SC fat", "Choc", "High fat"), 
+# pca2plot$group <- factor(pca2plot$group, levels=c("SC choc", "SC fat", "Choc", "High fat"), 
                                                   labels=c("SC choc", "SC fat", "Choc", "High fat"))
 
 pca2plot$id <- data_reinst$subject
 
 pca_reinstatement <- ggplot (pca2plot, aes(x=Dim.1, y=Dim.2, colour=group)) + 
                            geom_point (size = 3.5, show_guide = T) + 
-                           scale_color_manual(values=c("red", "orange","blue" , "magenta")) +
+                           scale_color_manual(values=c("orange", "red", "magenta", "blue")) +
                           #                           geom_text (aes (label=days), vjust=-0.5, hjust=1, size=4, show_guide = T)+
                            geom_text (aes(label=id), vjust=-0.5, hjust=1, size=4, show_guide = F)+
                            theme(legend.key=element_rect(fill=NA)) +
@@ -194,6 +194,9 @@ dailyInt_theme <- theme_update (axis.title.x = element_text (size=base_size * 2,
 
 p_circle_plot
 
+###########################
+# CA of reinstatement data
+
 library(FactoMineR)
 ca_res <- CA (data_reinst_filt_onlyVar, graph=F)
 plot (ca_res)
@@ -220,31 +223,50 @@ ca2plot_col$varGroup [grep("^adlib_inact", ca2plot_col$var)] <- "adlib_in"
 ca2plot_col$varGroup [grep("^ex_act", ca2plot_col$var)] <- "ex_act"
 ca2plot_col$varGroup [grep("^ex_inact", ca2plot_col$var)] <- "ex_inact"
 ca2plot_col$varGroup [c(81:length(ca2plot_col$varGroup))] <- "others"
-
+as.factor(ca2plot_col$varGroup)
 colnames (ca2plot_col) <- c("Dim.1", "Dim.2", "Dim.3", "Dim.4", "Dim.5", "var", "varGroup")
 
 # Variance of Dim,1 and Dim.2
 var_dim1 <- round (ca_res$eig [1,2])
 var_dim2 <- round (ca_res$eig [2,2])
 
+# Only the individuals
 ca_reinstatement <- ggplot (ca2plot_row, aes(x=Dim.1, y=Dim.2, colour=group)) + 
   geom_point (size = 3.5, show_guide = T) + 
 #   scale_color_manual(values=c("red", "orange","blue" , "magenta")) +
   #                           geom_text (aes (label=days), vjust=-0.5, hjust=1, size=4, show_guide = T)+
   geom_text (aes(label=id), vjust=-0.5, hjust=1, size=4, show_guide = F) +
   theme(legend.key=element_rect(fill=NA)) +
-  labs(title = "CA reinstatement raw data\n", x = paste("\nDim 1 (", var_dim1, "% of variance)", sep=""), 
+  labs(title = "CA reinstatement raw data:\nIndividuals and variables\n", x = paste("\nDim 1 (", var_dim1, "% of variance)", sep=""), 
        y=paste("Dim 2 (", var_dim2, "% of variance)\n", sep = "")) +
   #                           guides(colour = guide_legend(override.aes = list(size = 10)))+
   guides(colour = guide_legend(override.aes = list(size = 3), title="Group"))+
   theme(legend.key=element_rect(fill=NA)) 
 
-# hacer las variables en otro plot asi puedo repetir colores
-ca_reinstatement + geom_point (data=ca2plot_col, aes(x=Dim.1, y=Dim.2), colour="black", shape=17) +
+ca_reinstatement_ind <- ca_reinstatement + scale_color_manual(values=c("orange", "red", "magenta", "blue")) 
+ca_reinstatement_ind 
+
+# The individuals and the variables at the same time
+ca_reinstatement_ind_var <- ca_reinstatement + geom_point (data=ca2plot_col, aes(x=Dim.1, y=Dim.2), colour="black", shape=17) +
   geom_text (data=ca2plot_col, aes(x=Dim.1, y=Dim.2, label=var, colour=varGroup)) +
-  scale_color_manual(values=c("red", "orange","blue" , "magenta", "black", "green", "yellow", "gray", "pink", "brown", "cyan")) 
-  
-as.factor(ca2plot_col$varGroup)
+  scale_color_manual(values=c("orange", "red", "magenta", "blue", "black", "green", "yellow", "gray", "pink", "brown", "cyan")) 
+
+ca_reinstatement_ind_var
+
+# Plot of only the variables
+ca_reinstatement_var <- ggplot (ca2plot_col, aes(x=Dim.1, y=Dim.2, colour=varGroup)) + 
+  geom_point (size = 3.5, show_guide = T) + 
+  scale_color_manual(values=c("red", "orange", "darkblue" , "magenta", "black", "darkgreen", "cyan")) +
+  geom_text (aes(label=var), vjust=-0.5, hjust=1, size=5, show_guide = F) +
+  theme(legend.key=element_rect(fill=NA)) +
+  labs(title = "CA reinstatement raw data:\nVariables\n", x = paste("\nDim 1 (", var_dim1, "% of variance)", sep=""), 
+       y=paste("Dim 2 (", var_dim2, "% of variance)\n", sep = "")) +
+  #                           guides(colour = guide_legend(override.aes = list(size = 10)))+
+  guides(colour = guide_legend(override.aes = list(size = 3), title="Group"))+
+  theme(legend.key=element_rect(fill=NA)) 
+
+ca_reinstatement_var
+
 # Agrupar las sessiones de cada tipo y entonces ponerles el color por sesion
 
 ca_reinstatement
