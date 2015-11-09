@@ -105,6 +105,7 @@ with (tblCtrl , aggregate (cbind (value), list (phase=phase, group=group), FUN=f
 tblCtrl <- tblCtrl [-(which (tblCtrl$week==5 & tblCtrl$Filename=="combChcage07chfood_scfood_sc34.tbl")),]
 tblCtrl <- tblCtrl [-(which (tblCtrl$week==5 & tblCtrl$Filename=="combChcage17chfood_scfood_sc34.tbl")),]
 tblCtrl <- tblCtrl [-(which (tblCtrl$week==7 & tblCtrl$Filename=="combChcage03chfood_scfood_sc34.tbl")),]
+
 meanCtrl.byWeek <- with (tblCtrl , aggregate (cbind (value), list (phase=phase, group=group, week=week), FUN=function (x) c (mean=mean(x), std.error=std.error(x))))
 
 
@@ -115,10 +116,12 @@ meanHF.byWeek<- with (tblHF , aggregate (cbind (value), list (phase=phase, group
 # with (tblHF , aggregate (cbind (value), list (phase=phase, group=group), mean))
 with (tblHF , aggregate (cbind (value), list (phase=phase, group=group), FUN=function (x) c (mean=mean(x), std.error=std.error(x))))
 
-# Join the two tables 
+# Join the two tables with mean
 meanAll.byWeek <- rbind (meanCtrl.byWeek, meanHF.byWeek)
 meanAll.byWeek$mean <- meanAll.byWeek$value [,1]
 meanAll.byWeek$std.error <- meanAll.byWeek$value [,2]
+
+###########
 
 # Plotting all
 str (meanAll.byWeek)
@@ -191,8 +194,39 @@ ggsave (gAllByWeek_blackWhite, file=paste(home, "/dropboxTCoffee_new/Dropbox/jes
 mean (meanAll.byWeek$mean [meanAll.byWeek$groupPhase == "Ctrl day"] /meanAll.byWeek$mean [meanAll.byWeek$groupPhase == "Ctrl night"])
 mean (meanAll.byWeek$mean [meanAll.byWeek$groupPhase == "HF day"] /meanAll.byWeek$mean [meanAll.byWeek$groupPhase == "HF night"])
 
+############
 #STATS
-# para hacer la anova de lo que sale en el grafico tendr??a que tener un valor para cada d??a de la semana por animal (cage)
+
+###########
+###########
+# Tbl for spss analysis
+# Writing table for performing anova in spss - We need the data by individual
+tbl_all <- rbind (tblHF, tblCtrl)
+head (tbl_all)
+cage <- gsub ("combChcage", "",tbl_all$Filename)
+cage <- gsub ("chfood_scfood_sc34.tbl", "", cage)
+cage <- gsub ("chfood_fatfood_fat34.tbl", "", cage)
+tbl_all$cageId <- as.numeric (cage)
+
+# I have to summarize by week
+meanAll_byId_week <- with (tbl_all , aggregate (cbind (value), list (phase=phase, group=group, week=week, cage=cageId), FUN=function (x) c (mean=mean(x), std.error=std.error(x))))
+
+head (meanAll_byId_week)
+write.table(meanAll_byId_week, "/Users/jespinosa/sharedWin/20151109_dayNightDevelopment.csv", sep="\t", row.names=FALSE ,dec=".")
+
+meanAll_byId_week
+cbind (meanAll_byId_week [which (meanAll_byId_week$group == "Ctrl" & meanAll_byId_week$week == 1 & meanAll_byId_week$phase == "day"),],
+       meanAll_byId_week [which (meanAll_byId_week$group == "Ctrl" & meanAll_byId_week$week == 2 & meanAll_byId_week$phase == "day"),])
+meanAll_byId_week [which (meanAll_byId_week$group == "Ctrl" & meanAll_byId_week$week == 1 & meanAll_byId_week$phase == "day"),]
+meanAll_byId_week [which (meanAll_byId_week$group == "Ctrl" & meanAll_byId_week$week == 1 & meanAll_byId_week$phase == "day"),]
+meanAll_byId_week [which (meanAll_byId_week$group == "Ctrl" & meanAll_byId_week$week == 1 & meanAll_byId_week$phase == "day"),]
+meanAll_byId_week [which (meanAll_byId_week$group == "Ctrl" & meanAll_byId_week$week == 1 & meanAll_byId_week$phase == "day"),]
+meanAll_byId_week [which (meanAll_byId_week$group == "Ctrl" & meanAll_byId_week$week == 1 & meanAll_byId_week$phase == "day"),]
+
+##################
+#################
+# Same analysis in R
+# para hacer la anova de lo que sale en el grafico tendria que tener un valor para cada dia de la semana por animal (cage)
 # los animales si hago este dise??o no pueden estar repetidos entre dia y noche
 meanAnimalByWeekHF <- with (tblHF , aggregate (cbind (value), list (week=week, group=group, phase=phase, animal=Filename), FUN=function (x) c (mean=mean(x), std.error=std.error(x))))
 meanAnimalByWeekCtrl <- with (tblCtrl , aggregate (cbind (value), list (week=week, group=group, phase=phase, animal=Filename), FUN=function (x) c (mean=mean(x), std.error=std.error(x))))
