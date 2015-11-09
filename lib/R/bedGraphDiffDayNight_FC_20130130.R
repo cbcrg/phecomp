@@ -322,10 +322,37 @@ gCtrlFC_chocByWeek <- gCtrlFC_chocByWeek  + scale_colour_manual (#name="conditio
   theme(legend.key.height = unit (1, "line")) #distance between lines in legend
 gCtrlFC_chocByWeek
 
+############
 #STATS
 # para hacer la anova de lo que sale en el grafico tendr??a que tener un valor para cada d??a de la semana por animal (cage)
 # los animales si hago este dise??o no pueden estar repetidos entre dia y noche
-tblFC_SC
+
+###########
+###########
+# Tbl for spss analysis
+# Writing table for performing anova in spss - We need the data by individual
+tbl_all_FC <- rbind (tblFC_Choc, tblFC_SC, tblCtrl)
+head (tbl_all_FC)
+tail (tbl_all_FC)
+cage <- gsub ("splitChcage", "", tbl_all_FC$Filename)
+cage <- gsub ("combChcage", "", cage)
+cage <- gsub ("chfood_scfood_sc34.tbl", "", cage)
+cage <- gsub ("chfood_cd3.tbl", "", cage)
+cage <- gsub ("chfood_cd4.tbl", "", cage)
+cage <- gsub ("chfood_sc3.tbl", "", cage)
+cage <- gsub ("chfood_sc4.tbl", "", cage)
+
+tbl_all_FC$cageId <- as.numeric (cage)
+
+# I have to summarize by week
+meanAll_FC_byId_week <- with (tbl_all_FC , aggregate (cbind (value), list (phase=phase, group=group, week=week, cage=cageId), FUN=function (x) c (mean=mean(x), std.error=std.error(x))))
+head (meanAll_FC_byId_week)
+
+write.table(meanAll_FC_byId_week, "/Users/jespinosa/sharedWin/20151109_dayNightDevelopment_FC.csv", sep="\t", row.names=FALSE ,dec=".")
+
+##################
+#################
+# Same analysis in R
 meanAnimalByWeekHF <- with (tblHF , aggregate (cbind (value), list (week=week, group=group, phase=phase, animal=Filename), FUN=function (x) c (mean=mean(x), std.error=std.error(x))))
 meanAnimalByWeekCtrl <- with (tblCtrl , aggregate (cbind (value), list (week=week, group=group, phase=phase, animal=Filename), FUN=function (x) c (mean=mean(x), std.error=std.error(x))))
 meanAnimalByWeek <- rbind (meanAnimalByWeekHF, meanAnimalByWeekCtrl)
