@@ -93,8 +93,8 @@ df.meanCase.m <- df.meanCase.m [with (df.meanCase.m, order (period, channel, ord
 
 # Changing label Number by Number of Meals and Number of Drinks
 # To plot significance this must be comment because meal number and drink number won't be recognized #Tag_sig
-df.meanCase.m$variable [which (df.meanCase.m$variable == "Number" & df.meanCase.m$channel == "food")] <-  "Meal Number"
-df.meanCase.m$variable [which (df.meanCase.m$variable == "Number" & df.meanCase.m$channel == "water")] <-  "Drink Number"
+# df.meanCase.m$variable [which (df.meanCase.m$variable == "Number" & df.meanCase.m$channel == "food")] <-  "Meal Number"
+# df.meanCase.m$variable [which (df.meanCase.m$variable == "Number" & df.meanCase.m$channel == "water")] <-  "Drink Number"
 
 
 #Filtering habituation phase
@@ -102,6 +102,9 @@ df.meanCase.m$variable [which (df.meanCase.m$variable == "Number" & df.meanCase.
 df.meanCase.m.Dev <- df.meanCase.m [df.meanCase.m$period != 1 & df.meanCase.m$period < 10,]
 df.meanCase.m.Dev$period
 tail(df.meanCase.m.Dev)
+
+df.meanCase.m$stars <- ""
+df.meanCase.m.Dev$stars <- ""
 
 #Forced diet heat map
 setwd("/Users/jespinosa/dropboxTCoffee/Dropbox/jespinosa/2013phecomp2shareFinal/drafts_paper/figures/fig3ANDfigS1Dev/20150109_includingInterMealInterv")
@@ -158,12 +161,36 @@ for (i in c (1: length (df.sigResults [,1])))
     if (foldChange < 0) {df.sigResults$foldChange [i] <- as.numeric(-df.sigResults$foldChange [i]) -1  }
   }
 
+df.sigResults$chVar <- df.sigResults$variable
+#fold change have to be numeric to make the function work
+df.sigResults$foldChange <- as.numeric (df.sigResults$foldChange)
+
+#I want to insert this order Avg Intake, number, avg duration and rate, so the order is the same as in the other plots
+# ggplot takes inverse order so I have to label this way rate, avg duration, number, avg intake
+df.sigResults$varOrder<- "dummy"
+df.sigResults$varOrder [which ( df.sigResults$variable == "Avg Intermeal Duration")] <-  "a"
+df.sigResults$varOrder [which ( df.sigResults$variable == "Rate")] <-  "b"
+df.sigResults$varOrder [which ( df.sigResults$variable == "Avg Duration")] <-  "c"
+df.sigResults$varOrder [which ( df.sigResults$variable == "Number")] <-  "d"
+df.sigResults$varOrder [which ( df.sigResults$variable == "Avg Intake")] <-  "e"
+df.sigResults$orderOut<- "dummy"
+df.sigResults$orderOut [which ( df.sigResults$variable == "Avg Intermeal Duration")] <-  "1"
+df.sigResults$orderOut [which ( df.sigResults$variable == "Rate")] <-  "2"
+df.sigResults$orderOut [which ( df.sigResults$variable == "Avg Duration")] <-  "3"
+df.sigResults$orderOut [which ( df.sigResults$variable == "Number")] <-  "4"
+df.sigResults$orderOut [which ( df.sigResults$variable == "Avg Intake")] <-  "5"
+
+#Ordering by week too
+df.sigResults <- df.sigResults [with ( df.sigResults, order (period, channel, orderOut) ),]
+
 #Filtering habituation phase
-df.sigResults.Dev <- df.sigResults [df.sigResults$period != 1 & df.sigResults$period < 9, ]
+df.sigResults.Dev <- df.sigResults [df.sigResults$period != 1 & df.sigResults$period < 10, ]
+df.sigResults.Dev$stars <- ""
 heatMapPlotter (df.sigResults.Dev, main="High-Fat diet\n",  weekNotation="N", legPos="right", mode="pvalues", xlab="\nDevelopment Phase (weeks)", ylab="Food                                                  Water\n")
 # heatMapPlotter (df.sigResults4devWeeks, main="Forced-Diet High Fat\n",  weekNotation="N", legPos="right", mode="pvalues", xlab="\nDevelopment week", ylab="Food                                                  Water\n")
 setwd ("/Users/jespinosa/dropboxTCoffee/Dropbox/jespinosa/2013phecomp2shareFinal/drafts_paper/figures/fig4ANDfigS4Dev")
 
 #### HABITUATION PHASE
 df.sigResults.Hab <- df.sigResults [df.sigResults$period == 1, ]
+df.sigResults.Hab$stars <- ""
 heatMapPlotterHab (df.sigResults.Hab, main="\n",  weekNotation="N", legPos="none", mode="pvalues", xlab="\nHabituation Phase", ylab="Food                                                  Water\n", widthCol=widthCol)
