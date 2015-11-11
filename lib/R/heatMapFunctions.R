@@ -111,7 +111,7 @@ heatMapPlotter <- function (table, main="", weekNotation=F, legPos="right", mode
     limitsSc= c (-3,3)
     breaksSc = c (-3, -2, -1, 0, 1, 2, 3)
     labelsSc = c ("<-3","-2","-1","0", "1", "2", ">3")
-    legName = "Fold Change"
+    legName = "Fold change"
   }
   
   #table$week <-table$period
@@ -136,6 +136,7 @@ heatMapPlotter <- function (table, main="", weekNotation=F, legPos="right", mode
   
   (p <- ggplot (table, aes (week, chVar)) + geom_tile (aes (fill = foldChange),
                                                        colour = "white") + #scale_y_discrete (labels = foodWaterOut(table$chVar)) +
+     geom_text(aes(label=stars), color="white", size=7) +
      scale_fill_gradientn (guide = "colorbar",
                            colours = colorsSc,
                            values = valuesSc,
@@ -246,8 +247,10 @@ heatMapPlotterHab <- function (table, main="", weekNotation=F, legPos="right", m
   #print (factor (table$variable, labels=unique (paste (sapply (table$variable, simpleCap))),ordered=T) )
   print (table$variable)      
   print (rep (0.5,length (unique (table$week))))
-  (p <- ggplot(table, aes(week, chVar)) + geom_tile(aes(fill = foldChange, width=widthCol),
+#   (p <- ggplot(table, aes(week, chVar)) + geom_tile(aes(fill = foldChange, width=widthCol),
+  (p <- ggplot(table, aes(week, chVar)) + geom_tile(aes(fill = foldChange, width=0.09),
                                                     colour = "white") + #scale_y_discrete (labels = foodWaterOut(table$chVar)) +
+     geom_text(aes(label=stars), color="white", size=5) +
      scale_fill_gradientn (guide = "colorbar",
                            colours = colorsSc,
                            values = valuesSc,
