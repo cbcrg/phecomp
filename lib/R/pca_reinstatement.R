@@ -27,6 +27,9 @@ source ("/Users/jespinosa/git/phecomp/lib/R/plotParamPublication.R")
 data_reinst <- read.csv (paste (home, "/old_data/data/Matrix 16_10_15 for CPA Reinstatement.csv", sep=""), dec=",", sep=";")
 head (data_reinst)
 
+# I set as vector with colors for all the plots I just have to set the number of colours that I need for the plots
+v_colours <- c("red", "gray", "blue", "lightblue", "magenta", "orange", "darkgreen")
+
 # Adding a column with labels of the group as we want them in the plots
 data_reinst$group_lab  <- gsub ("F1", "High fat", data_reinst$Group)
 data_reinst$group_lab  <- gsub ("SC", "Ctrl choc", data_reinst$group_lab)
@@ -39,17 +42,26 @@ data_reinst$group_lab <- factor(data_reinst$group_lab, levels=c("Ctrl choc", "Ch
 # data_reinst$X
 data_reinst_filt <- subset (data_reinst, select = -c(X, group_lab))
 head (data_reinst_filt)
+
+# I get rid of the variables that are in the table that are a summary of other phases of the experiment
+data_reinst_filt_no_summary_var <- subset (data_reinst_filt, select = -c(mean_last_three_days_ext, acq_3_days_active, 
+                                                                         ext_3_days_active, mean.ext, X30.acq, acq_3_days_inactive,
+                                                                         ext_3_days_inactive))
+
+data_reinst_filt <- data_reinst_filt_no_summary_var
 length_tbl <- dim(data_reinst_filt) [2]
 data_reinst_filt$dep_active_day1
 data_reinst_filt_onlyVar <- data_reinst_filt [ , (7:length_tbl)]
 
 var_names <- colnames(data_reinst_filt_onlyVar)
 
-res = PCA (data_reinst_filt [ , (7:length_tbl)], scale.unit=TRUE)
+# res = PCA (data_reinst_filt [ , (7:length_tbl)], scale.unit=TRUE)
+res = PCA (data_reinst_filt_onlyVar, scale.unit=TRUE)
 
 # Variance of PC1 and PC2
 var_PC1 <- round (res$eig [1,2])
 var_PC2 <- round (res$eig [2,2])
+var_PC3 <- round (res$eig [3,2])
 
 # Coordinates are store here
 # res$ind$coord --- rownames(res$ind$coord)
@@ -86,9 +98,9 @@ pca_reinstatement <- ggplot (pca2plot, aes(x=Dim.1, y=Dim.2, colour=group)) +
 
 # keeping aspect ratio
 pca_reinstatement_aspect_ratio <- pca_reinstatement + coord_fixed()
-+ 
-  scale_x_continuous (limits=c(-4, 5), breaks=-4:5) + 
-  scale_y_continuous (limits=c(-2, 3), breaks=-2:3)
+# + 
+#   scale_x_continuous (limits=c(-4, 5), breaks=-4:5) + 
+#   scale_y_continuous (limits=c(-2, 3), breaks=-2:3)
 
 pca_reinstatement_aspect_ratio
 
@@ -172,11 +184,10 @@ neg_positions <- circle_plot [which (circle_plot$Dim.1 < 0), c(1,2,8)]
 pos_labels <- labels_v [which (circle_plot$Dim.1 >= 0)]
 pos_positions <- circle_plot [which (circle_plot$Dim.1 >= 0), c(1,2,8)]
  
-
 p_circle_plot_colors <- ggplot(circle_plot) + 
                         geom_segment (data=circle_plot, aes(colour=varGroup, x=0, y=0, xend=Dim.1, yend=Dim.2), 
                                       arrow=arrow(length=unit(0.2,"cm")), alpha=1, size=1) +
-                        scale_color_manual (values = c("red", "gray", "blue", "lightblue", "magenta", "orange", "darkgreen")) +
+                        scale_color_manual (values = v_colours) +
                         xlim (c(-1.2, 1.2)) + ylim (c(-1.2, 1.2)) +
                         geom_text (data=neg_positions, aes (x=Dim.1, y=Dim.2, label=session, hjust=0.9, vjust=-0.4), 
                                    show_guide = FALSE, size=5) + 
@@ -209,12 +220,158 @@ p_var_by_group <- ggplot(circle_plot) +
                          xlim (c(-1, 1)) + ylim (c(-1, 1)) +
                          geom_text (aes(colour=varGroup, x=Dim.1, y=Dim.2, label=session), show_guide = FALSE, size=5, vjust=-0.4) +
                          geom_point(aes(colour=varGroup, x=Dim.1, y=Dim.2), size=3)+
-                         scale_color_manual (values = c("red", "gray", "blue", "lightblue", "magenta", "orange", "darkgreen")) +
+                         scale_color_manual (values = v_colours) +
                          theme (legend.key = element_blank(), legend.key.height = unit (1.5, "line"), 
                          legend.title=element_blank()) 
 
-
 p_var_by_group
+
+############
+## BARPLOT
+df.bars <- cbind (as.numeric(sort(res$var$coord[,1]^2/sum(res$var$coord[,1]^2)*100,decreasing=TRUE)), names(res$var$coord[,1])[order(res$var$coord[,1]^2,decreasing=TRUE)])
+df.bars_to_plot <- as.data.frame(df.bars)
+df.bars_to_plot$index <- as.factor (df.bars_to_plot$V2)
+# class (df.bars_to_plot$V1)
+df.bars_to_plot$value <- as.numeric(sort(res$var$coord[,1]^2/sum(res$var$coord[,1]^2)*100,decreasing=TRUE))
+df.bars_to_plot$index <- factor(df.bars_to_plot$index, levels = df.bars_to_plot$index[order(df.bars_to_plot$value, decreasing=TRUE)])
+
+# PC1
+# Filtering only the top contributors more than 2 %
+threshold <- 2
+df.bars_to_plot <- df.bars_to_plot [df.bars_to_plot$value > threshold, ]
+
+bars_plot <- ggplot (data=df.bars_to_plot, aes(x=index, y=value)) + 
+  ylim (c(0, 5)) +
+  geom_bar (stat="identity", fill="gray", width=0.8) + 
+  labs (title = "Variable contribution to PC1\n", x = "", y="Contribution in %\n") +
+  theme(axis.text.x=element_text(angle=45, vjust=1, hjust=1) )
+bars_plot
+
+# PC2
+df.bars_PC2 <- cbind (as.numeric(sort(res$var$coord[,2]^2/sum(res$var$coord[,2]^2)*100,decreasing=TRUE)), names(res$var$coord[,2])[order(res$var$coord[,2]^2,decreasing=TRUE)])
+df.bars_to_plot_PC2 <- as.data.frame(df.bars_PC2)
+df.bars_to_plot_PC2$index <- as.factor (df.bars_to_plot_PC2$V2)
+# class (df.bars_to_plot_PC2$V1)
+# df.bars_to_plot_PC2$value <- as.numeric(sort(res$var$coord[,2]^2/sum(res$var$coord[,2]^2)*100,decreasing=TRUE))
+df.bars_to_plot_PC2$value <- as.numeric(sort(res$var$coord[,2]^2/sum(res$var$coord[,2]^2)*100,decreasing=TRUE))
+
+# Filtering only the top contributors more than 2 %
+threshold_pc2 <- 2
+df.bars_to_plot_PC2 <- df.bars_to_plot_PC2 [df.bars_to_plot_PC2$value > threshold_pc2, ]
+df.bars_to_plot_PC2$index
+df.bars_to_plot_PC2$index <- factor(df.bars_to_plot_PC2$index, levels = df.bars_to_plot_PC2$index[order(df.bars_to_plot_PC2$value, decreasing=TRUE)])
+
+bars_plot_PC2 <- ggplot (data=df.bars_to_plot_PC2, aes(x=index, y=value)) + 
+  geom_bar (stat="identity", fill="gray", width=0.8) + 
+  labs (title = "Variable contribution to PC2\n", x = "", y="Contribution in %\n") +
+  theme (axis.text.x=element_text(angle=45, vjust=1, hjust=1))
+
+bars_plot_PC2
+
+# PC3
+df.bars_PC3 <- cbind (as.numeric(sort(res$var$coord[,3]^2/sum(res$var$coord[,3]^2)*100,decreasing=TRUE)), names(res$var$coord[,3])[order(res$var$coord[,3]^2,decreasing=TRUE)])
+df.bars_to_plot_PC3 <- as.data.frame(df.bars_PC3)
+df.bars_to_plot_PC3$index <- as.factor (df.bars_to_plot_PC3$V2)
+df.bars_to_plot_PC3$value <- as.numeric(sort(res$var$coord[,3]^2/sum(res$var$coord[,3]^2)*100,decreasing=TRUE))
+
+# Filtering only the top contributors more than 2 %
+threshold_pc3 <- 2
+df.bars_to_plot_PC3 <- df.bars_to_plot_PC3 [df.bars_to_plot_PC3$value > threshold_pc3, ]
+df.bars_to_plot_PC3$index
+df.bars_to_plot_PC3$index <- factor(df.bars_to_plot_PC3$index, levels = df.bars_to_plot_PC3$index[order(df.bars_to_plot_PC3$value, decreasing=TRUE)])
+
+# Variability explained by PC3
+var_PC3
+
+bars_plot_PC3 <- ggplot (data=df.bars_to_plot_PC3, aes(x=index, y=value)) + 
+  geom_bar (stat="identity", fill="gray", width=0.8) + 
+  labs (title = "Variable contribution to PC3\n", x = "", y="Contribution in %\n") +
+  theme (axis.text.x=element_text(angle=45, vjust=1, hjust=1))
+
+bars_plot_PC3
+
+
+###########################
+###########################
+# CA of reinstatement data
+
+library(FactoMineR)
+ca_res <- CA (data_reinst_filt_onlyVar, graph=F)
+plot (ca_res)
+
+# Individuals
+ca2plot_row <- as.data.frame (ca_res$row$coord)
+ca2plot_row$id <-  rownames (ca_res$row$coord)
+ca2plot_row$group <- data_reinst$group_lab
+colnames (ca2plot_row) <- c("Dim.1", "Dim.2", "Dim.3", "Dim.4", "Dim.5", "id", "group")
+
+# Variables
+ca2plot_col <- as.data.frame (ca_res$col$coord)
+ca2plot_col$var <-  rownames (ca_res$col$coord)
+ca2plot_col$var <- gsub ("day", "", ca2plot_col$var)
+ca2plot_col$var <- gsub ("inactive", "inact", ca2plot_col$var)
+ca2plot_col$var <- gsub ("active", "act", ca2plot_col$var)
+ca2plot_col$var <- gsub ("Prog_ratio", "PR", ca2plot_col$var)
+
+ca2plot_col$varGroup <- ca2plot_col$var
+ca2plot_col$varGroup [grep("^dep_act", ca2plot_col$var)] <- "dep_act"
+ca2plot_col$varGroup [grep("^dep_inact", ca2plot_col$var)] <- "dep_in"
+ca2plot_col$varGroup [grep("^adlib_act", ca2plot_col$var)] <- "adlib_act"
+ca2plot_col$varGroup [grep("^adlib_inact", ca2plot_col$var)] <- "adlib_in"
+ca2plot_col$varGroup [grep("^ex_act", ca2plot_col$var)] <- "ex_act"
+ca2plot_col$varGroup [grep("^ex_inact", ca2plot_col$var)] <- "ex_inact"
+ca2plot_col$varGroup [c(81:length(ca2plot_col$varGroup))] <- "others"
+as.factor(ca2plot_col$varGroup)
+colnames (ca2plot_col) <- c("Dim.1", "Dim.2", "Dim.3", "Dim.4", "Dim.5", "var", "varGroup")
+
+# Variance of Dim,1 and Dim.2
+var_dim1 <- round (ca_res$eig [1,2])
+var_dim2 <- round (ca_res$eig [2,2])
+
+# Only the individuals
+ca_reinstatement <- ggplot (ca2plot_row, aes(x=Dim.1, y=Dim.2, colour=group)) + 
+  geom_point (size = 3.5, show_guide = T) + 
+  #   scale_color_manual(values=c("red", "orange","blue" , "magenta")) +
+  #                           geom_text (aes (label=days), vjust=-0.5, hjust=1, size=4, show_guide = T)+
+  geom_text (aes(label=id), vjust=-0.5, hjust=1, size=4, show_guide = F) +
+  theme(legend.key=element_rect(fill=NA)) +
+  labs(title = "CA reinstatement raw data:\nIndividuals and variables\n", x = paste("\nDim 1 (", var_dim1, "% of variance)", sep=""), 
+       y=paste("Dim 2 (", var_dim2, "% of variance)\n", sep = "")) +
+  #                           guides(colour = guide_legend(override.aes = list(size = 10)))+
+  guides(colour = guide_legend(override.aes = list(size = 3), title="Group"))+
+  theme(legend.key=element_rect(fill=NA)) 
+
+ca_reinstatement_ind <- ca_reinstatement + scale_color_manual(values=c("orange", "red", "magenta", "blue")) 
+ca_reinstatement_ind 
+
+# The individuals and the variables at the same time
+ca_reinstatement_ind_var <- ca_reinstatement + geom_point (data=ca2plot_col, aes(x=Dim.1, y=Dim.2), colour="black", shape=17) +
+  geom_text (data=ca2plot_col, aes(x=Dim.1, y=Dim.2, label=var, colour=varGroup)) +
+  scale_color_manual(values=c("orange", "red", "magenta", "blue", "black", "green", "yellow", "gray", "pink", "brown", "cyan")) 
+
+ca_reinstatement_ind_var
+
+# Plot of only the variables
+ca_reinstatement_var <- ggplot (ca2plot_col, aes(x=Dim.1, y=Dim.2, colour=varGroup)) + 
+  geom_point (size = 3.5, show_guide = T) + 
+  scale_color_manual(values=c("red", "orange", "darkblue" , "magenta", "black", "darkgreen", "cyan")) +
+  geom_text (aes(label=var), vjust=-0.5, hjust=1, size=5, show_guide = F) +
+  theme(legend.key=element_rect(fill=NA)) +
+  labs(title = "CA reinstatement raw data:\nVariables\n", x = paste("\nDim 1 (", var_dim1, "% of variance)", sep=""), 
+       y=paste("Dim 2 (", var_dim2, "% of variance)\n", sep = "")) +
+  #                           guides(colour = guide_legend(override.aes = list(size = 10)))+
+  guides(colour = guide_legend(override.aes = list(size = 3), title="Group"))+
+  theme(legend.key=element_rect(fill=NA)) 
+
+ca_reinstatement_var
+
+# Agrupar las sessiones de cada tipo y entonces ponerles el color por sesion
+
+# ca_reinstatement
+
+#################
+# 
+
 
 
 ###########################
