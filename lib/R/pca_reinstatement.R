@@ -12,7 +12,7 @@
 ## PCA of reinstatement matrix
 
 # Calling libraries
-# library(Hmisc)
+library(Hmisc) # arrow function
 # library(calibrate)
 # library(multcomp)
 library(ggplot2)
@@ -22,6 +22,8 @@ library(FactoMineR)
 home <- Sys.getenv("HOME") 
 
 # Loading functions:
+source ("/Users/jespinosa/git/phecomp/lib/R/plotParamPublication.R")
+
 data_reinst <- read.csv (paste (home, "/old_data/data/Matrix 16_10_15 for CPA Reinstatement.csv", sep=""), dec=",", sep=";")
 head (data_reinst)
 
@@ -40,6 +42,9 @@ head (data_reinst_filt)
 length_tbl <- dim(data_reinst_filt) [2]
 data_reinst_filt$dep_active_day1
 data_reinst_filt_onlyVar <- data_reinst_filt [ , (7:length_tbl)]
+
+var_names <- colnames(data_reinst_filt_onlyVar)
+
 res = PCA (data_reinst_filt [ , (7:length_tbl)], scale.unit=TRUE)
 
 # Variance of PC1 and PC2
@@ -67,7 +72,7 @@ pca2plot$id <- data_reinst$subject
 
 pca_reinstatement <- ggplot (pca2plot, aes(x=Dim.1, y=Dim.2, colour=group)) + 
                            geom_point (size = 3.5, show_guide = T) + 
-                           scale_color_manual(values=c("orange", "red", "magenta", "blue")) +
+                           scale_color_manual(values=c("orange", "red", "lightblue", "blue")) +
                           #                           geom_text (aes (label=days), vjust=-0.5, hjust=1, size=4, show_guide = T)+
                            geom_text (aes(label=id), vjust=-0.5, hjust=1, size=4, show_guide = F)+
                            theme(legend.key=element_rect(fill=NA)) +
@@ -77,13 +82,15 @@ pca_reinstatement <- ggplot (pca2plot, aes(x=Dim.1, y=Dim.2, colour=group)) +
                            guides(colour = guide_legend(override.aes = list(size = 3)))+
                            theme(legend.key=element_rect(fill=NA))
 
-pca_reinstatement
+# pca_reinstatement
 
 # keeping aspect ratio
 pca_reinstatement_aspect_ratio <- pca_reinstatement + coord_fixed()
 + 
   scale_x_continuous (limits=c(-4, 5), breaks=-4:5) + 
   scale_y_continuous (limits=c(-2, 3), breaks=-2:3)
+
+pca_reinstatement_aspect_ratio
 
 ###############
 ### Circle Plot
@@ -128,22 +135,22 @@ dailyInt_theme <- theme_update (axis.title.x = element_text (size=base_size * 2,
 
 p_circle_plot
 
-# # Plotting the variables by experimental phase
-# circle_plot$var <- rownames (circle_plot)
-# 
-# circle_plot$var <- gsub ("day", "", circle_plot$var)
-# circle_plot$var <- gsub ("inactive", "inact", circle_plot$var)
-# circle_plot$var <- gsub ("active", "act", circle_plot$var)
-# circle_plot$var <- gsub ("Prog_ratio", "PR", circle_plot$var)
-# 
-# circle_plot$varGroup <- circle_plot$var
-# circle_plot$varGroup [grep("^dep_act", circle_plot$var)] <- "dep_act"
-# circle_plot$varGroup [grep("^dep_inact", circle_plot$var)] <- "dep_in"
-# circle_plot$varGroup [grep("^adlib_act", circle_plot$var)] <- "adlib_act"
-# circle_plot$varGroup [grep("^adlib_inact", circle_plot$var)] <- "adlib_in"
-# circle_plot$varGroup [grep("^ex_act", circle_plot$var)] <- "ex_act"
-# circle_plot$varGroup [grep("^ex_inact", circle_plot$var)] <- "ex_inact"
-# circle_plot$varGroup [c(81:length(circle_plot$varGroup))] <- "others"
+# Plotting the variables by experimental phase
+circle_plot$var <- rownames (circle_plot)
+
+circle_plot$var <- gsub ("day", "", circle_plot$var)
+circle_plot$var <- gsub ("inactive", "inact", circle_plot$var)
+circle_plot$var <- gsub ("active", "act", circle_plot$var)
+circle_plot$var <- gsub ("Prog_ratio", "PR", circle_plot$var)
+
+circle_plot$varGroup <- circle_plot$var
+circle_plot$varGroup [grep("^dep_act", circle_plot$var)] <- "dep_act"
+circle_plot$varGroup [grep("^dep_inact", circle_plot$var)] <- "dep_in"
+circle_plot$varGroup [grep("^adlib_act", circle_plot$var)] <- "adlib_act"
+circle_plot$varGroup [grep("^adlib_inact", circle_plot$var)] <- "adlib_in"
+circle_plot$varGroup [grep("^ex_act", circle_plot$var)] <- "ex_act"
+circle_plot$varGroup [grep("^ex_inact", circle_plot$var)] <- "ex_inact"
+circle_plot$varGroup [c(81:length(circle_plot$varGroup))] <- "others"
 as.factor(circle_plot$varGroup)
 colnames (circle_plot) <- c("Dim.1", "Dim.2", "Dim.3", "Dim.4", "Dim.5", "var", "varGroup")
 
@@ -155,42 +162,59 @@ circle_plot$session <- gsub("^adlib_inact_", "", circle_plot$session)
 circle_plot$session <- gsub("^ex_act_", "", circle_plot$session)
 circle_plot$session <- gsub("^ex_inact_", "", circle_plot$session)
 
+############
+# Doing a circle plot with arrows coloured by experimental phase
 
+# Adding session to the circle_plot df to plot them
+neg_labels <- labels_v [which (circle_plot$Dim.1 < 0)]
+neg_positions <- circle_plot [which (circle_plot$Dim.1 < 0), c(1,2,8)]
+
+pos_labels <- labels_v [which (circle_plot$Dim.1 >= 0)]
+pos_positions <- circle_plot [which (circle_plot$Dim.1 >= 0), c(1,2,8)]
+ 
+
+p_circle_plot_colors <- ggplot(circle_plot) + 
+                        geom_segment (data=circle_plot, aes(colour=varGroup, x=0, y=0, xend=Dim.1, yend=Dim.2), 
+                                      arrow=arrow(length=unit(0.2,"cm")), alpha=1, size=1) +
+                        scale_color_manual (values = c("red", "gray", "blue", "lightblue", "magenta", "orange", "darkgreen")) +
+                        xlim (c(-1.2, 1.2)) + ylim (c(-1.2, 1.2)) +
+                        geom_text (data=neg_positions, aes (x=Dim.1, y=Dim.2, label=session, hjust=0.9, vjust=-0.4), 
+                                   show_guide = FALSE, size=5) + 
+                        geom_text (data=pos_positions, aes (x=Dim.1, y=Dim.2, label=session, hjust=-0.2), 
+                                   show_guide = FALSE, size=5) +
+                        geom_vline (xintercept = 0, linetype="dotted") +
+                        geom_hline (yintercept=0, linetype="dotted") +
+                        labs (title = "PCA of the variables\n", x = paste("\nPC1 (", var_PC1, "% of variance)", sep=""), 
+                              y=paste("PC2 (", var_PC2, "% of variance)\n", sep = "")) +
+                        geom_polygon (data = df.circle, aes(x, y), alpha=1, colour="black", fill=NA, size=1) +
+                        theme (legend.key = element_blank(), legend.key.height = unit (1.5, "line"), 
+                               legend.title=element_blank()) 
+
+
+base_size <- 10
+
+dailyInt_theme <- theme_update (axis.title.x = element_text (size=base_size * 2, face="bold"),
+                                axis.title.y = element_text (size=base_size * 2, angle = 90, face="bold"),
+                                plot.title = element_text (size=base_size * 2, face="bold"))
+p_circle_plot_colors
+
+# Doing the same plot as above by colours but in this case facet
+p_var_by_group_scale_free <- ggplot(circle_plot) + 
+  geom_text (aes(colour=varGroup, x=Dim.1, y=Dim.2, label=session), show_guide = FALSE, size=5) +
+  scale_color_manual (values = c("red", "gray", "blue", "lightblue", "magenta", "orange", "darkgreen")) +
+  facet_wrap(~varGroup, scales="free")
+p_var_by_group_scale_free
 
 p_var_by_group <- ggplot(circle_plot) + 
-                         xlim (c(-0.6, 1)) + ylim (c(-0.5, 1)) +
-#                          geom_point (aes (x=Dim.1, y=Dim.2), show_guide = FALSE, size=2) +
-                         geom_text (aes (x=Dim.1, y=Dim.2, label=session), show_guide = FALSE, size=5) +
-                         facet_wrap(~varGroup)
+                         xlim (c(-1, 1)) + ylim (c(-1, 1)) +
+                         geom_text (aes(colour=varGroup, x=Dim.1, y=Dim.2, label=session), show_guide = FALSE, size=5, vjust=-0.4) +
+                         geom_point(aes(colour=varGroup, x=Dim.1, y=Dim.2), size=3)+
+                         scale_color_manual (values = c("red", "gray", "blue", "lightblue", "magenta", "orange", "darkgreen")) +
+                         theme (legend.key = element_blank(), legend.key.height = unit (1.5, "line"), 
+                         legend.title=element_blank()) 
+
+
 p_var_by_group
-
-# Poner solo los numeros de la sesion
-
-+ 
-  geom_text (data=pos_positions, aes (x=Dim.1, y=Dim.2, label=pos_labels, hjust=-0.3), show_guide = FALSE, size=5) +
-  geom_vline (xintercept = 0, linetype="dotted") +
-  geom_hline (yintercept=0, linetype="dotted") +
-  labs (title = "PCA of the variables\n", x = paste("\nPC1 (", var_PC1, "% of variance)", sep=""), 
-        y=paste("PC2 (", var_PC2, "% of variance)\n", sep = "")) +
-  #        geom_polygon(aes(x, y), data = df, inherit.aes = F, Fill=NA)
-  #                         scale_x_continuous(breaks=1:10)  
-  geom_polygon (data = df.circle, aes(x, y), alpha=1, colour="black", fill=NA, size=1)
-
-
-
-facet_wrap(~Q) + 
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 ###########################
