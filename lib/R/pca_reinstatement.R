@@ -43,14 +43,20 @@ data_reinst$group_lab <- factor(data_reinst$group_lab, levels=c("Ctrl choc", "Ch
 data_reinst_filt <- subset (data_reinst, select = -c(X, group_lab))
 head (data_reinst_filt)
 
+##### Different tables depending if I want to analyze all the sessions or only one
 # I get rid of the variables that are in the table that are a summary of other phases of the experiment
 data_reinst_filt_no_summary_var <- subset (data_reinst_filt, select = -c(mean_last_three_days_ext, acq_3_days_active, 
                                                                          ext_3_days_active, mean.ext, X30.acq, acq_3_days_inactive,
                                                                          ext_3_days_inactive))
 
-data_reinst_filt <- data_reinst_filt_no_summary_var
+# Tbl with only extincition data
+colnames (data_reinst_filt_no_summary_var)
+data_reinst_filt_extinction <- data_reinst_filt_no_summary_var[ , grepl( "ex_" , names( data_reinst_filt_no_summary_var ) ) ]
+
+# Choosing the table that will be use
+# data_reinst_filt <- data_reinst_filt_no_summary_var
+data_reinst_filt <- data_reinst_filt_extinction
 length_tbl <- dim(data_reinst_filt) [2]
-data_reinst_filt$dep_active_day1
 data_reinst_filt_onlyVar <- data_reinst_filt [ , (7:length_tbl)]
 
 var_names <- colnames(data_reinst_filt_onlyVar)
@@ -88,6 +94,8 @@ pca_reinstatement <- ggplot (pca2plot, aes(x=Dim.1, y=Dim.2, colour=group)) +
                           #                           geom_text (aes (label=days), vjust=-0.5, hjust=1, size=4, show_guide = T)+
                            geom_text (aes(label=id), vjust=-0.5, hjust=1, size=4, show_guide = F)+
                            theme(legend.key=element_rect(fill=NA)) +
+                           scale_x_continuous (limits=c(-6, 6), breaks=-6:6) + 
+                           scale_y_continuous (limits=c(-6, 6), breaks=-6:6) +
                            labs(title = "PCA reinstatement raw data\n", x = paste("\nPC1 (", var_PC1, "% of variance)", sep=""), 
                                 y=paste("PC2 (", var_PC2, "% of variance)\n", sep = "")) +
                           #                           guides(colour = guide_legend(override.aes = list(size = 10)))+
@@ -129,7 +137,7 @@ p_circle_plot <- ggplot(circle_plot) +
                  geom_segment (data=circle_plot, aes(x=0, y=0, xend=Dim.1, yend=Dim.2), arrow=arrow(length=unit(0.2,"cm")), alpha=1, size=1, color="red") +
                  xlim (c(-1.2, 1.2)) + ylim (c(-1.2, 1.2)) +
 #                  geom_text (data=circle_plot, aes (x=Dim.1, y=Dim.2, label=labels_v, hjust=1.2), show_guide = FALSE, size=5) + 
-                 geom_text (data=neg_positions, aes (x=Dim.1, y=Dim.2, label=neg_labels, hjust=1.2), show_guide = FALSE, size=5) + 
+#                  geom_text (data=neg_positions, aes (x=Dim.1, y=Dim.2, label=neg_labels, hjust=1.2), show_guide = FALSE, size=5) + 
                  geom_text (data=pos_positions, aes (x=Dim.1, y=Dim.2, label=pos_labels, hjust=-0.3), show_guide = FALSE, size=5) +
                  geom_vline (xintercept = 0, linetype="dotted") +
                  geom_hline (yintercept=0, linetype="dotted") +
@@ -189,8 +197,8 @@ p_circle_plot_colors <- ggplot(circle_plot) +
                                       arrow=arrow(length=unit(0.2,"cm")), alpha=1, size=1) +
                         scale_color_manual (values = v_colours) +
                         xlim (c(-1.2, 1.2)) + ylim (c(-1.2, 1.2)) +
-                        geom_text (data=neg_positions, aes (x=Dim.1, y=Dim.2, label=session, hjust=0.9, vjust=-0.4), 
-                                   show_guide = FALSE, size=5) + 
+#                         geom_text (data=neg_positions, aes (x=Dim.1, y=Dim.2, label=session, hjust=0.9, vjust=-0.4), 
+#                                    show_guide = FALSE, size=5) + 
                         geom_text (data=pos_positions, aes (x=Dim.1, y=Dim.2, label=session, hjust=-0.2), 
                                    show_guide = FALSE, size=5) +
                         geom_vline (xintercept = 0, linetype="dotted") +
@@ -208,6 +216,42 @@ dailyInt_theme <- theme_update (axis.title.x = element_text (size=base_size * 2,
                                 axis.title.y = element_text (size=base_size * 2, angle = 90, face="bold"),
                                 plot.title = element_text (size=base_size * 2, face="bold"))
 p_circle_plot_colors
+
+# Colour circle plot by session 1-5 5-10 10-15 15-20
+circle_plot 
+circle_plot$session_bin <- "" 
+
+circle_plot [which (as.numeric (circle_plot$session) < 6), "session_bin"] <- "1_5"
+circle_plot [which (as.numeric (circle_plot$session) > 5 & as.numeric (circle_plot$session)< 11), "session_bin"] <- "6_10"
+circle_plot [which (as.numeric (circle_plot$session) > 10 & as.numeric (circle_plot$session)< 16), "session_bin"] <- "11_15"
+circle_plot [which (as.numeric (circle_plot$session) > 15), "session_bin"] <- "16_20"
+
+# Plot with arrows coloured by session bin
+p_circle_plot_colors_bin <- ggplot(circle_plot) + 
+  geom_segment (data=circle_plot, aes(colour=session_bin, x=0, y=0, xend=Dim.1, yend=Dim.2), 
+                arrow=arrow(length=unit(0.2,"cm")), alpha=1, size=1) +
+  scale_color_manual (values = v_colours) +
+  xlim (c(-1.2, 1.2)) + ylim (c(-1.2, 1.2)) +
+  #                         geom_text (data=neg_positions, aes (x=Dim.1, y=Dim.2, label=session, hjust=0.9, vjust=-0.4), 
+  #                                    show_guide = FALSE, size=5) + 
+  geom_text (data=pos_positions, aes (x=Dim.1, y=Dim.2, label=session, hjust=-0.2), 
+             show_guide = FALSE, size=5) +
+  geom_vline (xintercept = 0, linetype="dotted") +
+  geom_hline (yintercept=0, linetype="dotted") +
+  labs (title = "PCA of the variables\n", x = paste("\nPC1 (", var_PC1, "% of variance)", sep=""), 
+        y=paste("PC2 (", var_PC2, "% of variance)\n", sep = "")) +
+  geom_polygon (data = df.circle, aes(x, y), alpha=1, colour="black", fill=NA, size=1) +
+  theme (legend.key = element_blank(), legend.key.height = unit (1.5, "line"), 
+         legend.title=element_blank()) 
+
+
+base_size <- 10
+
+dailyInt_theme <- theme_update (axis.title.x = element_text (size=base_size * 2, face="bold"),
+                                axis.title.y = element_text (size=base_size * 2, angle = 90, face="bold"),
+                                plot.title = element_text (size=base_size * 2, face="bold"))
+p_circle_plot_colors_bin
+
 
 # Doing the same plot as above by colours but in this case facet
 p_var_by_group_scale_free <- ggplot(circle_plot) + 
@@ -289,6 +333,9 @@ bars_plot_PC3 <- ggplot (data=df.bars_to_plot_PC3, aes(x=index, y=value)) +
   theme (axis.text.x=element_text(angle=45, vjust=1, hjust=1))
 
 bars_plot_PC3
+
+#################
+# Perform a PCA for the sessions that are contributing more to the variance explained
 
 
 ###########################
