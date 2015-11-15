@@ -48,6 +48,7 @@ head (data_reinst_filt)
 data_reinst_filt_no_summary_var <- subset (data_reinst_filt, select = -c(mean_last_three_days_ext, acq_3_days_active, 
                                                                          ext_3_days_active, mean.ext, X30.acq, acq_3_days_inactive,
                                                                          ext_3_days_inactive))
+tail (data_reinst_filt_no_summary_var)
 
 # Tbl with all the variables and without the columns that are factors
 length_tbl <- dim(data_reinst_filt_no_summary_var) [2]
@@ -60,6 +61,7 @@ data_reinst_filt_onlyVar <-data_reinst_filt_no_summary_var [ , (7:length_tbl)]
 # Tbl with only deprivation data
 colnames (data_reinst_filt_no_summary_var)
 data_reinst_filt_extinction <- data_reinst_filt_no_summary_var[ , grepl( "dep_" , names( data_reinst_filt_no_summary_var ) ) ]
+
 # Choosing the table that will be use
 # phase <- "all"
 # data_reinst_filt <- data_reinst_filt_onlyVar
@@ -346,7 +348,6 @@ bars_plot_PC2
 ggsave (bars_plot_PC2, file=paste(home, "/old_data/figures/", 
                               "bars_PC2_",  phase, "Phase.tiff", sep=""), width = 15, height = 12, dpi=300)
 
-
 # PC3
 df.bars_PC3 <- cbind (as.numeric(sort(res$var$coord[,3]^2/sum(res$var$coord[,3]^2)*100,decreasing=TRUE)), names(res$var$coord[,3])[order(res$var$coord[,3]^2,decreasing=TRUE)])
 df.bars_to_plot_PC3 <- as.data.frame(df.bars_PC3)
@@ -371,6 +372,114 @@ bars_plot_PC3
 
 ggsave (bars_plot_PC3, file=paste(home, "/old_data/figures/", 
                               "bars_PC3_",  phase, "Phase.tiff", sep=""), width = 15, height = 12, dpi=300)
+
+
+#############################################
+# Plot of active vs inactive press levers (c'est a dire correct vs incorrect)
+data_reinst_filt_act_extinction <- data_reinst_filt_no_summary_var[ , grepl( "ex_act" , names( data_reinst_filt_no_summary_var ) ) ]
+data_reinst_filt_inact_extinction <- data_reinst_filt_no_summary_var[ , grepl( "ex_inact" , names( data_reinst_filt_no_summary_var ) ) ]
+
+# Adding a column with labels of the group as we want them in the plots
+data_reinst$group_lab_n  <- gsub ("F1", "High_fat", data_reinst$Group)
+data_reinst$group_lab_n <- gsub ("SC", "Ctrl_choc", data_reinst$group_lab_n)
+data_reinst$group_lab_n  <- gsub ("Cafeteria diet", "Choc", data_reinst$group_lab_n)
+data_reinst$group_lab_n  <- gsub ("C1", "Ctrl_high_fat", data_reinst$group_lab_n)
+
+data_reinst$group_lab_n <- factor(data_reinst$group_lab_n, levels=c("Ctrl_choc", "Choc", "Ctrl_high_fat", "High_fat"), 
+                                labels=c("Ctrl_choc", "Choc", "Ctrl_high_fat", "High_fat"))
+
+
+data_reinst_filt_act_extinction$group <- data_reinst$group_lab_n
+data_reinst_filt_inact_extinction$group <- data_reinst$group_lab_n
+
+length_col <- dim (data_reinst_filt_act_extinction)[2]
+length_col <- dim (data_reinst_filt_inact_extinction)[2]
+
+means_by_group_act <- as.data.frame (do.call(cbind, lapply(split(data_reinst_filt_act_extinction[,-length_col], data_reinst_filt_act_extinction[,length_col]), colMeans)))
+means_by_group_inact <- as.data.frame (do.call(cbind, lapply(split(data_reinst_filt_inact_extinction[,-length_col], data_reinst_filt_inact_extinction[,length_col]), colMeans)))
+
+# t_means_act <-as.data.frame(t(means_by_group_act))
+# t_means_inact <-as.data.frame(t(means_by_group_inact))
+
+means_by_group_act$days <- gsub("^ex_active_day", "", row.names(means_by_group_act))
+means_by_group_inact$days <- gsub("^ex_inactive_day", "", row.names(means_by_group_inact))
+
+means_by_group_act_ctrl_choc <- means_by_group_act [,c(1,5)]
+means_by_group_act_ctrl_choc$group <- "Ctrl choc" 
+colnames (means_by_group_act_ctrl_choc)[1] <- "mean"
+means_by_group_act_choc <- means_by_group_act [,c(2,5)]
+means_by_group_act_choc$group <- "Choc" 
+colnames (means_by_group_act_choc)[1] <- "mean"
+means_by_group_act_ctrl_high_fat <- means_by_group_act [,c(3,5)]
+means_by_group_act_ctrl_high_fat$group <- "Ctrl high fat" 
+colnames (means_by_group_act_ctrl_high_fat)[1] <- "mean"
+means_by_group_act_high_fat <- means_by_group_act [,c(4,5)]
+means_by_group_act_high_fat$group <- "High fat" 
+colnames (means_by_group_act_high_fat)[1] <- "mean"
+active_df <- rbind (means_by_group_act_ctrl_choc, means_by_group_act_choc, means_by_group_act_ctrl_high_fat, means_by_group_act_high_fat)
+
+# inactiv
+means_by_group_inact_ctrl_choc <- means_by_group_inact [,c(1,5)]
+means_by_group_inact_ctrl_choc$group <- "Ctrl choc" 
+colnames (means_by_group_inact_ctrl_choc)[1] <- "mean"
+means_by_group_inact_choc <- means_by_group_inact [,c(2,5)]
+means_by_group_inact_choc$group <- "Choc" 
+colnames (means_by_group_inact_choc)[1] <- "mean"
+means_by_group_inact_ctrl_high_fat <- means_by_group_inact [,c(3,5)]
+means_by_group_inact_ctrl_high_fat$group <- "Ctrl high fat" 
+colnames (means_by_group_inact_ctrl_high_fat)[1] <- "mean"
+means_by_group_inact_high_fat <- means_by_group_inact [,c(4,5)]
+means_by_group_inact_high_fat$group <- "High fat" 
+colnames (means_by_group_inact_high_fat)[1] <- "mean"
+inactive_df <- rbind (means_by_group_inact_ctrl_choc, means_by_group_inact_choc, means_by_group_inact_ctrl_high_fat, means_by_group_inact_high_fat)
+
+tbl <- cbind (active_df, inactive_df$mean )
+colnames (tbl)[1] <- "active"
+colnames (tbl)[4] <- "inactive"
+
+
+ggplot (data=tbl, aes(x=active, y=inactive, colour=group)) + 
+  geom_point (size=3) +
+  scale_color_manual (values = v_colours) +
+  facet_wrap(~group)
+
+
+
+t_means_inact <-t(means_by_group_inact)
+class(t_means_inact)
+
+data_reins_actInactive <- cbind (data_reinst_filt_act_extinction, data_reinst_filt_inact_extinction )
+
+data_reins_actInactive$group <- data_reinst$group_lab
+length_col <- dim (data_reins_actInactive)[2]
+means_by_group <- do.call(rbind, lapply(split(data_reins_actInactive[,-length_col], data_reins_actInactive[,length_col]), colMeans))
+
+t(means_by_group)
+as.data.frame
+
+split<-split(Data[,-1], Data[,1])
+class(split$a)
+colMeans( split$a)
+data_reinst$group_lab
+tbl_mean_group_day <-with (tbl_stat, aggregate (cbind (V9), list (group=group_id, group_time=group, time=group_n), FUN=function (x) c (mean=mean(x), std.error=std.error(x))))
+
+
+mean_cor_inc_ex <- rbind (colMeans(data_reinst_filt_act_extinction), colMeans(data_reinst_filt_inact_extinction))
+
+row.names (mean_cor_inc_ex) <- c ("active", "inactive")
+mean_cor_inc_ex_days <- as.data.frame (t(mean_cor_inc_ex))
+class (mean_cor_inc_ex_days)
+
+mean_cor_inc_ex_days$days <- gsub("^ex_active_day", "", row.names(mean_cor_inc_ex_days))
+
+ggplot (data=mean_cor_inc_ex_days, aes(x=active, y=inactive)) + 
+        geom_point ()
+
+#hacerlo por grupos!!!!
+# Poner en los dos ejes los mismos limites si no es enganyoso
+rbind (t(data_reinst_filt_act_extinction), t(data_reinst_filt_inact_extinction))
+
+mean_cor_inc_ex <-with (tbl_stat, aggregate (cbind (V9), list (group=group_id, group_time=group, time=group_n), FUN=function (x) c (mean=mean(x), std.error=std.error(x))))
 
 
 ###########################
