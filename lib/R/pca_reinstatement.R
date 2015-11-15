@@ -376,6 +376,12 @@ ggsave (bars_plot_PC3, file=paste(home, "/old_data/figures/",
 
 #############################################
 # Plot of active vs inactive press levers (c'est a dire correct vs incorrect)
+
+###
+# Extinction
+###
+###################
+# Plotting all groups in the same plot
 data_reinst_filt_act_extinction <- data_reinst_filt_no_summary_var[ , grepl( "ex_act" , names( data_reinst_filt_no_summary_var ) ) ]
 data_reinst_filt_inact_extinction <- data_reinst_filt_no_summary_var[ , grepl( "ex_inact" , names( data_reinst_filt_no_summary_var ) ) ]
 
@@ -388,6 +394,22 @@ data_reinst$group_lab_n  <- gsub ("C1", "Ctrl_high_fat", data_reinst$group_lab_n
 data_reinst$group_lab_n <- factor(data_reinst$group_lab_n, levels=c("Ctrl_choc", "Choc", "Ctrl_high_fat", "High_fat"), 
                                 labels=c("Ctrl_choc", "Choc", "Ctrl_high_fat", "High_fat"))
 
+data_reins_actInactive <- cbind (data_reinst_filt_act_extinction, data_reinst_filt_inact_extinction )
+
+data_reins_actInactive$group <- data_reinst$group_lab
+mean_cor_inc_ex <- rbind (colMeans(data_reinst_filt_act_extinction), colMeans(data_reinst_filt_inact_extinction))
+
+row.names (mean_cor_inc_ex) <- c ("active", "inactive")
+mean_cor_inc_ex_days <- as.data.frame (t(mean_cor_inc_ex))
+class (mean_cor_inc_ex_days)
+
+mean_cor_inc_ex_days$days <- gsub("^ex_active_day", "", row.names(mean_cor_inc_ex_days))
+
+ggplot (data=mean_cor_inc_ex_days, aes(x=active, y=inactive)) + 
+  geom_point ()
+
+###################
+# Plotting by group
 
 data_reinst_filt_act_extinction$group <- data_reinst$group_lab_n
 data_reinst_filt_inact_extinction$group <- data_reinst$group_lab_n
@@ -397,9 +419,6 @@ length_col <- dim (data_reinst_filt_inact_extinction)[2]
 
 means_by_group_act <- as.data.frame (do.call(cbind, lapply(split(data_reinst_filt_act_extinction[,-length_col], data_reinst_filt_act_extinction[,length_col]), colMeans)))
 means_by_group_inact <- as.data.frame (do.call(cbind, lapply(split(data_reinst_filt_inact_extinction[,-length_col], data_reinst_filt_inact_extinction[,length_col]), colMeans)))
-
-# t_means_act <-as.data.frame(t(means_by_group_act))
-# t_means_inact <-as.data.frame(t(means_by_group_inact))
 
 means_by_group_act$days <- gsub("^ex_active_day", "", row.names(means_by_group_act))
 means_by_group_inact$days <- gsub("^ex_inactive_day", "", row.names(means_by_group_inact))
@@ -442,44 +461,6 @@ ggplot (data=tbl, aes(x=active, y=inactive, colour=group)) +
   geom_point (size=3) +
   scale_color_manual (values = v_colours) +
   facet_wrap(~group)
-
-
-
-t_means_inact <-t(means_by_group_inact)
-class(t_means_inact)
-
-data_reins_actInactive <- cbind (data_reinst_filt_act_extinction, data_reinst_filt_inact_extinction )
-
-data_reins_actInactive$group <- data_reinst$group_lab
-length_col <- dim (data_reins_actInactive)[2]
-means_by_group <- do.call(rbind, lapply(split(data_reins_actInactive[,-length_col], data_reins_actInactive[,length_col]), colMeans))
-
-t(means_by_group)
-as.data.frame
-
-split<-split(Data[,-1], Data[,1])
-class(split$a)
-colMeans( split$a)
-data_reinst$group_lab
-tbl_mean_group_day <-with (tbl_stat, aggregate (cbind (V9), list (group=group_id, group_time=group, time=group_n), FUN=function (x) c (mean=mean(x), std.error=std.error(x))))
-
-
-mean_cor_inc_ex <- rbind (colMeans(data_reinst_filt_act_extinction), colMeans(data_reinst_filt_inact_extinction))
-
-row.names (mean_cor_inc_ex) <- c ("active", "inactive")
-mean_cor_inc_ex_days <- as.data.frame (t(mean_cor_inc_ex))
-class (mean_cor_inc_ex_days)
-
-mean_cor_inc_ex_days$days <- gsub("^ex_active_day", "", row.names(mean_cor_inc_ex_days))
-
-ggplot (data=mean_cor_inc_ex_days, aes(x=active, y=inactive)) + 
-        geom_point ()
-
-#hacerlo por grupos!!!!
-# Poner en los dos ejes los mismos limites si no es enganyoso
-rbind (t(data_reinst_filt_act_extinction), t(data_reinst_filt_inact_extinction))
-
-mean_cor_inc_ex <-with (tbl_stat, aggregate (cbind (V9), list (group=group_id, group_time=group, time=group_n), FUN=function (x) c (mean=mean(x), std.error=std.error(x))))
 
 
 ###########################
