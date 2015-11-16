@@ -227,8 +227,6 @@ p_circle_plot_colors <- ggplot(circle_plot) +
                         geom_polygon (data = df.circle, aes(x, y), alpha=1, colour="black", fill=NA, size=1) +
                         theme (legend.key = element_blank(), legend.key.height = unit (1.5, "line"), 
                                legend.title=element_blank()) 
-
-
 base_size <- 10
 
 dailyInt_theme <- theme_update (axis.title.x = element_text (size=base_size * 2, face="bold"),
@@ -274,7 +272,7 @@ dailyInt_theme <- theme_update (axis.title.x = element_text (size=base_size * 2,
 p_circle_plot_colors_bin
 
 ggsave (p_circle_plot_colors_bin, file=paste(home, "/old_data/figures/", 
-                                         "circle_color_bin_",  phase, "Phase.tiff", sep=""), width = 15, height = 12, dpi=300)
+                                             "circle_color_bin_",  phase, "Phase.tiff", sep=""), width = 15, height = 12, dpi=300)
 
 # Doing the same plot as above by colours but in this case facet
 p_var_by_group_scale_free <- ggplot(circle_plot) + 
@@ -373,7 +371,6 @@ bars_plot_PC3
 ggsave (bars_plot_PC3, file=paste(home, "/old_data/figures/", 
                               "bars_PC3_",  phase, "Phase.tiff", sep=""), width = 15, height = 12, dpi=300)
 
-
 #############################################
 # Plot of active vs inactive press levers (c'est a dire correct vs incorrect)
 
@@ -382,8 +379,12 @@ ggsave (bars_plot_PC3, file=paste(home, "/old_data/figures/",
 ###
 ###################
 # Plotting all groups in the same plot
-data_reinst_filt_act_extinction <- data_reinst_filt_no_summary_var[ , grepl( "ex_act" , names( data_reinst_filt_no_summary_var ) ) ]
-data_reinst_filt_inact_extinction <- data_reinst_filt_no_summary_var[ , grepl( "ex_inact" , names( data_reinst_filt_no_summary_var ) ) ]
+
+# tag
+tag = "ex_"
+title_phase = "extincition"
+data_reinst_filt_act_extinction <- data_reinst_filt_no_summary_var[ , grepl(paste (tag, "act", sep="") , names( data_reinst_filt_no_summary_var ) ) ]
+data_reinst_filt_inact_extinction <- data_reinst_filt_no_summary_var[ , grepl(paste (tag, "inact", sep=""), names( data_reinst_filt_no_summary_var ) ) ]
 
 # Adding a column with labels of the group as we want them in the plots
 data_reinst$group_lab_n  <- gsub ("F1", "High_fat", data_reinst$Group)
@@ -405,8 +406,15 @@ class (mean_cor_inc_ex_days)
 
 mean_cor_inc_ex_days$days <- gsub("^ex_active_day", "", row.names(mean_cor_inc_ex_days))
 
-ggplot (data=mean_cor_inc_ex_days, aes(x=active, y=inactive)) + 
-  geom_point ()
+plot_act_inact_all <- ggplot (data=mean_cor_inc_ex_days, aes(x=active, y=inactive)) + 
+                              geom_point () + labs (title = paste("Active vs inactive ", title_phase, sep=""), 
+                                                    x = "\nactive", y = "inactive\n") +
+                              scale_x_continuous(limits=c(0, 60)) +
+                              scale_y_continuous(limits=c(0, 60))
+
+plot_act_inact_all
+ggsave (plot_act_inact_all, , file=paste(home, "/old_data/figures/", 
+                                               "active_inact_",  title_phase, "Phase.tiff", sep=""), width = 15, height = 10, dpi=300)
 
 ###################
 # Plotting by group
@@ -456,12 +464,20 @@ tbl <- cbind (active_df, inactive_df$mean )
 colnames (tbl)[1] <- "active"
 colnames (tbl)[4] <- "inactive"
 
+tbl$group <- factor(tbl$group, levels=c("Ctrl choc", "Choc", "Ctrl high fat", "High fat"), 
+                               labels=c("Ctrl choc", "Choc", "Ctrl high fat", "High fat"))
 
-ggplot (data=tbl, aes(x=active, y=inactive, colour=group)) + 
-  geom_point (size=3) +
-  scale_color_manual (values = v_colours) +
-  facet_wrap(~group)
+plot_act_inact_grp <- ggplot (data=tbl, aes(x=active, y=inactive, colour=group)) + 
+                              geom_point (size=3) +
+                              labs (title = paste("Active vs inactive ", title_phase, sep=""), x = "\nactive", y = "inactive\n") +
+                              scale_color_manual (values = c("orange", "red", "lightblue", "blue")) +
+                              scale_x_continuous(limits=c(0, 60)) +
+                              scale_y_continuous(limits=c(0, 60)) +
+                              facet_wrap(~group)
 
+plot_act_inact_grp
+ggsave (plot_act_inact_grp, , file=paste(home, "/old_data/figures/", 
+                                         "active_inact_by_gr_",  title_phase, "Phase.tiff", sep=""), width = 15, height = 10, dpi=300)
 
 ###########################
 ###########################
