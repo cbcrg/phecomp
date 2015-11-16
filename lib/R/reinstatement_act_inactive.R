@@ -40,7 +40,7 @@ head (data_reinst_filt)
 data_reinst_filt_no_summary_var <- subset (data_reinst_filt, select = -c(mean_last_three_days_ext, acq_3_days_active, 
                                                                          ext_3_days_active, mean.ext, X30.acq, acq_3_days_inactive,
                                                                          ext_3_days_inactive))
-# tail (data_reinst_filt_no_summary_var)
+tail (data_reinst_filt_no_summary_var)
 
 #############################################
 # Plot of active vs inactive press levers (c'est a dire correct vs incorrect)
@@ -52,8 +52,19 @@ data_reinst_filt_no_summary_var <- subset (data_reinst_filt, select = -c(mean_la
 # Plotting all groups in the same plot
 
 # tag
-tag = "ex_"
-title_phase = "extincition"
+# tag <- "ex_"
+# title_phase = "extincition"
+# lim_axis_x <- c(0, 60)
+# lim_axis_y <- c(0, 60)
+# tag <- "adlib_"
+# title_phase = "adlibitum"
+# lim_axis_x <- c(30, 100)
+# lim_axis_y <- c(0, 50)
+tag <- "dep_"
+title_phase = "deprivation"
+lim_axis_x <- c(18, 100)
+lim_axis_y <- c(0, 50)
+
 data_reinst_filt_act_extinction <- data_reinst_filt_no_summary_var[ , grepl(paste (tag, "act", sep="") , names( data_reinst_filt_no_summary_var ) ) ]
 data_reinst_filt_inact_extinction <- data_reinst_filt_no_summary_var[ , grepl(paste (tag, "inact", sep=""), names( data_reinst_filt_no_summary_var ) ) ]
 
@@ -80,12 +91,12 @@ mean_cor_inc_ex_days$days <- gsub ("^ex_active_day", "", row.names(mean_cor_inc_
 plot_act_inact_all <- ggplot (data=mean_cor_inc_ex_days, aes(x=active, y=inactive)) + 
   geom_point (size=3) + labs (title = paste("Active vs inactive ", title_phase, "\n", sep=""), 
                         x = "\nactive", y = "inactive\n") +
-  scale_x_continuous (limits=c(0, 60)) +
-  scale_y_continuous (limits=c(0, 60))
+  scale_x_continuous (limits=lim_axis_x) +
+  scale_y_continuous (limits=lim_axis_y) 
 
 plot_act_inact_all
-# ggsave (plot_act_inact_all, , file=paste(home, "/old_data/figures/", 
-#                                          "active_inact_",  title_phase, "Phase.tiff", sep=""), width = 15, height = 10, dpi=300)
+ggsave (plot_act_inact_all, , file=paste(home, "/old_data/figures/", 
+                                         "active_inact_",  title_phase, "Phase.tiff", sep=""), width = 15, height = 10, dpi=300)
 
 ###################
 # Plotting by group
@@ -137,16 +148,19 @@ colnames (tbl)[4] <- "inactive"
 
 tbl$group <- factor(tbl$group, levels=c("Ctrl choc", "Choc", "Ctrl high fat", "High fat"), 
                     labels=c("Ctrl choc", "Choc", "Ctrl high fat", "High fat"))
+max (tbl$active)
+max (tbl$inactive)
+min (tbl$active)
+min (tbl$inactive)
 
 plot_act_inact_grp <- ggplot (data=tbl, aes(x=active, y=inactive, colour=group)) + 
   geom_point (size=3) +
   labs (title = paste("Active vs inactive ", title_phase, sep=""), x = "\nactive", y = "inactive\n") +
   scale_color_manual (values = c("orange", "red", "lightblue", "blue")) +
-  scale_x_continuous(limits=c(0, 60)) +
-  scale_y_continuous(limits=c(0, 60)) +
+  scale_x_continuous(limits = lim_axis_x) +
+  scale_y_continuous(limits = lim_axis_y) +
   facet_wrap(~group)
 
 plot_act_inact_grp
-# ggsave (plot_act_inact_grp, , file=paste(home, "/old_data/figures/", 
-#                                          "active_inact_by_gr_",  title_phase, "Phase.tiff", sep=""), width = 15, height = 10, dpi=300)
-
+ggsave (plot_act_inact_grp, , file=paste(home, "/old_data/figures/", 
+                                         "active_inact_by_gr_",  title_phase, "Phase.tiff", sep=""), width = 15, height = 10, dpi=300)
