@@ -51,15 +51,17 @@ tail (data_reinst_filt_no_summary_var)
 ###################
 # Plotting all groups in the same plot
 
-# tag
+## Extinction
 # tag <- "ex_"
-# title_phase = "extincition"
+# title_phase = "extinction"
 # lim_axis_x <- c(0, 60)
 # lim_axis_y <- c(0, 60)
+## Ad libitum
 # tag <- "adlib_"
 # title_phase = "adlibitum"
 # lim_axis_x <- c(30, 100)
 # lim_axis_y <- c(0, 50)
+## Deprivation
 tag <- "dep_"
 title_phase = "deprivation"
 lim_axis_x <- c(18, 100)
@@ -86,11 +88,14 @@ row.names (mean_cor_inc_ex) <- c ("active", "inactive")
 mean_cor_inc_ex_days <- as.data.frame (t(mean_cor_inc_ex))
 class (mean_cor_inc_ex_days)
 
-mean_cor_inc_ex_days$days <- gsub ("^ex_active_day", "", row.names(mean_cor_inc_ex_days))
+# mean_cor_inc_ex_days$days <- gsub ("^ex_active_day", "", row.names(mean_cor_inc_ex_days))
+# gsub ("^ex_active_day", "", row.names(mean_cor_inc_ex_days))
+# tag <- "dep_"
+mean_cor_inc_ex_days$days <- gsub (paste (tag, "active_day", sep=""), "", row.names (mean_cor_inc_ex_days))
 
 plot_act_inact_all <- ggplot (data=mean_cor_inc_ex_days, aes(x=active, y=inactive)) + 
-  geom_point (size=3) + labs (title = paste("Active vs inactive ", title_phase, "\n", sep=""), 
-                        x = "\nactive", y = "inactive\n") +
+  geom_text (aes (label=days), size=6, vjust=0, hjust=-0.5, show_guide = F) +
+  geom_point (size=3) +
   scale_x_continuous (limits=lim_axis_x) +
   scale_y_continuous (limits=lim_axis_y) 
 
@@ -110,8 +115,10 @@ length_col <- dim (data_reinst_filt_inact_extinction)[2]
 means_by_group_act <- as.data.frame (do.call (cbind, lapply(split(data_reinst_filt_act_extinction[,-length_col], data_reinst_filt_act_extinction[,length_col]), colMeans)))
 means_by_group_inact <- as.data.frame (do.call (cbind, lapply(split(data_reinst_filt_inact_extinction[,-length_col], data_reinst_filt_inact_extinction[,length_col]), colMeans)))
 
-means_by_group_act$days <- gsub("^ex_active_day", "", row.names(means_by_group_act))
-means_by_group_inact$days <- gsub("^ex_inactive_day", "", row.names(means_by_group_inact))
+# means_by_group_act$days <- gsub("^ex_active_day", "", row.names(means_by_group_act))
+# means_by_group_inact$days <- gsub("^ex_inactive_day", "", row.names(means_by_group_inact))
+means_by_group_act$days <- gsub (paste (tag, "active_day", sep=""), "", row.names (means_by_group_act))
+means_by_group_inact$days <- gsub (paste (tag, "active_day", sep=""), "", row.names (means_by_group_inact))
 
 means_by_group_act_ctrl_choc <- means_by_group_act [,c(1,5)]
 means_by_group_act_ctrl_choc$group <- "Ctrl choc" 
@@ -155,6 +162,7 @@ min (tbl$inactive)
 
 plot_act_inact_grp <- ggplot (data=tbl, aes(x=active, y=inactive, colour=group)) + 
   geom_point (size=3) +
+  geom_text (aes (label=days), size=5, vjust=0, hjust=-0.5, show_guide = F) +
   labs (title = paste("Active vs inactive ", title_phase, sep=""), x = "\nactive", y = "inactive\n") +
   scale_color_manual (values = c("orange", "red", "lightblue", "blue")) +
   scale_x_continuous(limits = lim_axis_x) +
@@ -162,5 +170,5 @@ plot_act_inact_grp <- ggplot (data=tbl, aes(x=active, y=inactive, colour=group))
   facet_wrap(~group)
 
 plot_act_inact_grp
-ggsave (plot_act_inact_grp, , file=paste(home, "/old_data/figures/", 
+ggsave (plot_act_inact_grp , file=paste(home, "/old_data/figures/", 
                                          "active_inact_by_gr_",  title_phase, "Phase.tiff", sep=""), width = 15, height = 10, dpi=300)
