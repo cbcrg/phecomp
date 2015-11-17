@@ -165,8 +165,8 @@ gAllByWeek <- gAllByWeek  + scale_colour_manual (#name="conditions",
 gAllByWeek
 
 setwd("/Users/jespinosa/dropboxTCoffee/Dropbox/jespinosa/2013phecomp2shareFinal/drafts_paper/submissionEuNeuroPsycho")
-ggsave (gAllByWeek, file=paste(home, "/dropboxTCoffee/Dropbox/jespinosa/2013phecomp2shareFinal/drafts_paper/submissionEuNeuroPsycho/", "figS3A.tiff", sep=""), 
-        width=12, height=7, dpi=400)
+# ggsave (gAllByWeek, file=paste(home, "/dropboxTCoffee/Dropbox/jespinosa/2013phecomp2shareFinal/drafts_paper/submissionEuNeuroPsycho/", "figS3A.tiff", sep=""), 
+#         width=12, height=7, dpi=400)
 
 ########################################
 # New version of the plot (Rafael's way)
@@ -187,8 +187,12 @@ gAllByWeek_blackWhite <- ggplot (meanAll.byWeek8Weeks, aes(x = week, y = mean, g
 gAllByWeek_blackWhite
 
 setwd("/Users/jespinosa/dropboxTCoffee_new/Dropbox/jespinosa/2013phecomp2shareFinal/20150902_espinosa_EuNeuroPsycho")
-ggsave (gAllByWeek_blackWhite, file=paste(home, "/dropboxTCoffee_new/Dropbox/jespinosa/2013phecomp2shareFinal/20150902_espinosa_EuNeuroPsycho/", "figS3A.tiff", sep=""), 
-        width=12, height=7, dpi=400)
+# ggsave (gAllByWeek_blackWhite, file=paste(home, "/dropboxTCoffee_new/Dropbox/jespinosa/2013phecomp2shareFinal/20150902_espinosa_EuNeuroPsycho/", "figS3A.tiff", sep=""), 
+#         width=12, height=7, dpi=400)
+
+# ggsave (gAllByWeek_blackWhite, file=paste(home, "/dropboxTCoffee_new/Dropbox/jespinosa/2013phecomp2shareFinal/drafts_paper/figures_20151110/figS2/", "figS2_A.pdf", sep=""), 
+#         width=12, height=7, dpi=400)
+
 
 ## Ratio between day and night
 mean (meanAll.byWeek$mean [meanAll.byWeek$groupPhase == "Ctrl day"] /meanAll.byWeek$mean [meanAll.byWeek$groupPhase == "Ctrl night"])
@@ -212,7 +216,7 @@ tbl_all$cageId <- as.numeric (cage)
 meanAll_byId_week <- with (tbl_all , aggregate (cbind (value), list (phase=phase, group=group, week=week, cage=cageId), FUN=function (x) c (mean=mean(x), std.error=std.error(x))))
 
 head (meanAll_byId_week)
-write.table(meanAll_byId_week, "/Users/jespinosa/sharedWin/20151109_dayNightDevelopment.csv", sep="\t", row.names=FALSE ,dec=".")
+# write.table(meanAll_byId_week, "/Users/jespinosa/sharedWin/20151109_dayNightDevelopment.csv", sep="\t", row.names=FALSE ,dec=".")
 
 meanAll_byId_week
 cbind (meanAll_byId_week [which (meanAll_byId_week$group == "Ctrl" & meanAll_byId_week$week == 1 & meanAll_byId_week$phase == "day"),],

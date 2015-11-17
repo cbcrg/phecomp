@@ -230,8 +230,15 @@ gAllByWeek_blackWhite <- ggplot (meanAll.byWeek10Weeks, aes(x = week-1, y = mean
 gAllByWeek_blackWhite
 
 setwd("/Users/jespinosa/dropboxTCoffee_new/Dropbox/jespinosa/2013phecomp2shareFinal/20150902_espinosa_EuNeuroPsycho")
-ggsave (gAllByWeek_blackWhite, file=paste(home, "/dropboxTCoffee_new/Dropbox/jespinosa/2013phecomp2shareFinal/20150902_espinosa_EuNeuroPsycho/", "figS3B.tiff", sep=""), 
-          width=12, height=7, dpi=400)
+# ggsave (gAllByWeek_blackWhite, file=paste(home, "/dropboxTCoffee_new/Dropbox/jespinosa/2013phecomp2shareFinal/20150902_espinosa_EuNeuroPsycho/", "figS3B.tiff", sep=""), 
+#           width=12, height=7, dpi=400)
+# ggsave (gAllByWeek_blackWhite, file=paste(home, "/dropboxTCoffee_new/Dropbox/jespinosa/2013phecomp2shareFinal/drafts_paper/figures_20151110/figS2/", "figS2_B.tiff", sep=""), 
+#         width=12, height=7, dpi=400)
+ggsave (gAllByWeek_blackWhite, file=paste(home, "/dropboxTCoffee_new/Dropbox/jespinosa/2013phecomp2shareFinal/drafts_paper/figures_20151110/figS2/", "figS2_B.pdf", sep=""), 
+        width=12, height=7)
+
+
+
 
 
 ## Ratio between day and night
@@ -348,7 +355,7 @@ tbl_all_FC$cageId <- as.numeric (cage)
 meanAll_FC_byId_week <- with (tbl_all_FC , aggregate (cbind (value), list (phase=phase, group=group, week=week, cage=cageId), FUN=function (x) c (mean=mean(x), std.error=std.error(x))))
 head (meanAll_FC_byId_week)
 
-write.table(meanAll_FC_byId_week, "/Users/jespinosa/sharedWin/20151109_dayNightDevelopment_FC.csv", sep="\t", row.names=FALSE ,dec=".")
+# write.table(meanAll_FC_byId_week, "/Users/jespinosa/sharedWin/20151109_dayNightDevelopment_FC.csv", sep="\t", row.names=FALSE ,dec=".")
 
 ##################
 #################
