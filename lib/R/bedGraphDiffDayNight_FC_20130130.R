@@ -209,8 +209,10 @@ setwd("/Users/jespinosa/dropboxTCoffee/Dropbox/jespinosa/2013phecomp2shareFinal/
 # ggsave (gAllByWeek, file=paste(home, "/dropboxTCoffee/Dropbox/jespinosa/2013phecomp2shareFinal/drafts_paper/submissionEuNeuroPsycho/", "figS3B.tiff", sep=""), 
 #           width=12, height=7, dpi=400)
 
+# Labels can not be FC
 meanAll.byWeek10Weeks$groupPhase_lab <- factor(meanAll.byWeek10Weeks$groupPhase, levels=c("Ctrl day", "Ctrl night", "FC_SC day", "FC_SC night", "FC_Choc day", "FC_Choc night"), 
                                            labels=c("Ctrl day", "Ctrl night", "FC SC day", "FC SC night", "FC CM day", "FC CM night"))
+meanAll.byWeek10Weeks$groupPhase_lab <- revalue(meanAll.byWeek10Weeks$groupPhase_lab, c("FC SC day"="SC day", "FC SC night"="SC night", "FC CM day"="CM day", "FC CM night"="CM night"))
 
 ########################################
 # New version of the plot (Rafael's way)
@@ -232,9 +234,9 @@ gAllByWeek_blackWhite
 setwd("/Users/jespinosa/dropboxTCoffee_new/Dropbox/jespinosa/2013phecomp2shareFinal/20150902_espinosa_EuNeuroPsycho")
 # ggsave (gAllByWeek_blackWhite, file=paste(home, "/dropboxTCoffee_new/Dropbox/jespinosa/2013phecomp2shareFinal/20150902_espinosa_EuNeuroPsycho/", "figS3B.tiff", sep=""), 
 #           width=12, height=7, dpi=400)
-# ggsave (gAllByWeek_blackWhite, file=paste(home, "/dropboxTCoffee_new/Dropbox/jespinosa/2013phecomp2shareFinal/drafts_paper/figures_20151110/figS2/", "figS2_B.tiff", sep=""), 
-#         width=12, height=7, dpi=400)
-ggsave (gAllByWeek_blackWhite, file=paste(home, "/dropboxTCoffee_new/Dropbox/jespinosa/2013phecomp2shareFinal/drafts_paper/figures_20151110/figS2/", "figS2_B.pdf", sep=""), 
+ggsave (gAllByWeek_blackWhite, file=paste(home, "/dropboxTCoffee_new/Dropbox/jespinosa/2013phecomp2shareFinal/drafts_paper/figures_20151110/figS4/", "figS4.tiff", sep=""), 
+        width=12, height=7, dpi=400)
+ggsave (gAllByWeek_blackWhite, file=paste(home, "/dropboxTCoffee_new/Dropbox/jespinosa/2013phecomp2shareFinal/drafts_paper/figures_20151110/figS4/", "figS4.pdf", sep=""), 
         width=12, height=7)
 
 
