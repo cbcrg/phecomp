@@ -24,6 +24,8 @@ home <- Sys.getenv("HOME")
 # Loading functions:
 source ("/Users/jespinosa/git/phecomp/lib/R/plotParamPublication.R")
 
+# Parameter to set plot qualities
+dpi_q <- 50
 data_reinst <- read.csv (paste (home, "/old_data/data/Matrix 16_10_15 for CPA Reinstatement.csv", sep=""), dec=",", sep=";")
 head (data_reinst)
 
@@ -69,8 +71,8 @@ data_reinst_filt_extinction <- data_reinst_filt_no_summary_var[ , grepl( "dep_" 
 # phase <- "extin"
 # data_reinst_filt <- data_reinst_filt_extinction
 
-data_reinst_filt <- data_reinst_filt_extinction
 phase <- "depriv"
+data_reinst_filt <- data_reinst_filt_extinction
 
 # var_names <- colnames(data_reinst_filt_onlyVar)
 
@@ -100,7 +102,7 @@ pca2plot$group <- data_reinst$group_lab
 #                                                   labels=c("SC choc", "SC fat", "Choc", "High fat"))
 
 pca2plot$id <- data_reinst$subject
-
+title_p <- paste ("PCA reinstatement - ", phase, " sessions\n", sep="")
 pca_reinstatement <- ggplot (pca2plot, aes(x=Dim.1, y=Dim.2, colour=group)) + 
                            geom_point (size = 3.5, show_guide = T) + 
                            scale_color_manual(values=c("orange", "red", "lightblue", "blue")) +
@@ -109,13 +111,13 @@ pca_reinstatement <- ggplot (pca2plot, aes(x=Dim.1, y=Dim.2, colour=group)) +
                            theme(legend.key=element_rect(fill=NA)) +
                            scale_x_continuous (limits=c(-10, 12), breaks=-10:12) + 
                            scale_y_continuous (limits=c(-10, 12), breaks=-10:12) +
-                           labs(title = "PCA reinstatement raw data\n", x = paste("\nPC1 (", var_PC1, "% of variance)", sep=""), 
+                           labs(title = title_p, x = paste("\nPC1 (", var_PC1, "% of variance)", sep=""), 
                                 y=paste("PC2 (", var_PC2, "% of variance)\n", sep = "")) +
                           #                           guides(colour = guide_legend(override.aes = list(size = 10)))+
                            guides(colour = guide_legend(override.aes = list(size = 3)))+
                            theme(legend.key=element_rect(fill=NA))
 
-# pca_reinstatement
+pca_reinstatement
 
 # keeping aspect ratio
 pca_reinstatement_aspect_ratio <- pca_reinstatement + coord_fixed()
@@ -126,7 +128,7 @@ pca_reinstatement_aspect_ratio <- pca_reinstatement + coord_fixed()
 pca_reinstatement_aspect_ratio
 
 ggsave (pca_reinstatement_aspect_ratio, , file=paste(home, "/old_data/figures/", 
-        "PCA_",  phase, "Phase.tiff", sep=""), width = 15, height = 10, dpi=300)
+        "PCA_",  phase, "Phase.tiff", sep=""), width = 15, height = 10, dpi=dpi_q)
 
 ###############
 ### Circle Plot
@@ -153,7 +155,7 @@ p_circle_plot <- ggplot(circle_plot) +
                  geom_segment (data=circle_plot, aes(x=0, y=0, xend=Dim.1, yend=Dim.2), arrow=arrow(length=unit(0.2,"cm")), alpha=1, size=1, color="red") +
                  xlim (c(-1.2, 1.2)) + ylim (c(-1.2, 1.2)) +
 #                  geom_text (data=circle_plot, aes (x=Dim.1, y=Dim.2, label=labels_v, hjust=1.2), show_guide = FALSE, size=5) + 
-#                  geom_text (data=neg_positions, aes (x=Dim.1, y=Dim.2, label=neg_labels, hjust=1.2), show_guide = FALSE, size=5) + 
+                 geom_text (data=neg_positions, aes (x=Dim.1, y=Dim.2, label=neg_labels, hjust=1.2), show_guide = FALSE, size=5) + 
                  geom_text (data=pos_positions, aes (x=Dim.1, y=Dim.2, label=pos_labels, hjust=-0.3), show_guide = FALSE, size=5) +
                  geom_vline (xintercept = 0, linetype="dotted") +
                  geom_hline (yintercept=0, linetype="dotted") +
@@ -172,7 +174,7 @@ dailyInt_theme <- theme_update (axis.title.x = element_text (size=base_size * 2,
 p_circle_plot
 
 ggsave (p_circle_plot, , file=paste(home, "/old_data/figures/", 
-                                                     "circle_",  phase, "Phase.tiff", sep=""), width = 15, height = 10, dpi=300)
+                                                     "circle_",  phase, "Phase.tiff", sep=""), width = 15, height = 10, dpi=dpi_q)
 
 # Plotting the variables by experimental phase
 circle_plot$var <- rownames (circle_plot)
@@ -210,19 +212,20 @@ neg_positions <- circle_plot [which (circle_plot$Dim.1 < 0), c(1,2,8)]
 
 pos_labels <- labels_v [which (circle_plot$Dim.1 >= 0)]
 pos_positions <- circle_plot [which (circle_plot$Dim.1 >= 0), c(1,2,8)]
- 
+
+title_c <- paste ("PCA of the variables - ",phase, " phases\n", sep="")
 p_circle_plot_colors <- ggplot(circle_plot) + 
                         geom_segment (data=circle_plot, aes(colour=varGroup, x=0, y=0, xend=Dim.1, yend=Dim.2), 
                                       arrow=arrow(length=unit(0.2,"cm")), alpha=1, size=1) +
                         scale_color_manual (values = v_colours) +
                         xlim (c(-1.2, 1.2)) + ylim (c(-1.2, 1.2)) +
-#                         geom_text (data=neg_positions, aes (x=Dim.1, y=Dim.2, label=session, hjust=0.9, vjust=-0.4), 
-#                                    show_guide = FALSE, size=5) + 
+                        geom_text (data=neg_positions, aes (x=Dim.1, y=Dim.2, label=session, hjust=0.9, vjust=-0.4), 
+                                   show_guide = FALSE, size=5) + 
                         geom_text (data=pos_positions, aes (x=Dim.1, y=Dim.2, label=session, hjust=-0.2), 
                                    show_guide = FALSE, size=5) +
                         geom_vline (xintercept = 0, linetype="dotted") +
                         geom_hline (yintercept=0, linetype="dotted") +
-                        labs (title = "PCA of the variables\n", x = paste("\nPC1 (", var_PC1, "% of variance)", sep=""), 
+                        labs (title = title_c, x = paste("\nPC1 (", var_PC1, "% of variance)", sep=""), 
                               y=paste("PC2 (", var_PC2, "% of variance)\n", sep = "")) +
                         geom_polygon (data = df.circle, aes(x, y), alpha=1, colour="black", fill=NA, size=1) +
                         theme (legend.key = element_blank(), legend.key.height = unit (1.5, "line"), 
@@ -234,8 +237,9 @@ dailyInt_theme <- theme_update (axis.title.x = element_text (size=base_size * 2,
                                 plot.title = element_text (size=base_size * 2, face="bold"))
 p_circle_plot_colors
 
-ggsave (p_circle_plot_colors, file=paste(home, "/old_data/figures/", 
-                                         "circle_color_act_",  phase, "Phase.tiff", sep=""), width = 15, height = 12, dpi=300)
+ggsave (p_circle_plot_colors, 
+        file=paste(home, "/old_data/figures/", 
+                   "circle_color_act_",  phase, "Phase.tiff", sep=""), width = 15, height = 12, dpi=dpi_q)
 
 # Colour circle plot by session 1-5 5-10 10-15 15-20
 circle_plot 
@@ -252,13 +256,13 @@ p_circle_plot_colors_bin <- ggplot(circle_plot) +
                 arrow=arrow(length=unit(0.2,"cm")), alpha=1, size=1) +
   scale_color_manual (values = v_colours) +
   xlim (c(-1.2, 1.2)) + ylim (c(-1.2, 1.2)) +
-  #                         geom_text (data=neg_positions, aes (x=Dim.1, y=Dim.2, label=session, hjust=0.9, vjust=-0.4), 
-  #                                    show_guide = FALSE, size=5) + 
+  geom_text (data=neg_positions, aes (x=Dim.1, y=Dim.2, label=session, hjust=0.9, vjust=-0.4), 
+             show_guide = FALSE, size=5) + 
   geom_text (data=pos_positions, aes (x=Dim.1, y=Dim.2, label=session, hjust=-0.2), 
              show_guide = FALSE, size=5) +
   geom_vline (xintercept = 0, linetype="dotted") +
   geom_hline (yintercept=0, linetype="dotted") +
-  labs (title = "PCA of the variables\n", x = paste("\nPC1 (", var_PC1, "% of variance)", sep=""), 
+  labs (title = title_c, x = paste("\nPC1 (", var_PC1, "% of variance)", sep=""), 
         y=paste("PC2 (", var_PC2, "% of variance)\n", sep = "")) +
   geom_polygon (data = df.circle, aes(x, y), alpha=1, colour="black", fill=NA, size=1) +
   theme (legend.key = element_blank(), legend.key.height = unit (1.5, "line"), 
@@ -272,23 +276,26 @@ dailyInt_theme <- theme_update (axis.title.x = element_text (size=base_size * 2,
 p_circle_plot_colors_bin
 
 ggsave (p_circle_plot_colors_bin, file=paste(home, "/old_data/figures/", 
-                                             "circle_color_bin_",  phase, "Phase.tiff", sep=""), width = 15, height = 12, dpi=300)
+                                             "circle_color_bin_",  phase, "Phase.tiff", sep=""), width = 15, height = 12, dpi=dpi_q)
 
 # Doing the same plot as above by colours but in this case facet
 p_var_by_group_scale_free <- ggplot(circle_plot) + 
+  labs (title = title_c, x = paste("PC1 (", var_PC1, "% of variance)", sep=""), 
+        y=paste("PC2 (", var_PC2, "% of variance)", sep = "")) +
   geom_text (aes(colour=varGroup, x=Dim.1, y=Dim.2, label=session), show_guide = FALSE, size=5) +
   scale_color_manual (values = c("red", "gray", "blue", "lightblue", "magenta", "orange", "darkgreen")) +
   facet_wrap(~varGroup, scales="free")
 
 p_var_by_group_scale_free
 ggsave (p_var_by_group_scale_free, file=paste(home, "/old_data/figures/", 
-                                   "points_act_facet_",  phase, "Phase.tiff", sep=""), width = 15, height = 12, dpi=300)
+                                   "points_act_facet_",  phase, "Phase.tiff", sep=""), width = 15, height = 12, dpi=dpi_q)
 
 p_var_by_group <- ggplot(circle_plot) + 
                          xlim (c(-1, 1)) + ylim (c(-1, 1)) +
                          geom_text (aes(colour=varGroup, x=Dim.1, y=Dim.2, label=session), show_guide = FALSE, size=5, vjust=-0.4) +
                          geom_point(aes(colour=varGroup, x=Dim.1, y=Dim.2), size=3)+
                          scale_color_manual (values = v_colours) +
+                         labs (title = title_c)
                          labs (x = paste("\nPC1 (", var_PC1, "% of variance)", sep=""), 
                          y=paste("PC2 (", var_PC2, "% of variance)\n", sep = "")) +
                          theme (legend.key = element_blank(), legend.key.height = unit (1.5, "line"), 
@@ -297,7 +304,7 @@ p_var_by_group <- ggplot(circle_plot) +
 p_var_by_group
 
 ggsave (p_var_by_group, file=paste(home, "/old_data/figures/", 
-                                         "points_act_",  phase, "Phase.tiff", sep=""), width = 15, height = 12, dpi=300)
+                                         "points_act_",  phase, "Phase.tiff", sep=""), width = 15, height = 12, dpi=dpi_q)
 
 ############
 ## BARPLOT
@@ -313,17 +320,19 @@ df.bars_to_plot$index <- factor(df.bars_to_plot$index, levels = df.bars_to_plot$
 threshold <- 2
 df.bars_to_plot <- df.bars_to_plot [df.bars_to_plot$value > threshold, ]
 
+title_b <- paste ("Variable contribution to PC1 - ", phase, " phases\n", sep="")
 bars_plot <- ggplot (data=df.bars_to_plot, aes(x=index, y=value)) + 
-  ylim (c(0, 5)) +
+  ylim (c(0, 10.5)) +
   geom_bar (stat="identity", fill="gray", width=0.8) + 
-  labs (title = "Variable contribution to PC1\n", x = "", y="Contribution in %\n") +
+  labs (title = title_b, x = "", y="Contribution in %\n") +
   theme(axis.text.x=element_text(angle=45, vjust=1, hjust=1) )
 bars_plot
 
 ggsave (bars_plot, file=paste(home, "/old_data/figures/", 
-                                    "bars_PC1_",  phase, "Phase.tiff", sep=""), width = 15, height = 12, dpi=300)
+                                    "bars_PC1_",  phase, "Phase.tiff", sep=""), width = 15, height = 12, dpi=dpi_q)
 
 # PC2
+title_b <- paste ("Variable contribution to PC2 - ", phase, " phases\n", sep="")
 df.bars_PC2 <- cbind (as.numeric(sort(res$var$coord[,2]^2/sum(res$var$coord[,2]^2)*100,decreasing=TRUE)), names(res$var$coord[,2])[order(res$var$coord[,2]^2,decreasing=TRUE)])
 df.bars_to_plot_PC2 <- as.data.frame(df.bars_PC2)
 df.bars_to_plot_PC2$index <- as.factor (df.bars_to_plot_PC2$V2)
@@ -344,9 +353,10 @@ bars_plot_PC2 <- ggplot (data=df.bars_to_plot_PC2, aes(x=index, y=value)) +
 
 bars_plot_PC2
 ggsave (bars_plot_PC2, file=paste(home, "/old_data/figures/", 
-                              "bars_PC2_",  phase, "Phase.tiff", sep=""), width = 15, height = 12, dpi=300)
+                              "bars_PC2_",  phase, "Phase.tiff", sep=""), width = 15, height = 12, dpi=dpi_q)
 
 # PC3
+title_b <- paste ("Variable contribution to PC3 - ", phase, " phases\n", sep="")
 df.bars_PC3 <- cbind (as.numeric(sort(res$var$coord[,3]^2/sum(res$var$coord[,3]^2)*100,decreasing=TRUE)), names(res$var$coord[,3])[order(res$var$coord[,3]^2,decreasing=TRUE)])
 df.bars_to_plot_PC3 <- as.data.frame(df.bars_PC3)
 df.bars_to_plot_PC3$index <- as.factor (df.bars_to_plot_PC3$V2)
@@ -369,115 +379,7 @@ bars_plot_PC3 <- ggplot (data=df.bars_to_plot_PC3, aes(x=index, y=value)) +
 bars_plot_PC3
 
 ggsave (bars_plot_PC3, file=paste(home, "/old_data/figures/", 
-                              "bars_PC3_",  phase, "Phase.tiff", sep=""), width = 15, height = 12, dpi=300)
-
-#############################################
-# Plot of active vs inactive press levers (c'est a dire correct vs incorrect)
-
-###
-# Extinction
-###
-###################
-# Plotting all groups in the same plot
-
-# tag
-tag = "ex_"
-title_phase = "extincition"
-data_reinst_filt_act_extinction <- data_reinst_filt_no_summary_var[ , grepl(paste (tag, "act", sep="") , names( data_reinst_filt_no_summary_var ) ) ]
-data_reinst_filt_inact_extinction <- data_reinst_filt_no_summary_var[ , grepl(paste (tag, "inact", sep=""), names( data_reinst_filt_no_summary_var ) ) ]
-
-# Adding a column with labels of the group as we want them in the plots
-data_reinst$group_lab_n  <- gsub ("F1", "High_fat", data_reinst$Group)
-data_reinst$group_lab_n <- gsub ("SC", "Ctrl_choc", data_reinst$group_lab_n)
-data_reinst$group_lab_n  <- gsub ("Cafeteria diet", "Choc", data_reinst$group_lab_n)
-data_reinst$group_lab_n  <- gsub ("C1", "Ctrl_high_fat", data_reinst$group_lab_n)
-
-data_reinst$group_lab_n <- factor(data_reinst$group_lab_n, levels=c("Ctrl_choc", "Choc", "Ctrl_high_fat", "High_fat"), 
-                                labels=c("Ctrl_choc", "Choc", "Ctrl_high_fat", "High_fat"))
-
-data_reins_actInactive <- cbind (data_reinst_filt_act_extinction, data_reinst_filt_inact_extinction )
-
-data_reins_actInactive$group <- data_reinst$group_lab
-mean_cor_inc_ex <- rbind (colMeans(data_reinst_filt_act_extinction), colMeans(data_reinst_filt_inact_extinction))
-
-row.names (mean_cor_inc_ex) <- c ("active", "inactive")
-mean_cor_inc_ex_days <- as.data.frame (t(mean_cor_inc_ex))
-class (mean_cor_inc_ex_days)
-
-mean_cor_inc_ex_days$days <- gsub("^ex_active_day", "", row.names(mean_cor_inc_ex_days))
-
-plot_act_inact_all <- ggplot (data=mean_cor_inc_ex_days, aes(x=active, y=inactive)) + 
-                              geom_point () + labs (title = paste("Active vs inactive ", title_phase, sep=""), 
-                                                    x = "\nactive", y = "inactive\n") +
-                              scale_x_continuous(limits=c(0, 60)) +
-                              scale_y_continuous(limits=c(0, 60))
-
-plot_act_inact_all
-ggsave (plot_act_inact_all, , file=paste(home, "/old_data/figures/", 
-                                               "active_inact_",  title_phase, "Phase.tiff", sep=""), width = 15, height = 10, dpi=300)
-
-###################
-# Plotting by group
-
-data_reinst_filt_act_extinction$group <- data_reinst$group_lab_n
-data_reinst_filt_inact_extinction$group <- data_reinst$group_lab_n
-
-length_col <- dim (data_reinst_filt_act_extinction)[2]
-length_col <- dim (data_reinst_filt_inact_extinction)[2]
-
-means_by_group_act <- as.data.frame (do.call(cbind, lapply(split(data_reinst_filt_act_extinction[,-length_col], data_reinst_filt_act_extinction[,length_col]), colMeans)))
-means_by_group_inact <- as.data.frame (do.call(cbind, lapply(split(data_reinst_filt_inact_extinction[,-length_col], data_reinst_filt_inact_extinction[,length_col]), colMeans)))
-
-means_by_group_act$days <- gsub("^ex_active_day", "", row.names(means_by_group_act))
-means_by_group_inact$days <- gsub("^ex_inactive_day", "", row.names(means_by_group_inact))
-
-means_by_group_act_ctrl_choc <- means_by_group_act [,c(1,5)]
-means_by_group_act_ctrl_choc$group <- "Ctrl choc" 
-colnames (means_by_group_act_ctrl_choc)[1] <- "mean"
-means_by_group_act_choc <- means_by_group_act [,c(2,5)]
-means_by_group_act_choc$group <- "Choc" 
-colnames (means_by_group_act_choc)[1] <- "mean"
-means_by_group_act_ctrl_high_fat <- means_by_group_act [,c(3,5)]
-means_by_group_act_ctrl_high_fat$group <- "Ctrl high fat" 
-colnames (means_by_group_act_ctrl_high_fat)[1] <- "mean"
-means_by_group_act_high_fat <- means_by_group_act [,c(4,5)]
-means_by_group_act_high_fat$group <- "High fat" 
-colnames (means_by_group_act_high_fat)[1] <- "mean"
-active_df <- rbind (means_by_group_act_ctrl_choc, means_by_group_act_choc, means_by_group_act_ctrl_high_fat, means_by_group_act_high_fat)
-
-# inactiv
-means_by_group_inact_ctrl_choc <- means_by_group_inact [,c(1,5)]
-means_by_group_inact_ctrl_choc$group <- "Ctrl choc" 
-colnames (means_by_group_inact_ctrl_choc)[1] <- "mean"
-means_by_group_inact_choc <- means_by_group_inact [,c(2,5)]
-means_by_group_inact_choc$group <- "Choc" 
-colnames (means_by_group_inact_choc)[1] <- "mean"
-means_by_group_inact_ctrl_high_fat <- means_by_group_inact [,c(3,5)]
-means_by_group_inact_ctrl_high_fat$group <- "Ctrl high fat" 
-colnames (means_by_group_inact_ctrl_high_fat)[1] <- "mean"
-means_by_group_inact_high_fat <- means_by_group_inact [,c(4,5)]
-means_by_group_inact_high_fat$group <- "High fat" 
-colnames (means_by_group_inact_high_fat)[1] <- "mean"
-inactive_df <- rbind (means_by_group_inact_ctrl_choc, means_by_group_inact_choc, means_by_group_inact_ctrl_high_fat, means_by_group_inact_high_fat)
-
-tbl <- cbind (active_df, inactive_df$mean )
-colnames (tbl)[1] <- "active"
-colnames (tbl)[4] <- "inactive"
-
-tbl$group <- factor(tbl$group, levels=c("Ctrl choc", "Choc", "Ctrl high fat", "High fat"), 
-                               labels=c("Ctrl choc", "Choc", "Ctrl high fat", "High fat"))
-
-plot_act_inact_grp <- ggplot (data=tbl, aes(x=active, y=inactive, colour=group)) + 
-                              geom_point (size=3) +
-                              labs (title = paste("Active vs inactive ", title_phase, sep=""), x = "\nactive", y = "inactive\n") +
-                              scale_color_manual (values = c("orange", "red", "lightblue", "blue")) +
-                              scale_x_continuous(limits=c(0, 60)) +
-                              scale_y_continuous(limits=c(0, 60)) +
-                              facet_wrap(~group)
-
-plot_act_inact_grp
-ggsave (plot_act_inact_grp, , file=paste(home, "/old_data/figures/", 
-                                         "active_inact_by_gr_",  title_phase, "Phase.tiff", sep=""), width = 15, height = 10, dpi=300)
+                              "bars_PC3_",  phase, "Phase.tiff", sep=""), width = 15, height = 12, dpi=dpi_q)
 
 ###########################
 ###########################
