@@ -16,6 +16,9 @@ home <- Sys.getenv("HOME")
 # Loading functions:
 source ("/Users/jespinosa/git/phecomp/lib/R/plotParamPublication.R")
 
+# Parameter to set plot qualities
+dpi_q <- 50
+
 data_reinst <- read.csv (paste (home, "/old_data/data/Matrix 16_10_15 for CPA Reinstatement.csv", sep=""), dec=",", sep=";")
 head (data_reinst)
 
@@ -51,21 +54,31 @@ tail (data_reinst_filt_no_summary_var)
 ###################
 # Plotting all groups in the same plot
 
+## All phases
+# tag <- "all_"
+# title_phase = "all"
+# lim_axis_x <- c(0, 100)
+# lim_axis_y <- c(0, 50)
+
 ## Extinction
-# tag <- "ex_"
-# title_phase = "extinction"
-# lim_axis_x <- c(0, 60)
-# lim_axis_y <- c(0, 60)
+tag <- "ex_"
+title_phase = "extinction"
+lim_axis_x <- c(0, 60)
+lim_axis_y <- c(0, 60)
 ## Ad libitum
 # tag <- "adlib_"
 # title_phase = "adlibitum"
 # lim_axis_x <- c(30, 100)
 # lim_axis_y <- c(0, 50)
 ## Deprivation
-tag <- "dep_"
-title_phase = "deprivation"
-lim_axis_x <- c(18, 100)
-lim_axis_y <- c(0, 50)
+# tag <- "dep_"
+# title_phase = "deprivation"
+# lim_axis_x <- c(18, 100)
+# lim_axis_y <- c(0, 50)
+
+# all
+# data_reinst_filt_act_extinction <- data_reinst_filt_no_summary_var[ , grepl("_act", names( data_reinst_filt_no_summary_var ) ) ]
+# data_reinst_filt_inact_extinction <- data_reinst_filt_no_summary_var[ , grepl("_inact", names( data_reinst_filt_no_summary_var ) ) ]
 
 data_reinst_filt_act_extinction <- data_reinst_filt_no_summary_var[ , grepl(paste (tag, "act", sep="") , names( data_reinst_filt_no_summary_var ) ) ]
 data_reinst_filt_inact_extinction <- data_reinst_filt_no_summary_var[ , grepl(paste (tag, "inact", sep=""), names( data_reinst_filt_no_summary_var ) ) ]
@@ -94,14 +107,14 @@ class (mean_cor_inc_ex_days)
 mean_cor_inc_ex_days$days <- gsub (paste (tag, "active_day", sep=""), "", row.names (mean_cor_inc_ex_days))
 
 plot_act_inact_all <- ggplot (data=mean_cor_inc_ex_days, aes(x=active, y=inactive)) + 
-  geom_text (aes (label=days), size=6, vjust=0, hjust=-0.5, show_guide = F) +
+#   geom_text (aes (label=days), size=6, vjust=0, hjust=-0.5, show_guide = F) +
   geom_point (size=3) +
   scale_x_continuous (limits=lim_axis_x) +
   scale_y_continuous (limits=lim_axis_y) 
 
 plot_act_inact_all
 ggsave (plot_act_inact_all, , file=paste(home, "/old_data/figures/", 
-                                         "active_inact_",  title_phase, "Phase.tiff", sep=""), width = 15, height = 10, dpi=300)
+                                         "active_inact_",  title_phase, "Phase.tiff", sep=""), width = 15, height = 10, dpi=dpi_q)
 
 ###################
 # Plotting by group
@@ -162,7 +175,7 @@ min (tbl$inactive)
 
 plot_act_inact_grp <- ggplot (data=tbl, aes(x=active, y=inactive, colour=group)) + 
   geom_point (size=3) +
-  geom_text (aes (label=days), size=5, vjust=0, hjust=-0.5, show_guide = F) +
+#   geom_text (aes (label=days), size=5, vjust=0, hjust=-0.5, show_guide = F) +
   labs (title = paste("Active vs inactive ", title_phase, sep=""), x = "\nactive", y = "inactive\n") +
   scale_color_manual (values = c("orange", "red", "lightblue", "blue")) +
   scale_x_continuous(limits = lim_axis_x) +
@@ -171,4 +184,4 @@ plot_act_inact_grp <- ggplot (data=tbl, aes(x=active, y=inactive, colour=group))
 
 plot_act_inact_grp
 ggsave (plot_act_inact_grp , file=paste(home, "/old_data/figures/", 
-                                         "active_inact_by_gr_",  title_phase, "Phase.tiff", sep=""), width = 15, height = 10, dpi=300)
+                                         "active_inact_by_gr_",  title_phase, "Phase.tiff", sep=""), width = 15, height = 10, dpi=dpi_q)
