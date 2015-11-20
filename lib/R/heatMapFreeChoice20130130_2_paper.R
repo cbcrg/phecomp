@@ -117,8 +117,6 @@ sigResults <- c()
 sigResults <- pValueCalc (df.weekStats)
 row.names (sigResults) <- c (1:length (sigResults [,1] ))
 df.sigResults <- as.data.frame(sigResults, stringsAsFactors=F)
-
-# I name the p_values as foldChange because in this way I can use the same function for ploting
 colnames (df.sigResults) <- c("channel", "group", "period", "variable","foldChange")
 
 #order the data by period
@@ -176,11 +174,6 @@ df.sigResults <-  df.sigResults [with ( df.sigResults, order (period, channel, o
 
 #Filtering only first habituation week
 df.sigResults.Hab <- df.sigResults [df.sigResults$period == 1, ]
-heatMapPlotterHab (df.sigResults.Hab, main="\n",  weekNotation="N", legPos="none", mode="pvalues", xlab="\nHabituation Phase", ylab="Eating Behavior                          Drinking Behavior\n")
-
-df.sigResults.Hab
-df.meanCase.m.Hab
-df.sigResults.Hab$stars <- cut(df.sigResults.Hab$foldChange, breaks=c(-Inf, 0.001, 0.01, 0.05, Inf), label=c("***", "**", "*", ""))
 heatMapPlotterHab (df.sigResults.Hab, main="\n",  weekNotation="N", legPos="none", mode="pvalues", xlab="\nHabituation Phase", ylab="Eating Behavior                          Drinking Behavior\n")
 
 
