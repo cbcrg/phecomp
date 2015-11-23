@@ -61,18 +61,18 @@ data_reinst_filt_onlyVar <-data_reinst_filt_no_summary_var [ , (7:length_tbl)]
 # data_reinst_filt_extinction <- data_reinst_filt_no_summary_var[ , grepl( "ex_" , names( data_reinst_filt_no_summary_var ) ) ]
 
 # Tbl with only deprivation data
-colnames (data_reinst_filt_no_summary_var)
-data_reinst_filt_extinction <- data_reinst_filt_no_summary_var[ , grepl( "dep_" , names( data_reinst_filt_no_summary_var ) ) ]
+# colnames (data_reinst_filt_no_summary_var)
+# data_reinst_filt_extinction <- data_reinst_filt_no_summary_var[ , grepl( "dep_" , names( data_reinst_filt_no_summary_var ) ) ]
 
 # Choosing the table that will be use
-# phase <- "all"
-# data_reinst_filt <- data_reinst_filt_onlyVar
+phase <- "all"
+data_reinst_filt <- data_reinst_filt_onlyVar
 
 # phase <- "extin"
 # data_reinst_filt <- data_reinst_filt_extinction
 
-phase <- "depriv"
-data_reinst_filt <- data_reinst_filt_extinction
+# phase <- "depriv"
+# data_reinst_filt <- data_reinst_filt_extinction
 
 # var_names <- colnames(data_reinst_filt_onlyVar)
 
@@ -127,8 +127,8 @@ pca_reinstatement_aspect_ratio <- pca_reinstatement + coord_fixed()
 
 pca_reinstatement_aspect_ratio
 
-ggsave (pca_reinstatement_aspect_ratio, , file=paste(home, "/old_data/figures/", 
-        "PCA_",  phase, "Phase.tiff", sep=""), width = 15, height = 10, dpi=dpi_q)
+# ggsave (pca_reinstatement_aspect_ratio, , file=paste(home, "/old_data/figures/", 
+#         "PCA_",  phase, "Phase.tiff", sep=""), width = 15, height = 10, dpi=dpi_q)
 
 ###############
 ### Circle Plot
@@ -173,8 +173,8 @@ dailyInt_theme <- theme_update (axis.title.x = element_text (size=base_size * 2,
 
 p_circle_plot
 
-ggsave (p_circle_plot, , file=paste(home, "/old_data/figures/", 
-                                                     "circle_",  phase, "Phase.tiff", sep=""), width = 15, height = 10, dpi=dpi_q)
+# ggsave (p_circle_plot, , file=paste(home, "/old_data/figures/", 
+#                                                      "circle_",  phase, "Phase.tiff", sep=""), width = 15, height = 10, dpi=dpi_q)
 
 # Plotting the variables by experimental phase
 circle_plot$var <- rownames (circle_plot)
@@ -237,9 +237,9 @@ dailyInt_theme <- theme_update (axis.title.x = element_text (size=base_size * 2,
                                 plot.title = element_text (size=base_size * 2, face="bold"))
 p_circle_plot_colors
 
-ggsave (p_circle_plot_colors, 
-        file=paste(home, "/old_data/figures/", 
-                   "circle_color_act_",  phase, "Phase.tiff", sep=""), width = 15, height = 12, dpi=dpi_q)
+# ggsave (p_circle_plot_colors, 
+#         file=paste(home, "/old_data/figures/", 
+#                    "circle_color_act_",  phase, "Phase.tiff", sep=""), width = 15, height = 12, dpi=dpi_q)
 
 # Colour circle plot by session 1-5 5-10 10-15 15-20
 circle_plot 
@@ -275,8 +275,8 @@ dailyInt_theme <- theme_update (axis.title.x = element_text (size=base_size * 2,
                                 plot.title = element_text (size=base_size * 2, face="bold"))
 p_circle_plot_colors_bin
 
-ggsave (p_circle_plot_colors_bin, file=paste(home, "/old_data/figures/", 
-                                             "circle_color_bin_",  phase, "Phase.tiff", sep=""), width = 15, height = 12, dpi=dpi_q)
+# ggsave (p_circle_plot_colors_bin, file=paste(home, "/old_data/figures/", 
+#                                              "circle_color_bin_",  phase, "Phase.tiff", sep=""), width = 15, height = 12, dpi=dpi_q)
 
 # Doing the same plot as above by colours but in this case facet
 p_var_by_group_scale_free <- ggplot(circle_plot) + 
@@ -287,8 +287,8 @@ p_var_by_group_scale_free <- ggplot(circle_plot) +
   facet_wrap(~varGroup, scales="free")
 
 p_var_by_group_scale_free
-ggsave (p_var_by_group_scale_free, file=paste(home, "/old_data/figures/", 
-                                   "points_act_facet_",  phase, "Phase.tiff", sep=""), width = 15, height = 12, dpi=dpi_q)
+# ggsave (p_var_by_group_scale_free, file=paste(home, "/old_data/figures/", 
+#                                    "points_act_facet_",  phase, "Phase.tiff", sep=""), width = 15, height = 12, dpi=dpi_q)
 
 p_var_by_group <- ggplot(circle_plot) + 
                          xlim (c(-1, 1)) + ylim (c(-1, 1)) +
@@ -303,8 +303,8 @@ p_var_by_group <- ggplot(circle_plot) +
 
 p_var_by_group
 
-ggsave (p_var_by_group, file=paste(home, "/old_data/figures/", 
-                                         "points_act_",  phase, "Phase.tiff", sep=""), width = 15, height = 12, dpi=dpi_q)
+# ggsave (p_var_by_group, file=paste(home, "/old_data/figures/", 
+#                                          "points_act_",  phase, "Phase.tiff", sep=""), width = 15, height = 12, dpi=dpi_q)
 
 ############
 ## BARPLOT
@@ -321,6 +321,7 @@ threshold <- 2
 df.bars_to_plot <- df.bars_to_plot [df.bars_to_plot$value > threshold, ]
 
 title_b <- paste ("Variable contribution to PC1 - ", phase, " phases\n", sep="")
+
 bars_plot <- ggplot (data=df.bars_to_plot, aes(x=index, y=value)) + 
   ylim (c(0, 10.5)) +
   geom_bar (stat="identity", fill="gray", width=0.8) + 
