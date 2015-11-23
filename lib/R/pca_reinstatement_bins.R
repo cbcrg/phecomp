@@ -59,6 +59,7 @@ data_reinst_filt_onlyVar <-data_reinst_filt_no_summary_var [ , (7:length_tbl)]
 # Choosing the table that will be use
 # all phases
 phase <- "bin by"
+tag <- "bin_by"
 data_reinst_filt <- data_reinst_filt_onlyVar
 
 dep_act_1_5 = rowMeans(data_reinst_filt[,c(1:5)])
@@ -109,8 +110,8 @@ pca_reinstatement_bin <- ggplot (pca2plot, aes(x=Dim.1, y=Dim.2, colour=group)) 
                                  #                           geom_text (aes (label=days), vjust=-0.5, hjust=1, size=4, show_guide = T)+
                                  geom_text (aes(label=id), vjust=-0.5, hjust=1, size=4, show_guide = F)+
                                  theme(legend.key=element_rect(fill=NA)) +
-                                 scale_x_continuous (limits=c(-10, 12), breaks=-10:12) + 
-                                 scale_y_continuous (limits=c(-10, 12), breaks=-10:12) +
+                                 scale_x_continuous (limits=c(-4, 6), breaks=-4:6) + 
+                                 scale_y_continuous (limits=c(-4, 4), breaks=-4:4) +
                                  labs(title = title_p, x = paste("\nPC1 (", var_PC1, "% of variance)", sep=""), 
                                       y=paste("PC2 (", var_PC2, "% of variance)\n", sep = "")) +
                                  guides(colour = guide_legend(override.aes = list(size = 3)))+
@@ -120,6 +121,51 @@ pca_reinstatement_bin
 
 # keeping aspect ratio
 pca_reinstatement_bin_aspect_ratio <- pca_reinstatement_bin + coord_fixed()
+
+pca_reinstatement_bin_aspect_ratio
+
+ggsave (pca_reinstatement_bin_aspect_ratio, file=paste(home, "/old_data/figures/", 
+                                                       "PCA_",  tag, "Phase.tiff", sep=""), width = 15, height = 10, dpi=dpi_q)
+
+###############
+### Circle Plot
+circle_plot <- as.data.frame (res$var$coord)
+labels_v <- row.names(res$var$coord)
+which (circle_plot$Dim.1 < 0)
+
+neg_labels <- labels_v [which (circle_plot$Dim.1 < 0)]
+neg_positions <- circle_plot [which (circle_plot$Dim.1 < 0), c(1,2)]
+
+pos_labels <- labels_v [which (circle_plot$Dim.1 >= 0)]
+pos_positions <- circle_plot [which (circle_plot$Dim.1 >= 0), c(1,2)]
+
+angle <- seq(-pi, pi, length = 50)
+df.circle <- data.frame(x = sin(angle), y = cos(angle))
+
+#aes(x=PC1, y=PC2, colour=gentreat )) 
+p_circle_plot <- ggplot(circle_plot) + 
+                 geom_segment (data=circle_plot, aes(x=0, y=0, xend=Dim.1, yend=Dim.2), 
+                               arrow=arrow(length=unit(0.2,"cm")), alpha=1, size=1, color="red") +
+                 xlim (c(-1.2, 1.2)) + ylim (c(-1.2, 1.2)) +
+                 geom_text (data=neg_positions, aes (x=Dim.1, y=Dim.2, label=neg_labels, hjust=1.2), show_guide = FALSE, size=5) + 
+                 geom_text (data=pos_positions, aes (x=Dim.1, y=Dim.2, label=pos_labels, hjust=-0.3), show_guide = FALSE, size=5) +
+                 geom_vline (xintercept = 0, linetype="dotted") +
+                 geom_hline (yintercept=0, linetype="dotted") +
+                 labs (title = "PCA of the variables\n", x = paste("\nPC1 (", var_PC1, "% of variance)", sep=""), 
+                       y=paste("PC2 (", var_PC2, "% of variance)\n", sep = "")) +
+                 geom_polygon (data = df.circle, aes(x, y), alpha=1, colour="black", fill=NA, size=1)
+
+base_size <- 10
+p_circle_plot
+
+dailyInt_theme <- theme_update (axis.title.x = element_text (size=base_size * 2, face="bold"),
+                                axis.title.y = element_text (size=base_size * 2, angle = 90, face="bold"),
+                                plot.title = element_text (size=base_size * 2, face="bold"))
+
+p_circle_plot
+
+ggsave (p_circle_plot, , file=paste(home, "/old_data/figures/", 
+                                    "circle_",  tag, "Phase.tiff", sep=""), width = 15, height = 15, dpi=dpi_q)
 
 
 
