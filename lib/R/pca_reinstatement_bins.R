@@ -124,8 +124,8 @@ pca_reinstatement_bin_aspect_ratio <- pca_reinstatement_bin + coord_fixed()
 
 pca_reinstatement_bin_aspect_ratio
 
-ggsave (pca_reinstatement_bin_aspect_ratio, file=paste(home, "/old_data/figures/", 
-                                                       "PCA_",  tag, "Phase.tiff", sep=""), width = 15, height = 10, dpi=dpi_q)
+# ggsave (pca_reinstatement_bin_aspect_ratio, file=paste(home, "/old_data/figures/", 
+#                                                        "PCA_",  tag, "Phase.tiff", sep=""), width = 15, height = 10, dpi=dpi_q)
 
 ###############
 ### Circle Plot
@@ -164,8 +164,89 @@ dailyInt_theme <- theme_update (axis.title.x = element_text (size=base_size * 2,
 
 p_circle_plot
 
-ggsave (p_circle_plot, , file=paste(home, "/old_data/figures/", 
-                                    "circle_",  tag, "Phase.tiff", sep=""), width = 15, height = 15, dpi=dpi_q)
+# ggsave (p_circle_plot, , file=paste(home, "/old_data/figures/", 
+#                                     "circle_",  tag, "Phase.tiff", sep=""), width = 15, height = 15, dpi=dpi_q)
+
+# Plotting the variables by experimental phase
+circle_plot$var <- rownames (circle_plot)
+circle_plot$session <- circle_plot$var
+
+circle_plot$session [grep ("ad_act", circle_plot$session)] <- "adlib_act"
+circle_plot$session [grep ("ad_in", circle_plot$session)] <- "adlib_in"
+circle_plot$session [grep ("dep_act", circle_plot$session)] <- "dep_act"
+circle_plot$session [grep ("dep_inact", circle_plot$session)] <- "dep_inact"
+circle_plot$session [grep ("ex_act", circle_plot$session)] <- "ex_act"
+circle_plot$session [grep ("ex_inact", circle_plot$session)] <- "ex_inact"
+
+############
+# Doing a circle plot with arrows coloured by experimental phase
+
+n_v_colours <- c("red", "magenta", "darkgreen", "gray", "blue", "orange", "lightblue")
+
+# Adding session to the circle_plot df to plot them
+labels_v <- row.names(res$var$coord)
+neg_labels <- labels_v [which (circle_plot$Dim.1 < 0)]
+neg_positions <- circle_plot [which (circle_plot$Dim.1 < 0), c(1,2,6,7)]
+
+pos_labels <- labels_v [which (circle_plot$Dim.1 >= 0)]
+pos_positions <- circle_plot [which (circle_plot$Dim.1 >= 0), c(1,2,6,7)]
+
+# -0.003580923   ad_inact_1_5
+# -0.036285400  ad_inact_6_10
+# 0.015524024   ex_inact_1_5
+# 0.019560799 ex_inact_16_20
+# ex_inact_11_15
+
+# change label position for labels
+pos_positions [11,2] <- pos_positions [11,2] + 0.05
+pos_positions [12,2] <- pos_positions [12,2] + 0.05 
+pos_positions [9,2] <- pos_positions [9,2] + 0.01 
+# neg_positions [3,2] <- neg_positions [3,2] + 0
+# neg_positions [4,2] <- neg_positions [4,2] - 0.02
+
+
+title_c <- paste ("PCA of the variables - ",phase, " phases\n", sep="")
+p_circle_plot_colors_bin <- ggplot(circle_plot) + 
+                            geom_segment (data=circle_plot, aes(colour=session, x=0, y=0, xend=Dim.1, yend=Dim.2), 
+                                          arrow=arrow(length=unit(0.2,"cm")), alpha=1, size=1) +
+                            scale_color_manual (values = n_v_colours ) +
+                            xlim (c(-1.2, 1.2)) + ylim (c(-1.2, 1.2)) +
+                            geom_text (data=neg_positions, aes (x=Dim.1, y=Dim.2, label=var, hjust=0.9, vjust=-0.4), 
+                                       show_guide = FALSE, size=5) + 
+                            geom_text (data=pos_positions, aes (x=Dim.1, y=Dim.2, label=var, hjust=-0.2), 
+                                       show_guide = FALSE, size=5) +
+                            geom_vline (xintercept = 0, linetype="dotted") +
+                            geom_hline (yintercept=0, linetype="dotted") +
+                            labs (title = title_c, x = paste("\nPC1 (", var_PC1, "% of variance)", sep=""), 
+                                  y=paste("PC2 (", var_PC2, "% of variance)\n", sep = "")) +
+                            geom_polygon (data = df.circle, aes(x, y), alpha=1, colour="black", fill=NA, size=1) +
+                            theme (legend.key = element_blank(), legend.key.height = unit (1.5, "line"), 
+                                   legend.title=element_blank()) 
+base_size <- 10
+
+dailyInt_theme <- theme_update (axis.title.x = element_text (size=base_size * 2, face="bold"),
+                                axis.title.y = element_text (size=base_size * 2, angle = 90, face="bold"),
+                                plot.title = element_text (size=base_size * 2, face="bold"))
+p_circle_plot_colors_bin_coord <- p_circle_plot_colors_bin + coord_fixed()
+
+ggsave (p_circle_plot_colors_bin_coord, file=paste(home, "/old_data/figures/", "circle_color_act_", tag, "Phase.tiff", sep=""),          
+        width = 15, height = 15, dpi=dpi_q)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -282,7 +363,6 @@ pos_positions <- circle_plot [which (circle_plot$Dim.1 >= 0), c(1,2)]
 angle <- seq(-pi, pi, length = 50)
 df.circle <- data.frame(x = sin(angle), y = cos(angle))
 
-#aes(x=PC1, y=PC2, colour=gentreat )) 
 p_circle_plot <- ggplot(circle_plot) + 
   geom_segment (data=circle_plot, aes(x=0, y=0, xend=Dim.1, yend=Dim.2), arrow=arrow(length=unit(0.2,"cm")), alpha=1, size=1, color="red") +
   xlim (c(-1.2, 1.2)) + ylim (c(-1.2, 1.2)) +
@@ -293,8 +373,6 @@ p_circle_plot <- ggplot(circle_plot) +
   geom_hline (yintercept=0, linetype="dotted") +
   labs (title = "PCA of the variables\n", x = paste("\nPC1 (", var_PC1, "% of variance)", sep=""), 
         y=paste("PC2 (", var_PC2, "% of variance)\n", sep = "")) +
-  #        geom_polygon(aes(x, y), data = df, inherit.aes = F, Fill=NA)
-  #                         scale_x_continuous(breaks=1:10)  
   geom_polygon (data = df.circle, aes(x, y), alpha=1, colour="black", fill=NA, size=1)
 
 base_size <- 10
