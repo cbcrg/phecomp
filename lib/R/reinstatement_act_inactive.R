@@ -61,10 +61,10 @@ tail (data_reinst_filt_no_summary_var)
 # lim_axis_y <- c(0, 50)
 
 ## Extinction
-# tag <- "ex_"
-# title_phase = "extinction"
-# lim_axis_x <- c(0, 60)
-# lim_axis_y <- c(0, 60)
+tag <- "ex_"
+title_phase = "extinction"
+lim_axis_x <- c(0, 60)
+lim_axis_y <- c(0, 60)
 
 ## Ad libitum
 # tag <- "adlib_"
@@ -73,10 +73,10 @@ tail (data_reinst_filt_no_summary_var)
 # lim_axis_y <- c(0, 50)
 
 ## Deprivation
-tag <- "dep_"
-title_phase = "deprivation"
-lim_axis_x <- c(18, 100)
-lim_axis_y <- c(0, 50)
+# tag <- "dep_"
+# title_phase = "deprivation"
+# lim_axis_x <- c(18, 100)
+# lim_axis_y <- c(0, 50)
 
 # all
 # data_reinst_filt_act_extinction <- data_reinst_filt_no_summary_var[ , grepl("_act", names( data_reinst_filt_no_summary_var ) ) ]
@@ -112,7 +112,8 @@ plot_act_inact_all <- ggplot (data=mean_cor_inc_ex_days, aes(x=active, y=inactiv
   geom_text (aes (label=days), size=6, vjust=0, hjust=-0.5, show_guide = F) +
   geom_point (size=3) +
   scale_x_continuous (limits=lim_axis_x) +
-  scale_y_continuous (limits=lim_axis_y) 
+  scale_y_continuous (limits=lim_axis_y) +
+  labs (title = paste("Active vs inactive ", title_phase, sep=""), x = "\nactive", y = "inactive\n")
 
 plot_act_inact_all
 ggsave (plot_act_inact_all, , file=paste(home, "/old_data/figures/", 
@@ -181,9 +182,11 @@ plot_act_inact_grp <- ggplot (data=tbl, aes(x=active, y=inactive, colour=group))
   labs (title = paste("Active vs inactive ", title_phase, sep=""), x = "\nactive", y = "inactive\n") +
   scale_color_manual (values = c("orange", "red", "lightblue", "blue")) +
   scale_x_continuous(limits = lim_axis_x) +
-  scale_y_continuous(limits = lim_axis_y) +
-  facet_wrap(~group)
+  scale_y_continuous(limits = lim_axis_y)  # + facet_wrap(~group)
 
 plot_act_inact_grp
 ggsave (plot_act_inact_grp , file=paste(home, "/old_data/figures/", 
                                          "active_inact_by_gr_",  title_phase, "Phase.tiff", sep=""), width = 15, height = 10, dpi=dpi_q)
+ggsave (plot_act_inact_grp , file=paste(home, "/old_data/figures/", 
+                                        "active_inact_by_gr_",  title_phase, "Phase_facet.tiff", sep=""), width = 15, height = 10, dpi=dpi_q)
+
