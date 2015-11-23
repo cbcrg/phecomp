@@ -247,9 +247,84 @@ p_circle_points_by_group_bin <- ggplot(circle_plot) +
 p_circle_points_by_group_bin
 p_circle_points_by_group_bin_coord <- p_circle_points_by_group_bin + coord_fixed ()
 p_circle_points_by_group_bin_coord
-ggsave (p_circle_points_by_group_bin_coord , file=paste(home, "/old_data/figures/", "points_circle_",  tag, "Phase.tiff", sep=""),
-        width = 15, height = 15, dpi=dpi_q)
 
+# ggsave (p_circle_points_by_group_bin_coord , file=paste(home, "/old_data/figures/", "points_circle_",  tag, "Phase.tiff", sep=""),
+#         width = 15, height = 15, dpi=dpi_q)
+
+############
+## BARPLOT
+df.bars <- cbind (as.numeric(sort(res$var$coord[,1]^2/sum(res$var$coord[,1]^2)*100,decreasing=TRUE)), names(res$var$coord[,1])[order(res$var$coord[,1]^2,decreasing=TRUE)])
+df.bars_to_plot <- as.data.frame(df.bars)
+df.bars_to_plot$index <- as.factor (df.bars_to_plot$V2)
+# class (df.bars_to_plot$V1)
+df.bars_to_plot$value <- as.numeric(sort(res$var$coord[,1]^2/sum(res$var$coord[,1]^2)*100,decreasing=TRUE))
+df.bars_to_plot$index <- factor(df.bars_to_plot$index, levels = df.bars_to_plot$index[order(df.bars_to_plot$value, decreasing=TRUE)])
+
+# PC1
+# Filtering only the top contributors more than 2 %
+# threshold <- 2
+# df.bars_to_plot <- df.bars_to_plot [df.bars_to_plot$value > threshold, ]
+title_b <- paste ("Variable contribution to PC1 - ", phase, " phases\n", sep="")
+
+bars_plot <- ggplot (data=df.bars_to_plot, aes(x=index, y=value)) + 
+             ylim (c(0, 12.5)) +
+             geom_bar (stat="identity", fill="gray", width=0.8) + 
+             labs (title = title_b, x = "", y="Contribution in %\n") +
+             theme(axis.text.x=element_text(angle=45, vjust=1, hjust=1))
+bars_plot
+
+ggsave (bars_plot, file=paste(home, "/old_data/figures/", "bars_PC1_",  tag, "Phase.tiff", sep=""),
+        width = 15, height = 12, dpi=dpi_q)
+
+# PC2
+title_b <- paste ("Variable contribution to PC2 - ", tag, " phases\n", sep="")
+df.bars_PC2 <- cbind (as.numeric(sort(res$var$coord[,2]^2/sum(res$var$coord[,2]^2)*100,decreasing=TRUE)), names(res$var$coord[,2])[order(res$var$coord[,2]^2,decreasing=TRUE)])
+df.bars_to_plot_PC2 <- as.data.frame(df.bars_PC2)
+df.bars_to_plot_PC2$index <- as.factor (df.bars_to_plot_PC2$V2)
+# class (df.bars_to_plot_PC2$V1)
+# df.bars_to_plot_PC2$value <- as.numeric(sort(res$var$coord[,2]^2/sum(res$var$coord[,2]^2)*100,decreasing=TRUE))
+df.bars_to_plot_PC2$value <- as.numeric(sort(res$var$coord[,2]^2/sum(res$var$coord[,2]^2)*100,decreasing=TRUE))
+
+# Filtering only the top contributors more than 2 %
+# threshold_pc2 <- 0
+# df.bars_to_plot_PC2 <- df.bars_to_plot_PC2 [df.bars_to_plot_PC2$value > threshold_pc2, ]
+df.bars_to_plot_PC2$index
+df.bars_to_plot_PC2$index <- factor(df.bars_to_plot_PC2$index, levels = df.bars_to_plot_PC2$index[order(df.bars_to_plot_PC2$value, decreasing=TRUE)])
+
+bars_plot_PC2 <- ggplot (data=df.bars_to_plot_PC2, aes(x=index, y=value)) + 
+  geom_bar (stat="identity", fill="gray", width=0.8) + 
+  labs (title = title_b, x = "", y="Contribution in %\n") +
+  theme (axis.text.x=element_text(angle=45, vjust=1, hjust=1))
+
+bars_plot_PC2
+ggsave (bars_plot_PC2, file=paste(home, "/old_data/figures/", "bars_PC2_",  tag, "Phase.tiff", sep=""), 
+        width = 15, height = 12, dpi=dpi_q)
+
+# PC3
+title_b <- paste ("Variable contribution to PC3 - ", phase, " phases\n", sep="")
+df.bars_PC3 <- cbind (as.numeric(sort(res$var$coord[,3]^2/sum(res$var$coord[,3]^2)*100,decreasing=TRUE)), names(res$var$coord[,3])[order(res$var$coord[,3]^2,decreasing=TRUE)])
+df.bars_to_plot_PC3 <- as.data.frame(df.bars_PC3)
+df.bars_to_plot_PC3$index <- as.factor (df.bars_to_plot_PC3$V2)
+df.bars_to_plot_PC3$value <- as.numeric(sort(res$var$coord[,3]^2/sum(res$var$coord[,3]^2)*100,decreasing=TRUE))
+
+# Filtering only the top contributors more than 2 %
+# threshold_pc3 <- 2
+# df.bars_to_plot_PC3 <- df.bars_to_plot_PC3 [df.bars_to_plot_PC3$value > threshold_pc3, ]
+df.bars_to_plot_PC3$index
+df.bars_to_plot_PC3$index <- factor(df.bars_to_plot_PC3$index, levels = df.bars_to_plot_PC3$index[order(df.bars_to_plot_PC3$value, decreasing=TRUE)])
+
+# Variability explained by PC3
+var_PC3
+
+bars_plot_PC3 <- ggplot (data=df.bars_to_plot_PC3, aes(x=index, y=value)) + 
+  geom_bar (stat="identity", fill="gray", width=0.8) + 
+  labs (title = title_b, x = "", y="Contribution in %\n") +
+  theme (axis.text.x=element_text(angle=45, vjust=1, hjust=1))
+
+bars_plot_PC3
+
+ggsave (bars_plot_PC3, file=paste(home, "/old_data/figures/", "bars_PC3_",  tag, "Phase.tiff", sep=""), 
+        width = 15, height = 12, dpi=dpi_q)
 
 
 
