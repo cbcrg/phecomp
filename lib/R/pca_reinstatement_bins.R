@@ -58,7 +58,7 @@ data_reinst_filt_onlyVar <-data_reinst_filt_no_summary_var [ , (7:length_tbl)]
 
 # Choosing the table that will be use
 # all phases
-phase <- "all"
+phase <- "bin by"
 data_reinst_filt <- data_reinst_filt_onlyVar
 
 dep_act_1_5 = rowMeans(data_reinst_filt[,c(1:5)])
@@ -100,6 +100,28 @@ pca2plot$id <- data_reinst$subject
 
 # Changes labels of the groups
 pca2plot$group <- data_reinst$group_lab
+
+
+title_p <- paste ("PCA reinstatement - ", phase, " sessions\n", sep="")
+pca_reinstatement_bin <- ggplot (pca2plot, aes(x=Dim.1, y=Dim.2, colour=group)) + 
+                                 geom_point (size = 3.5, show_guide = T) + 
+                                 scale_color_manual(values=c("orange", "red", "lightblue", "blue")) +
+                                 #                           geom_text (aes (label=days), vjust=-0.5, hjust=1, size=4, show_guide = T)+
+                                 geom_text (aes(label=id), vjust=-0.5, hjust=1, size=4, show_guide = F)+
+                                 theme(legend.key=element_rect(fill=NA)) +
+                                 scale_x_continuous (limits=c(-10, 12), breaks=-10:12) + 
+                                 scale_y_continuous (limits=c(-10, 12), breaks=-10:12) +
+                                 labs(title = title_p, x = paste("\nPC1 (", var_PC1, "% of variance)", sep=""), 
+                                      y=paste("PC2 (", var_PC2, "% of variance)\n", sep = "")) +
+                                 guides(colour = guide_legend(override.aes = list(size = 3)))+
+                                 theme(legend.key=element_rect(fill=NA))
+
+pca_reinstatement_bin
+
+# keeping aspect ratio
+pca_reinstatement_bin_aspect_ratio <- pca_reinstatement_bin + coord_fixed()
+
+
 
 
 
