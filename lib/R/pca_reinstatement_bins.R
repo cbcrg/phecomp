@@ -102,7 +102,6 @@ pca2plot$id <- data_reinst$subject
 # Changes labels of the groups
 pca2plot$group <- data_reinst$group_lab
 
-
 title_p <- paste ("PCA reinstatement - ", phase, " sessions\n", sep="")
 pca_reinstatement_bin <- ggplot (pca2plot, aes(x=Dim.1, y=Dim.2, colour=group)) + 
                                  geom_point (size = 3.5, show_guide = T) + 
@@ -229,7 +228,26 @@ dailyInt_theme <- theme_update (axis.title.x = element_text (size=base_size * 2,
                                 plot.title = element_text (size=base_size * 2, face="bold"))
 p_circle_plot_colors_bin_coord <- p_circle_plot_colors_bin + coord_fixed()
 
-ggsave (p_circle_plot_colors_bin_coord, file=paste(home, "/old_data/figures/", "circle_color_act_", tag, "Phase.tiff", sep=""),          
+# ggsave (p_circle_plot_colors_bin_coord, file=paste(home, "/old_data/figures/", "circle_color_act_", tag, "Phase.tiff", sep=""),          
+#         width = 15, height = 15, dpi=dpi_q)
+
+####################################
+## Same thing but without arrows
+circle_plot$hj <- rep(c(0, 1), length.out=dim(circle_plot)[1])
+p_circle_points_by_group_bin <- ggplot(circle_plot) + 
+                                xlim (c(-1.2, 1.2)) + ylim (c(-1.2, 1.2)) +
+                                geom_text (aes(colour=session, x=Dim.1, y=Dim.2, label=var, hjust=hj), show_guide = FALSE, size=5, vjust=-0.4) +
+                                geom_point(aes(colour=session, x=Dim.1, y=Dim.2), size=3)+
+                                scale_color_manual (values = n_v_colours) +
+                                labs (title = title_c)
+                                labs (x = paste("\nPC1 (", var_PC1, "% of variance)", sep=""), 
+                                y=paste("PC2 (", var_PC2, "% of variance)\n", sep = "")) +
+                                theme (legend.key = element_blank(), legend.key.height = unit (1.5, "line"), 
+                                legend.title=element_blank()) 
+p_circle_points_by_group_bin
+p_circle_points_by_group_bin_coord <- p_circle_points_by_group_bin + coord_fixed ()
+p_circle_points_by_group_bin_coord
+ggsave (p_circle_points_by_group_bin_coord , file=paste(home, "/old_data/figures/", "points_circle_",  tag, "Phase.tiff", sep=""),
         width = 15, height = 15, dpi=dpi_q)
 
 
