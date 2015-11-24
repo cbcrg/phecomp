@@ -79,6 +79,21 @@ ex_inact_6_10 = rowMeans(data_reinst_filt[,c(66:70)])
 ex_inact_11_15 = rowMeans(data_reinst_filt[,c(71:75)])
 ex_inact_16_20 = rowMeans(data_reinst_filt[,c(76:80)])
 
+dep_inact_1_5 = rowMeans(data_reinst_filt[,c(11:15)])
+dep_inact_6_10 = rowMeans(data_reinst_filt[,c(16:20)])
+ad_act_1_5 = rowMeans(data_reinst_filt[,c(21:25)])
+ad_act_6_10 = rowMeans(data_reinst_filt[,c(26:30)])
+ad_inact_1_5 = rowMeans(data_reinst_filt[,c(31:35)])
+ad_inact_6_10 = rowMeans(data_reinst_filt[,c(36:40)])
+ex_act_1_5 = rowMeans(data_reinst_filt[,c(41:45)])
+ex_act_6_10 = rowMeans(data_reinst_filt[,c(46:50)])
+ex_act_11_15 = rowMeans(data_reinst_filt[,c(51:55)])
+ex_act_16_20 = rowMeans(data_reinst_filt[,c(56:60)])
+ex_inact_1_5 = rowMeans(data_reinst_filt[,c(61:65)])
+ex_inact_6_10 = rowMeans(data_reinst_filt[,c(66:70)])
+ex_inact_11_15 = rowMeans(data_reinst_filt[,c(71:75)])
+ex_inact_16_20 = rowMeans(data_reinst_filt[,c(76:80)])
+
 bin_tbl <- cbind (dep_act_1_5, dep_act_6_10,dep_inact_1_5 , dep_inact_6_10 , ad_act_1_5, ad_act_6_10, ad_inact_1_5, ad_inact_6_10, 
                   ex_act_1_5, ex_act_6_10, ex_act_11_15, ex_act_16_20, ex_inact_1_5, ex_inact_6_10, ex_inact_11_15, ex_inact_16_20)
        
@@ -87,6 +102,10 @@ bin_tbl_withPR <- cbind (dep_act_1_5, dep_act_6_10,dep_inact_1_5 , dep_inact_6_1
                          ex_inact_16_20, data_reinst_filt[,c(81:85)])
 
 res = PCA (bin_tbl, scale.unit=TRUE)
+# res_withPR = PCA (bin_tbl_withPR, scale.unit=TRUE)
+# res <- res_withPR
+# v_colours <- c("red", "magenta", "darkgreen", "black", "blue", "orange", "lightblue", "gray", "pink", "darkblue", "lightgreen")
+# bin_tbl<-bin_tbl_withPR
 
 # Variance of PC1 and PC2
 var_PC1 <- round (res$eig [1,2])
@@ -163,8 +182,8 @@ dailyInt_theme <- theme_update (axis.title.x = element_text (size=base_size * 2,
 
 p_circle_plot
 
-# ggsave (p_circle_plot, , file=paste(home, "/old_data/figures/", 
-#                                     "circle_",  tag, "Phase.tiff", sep=""), width = 15, height = 15, dpi=dpi_q)
+# ggsave (p_circle_plot, , file=paste(home, "/old_data/figures/","circle_",  tag, "Phase.tiff", sep=""), 
+#         width = 15, height = 15, dpi=dpi_q)
 
 # Plotting the variables by experimental phase
 circle_plot$var <- rownames (circle_plot)
@@ -180,7 +199,7 @@ circle_plot$session [grep ("ex_inact", circle_plot$session)] <- "ex_inact"
 ############
 # Doing a circle plot with arrows coloured by experimental phase
 
-n_v_colours <- c("red", "magenta", "darkgreen", "black", "blue", "orange", "lightblue")
+n_v_colours <- c("red", "magenta", "darkgreen", "black", "blue", "orange", "lightblue", "gray", "pink", "darkblue", "lightgreen")
 
 # Adding session to the circle_plot df to plot them
 labels_v <- row.names(res$var$coord)
@@ -332,3 +351,128 @@ bars_plot_PC3
 
 # ggsave (bars_plot_PC3, file=paste(home, "/old_data/figures/", "bars_PC3_",  tag, "Phase.tiff", sep=""), 
 #         width = 15, height = 12, dpi=dpi_q)
+
+#####################
+## ACTIVE vs INACTIVE
+bin_tbl
+
+bin_tbl_act <- bin_tbl[ , grepl("_act", colnames(bin_tbl)) ]
+bin_tbl_inact <- bin_tbl[ , grepl("inact", colnames(bin_tbl)) ]
+bin_tbl_act <- as.data.frame (bin_tbl_act)
+bin_tbl_inact <- as.data.frame (bin_tbl_inact)
+
+bin_tbl_actInactive <- cbind (bin_tbl_act, bin_tbl_inact)
+mean_bin_act_inact <- rbind (colMeans(bin_tbl_act), colMeans(bin_tbl_inact))
+
+row.names (mean_bin_act_inact) <- c ("active", "inactive")
+mean_bin_act_inact_sessions <- as.data.frame (t(mean_bin_act_inact))
+
+mean_bin_act_inact_sessions$session <- row.names(mean_bin_act_inact_sessions)
+
+tag = "all_bin"
+lim_axis_x = c(0,110)
+lim_axis_y = c(0,100)
+plot_act_inact_bin <- ggplot (data=mean_bin_act_inact_sessions, aes(x=active, y=inactive)) + 
+                      geom_text (aes (label=session), size=6, vjust=0, hjust=-0.5, show_guide = F) +
+                      geom_point (size=3) +
+                      scale_x_continuous (limits=lim_axis_x) +
+                      scale_y_continuous (limits=lim_axis_y) +
+                      labs (title = paste("Active vs inactive ", gsub("_", " ", tag), sep=""), x = "\nactive", y = "inactive\n")
+
+plot_act_inact_bin
+
+# ggsave (plot_act_inact_bin, , file=paste(home, "/old_data/figures/", "active_inact_bin",  tag, "Phase.tiff", sep=""), 
+#         width = 15, height = 10, dpi=dpi_q)
+# 
+# ggsave (plot_act_inact_bin, , file=paste(home, "/old_data/figures/", "active_inact_bin",  tag, "Phase_zoom.tiff", sep=""), 
+#         width = 15, height = 10, dpi=dpi_q)
+
+###################
+# Plotting by group
+
+bin_tbl_act$group <- data_reinst$group_lab
+bin_tbl_inact$group <- data_reinst$group_lab
+
+
+# data_reinst_filt_act_extinction$group <- data_reinst$group_lab_n
+# data_reinst_filt_inact_extinction$group <- data_reinst$group_lab_n
+
+length_col <- dim (bin_tbl_act)[2]
+length_col <- dim (bin_tbl_inact)[2]
+
+means_by_group_act_bin <- as.data.frame (do.call (cbind, lapply(split(bin_tbl_act[,-length_col], bin_tbl_act[,length_col]), colMeans)))
+means_by_group_inact_bin <- as.data.frame (do.call (cbind, lapply(split(bin_tbl_inact[,-length_col], bin_tbl_inact[,length_col]), colMeans)))
+
+# Add sessions
+means_by_group_act_bin$session <- row.names (means_by_group_act_bin)
+means_by_group_inact_bin$session  <- row.names (means_by_group_inact_bin)
+means_by_group_act <- means_by_group_act_bin
+means_by_group_inact <- means_by_group_inact_bin
+means_by_group_act_ctrl_choc <- means_by_group_act [,c(1,5)]
+means_by_group_act_ctrl_choc$group <- "Ctrl choc" 
+colnames (means_by_group_act_ctrl_choc)[1] <- "mean"
+means_by_group_act_choc <- means_by_group_act [,c(2,5)]
+means_by_group_act_choc$group <- "Choc" 
+colnames (means_by_group_act_choc)[1] <- "mean"
+means_by_group_act_ctrl_high_fat <- means_by_group_act [,c(3,5)]
+means_by_group_act_ctrl_high_fat$group <- "Ctrl high fat" 
+colnames (means_by_group_act_ctrl_high_fat)[1] <- "mean"
+means_by_group_act_high_fat <- means_by_group_act [,c(4,5)]
+means_by_group_act_high_fat$group <- "High fat" 
+colnames (means_by_group_act_high_fat)[1] <- "mean"
+active_df <- rbind (means_by_group_act_ctrl_choc, means_by_group_act_choc, means_by_group_act_ctrl_high_fat, means_by_group_act_high_fat)
+
+# inactiv
+means_by_group_inact_ctrl_choc <- means_by_group_inact [,c(1,5)]
+means_by_group_inact_ctrl_choc$group <- "Ctrl choc" 
+colnames (means_by_group_inact_ctrl_choc)[1] <- "mean"
+means_by_group_inact_choc <- means_by_group_inact [,c(2,5)]
+means_by_group_inact_choc$group <- "Choc" 
+colnames (means_by_group_inact_choc)[1] <- "mean"
+means_by_group_inact_ctrl_high_fat <- means_by_group_inact [,c(3,5)]
+means_by_group_inact_ctrl_high_fat$group <- "Ctrl high fat" 
+colnames (means_by_group_inact_ctrl_high_fat)[1] <- "mean"
+means_by_group_inact_high_fat <- means_by_group_inact [,c(4,5)]
+means_by_group_inact_high_fat$group <- "High fat" 
+colnames (means_by_group_inact_high_fat)[1] <- "mean"
+inactive_df <- rbind (means_by_group_inact_ctrl_choc, means_by_group_inact_choc, means_by_group_inact_ctrl_high_fat, means_by_group_inact_high_fat)
+
+tbl <- cbind (active_df, inactive_df$mean )
+colnames (tbl)[1] <- "active"
+colnames (tbl)[4] <- "inactive"
+
+tbl$group <- factor(tbl$group, levels=c("Ctrl choc", "Choc", "Ctrl high fat", "High fat"), 
+                    labels=c("Ctrl choc", "Choc", "Ctrl high fat", "High fat"))
+max (tbl$active)
+max (tbl$inactive)
+min (tbl$active)
+min (tbl$inactive)
+
+tag = "bin"
+# lim_axis_x <- c(0,1200)
+# lim_axis_y <- c(0,200)
+lim_axis_x <- c(0,120)
+lim_axis_y <- c(0,60)
+
+plot_act_inact_grp <- ggplot (data=tbl, aes(x=active, y=inactive, colour=group)) + 
+  geom_point (size=4) +
+  geom_text (aes (label=session), size=5, vjust=0, hjust=-0.2, show_guide = F) +
+#   geom_text (aes (label=session), size=5, vjust=0, hjust=0, show_guide = F) +
+  labs (title = paste("Active vs inactive ", tag, sep=""), x = "\nactive", y = "inactive\n") +
+  scale_color_manual (values = c("orange", "red", "lightblue", "blue")) +
+  scale_x_continuous(limits = lim_axis_x) +
+  scale_y_continuous(limits = lim_axis_y)  # + facet_wrap(~group)
+
+plot_act_inact_grp <- plot_act_inact_grp + coord_fixed()
+
+# ggsave (plot_act_inact_grp , file=paste(home, "/old_data/figures/", "active_inact_by_gr_",  title_phase, "Phase.tiff", sep=""), 
+#         width = 15, height = 10, dpi=dpi_q)
+# ggsave (plot_act_inact_grp , file=paste(home, "/old_data/figures/", "active_inact_by_gr_",  title_phase, "Phase_zoom.tiff", sep=""), 
+#         width = 15, height = 10, dpi=dpi_q)
+# ggsave (plot_act_inact_grp , file=paste(home, "/old_data/figures/", "active_inact_by_gr_",  title_phase, "Phase_labels.tiff", sep=""),
+#         width = 15, height = 10, dpi=dpi_q)
+
+
+
+
+
