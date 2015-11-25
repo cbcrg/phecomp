@@ -79,27 +79,60 @@ ex_inact_6_10 = rowMeans(data_reinst_filt[,c(66:70)])
 ex_inact_11_15 = rowMeans(data_reinst_filt[,c(71:75)])
 ex_inact_16_20 = rowMeans(data_reinst_filt[,c(76:80)])
 
-dep_inact_1_5 = rowMeans(data_reinst_filt[,c(11:15)])
-dep_inact_6_10 = rowMeans(data_reinst_filt[,c(16:20)])
-ad_act_1_5 = rowMeans(data_reinst_filt[,c(21:25)])
-ad_act_6_10 = rowMeans(data_reinst_filt[,c(26:30)])
-ad_inact_1_5 = rowMeans(data_reinst_filt[,c(31:35)])
-ad_inact_6_10 = rowMeans(data_reinst_filt[,c(36:40)])
-ex_act_1_5 = rowMeans(data_reinst_filt[,c(41:45)])
-ex_act_6_10 = rowMeans(data_reinst_filt[,c(46:50)])
-ex_act_11_15 = rowMeans(data_reinst_filt[,c(51:55)])
-ex_act_16_20 = rowMeans(data_reinst_filt[,c(56:60)])
-ex_inact_1_5 = rowMeans(data_reinst_filt[,c(61:65)])
-ex_inact_6_10 = rowMeans(data_reinst_filt[,c(66:70)])
-ex_inact_11_15 = rowMeans(data_reinst_filt[,c(71:75)])
-ex_inact_16_20 = rowMeans(data_reinst_filt[,c(76:80)])
+# dep_act_1_5 = rowMeans(data_reinst_filt[,c(1:5)])
+# colnames(data_reinst_filt[,c(1:5)])
+# 
+# dep_act_6_10 = rowMeans(data_reinst_filt[,c(6:10)])
+# colnames(data_reinst_filt[,c(6:10)])
+# 
+# dep_inact_1_5 = rowMeans
+# colnames(data_reinst_filt[,c(11:15)])
+# 
+# dep_inact_6_10 = rowMeans(
+# colnames(data_reinst_filt[,c(16:20)])
+# 
+# ad_act_1_5 = rowMeans(data_reinst_filt[,c(21:25)])
+# colnames(data_reinst_filt[,c(21:25)])
+# 
+# ad_act_6_10 = rowMeans(data_reinst_filt[,c(26:30)])
+# colnames(data_reinst_filt[,c(26:30)])
+# 
+# ad_inact_1_5 = rowMeans(data_reinst_filt[,c(31:35)])
+# colnames(data_reinst_filt[,c(31:35)])
+# 
+# ad_inact_6_10 = rowMeans(data_reinst_filt[,c(36:40)])
+# colnames(data_reinst_filt[,c(36:40)])
+# 
+# ex_act_1_5 = rowMeans(data_reinst_filt[,c(41:45)])
+# colnames(data_reinst_filt[,c(41:45)])
+#   
+# ex_act_6_10 = rowMeans(data_reinst_filt[,c(46:50)])
+# colnames(data_reinst_filt[,c(46:50)])
+# 
+# ex_act_11_15 = rowMeans(data_reinst_filt[,c(51:55)])
+# colnames(data_reinst_filt[,c(51:55)])
+# 
+# ex_act_16_20 = rowMeans(data_reinst_filt[,c(56:60)])
+# colnames(data_reinst_filt[,c(56:60)])
+# 
+# ex_inact_1_5 = rowMeans(data_reinst_filt[,c(61:65)])
+# colnames(data_reinst_filt[,c(61:65)])
+# 
+# ex_inact_6_10 = rowMeans(data_reinst_filt[,c(66:70)])
+# colnames(data_reinst_filt[,c(66:70)])
+# 
+# ex_inact_11_15 = rowMeans(data_reinst_filt[,c(71:75)])
+# colnames(data_reinst_filt[,c(71:75)])
+# 
+# ex_inact_16_20 = rowMeans(data_reinst_filt[,c(76:80)])
+# colnames(data_reinst_filt[,c(76:80)])
 
-bin_tbl <- cbind (dep_act_1_5, dep_act_6_10,dep_inact_1_5 , dep_inact_6_10 , ad_act_1_5, ad_act_6_10, ad_inact_1_5, ad_inact_6_10, 
+bin_tbl <- cbind (dep_act_1_5, dep_act_6_10, dep_inact_1_5 , dep_inact_6_10 , ad_act_1_5, ad_act_6_10, ad_inact_1_5, ad_inact_6_10, 
                   ex_act_1_5, ex_act_6_10, ex_act_11_15, ex_act_16_20, ex_inact_1_5, ex_inact_6_10, ex_inact_11_15, ex_inact_16_20)
        
-bin_tbl_withPR <- cbind (dep_act_1_5, dep_act_6_10,dep_inact_1_5 , dep_inact_6_10 , ad_act_1_5, ad_act_6_10, ad_inact_1_5, 
-                         ad_inact_6_10, ex_act_1_5, ex_act_6_10, ex_act_11_15, ex_act_16_20, ex_inact_1_5, ex_inact_6_10, ex_inact_11_15, 
-                         ex_inact_16_20, data_reinst_filt[,c(81:85)])
+# bin_tbl_withPR <- cbind (dep_act_1_5, dep_act_6_10,dep_inact_1_5 , dep_inact_6_10 , ad_act_1_5, ad_act_6_10, ad_inact_1_5, 
+#                          ad_inact_6_10, ex_act_1_5, ex_act_6_10, ex_act_11_15, ex_act_16_20, ex_inact_1_5, ex_inact_6_10, ex_inact_11_15, 
+#                          ex_inact_16_20, data_reinst_filt[,c(81:85)])
 
 res = PCA (bin_tbl, scale.unit=TRUE)
 # res_withPR = PCA (bin_tbl_withPR, scale.unit=TRUE)
@@ -443,6 +476,10 @@ colnames (tbl)[4] <- "inactive"
 
 tbl$group <- factor(tbl$group, levels=c("Ctrl choc", "Choc", "Ctrl high fat", "High fat"), 
                     labels=c("Ctrl choc", "Choc", "Ctrl high fat", "High fat"))
+
+# tbl$session 
+# Diferentes lineas para cada sesion
+
 max (tbl$active)
 max (tbl$inactive)
 min (tbl$active)
