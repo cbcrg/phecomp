@@ -479,6 +479,12 @@ tbl$group <- factor(tbl$group, levels=c("Ctrl choc", "Choc", "Ctrl high fat", "H
 
 # tbl$session 
 # Diferentes lineas para cada sesion
+tbl$session_l [grep ("ad_act", tbl$session)] <- "adlib_act"
+tbl$session_l [grep ("ad_in", tbl$session)] <- "adlib_in"
+tbl$session_l [grep ("dep_act", tbl$session)] <- "dep_act"
+tbl$session_l [grep ("dep_inact", tbl$session)] <- "dep_inact"
+tbl$session_l [grep ("ex_act", tbl$session)] <- "ex_act"
+tbl$session_l [grep ("ex_inact", tbl$session)] <- "ex_inact"
 
 max (tbl$active)
 max (tbl$inactive)
@@ -492,7 +498,10 @@ lim_axis_x <- c(0,120)
 lim_axis_y <- c(0,60)
 
 plot_act_inact_grp <- ggplot (data=tbl, aes(x=active, y=inactive, colour=group)) + 
-  geom_point (size=4) +
+#   geom_point (size=4) +
+  geom_point (aes(shape=session_l), fill="white",  size=4) +
+#   scale_shape_manual(values=c(24,17,21,19,22,15))+
+  scale_shape_manual(values=c(17,19,15))+
   geom_text (aes (label=session), size=5, vjust=0, hjust=-0.2, show_guide = F) +
 #   geom_text (aes (label=session), size=5, vjust=0, hjust=0, show_guide = F) +
   labs (title = paste("Active vs inactive ", tag, sep=""), x = "\nactive", y = "inactive\n") +
@@ -501,7 +510,7 @@ plot_act_inact_grp <- ggplot (data=tbl, aes(x=active, y=inactive, colour=group))
   scale_y_continuous(limits = lim_axis_y)  # + facet_wrap(~group)
 
 plot_act_inact_grp <- plot_act_inact_grp + coord_fixed()
-
+plot_act_inact_grp
 # ggsave (plot_act_inact_grp , file=paste(home, "/old_data/figures/", "active_inact_by_gr_",  title_phase, "Phase.tiff", sep=""), 
 #         width = 15, height = 10, dpi=dpi_q)
 # ggsave (plot_act_inact_grp , file=paste(home, "/old_data/figures/", "active_inact_by_gr_",  title_phase, "Phase_zoom.tiff", sep=""), 
