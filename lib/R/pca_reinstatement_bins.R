@@ -79,60 +79,13 @@ ex_inact_6_10 = rowMeans(data_reinst_filt[,c(66:70)])
 ex_inact_11_15 = rowMeans(data_reinst_filt[,c(71:75)])
 ex_inact_16_20 = rowMeans(data_reinst_filt[,c(76:80)])
 
-# dep_act_1_5 = rowMeans(data_reinst_filt[,c(1:5)])
-# colnames(data_reinst_filt[,c(1:5)])
-# 
-# dep_act_6_10 = rowMeans(data_reinst_filt[,c(6:10)])
-# colnames(data_reinst_filt[,c(6:10)])
-# 
-# dep_inact_1_5 = rowMeans
-# colnames(data_reinst_filt[,c(11:15)])
-# 
-# dep_inact_6_10 = rowMeans(
-# colnames(data_reinst_filt[,c(16:20)])
-# 
-# ad_act_1_5 = rowMeans(data_reinst_filt[,c(21:25)])
-# colnames(data_reinst_filt[,c(21:25)])
-# 
-# ad_act_6_10 = rowMeans(data_reinst_filt[,c(26:30)])
-# colnames(data_reinst_filt[,c(26:30)])
-# 
-# ad_inact_1_5 = rowMeans(data_reinst_filt[,c(31:35)])
-# colnames(data_reinst_filt[,c(31:35)])
-# 
-# ad_inact_6_10 = rowMeans(data_reinst_filt[,c(36:40)])
-# colnames(data_reinst_filt[,c(36:40)])
-# 
-# ex_act_1_5 = rowMeans(data_reinst_filt[,c(41:45)])
-# colnames(data_reinst_filt[,c(41:45)])
-#   
-# ex_act_6_10 = rowMeans(data_reinst_filt[,c(46:50)])
-# colnames(data_reinst_filt[,c(46:50)])
-# 
-# ex_act_11_15 = rowMeans(data_reinst_filt[,c(51:55)])
-# colnames(data_reinst_filt[,c(51:55)])
-# 
-# ex_act_16_20 = rowMeans(data_reinst_filt[,c(56:60)])
-# colnames(data_reinst_filt[,c(56:60)])
-# 
-# ex_inact_1_5 = rowMeans(data_reinst_filt[,c(61:65)])
-# colnames(data_reinst_filt[,c(61:65)])
-# 
-# ex_inact_6_10 = rowMeans(data_reinst_filt[,c(66:70)])
-# colnames(data_reinst_filt[,c(66:70)])
-# 
-# ex_inact_11_15 = rowMeans(data_reinst_filt[,c(71:75)])
-# colnames(data_reinst_filt[,c(71:75)])
-# 
-# ex_inact_16_20 = rowMeans(data_reinst_filt[,c(76:80)])
-# colnames(data_reinst_filt[,c(76:80)])
-
 bin_tbl <- cbind (dep_act_1_5, dep_act_6_10, dep_inact_1_5 , dep_inact_6_10 , ad_act_1_5, ad_act_6_10, ad_inact_1_5, ad_inact_6_10, 
                   ex_act_1_5, ex_act_6_10, ex_act_11_15, ex_act_16_20, ex_inact_1_5, ex_inact_6_10, ex_inact_11_15, ex_inact_16_20)
        
 # bin_tbl_withPR <- cbind (dep_act_1_5, dep_act_6_10,dep_inact_1_5 , dep_inact_6_10 , ad_act_1_5, ad_act_6_10, ad_inact_1_5, 
 #                          ad_inact_6_10, ex_act_1_5, ex_act_6_10, ex_act_11_15, ex_act_16_20, ex_inact_1_5, ex_inact_6_10, ex_inact_11_15, 
 #                          ex_inact_16_20, data_reinst_filt[,c(81:85)])
+# bin_tbl <- bin_tbl_withPR
 
 res = PCA (bin_tbl, scale.unit=TRUE)
 # res_withPR = PCA (bin_tbl_withPR, scale.unit=TRUE)
@@ -405,6 +358,9 @@ mean_bin_act_inact_sessions$session <- row.names(mean_bin_act_inact_sessions)
 tag = "all_bin"
 lim_axis_x = c(0,110)
 lim_axis_y = c(0,100)
+lim_axis_x = c(0,850)
+lim_axis_y = c(0,150)
+
 plot_act_inact_bin <- ggplot (data=mean_bin_act_inact_sessions, aes(x=active, y=inactive)) + 
                       geom_text (aes (label=session), size=6, vjust=0, hjust=-0.5, show_guide = F) +
                       geom_point (size=3) +
@@ -479,12 +435,33 @@ tbl$group <- factor(tbl$group, levels=c("Ctrl choc", "Choc", "Ctrl high fat", "H
 
 # tbl$session 
 # Diferentes lineas para cada sesion
-tbl$session_l [grep ("ad_act", tbl$session)] <- "adlib_act"
-tbl$session_l [grep ("ad_in", tbl$session)] <- "adlib_in"
-tbl$session_l [grep ("dep_act", tbl$session)] <- "dep_act"
-tbl$session_l [grep ("dep_inact", tbl$session)] <- "dep_inact"
-tbl$session_l [grep ("ex_act", tbl$session)] <- "ex_act"
-tbl$session_l [grep ("ex_inact", tbl$session)] <- "ex_inact"
+# sessions are called active but they shouldn't they have both things
+tbl$session_l <- tbl$session
+tbl$session_l [grep ("ad_act", tbl$session)] <- "adlib"
+# tbl$session_l [grep ("ad_in", tbl$session)] <- "adlib_in"
+tbl$session_l [grep ("dep_act", tbl$session)] <- "dep"
+# tbl$session_l [grep ("dep_inact", tbl$session)] <- "dep_inact"
+tbl$session_l [grep ("ex_act", tbl$session)] <- "ex"
+# tbl$session_l [grep ("ex_inact", tbl$session)] <- "ex_inact"
+
+# If relapse and PR is included:
+# tbl$session_l [grep ("Prog_ratio", tbl$session)] <- "PR"
+# tbl$session_l [grep ("relapse", tbl$session)] <- "relap"
+# Ordering tables
+tbl$session_l <- factor(tbl$session_l, levels=c("dep", "adlib", "ex", "PR", "relap"), 
+                        labels=c("dep", "adlib", "ex", "PR", "relap"))
+
+# Session number
+tbl$session_n <- gsub ("ad_act_", "", tbl$session)
+tbl$session_n <- gsub ("ad_in_", "", tbl$session_n)
+tbl$session_n <- gsub ("dep_act_", "", tbl$session_n)
+tbl$session_n <- gsub ("dep_inact_", "", tbl$session_n)
+tbl$session_n <- gsub ("ex_act_", "", tbl$session_n)
+tbl$session_n <- gsub ("ex_inact_", "", tbl$session_n)
+
+# If relapse and PR is included:
+# tbl$session_n <- gsub ("Prog_ratio_2_active", "PR", tbl$session_n)
+# tbl$session_n <- gsub ("relapse_active", "Rel", tbl$session_n)
 
 max (tbl$active)
 max (tbl$inactive)
@@ -492,25 +469,38 @@ min (tbl$active)
 min (tbl$inactive)
 
 tag = "bin"
-# lim_axis_x <- c(0,1200)
-# lim_axis_y <- c(0,200)
 lim_axis_x <- c(0,120)
 lim_axis_y <- c(0,60)
+lim_axis_x <- c(0,1200)
+lim_axis_y <- c(0,200)
 
 plot_act_inact_grp <- ggplot (data=tbl, aes(x=active, y=inactive, colour=group)) + 
-#   geom_point (size=4) +
-  geom_point (aes(shape=session_l), fill="white",  size=4) +
-#   scale_shape_manual(values=c(24,17,21,19,22,15))+
-  scale_shape_manual(values=c(17,19,15))+
-  geom_text (aes (label=session), size=5, vjust=0, hjust=-0.2, show_guide = F) +
-#   geom_text (aes (label=session), size=5, vjust=0, hjust=0, show_guide = F) +
-  labs (title = paste("Active vs inactive ", tag, sep=""), x = "\nactive", y = "inactive\n") +
-  scale_color_manual (values = c("orange", "red", "lightblue", "blue")) +
-  scale_x_continuous(limits = lim_axis_x) +
-  scale_y_continuous(limits = lim_axis_y)  # + facet_wrap(~group)
+#                       geom_point (size=4) +
+                      geom_point (aes(shape=session_l), fill="white",  size=4) +
+#                       scale_shape_manual(values=c(17,19,15))
+                      scale_shape_manual(values=c(17,19,15,20,18))+
+                      geom_text (aes (label=session_n), size=5, vjust=0, hjust=-0.2, show_guide = F) +
+#                       geom_text (aes (label=session), size=5, vjust=0, hjust=0, show_guide = F) +
+                      labs (title = paste("Active vs inactive ", tag, sep=""), x = "\nactive", y = "inactive\n") +
+                      scale_color_manual (values = c("orange", "red", "lightblue", "blue")) #+
+#                       scale_x_continuous(limits = lim_axis_x) +
+#                       scale_y_continuous(limits = lim_axis_y)  # + 
+#                       facet_wrap(~group)
 
-plot_act_inact_grp <- plot_act_inact_grp + coord_fixed()
 plot_act_inact_grp
+ggsave (plot_act_inact_grp , file=paste(home, "/old_data/figures/", "active_inact_by_gr_and_session",  tag, "Phase.tiff", sep=""), 
+        width = 15, height = 10, dpi=dpi_q)
+
+plot_act_inact_grp_coord <- plot_act_inact_grp + coord_fixed()
+plot_act_inact_grp_coord 
+ggsave (plot_act_inact_grp_coord , file=paste(home, "/old_data/figures/", "active_inact_by_gr_and_session",  tag, "_coordFixed_Phase.tiff", sep=""), 
+        width = 15, height = 10, dpi=dpi_q)
+
+plot_act_inact_grp_facet <- plot_act_inact_grp + facet_wrap (~session_l, scales = "free")
+plot_act_inact_grp_facet
+ggsave (plot_act_inact_grp_facet , file=paste(home, "/old_data/figures/", "active_inact_by_gr_and_session_withPR",  tag, "_facet_Phase.tiff", sep=""), 
+        width = 15, height = 10, dpi=dpi_q)
+
 # ggsave (plot_act_inact_grp , file=paste(home, "/old_data/figures/", "active_inact_by_gr_",  title_phase, "Phase.tiff", sep=""), 
 #         width = 15, height = 10, dpi=dpi_q)
 # ggsave (plot_act_inact_grp , file=paste(home, "/old_data/figures/", "active_inact_by_gr_",  title_phase, "Phase_zoom.tiff", sep=""), 
