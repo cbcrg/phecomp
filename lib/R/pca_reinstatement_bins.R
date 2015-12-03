@@ -358,8 +358,8 @@ mean_bin_act_inact_sessions$session <- row.names(mean_bin_act_inact_sessions)
 tag = "all_bin"
 lim_axis_x = c(0,110)
 lim_axis_y = c(0,100)
-lim_axis_x = c(0,850)
-lim_axis_y = c(0,150)
+# lim_axis_x = c(0,850)
+# lim_axis_y = c(0,150)
 
 plot_act_inact_bin <- ggplot (data=mean_bin_act_inact_sessions, aes(x=active, y=inactive)) + 
                       geom_text (aes (label=session), size=6, vjust=0, hjust=-0.5, show_guide = F) +
@@ -477,7 +477,7 @@ lim_axis_y <- c(0,200)
 plot_act_inact_grp <- ggplot (data=tbl, aes(x=active, y=inactive, colour=group)) + 
 #                       geom_point (size=4) +
                       geom_point (aes(shape=session_l), fill="white",  size=4) +
-#                       scale_shape_manual(values=c(17,19,15))
+
                       scale_shape_manual(values=c(17,19,15,20,18))+
                       geom_text (aes (label=session_n), size=5, vjust=0, hjust=-0.2, show_guide = F) +
 #                       geom_text (aes (label=session), size=5, vjust=0, hjust=0, show_guide = F) +
@@ -488,17 +488,17 @@ plot_act_inact_grp <- ggplot (data=tbl, aes(x=active, y=inactive, colour=group))
 #                       facet_wrap(~group)
 
 plot_act_inact_grp
-ggsave (plot_act_inact_grp , file=paste(home, "/old_data/figures/", "active_inact_by_gr_and_session",  tag, "Phase.tiff", sep=""), 
+ggsave (plot_act_inact_grp , file=paste(home, "/old_data/figures/", "active_inact_by_gr_and_session_",  tag, "Phase.tiff", sep=""), 
         width = 15, height = 10, dpi=dpi_q)
 
 plot_act_inact_grp_coord <- plot_act_inact_grp + coord_fixed()
 plot_act_inact_grp_coord 
-ggsave (plot_act_inact_grp_coord , file=paste(home, "/old_data/figures/", "active_inact_by_gr_and_session",  tag, "_coordFixed_Phase.tiff", sep=""), 
+ggsave (plot_act_inact_grp_coord , file=paste(home, "/old_data/figures/", "active_inact_by_gr_and_session_",  tag, "_coordFixed_Phase.tiff", sep=""), 
         width = 15, height = 10, dpi=dpi_q)
 
 plot_act_inact_grp_facet <- plot_act_inact_grp + facet_wrap (~session_l, scales = "free")
 plot_act_inact_grp_facet
-ggsave (plot_act_inact_grp_facet , file=paste(home, "/old_data/figures/", "active_inact_by_gr_and_session_withPR",  tag, "_facet_Phase.tiff", sep=""), 
+ggsave (plot_act_inact_grp_facet , file=paste(home, "/old_data/figures/", "active_inact_by_gr_and_session_",  tag, "_facet_Phase.tiff", sep=""), 
         width = 15, height = 10, dpi=dpi_q)
 
 # ggsave (plot_act_inact_grp , file=paste(home, "/old_data/figures/", "active_inact_by_gr_",  title_phase, "Phase.tiff", sep=""), 
