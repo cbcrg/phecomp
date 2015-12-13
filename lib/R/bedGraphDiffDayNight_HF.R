@@ -15,7 +15,7 @@ library (plyr)
 #install.packages("reshape")
 library (reshape) #melt
 library (gtools) #foldchange
-library (plotrix) 
+library (plotrix) #std.err
 library (grid) #unit function
 
 ##Getting HOME directory
