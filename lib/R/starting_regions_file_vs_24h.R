@@ -6,6 +6,7 @@
 ### 30 minutes after 24 hours (same phase of the cycle)  ###
 ### Number of meals                                      ###
 ### Coverage                                             ###
+### Script used for Pergola paper plots                  ###
 ############################################################
 ### Calling this script in iOS:                          ###
 ### Rscript starting_regions_file_vs_24h.R               ###
@@ -18,76 +19,76 @@ library ("plotrix") #std.error
 #####################
 ### VARIABLES
 #Reading arguments
-args <- commandArgs (TRUE) #if not it doesn't start to count correctly
-
-## Default setting when no arguments passed
-if ( length(args) < 1) {
-  args <- c("--help")
-}
-
-## Help section
-if("--help" %in% args) {
-  cat("
-      starting_regions_file_vs_24h
- 
-      Arguments:
-      --tag=someValue        - character, stat to analyze (sum, mean, ...)
-      --path2files=someValue - character, path to read files
-      --path2plot=someValue  - character, path to dump plots
-      --help                 - print this text
- 
-      Example:
-      ./starting_regions_file_vs_24h.R --tag=\"sum\" --path2plot=\"/foo/plots\"\n")
-  
-  q (save="no")
-}
-
-# Use to parse arguments beginning by --
-parseArgs <- function(x) 
-{
-  strsplit (sub ("^--", "", x), "=")
-}
-
-#Parsing arguments
-argsDF <- as.data.frame (do.call("rbind", parseArgs(args)))
-argsL <- as.list (as.character(argsDF$V2))
-names (argsL) <- argsDF$V1
-# print (argsL)
-
-# tag is mandatory
-{
-  if (is.null (argsL$tag)) 
-  {
-    stop ("[FATAL]: Tag parameter is mandatory")
-  }
-  else
-  {
-    tag <- argsL$tag
-  }
-}
-
-{
-  if (is.null (argsL$path2files)) 
-  {
-    path2files <- "/Users/jespinosa/phecomp/20140807_pergola/bedtools_ex/starting_regions_file_vs_24h"
-  }
-  else
-  {
-    path2files <- argsL$path2files
-  }
-}
-
-{
-  if (is.null (argsL$path2plot)) 
-  {
-    print ("[Warning]: Plots will be dump in working directory as not path was provided")
-    path2plot <- getwd()  
-  }
-  else
-  {
-    path2plot <- argsL$path2plot
-  }
-}
+# args <- commandArgs (TRUE) #if not it doesn't start to count correctly
+# 
+# ## Default setting when no arguments passed
+# if ( length(args) < 1) {
+#   args <- c("--help")
+# }
+# 
+# ## Help section
+# if("--help" %in% args) {
+#   cat("
+#       starting_regions_file_vs_24h
+#  
+#       Arguments:
+#       --tag=someValue        - character, stat to analyze (sum, mean, ...)
+#       --path2files=someValue - character, path to read files
+#       --path2plot=someValue  - character, path to dump plots
+#       --help                 - print this text
+#  
+#       Example:
+#       ./starting_regions_file_vs_24h.R --tag=\"sum\" --path2plot=\"/foo/plots\"\n")
+#   
+#   q (save="no")
+# }
+# 
+# # Use to parse arguments beginning by --
+# parseArgs <- function(x) 
+# {
+#   strsplit (sub ("^--", "", x), "=")
+# }
+# 
+# #Parsing arguments
+# argsDF <- as.data.frame (do.call("rbind", parseArgs(args)))
+# argsL <- as.list (as.character(argsDF$V2))
+# names (argsL) <- argsDF$V1
+# # print (argsL)
+# 
+# # tag is mandatory
+# {
+#   if (is.null (argsL$tag)) 
+#   {
+#     stop ("[FATAL]: Tag parameter is mandatory")
+#   }
+#   else
+#   {
+#     tag <- argsL$tag
+#   }
+# }
+# 
+# {
+#   if (is.null (argsL$path2files)) 
+#   {
+#     path2files <- "/Users/jespinosa/phecomp/20140807_pergola/bedtools_ex/starting_regions_file_vs_24h"
+#   }
+#   else
+#   {
+#     path2files <- argsL$path2files
+#   }
+# }
+# 
+# {
+#   if (is.null (argsL$path2plot)) 
+#   {
+#     print ("[Warning]: Plots will be dump in working directory as not path was provided")
+#     path2plot <- getwd()  
+#   }
+#   else
+#   {
+#     path2plot <- argsL$path2plot
+#   }
+# }
 
 
 # Loading functions:
@@ -136,12 +137,14 @@ load_tbl_measure <- function (pattern="30min_sum") {
 
 ## PATTERN ==> DEPENDING ON THE PATTERN A DIFFERENT TYPE OF MEASURE WILL BE LOAD: MEAN VALUE, ACCUMULATED VALUE...
 
-# tag = "sum"
 # tag = "mean"
+# tag = "sum"
 # tag = "cov"
 # tag = "count"
+tag = "max"
 
 # path2files <- "/Users/jespinosa/phecomp/20140807_pergola/bedtools_ex/starting_regions_file_vs_24h"
+path2files <- "/Users/jespinosa/phecomp/20140807_pergola/20150411_validationPaper"
 
 pattern = paste("30min_", tag, sep="")
 #pattern = "30min_cov" 
@@ -234,19 +237,19 @@ tbl_stat_mean$group2 <- factor(tbl_stat_mean$group, levels=c(paste("Ctrl24h_less
                                                              paste("HF30min_", tag, sep=""), paste("HF24h_", tag, sep="")))
 
 ggplot(data=tbl_stat_mean, aes(x=index, y=mean, fill=group2)) + 
-geom_bar(stat="identity", position=position_dodge()) +
-geom_errorbar(aes(ymin=mean-std.error, ymax=mean+std.error),
-              width=.2,                    # Width of the error bars
-              position=position_dodge(.9)) +
-              scale_x_continuous(breaks=1:9, limits=c(0.6,9.5))+
-              scale_y_continuous(limits=c(0, max(tbl_stat_mean$V9)+max(tbl_stat_mean$V9)/5)) +                
-              labs (title = title_plot) +  
-              labs (x = "\nFile number\n", y=y_lab, fill = NULL) +
-              scale_fill_manual(values=cols, labels=c("Ctrl 24h before", "Ctrl after cleaning", "Ctrl 24h after", 
-                       "HF 24h before", "HF after cleaning", "HF 24h after"))
+       geom_bar(stat="identity", position=position_dodge()) +
+       geom_errorbar(aes(ymin=mean-std.error, ymax=mean+std.error),
+                     width=.2,                    # Width of the error bars
+                     position=position_dodge(.9)) +
+                     scale_x_continuous(breaks=1:9, limits=c(0.6,9.5))+
+                     scale_y_continuous(limits=c(0, max(tbl_stat_mean$V9)+max(tbl_stat_mean$V9)/5)) +                
+                     labs (title = title_plot) +  
+                     labs (x = "\nFile number\n", y=y_lab, fill = NULL) +
+                     scale_fill_manual(values=cols, labels=c("Ctrl 24h before", "Ctrl after cleaning", "Ctrl 24h after", 
+                                       "HF 24h before", "HF after cleaning", "HF 24h after"))
 
 # ggsave(file=paste(file_name, "_error_bar", ".pdf", sep=""), width=10, height=8)
-ggsave(file=paste(path2plot, file_name, "_error_bar", ".pdf", sep=""), width=16, height=8)
+# ggsave(file=paste(path2plot, file_name, "_error_bar", ".pdf", sep=""), width=16, height=8)
 
 # Order for plotting
 tbl_stat$group2 <- factor(tbl_stat$group, levels=c(paste("Ctrl24h_less_", tag, sep=""),paste("Ctrl24h_", tag, sep=""),
@@ -254,17 +257,47 @@ tbl_stat$group2 <- factor(tbl_stat$group, levels=c(paste("Ctrl24h_less_", tag, s
                                                    paste("HF30min_", tag, sep=""), paste("HF24h_", tag, sep="")))
 
 ggplot(data=tbl_stat, aes(x=index, y=V9, fill=group2)) + 
-  geom_bar(stat="identity", position=position_dodge()) +      
-  scale_x_continuous(breaks=1:9, limits=c(0.6,9.5))+
-  scale_y_continuous(limits=c(0, max(tbl_stat$V9) + max(tbl_stat$V9)/10)) +
-  labs (title = title_plot) +
-  labs (x = "\nFile number\n", y=y_lab, fill = NULL) +
-  scale_fill_manual(values=cols, labels=c("Ctrl 24h before", "Ctrl after cleaning", "Ctrl 24h after", 
-           "HF 24h before", "HF after cleaning", "HF 24h after"))
+       geom_bar(stat="identity", position=position_dodge()) +      
+       scale_x_continuous(breaks=1:9, limits=c(0.6,9.5))+
+       scale_y_continuous(limits=c(0, max(tbl_stat$V9) + max(tbl_stat$V9)/10)) +
+       labs (title = title_plot) +
+       labs (x = "\nFile number\n", y=y_lab, fill = NULL) +
+       scale_fill_manual(values=cols, labels=c("Ctrl 24h before", "Ctrl after cleaning", "Ctrl 24h after", 
+                         "HF 24h before", "HF after cleaning", "HF 24h after"))
 
 # ggsave(file=paste(file_name, ".png", sep=""),width=26, height=14, dpi=300, units ="cm")
 #ggsave(file=paste(file_name, ".png", sep=""), width=26, height=14, dpi=300, units ="cm")
+# ggsave(file=paste(path2plot, file_name, ".pdf", sep=""), width=10, height=8)
+
+####
+# Updated plot on 20151217 to last version with colorblind friendly colors:
+tbl_stat_mean
+
+# Filtering the first file and because there is no transition 
+short_tbl_stat_mean <- tbl_stat_mean [which (tbl_stat_mean$index > 1 & tbl_stat_mean$index < 7),]
+short_tbl_stat_mean$transIndex <- short_tbl_stat_mean$index - 1
+
+# Reordering colors for showing dark periods as dark colors
+cols <- RColorBrewer::brewer.pal (8, "Paired")[3:8]
+
+cbPalette <- c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+cols <- c("#FCAE91", "#FB6A4A", "#CB181D", "#99FFFF", "#56B4E9", "#0072B2")
+
+# Limited access period
+ggplot (data=short_tbl_stat_mean, aes(x=transIndex, y=mean, fill=group2)) + 
+       geom_bar (stat="identity", position=position_dodge()) +
+       geom_errorbar (aes(ymin=mean-std.error, ymax=mean+std.error), width=.2, # Width of the error bars
+                     position=position_dodge(.9)) +
+       scale_x_continuous (breaks=1:5, limits=c(0.4,5.5)) +
+#        scale_y_continuous (limits=c(0, max(short_tbl_stat_mean$V9)+max(short_tbl_stat_mean$V9)/5)) +                
+       labs (title = title_plot) + labs (x = "\nNo food access period\n", y=y_lab, fill = NULL) +
+       scale_fill_manual (values=cols, labels=c("Ctrl 24h before", "Ctrl after cleaning", "Ctrl 24h after", 
+                                               "HF 24h before", "HF after cleaning", "HF 24h after"))
+
+path2plot <- "/Users/jespinosa/dropboxTCoffee_new/Dropbox/jespinosa/2014_pergolaPaper/figures/fig2/"
 ggsave(file=paste(path2plot, file_name, ".pdf", sep=""), width=10, height=8)
+ggsave(file=paste(path2plot, file_name, ".png", sep=""), width=26, height=14, dpi=300, units ="cm")
+
 
 stop("Execution finished correctly")
 
