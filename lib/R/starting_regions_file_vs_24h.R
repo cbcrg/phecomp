@@ -141,7 +141,7 @@ load_tbl_measure <- function (pattern="30min_sum") {
 # tag = "sum"
 # tag = "cov"
 # tag = "count"
-tag = "max"
+# tag = "max"
 
 # path2files <- "/Users/jespinosa/phecomp/20140807_pergola/bedtools_ex/starting_regions_file_vs_24h"
 path2files <- "/Users/jespinosa/phecomp/20140807_pergola/20150411_validationPaper"
@@ -281,7 +281,7 @@ short_tbl_stat_mean$transIndex <- short_tbl_stat_mean$index - 1
 cols <- RColorBrewer::brewer.pal (8, "Paired")[3:8]
 
 cbPalette <- c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
-cols <- c("#FCAE91", "#FB6A4A", "#CB181D", "#99FFFF", "#56B4E9", "#0072B2")
+cols <- c("#FCAE91", "#FB6A4A", "#CB181D", "#D1EEEE", "#56B4E9", "#0072B2")
 
 # Limited access period
 ggplot (data=short_tbl_stat_mean, aes(x=transIndex, y=mean, fill=group2)) + 
@@ -298,6 +298,8 @@ path2plot <- "/Users/jespinosa/dropboxTCoffee_new/Dropbox/jespinosa/2014_pergola
 ggsave(file=paste(path2plot, file_name, ".pdf", sep=""), width=10, height=8)
 ggsave(file=paste(path2plot, file_name, ".png", sep=""), width=26, height=14, dpi=300, units ="cm")
 
+colfunc <- colorRampPalette(c("black", "lightcyan2"))
+colfunc(10)
 
 stop("Execution finished correctly")
 
