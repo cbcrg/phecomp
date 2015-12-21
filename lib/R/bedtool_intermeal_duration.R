@@ -120,7 +120,8 @@ var_labels<-switch(tag,
                    },
                    mean={
                      
-                     c("Mean intermeal length ", "mean_intermeal", "(s)\n")    
+#                      c("Mean intermeal length ", "mean_intermeal", "(s)\n") 
+                     c("Intermeal length ", "mean_intermeal", "(s)\n") 
                    },
                    cov={
                      
@@ -159,6 +160,7 @@ tbl_stat_mean$gr_dayphase <- factor(tbl_stat_mean$gr_dayphase, levels=c("Ctrllig
                                                                   
 tbl_stat_mean$phase <- factor(tbl_stat_mean$phase, levels=c("Habituation", "Development"))
 
+cols_cb <- c("#FB6A4A", "#56B4E9", "#CB181D", "#0072B2")
 ggplot(data=tbl_stat_mean, aes(x=phase, y=mean, fill=gr_dayphase)) + 
   geom_bar(stat="identity", position=position_dodge())+
   geom_errorbar(aes(ymin=mean-std.error, ymax=mean+std.error),
@@ -167,8 +169,9 @@ ggplot(data=tbl_stat_mean, aes(x=phase, y=mean, fill=gr_dayphase)) +
   #scale_x_discrete (labels=c("","")) +
   scale_y_continuous(limits=c(0, max(tbl_stat_mean$V5)+max(tbl_stat_mean$V5)/10)) +                
   labs (title = title_plot) +  
-  labs (x = "\nPhase of the experiment\n", y=y_lab, fill = NULL) +
-  scale_fill_manual(values=cols, labels=c("Ctrl light", "HF light", "Ctrl dark", "HF dark"))
+#   labs (x = "\nPhase of the experiment\n", y=y_lab, fill = NULL) +
+  labs (x = "\nFeeding phase\n", y=y_lab, fill = NULL) +
+  scale_fill_manual(values=cols_cb, labels=c("Ctrl light", "HF light", "Ctrl dark", "HF dark"))
                     #labels=c("Ctrl habituation light", "HF habituation light", "Ctrl habituation dark", "HF habituation dark", 
                              #"Ctrl development light", "HF development light", "Ctrl development dark", "HF development dark"))
 
