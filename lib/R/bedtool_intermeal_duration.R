@@ -160,6 +160,7 @@ tbl_stat_mean$gr_dayphase <- factor(tbl_stat_mean$gr_dayphase, levels=c("Ctrllig
                                                                   
 tbl_stat_mean$phase <- factor(tbl_stat_mean$phase, levels=c("Habituation", "Development"))
 
+# color blind friendly plots
 cols_cb <- c("#FB6A4A", "#56B4E9", "#CB181D", "#0072B2")
 ggplot(data=tbl_stat_mean, aes(x=phase, y=mean, fill=gr_dayphase)) + 
   geom_bar(stat="identity", position=position_dodge())+
