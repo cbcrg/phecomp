@@ -148,6 +148,9 @@ tag = "mean"
 # Last data used 
 setwd("/Users/jespinosa/phecomp/20140807_pergola/20150411_validationPaper")
 
+#The bash script to generate the results is:
+# /Users/jespinosa/git/phecomp/lib/bash/bed_after_clean.sh
+
 pattern = paste("30min_", tag, sep="")
 #pattern = "30min_cov" 
 #pattern = "30min_sum"
