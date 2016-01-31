@@ -7,6 +7,9 @@
 ###                                                                       ###
 #############################################################################
 
+library (plyr)
+library(FactoMineR)
+
 ##Getting HOME directory 
 home <- Sys.getenv("HOME")
 # Dropbox (CRG)/2015_reinstatement_rafa/data/tbl_phases_coloured2R.csv
@@ -20,31 +23,37 @@ head (reinst_annotation)
 # I keep id and groups and
 # filter out all the columns that are not in the annotation tbl
 col <- as.character(reinst_annotation$Session)
+data_reinst_filt <- subset (data_reinst, select=col)
 
-data_reinst_filt <- cbind (data_reinst_means, subset (data_reinst, select=col))
+# data_reinst_filt <- cbind (data_reinst_means, subset (data_reinst, select=col))
 
 # Mejor asi porque tengo la anotacion
 ext_by_annotation_t <- ddply(reinst_annotation, c("Annotation"), function(x) { 
   rowMeans(subset(data_reinst_filt, select =as.character(x$Session)))
 })
 
+ext_by_annotation_t
 
-ext_by_annotation <- as.data.frame(t(ext_by_annotation_t))
-ext_by_annotation <- ext_by_annotation[-1,]
+class(ext_by_annotation_t[,28])
+
+# Drop first column with labels:
+ext_by_annotation_t_no_lab <- ext_by_annotation_t [,-1]
+ext_by_annotation <- as.data.frame(t(ext_by_annotation_t_no_lab), stringsAsFactors=FALSE)
+class(ext_by_annotation[,1])
 colnames(ext_by_annotation) <- ext_by_annotation_t$Annotation
-ext_by_annotation
 
 # Adding a column with labels of the group as we want them in the plots
-# data_reinst_means <- subset(data_reinst, select = c("subject"))
-# 
-# data_reinst_means$group_lab  <- gsub ("F1", "High fat", data_reinst$Group)
-# data_reinst_means$group_lab  <- gsub ("SC", "Ctrl choc", data_reinst_means$group_lab)
-# data_reinst_means$group_lab  <- gsub ("Cafeteria diet", "Choc", data_reinst_means$group_lab)
-# data_reinst_means$group_lab  <- gsub ("C1", "Ctrl high fat", data_reinst_means$group_lab)
+data_reinst_means <- subset(data_reinst, select = c("subject"))
 
+data_reinst_means$group_lab  <- gsub ("F1", "High fat", data_reinst$Group)
+data_reinst_means$group_lab  <- gsub ("SC", "Ctrl choc", data_reinst_means$group_lab)
+data_reinst_means$group_lab  <- gsub ("Cafeteria diet", "Choc", data_reinst_means$group_lab)
+data_reinst_means$group_lab  <- gsub ("C1", "Ctrl high fat", data_reinst_means$group_lab)
 
+cbind (data_reinst_means, ext_by_annotation)
 
-
+# as.numeric(ext_by_annotation$Compulsivity_adlib)
+PCA(ext_by_annotation, scale.unit=TRUE)
 
 
 
@@ -54,7 +63,7 @@ ext_by_annotation
 ############
 install.packages("dplyr")
 library(dplyr)
-library (plyr)
+
 
 ### WORKING
 ddply(reinst_annotation, c("Annotation"), function(x) { print (as.character( x$Session)) })
