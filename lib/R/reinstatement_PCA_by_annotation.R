@@ -141,8 +141,8 @@ dailyInt_theme <- theme_update (axis.title.x = element_text (size=base_size * 2,
 p_circle_plot_coord_fixed <- p_circle_plot + coord_fixed()
 p_circle_plot_coord_fixed
 
-# ggsave (p_circle_plot_coord_fixed, , file=paste(home, dir_plots, "circle_annotated_sessions", ".tiff", sep=""), 
-#         width = 15, height = 15, dpi=dpi_q)
+ggsave (p_circle_plot_coord_fixed, , file=paste(home, dir_plots, "circle_annotated_behavior", ".tiff", sep=""), 
+        width = 15, height = 15, dpi=dpi_q)
 
 ####################################
 ## Same thing but without arrows
@@ -160,8 +160,8 @@ p_circle_points <- ggplot(circle_plot) +
 p_circle_points_leg <- p_circle_points + theme(legend.text = element_text(size = 20))
 p_circle_points_leg_coord_fixed <-p_circle_points_leg + coord_fixed()
 
-# ggsave (p_circle_points_leg_coord_fixed, file=paste(home, dir_plots, "points_circle",  ".tiff", sep=""),
-#         width = 15, height = 15, dpi=dpi_q)
+ggsave (p_circle_points_leg_coord_fixed, file=paste(home, dir_plots, "points_circle_behavior",  ".tiff", sep=""),
+        width = 15, height = 15, dpi=dpi_q)
 
 ############
 ## BARPLOT
@@ -224,8 +224,113 @@ bars_plot_PC3 <- ggplot (data=df.bars_to_plot_PC3, aes(x=index, y=value)) +
   theme (axis.text.x=element_text(angle=45, vjust=1, hjust=1))
 
 bars_plot_PC3
-ggsave (bars_plot_PC3, file=paste(home, dir_plots, "bars_PC3", ".tiff", sep=""), 
-        width = 15, height = 12, dpi=dpi_q)
+# ggsave (bars_plot_PC3, file=paste(home, dir_plots, "bars_PC3", ".tiff", sep=""), 
+#         width = 15, height = 12, dpi=dpi_q)
+
+#######################
+#######################
+#######################
+# Plotting annotations by session name instead of annotation
+#######################
+
+reinst_annotation_1_1 <- read.csv (paste (home, "/Dropbox (CRG)/2015_reinstatement_rafa/data/reinst_annotation_1to1.csv", sep=""), dec=",", sep=";")
+
+ext_by_annotation
+colnames(ext_by_annotation)
+
+ext_by_annotation_t$Annotation
+ext_by_sessions <- merge (ext_by_annotation_t, reinst_annotation_1_1 , by.x= "Annotation", by.y = "Annotation")
+
+# Drop first column with labels:
+ext_by_annotation_t_no_lab <- ext_by_annotation_t [,-1]
+ext_by_annotation <- as.data.frame(t(ext_by_annotation_t_no_lab), stringsAsFactors=FALSE)
+class(ext_by_annotation[,1])
+ext_by_session <- ext_by_annotation
+colnames(ext_by_session) <- ext_by_sessions$Session
+
+res_session = PCA(ext_by_session, scale.unit=TRUE)
+
+# Variance of PC1 and PC2
+var_PC1 <- round (res_session$eig [1,2])
+var_PC2 <- round (res_session$eig [2,2])
+var_PC3 <- round (res_session$eig [3,2])
+
+# Coordinates are store here
+pca2plot_session <- as.data.frame (res_session$ind$coord)
+length(pca2plot_session$Dim.1)
+pca2plot_session$id <- data_reinst_means$subject
+pca2plot_session$group <- data_reinst_means$group_lab
+
+###############
+### Circle Plot
+circle_plot <- as.data.frame (res_session$var$coord)
+labels_v <- row.names(res_session$var$coord)
+which (circle_plot$Dim.1 < 0)
+
+neg_labels <- labels_v [which (circle_plot$Dim.1 < 0)]
+neg_positions <- circle_plot [which (circle_plot$Dim.1 < 0), c(1,2)]
+
+pos_labels <- labels_v [which (circle_plot$Dim.1 >= 0)]
+pos_positions <- circle_plot [which (circle_plot$Dim.1 >= 0), c(1,2)]
+
+angle <- seq(-pi, pi, length = 50)
+df.circle <- data.frame(x = sin(angle), y = cos(angle))
+
+pos_positions_plot <- pos_positions
+pos_positions_plot$Dim.1 <- pos_positions$Dim.1 - 0.1
+pos_positions_plot$Dim.2 <- pos_positions$Dim.2 + 0.02
+
+neg_positions_plot <- neg_positions
+neg_positions_plot$Dim.1 <- neg_positions$Dim.1 + 0.1
+neg_positions_plot$Dim.2 <- neg_positions$Dim.2 + 0.05
+
+p_circle_plot <- ggplot(circle_plot) + 
+  geom_segment (data=circle_plot, aes(x=0, y=0, xend=Dim.1, yend=Dim.2), 
+                arrow=arrow(length=unit(0.2,"cm")), alpha=1, size=1, color="red") +
+  xlim (c(-1.2, 1.2)) + ylim (c(-1.2, 1.2)) +
+  geom_text (data=neg_positions_plot, aes (x=Dim.1, y=Dim.2, label=neg_labels, hjust=1.2), show_guide = FALSE, size=5) + 
+  geom_text (data=pos_positions_plot, aes (x=Dim.1, y=Dim.2, label=pos_labels, hjust=-0.3), show_guide = FALSE, size=5) +
+  geom_vline (xintercept = 0, linetype="dotted") +
+  geom_hline (yintercept=0, linetype="dotted") +
+  labs (title = "PCA of the variables\n", x = paste("\nPC1 (", var_PC1, "% of variance)", sep=""), 
+        y=paste("PC2 (", var_PC2, "% of variance)\n", sep = "")) +
+  geom_polygon (data = df.circle, aes(x, y), alpha=1, colour="black", fill=NA, size=1)
+
+base_size <- 10
+p_circle_plot
+
+dailyInt_theme <- theme_update (axis.title.x = element_text (size=base_size * 2, face="bold"),
+                                axis.title.y = element_text (size=base_size * 2, angle = 90, face="bold"),
+                                plot.title = element_text (size=base_size * 2, face="bold"))
+
+p_circle_plot_coord_fixed <- p_circle_plot + coord_fixed()
+p_circle_plot_coord_fixed
+
+ggsave (p_circle_plot_coord_fixed, , file=paste(home, dir_plots, "circle_annotated_sessions", ".tiff", sep=""), 
+        width = 15, height = 15, dpi=dpi_q)
+
+####################################
+## Same thing but without arrows
+p_circle_points <- ggplot(circle_plot) + 
+  geom_text (aes(x=Dim.1, y=Dim.2,label=labels_v), show_guide = FALSE, size=7, vjust=-0.4) +
+  geom_point(aes(x=Dim.1, y=Dim.2), size=3) +
+  xlim (c(-1.2, 1.2)) + ylim (c(-1.2, 1.2)) + 
+  labs (title = "Sessions loadings\n") +
+  labs (x = paste("\nPC1 (", var_PC1, "% of variance)", sep=""), 
+        y=paste("PC2 (", var_PC2, "% of ddvariance)\n", sep = "")) +
+  geom_vline(xintercept = 0, linetype = "longdash") +
+  geom_hline(yintercept = 0, linetype = "longdash") +
+  theme (legend.key = element_blank(), legend.key.height = unit (1.5, "line"), legend.title=element_blank()) 
+
+p_circle_points_leg <- p_circle_points + theme(legend.text = element_text(size = 20))
+p_circle_points_leg_coord_fixed <-p_circle_points_leg + coord_fixed()
+p_circle_points_leg_coord_fixed 
+ggsave (p_circle_points_leg_coord_fixed, file=paste(home, dir_plots, "points_circle_session",  ".tiff", sep=""),
+        width = 15, height = 15, dpi=dpi_q)
+
+
+
+
 
 
 ##############
