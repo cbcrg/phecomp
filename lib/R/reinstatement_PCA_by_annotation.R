@@ -71,30 +71,87 @@ var_PC3 <- round (res$eig [3,2])
 # Coordinates are store here
 pca2plot <- as.data.frame (res$ind$coord)
 pca2plot$id <- data_reinst_means$subject
-pca2plot$group <- data_reinst_means$group_lab
+pca2plot$group <- as.factor(data_reinst_means$group_lab)
+pca2plot$group <- factor(pca2plot$group, levels=c("Ctrl choc", "Choc", "Ctrl high fat", "High fat"), 
+                          labels=c("Ctrl choc", "Choc", "Ctrl high fat", "High fat"))
 
+#############
+# PC1 PC2
 title_p <- paste ("PCA annotated sessions reinstatement\n", sep="")
-pca_reinstatement <- ggplot (pca2plot, aes(x=Dim.1, y=Dim.2, colour=group)) + 
-                             geom_point (size = 3.5, show_guide = T) + 
-                             scale_color_manual(values=c("orange", "red", "lightblue", "blue")) +
-                             geom_text (aes(label=id), vjust=-0.5, hjust=1, size=4, show_guide = F)+
-                             theme(legend.key=element_rect(fill=NA)) +
-                             scale_x_continuous (limits=c(-4, 6), breaks=-4:6) + 
-                             scale_y_continuous (limits=c(-4, 4), breaks=-4:4) +
-                             labs(title = title_p, x = paste("\nPC1 (", var_PC1, "% of variance)", sep=""), 
-                                  y=paste("PC2 (", var_PC2, "% of variance)\n", sep = "")) +
-                             guides(colour = guide_legend(override.aes = list(size = 3)))+
-                             theme(legend.key=element_rect(fill=NA))
+pca_reinstatement.pc1.pc2  <- ggplot (pca2plot, aes(x=Dim.1, y=Dim.2, colour=group)) + 
+                              geom_point (size = 3.5, show_guide = T) + 
+                              scale_color_manual(values=c("orange", "red", "lightblue", "blue")) +
+                              geom_text (aes(label=id), vjust=-0.5, hjust=1, size=4, show_guide = F)+
+                              theme(legend.key=element_rect(fill=NA)) +
+                              scale_x_continuous (limits=c(-4, 6), breaks=-4:6) + 
+                              scale_y_continuous (limits=c(-4, 4), breaks=-4:4) +
+                              labs(title = title_p, x = paste("\nPC1 (", var_PC1, "% of variance)", sep=""), 
+                                   y=paste("PC2 (", var_PC2, "% of variance)\n", sep = "")) +
+                              guides(colour = guide_legend(override.aes = list(size = 3)))+
+                              theme(legend.key=element_rect(fill=NA))
 
-pca_reinstatement
+pca_reinstatement.pc1.pc2
 
 # keeping aspect ratio
-pca_reinstatement_aspect_ratio <- pca_reinstatement + coord_fixed()
+pca_reinstatement.pc1.pc2_aspect_ratio <- pca_reinstatement.pc1.pc2 + coord_fixed()
 
-pca_reinstatement_aspect_ratio
+pca_reinstatement.pc1.pc2_aspect_ratio
 
-# ggsave (pca_reinstatement_aspect_ratio, file=paste(home, dir_plots, 
-#                                                        "PCA_annotated_sessions.tiff", sep=""), width = 15, height = 10, dpi=dpi_q)
+ggsave (pca_reinstatement_aspect_ratio, file=paste(home, dir_plots, 
+                                                       "PCA_pc1_pc2_annotated_sessions.tiff", sep=""), width = 15, height = 10, dpi=dpi_q)
+
+#############
+# PC1 PC3
+title_p <- paste ("PCA annotated sessions reinstatement\n", sep="")
+pca_reinstatement.pc1.pc3  <- ggplot (pca2plot, aes(x=Dim.1, y=Dim.3, colour=group)) + 
+  geom_point (size = 3.5, show_guide = T) + 
+  scale_color_manual(values=c("orange", "red", "lightblue", "blue")) +
+  geom_text (aes(label=id), vjust=-0.5, hjust=1, size=4, show_guide = F)+
+  theme(legend.key=element_rect(fill=NA)) +
+  scale_x_continuous (limits=c(-4, 6), breaks=-4:6) + 
+  scale_y_continuous (limits=c(-4, 4), breaks=-4:4) +
+  labs(title = title_p, x = paste("\nPC1 (", var_PC1, "% of variance)", sep=""), 
+       y=paste("PC3 (", var_PC3, "% of variance)\n", sep = "")) +
+  guides(colour = guide_legend(override.aes = list(size = 3)))+
+  theme(legend.key=element_rect(fill=NA))
+
+pca_reinstatement.pc1.pc3
+
+# keeping aspect ratio
+pca_reinstatement.pc1.pc3_aspect_ratio <- pca_reinstatement.pc1.pc3 + coord_fixed()
+
+pca_reinstatement.pc1.pc3_aspect_ratio
+
+ggsave (pca_reinstatement.pc1.pc3_aspect_ratio, file=paste(home, dir_plots, 
+                                                   "PCA_pc1_pc3_annotated_sessions.tiff", sep=""), width = 15, height = 10, dpi=dpi_q)
+
+#############
+# PC2 PC3
+title_p <- paste ("PCA annotated sessions reinstatement\n", sep="")
+pca_reinstatement.pc2.pc3  <- ggplot (pca2plot, aes(x=Dim.2, y=Dim.3, colour=group)) + 
+  geom_point (size = 3.5, show_guide = T) + 
+  scale_color_manual(values=c("orange", "red", "lightblue", "blue")) +
+  geom_text (aes(label=id), vjust=-0.5, hjust=1, size=4, show_guide = F)+
+  theme(legend.key=element_rect(fill=NA)) +
+  scale_x_continuous (limits=c(-4, 6), breaks=-4:6) + 
+  scale_y_continuous (limits=c(-4, 4), breaks=-4:4) +
+  labs(title = title_p, x = paste("\nPC2 (", var_PC2, "% of variance)", sep=""), 
+       y=paste("PC3 (", var_PC3, "% of variance)\n", sep = "")) +
+  guides(colour = guide_legend(override.aes = list(size = 3)))+
+  theme(legend.key=element_rect(fill=NA))
+
+pca_reinstatement.pc2.pc3
+
+# keeping aspect ratio
+pca_reinstatement.pc2.pc3_aspect_ratio <- pca_reinstatement.pc2.pc3 + coord_fixed()
+
+pca_reinstatement.pc2.pc3_aspect_ratio
+
+ggsave (pca_reinstatement.pc2.pc3_aspect_ratio, file=paste(home, dir_plots, 
+                                                           "PCA_pc2_pc3_annotated_sessions.tiff", sep=""), width = 15, height = 10, dpi=dpi_q)
+
+
+
 
 ###############
 ### Circle Plot
@@ -123,8 +180,8 @@ p_circle_plot <- ggplot(circle_plot) +
                  geom_segment (data=circle_plot, aes(x=0, y=0, xend=Dim.1, yend=Dim.2), 
                  arrow=arrow(length=unit(0.2,"cm")), alpha=1, size=1, color="red") +
                  xlim (c(-1.2, 1.2)) + ylim (c(-1.2, 1.2)) +
-                 geom_text (data=neg_positions_plot, aes (x=Dim.1, y=Dim.2, label=neg_labels, hjust=1.2), show_guide = FALSE, size=5) + 
-                 geom_text (data=pos_positions_plot, aes (x=Dim.1, y=Dim.2, label=pos_labels, hjust=-0.3), show_guide = FALSE, size=5) +
+                 geom_text (data=neg_positions_plot, aes (x=Dim.1, y=Dim.2, label=neg_labels, hjust=1.2), show_guide = FALSE, size=6.5) + 
+                 geom_text (data=pos_positions_plot, aes (x=Dim.1, y=Dim.2, label=pos_labels, hjust=-0.3), show_guide = FALSE, size=6.5) +
                  geom_vline (xintercept = 0, linetype="dotted") +
                  geom_hline (yintercept=0, linetype="dotted") +
                  labs (title = "PCA of the variables\n", x = paste("\nPC1 (", var_PC1, "% of variance)", sep=""), 
@@ -159,6 +216,7 @@ p_circle_points <- ggplot(circle_plot) +
   
 p_circle_points_leg <- p_circle_points + theme(legend.text = element_text(size = 20))
 p_circle_points_leg_coord_fixed <-p_circle_points_leg + coord_fixed()
+p_circle_points_leg_coord_fixed
 
 ggsave (p_circle_points_leg_coord_fixed, file=paste(home, dir_plots, "points_circle_behavior",  ".tiff", sep=""),
         width = 15, height = 15, dpi=dpi_q)
@@ -288,8 +346,8 @@ p_circle_plot <- ggplot(circle_plot) +
   geom_segment (data=circle_plot, aes(x=0, y=0, xend=Dim.1, yend=Dim.2), 
                 arrow=arrow(length=unit(0.2,"cm")), alpha=1, size=1, color="red") +
   xlim (c(-1.2, 1.2)) + ylim (c(-1.2, 1.2)) +
-  geom_text (data=neg_positions_plot, aes (x=Dim.1, y=Dim.2, label=neg_labels, hjust=1.2), show_guide = FALSE, size=5) + 
-  geom_text (data=pos_positions_plot, aes (x=Dim.1, y=Dim.2, label=pos_labels, hjust=-0.3), show_guide = FALSE, size=5) +
+  geom_text (data=neg_positions_plot, aes (x=Dim.1, y=Dim.2, label=neg_labels, hjust=1.2), show_guide = FALSE, size=6.5) + 
+  geom_text (data=pos_positions_plot, aes (x=Dim.1, y=Dim.2, label=pos_labels, hjust=-0.3), show_guide = FALSE, size=6.5) +
   geom_vline (xintercept = 0, linetype="dotted") +
   geom_hline (yintercept=0, linetype="dotted") +
   labs (title = "PCA of the variables\n", x = paste("\nPC1 (", var_PC1, "% of variance)", sep=""), 
