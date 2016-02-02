@@ -1,3 +1,5 @@
+#!/usr/bin/env Rscript
+
 #############################################################################
 ### Jose A Espinosa. NPMMD/CB-CRG Group. Jan 2016                         ###
 #############################################################################
@@ -16,7 +18,9 @@ library(Hmisc) # arrow function
 home <- Sys.getenv("HOME")
 
 ## Dumping figures folder
-dir_plots <- "/Dropbox (CRG)/2015_reinstatement_rafa/figures/annotated_session/"
+# dir_plots <- "/Dropbox (CRG)/2015_reinstatement_rafa/figures/annotated_session/all_animals/"
+# dir_plots <- "/Dropbox (CRG)/2015_reinstatement_rafa/figures/annotated_session/free_choice/"
+dir_plots <- "/Dropbox (CRG)/2015_reinstatement_rafa/figures/annotated_session/HF/"
 
 # Loading functions:
 source (paste (home, "/git/mwm/lib/R/plot_param_public.R", sep=""))
@@ -27,13 +31,24 @@ dpi_q <- 50
 data_reinst <- read.csv (paste (home, "/Dropbox (CRG)/2015_reinstatement_rafa/data/tbl_phases_coloured2R.csv", sep=""), dec=",", sep=";")
 reinst_annotation <- read.csv (paste (home, "/Dropbox (CRG)/2015_reinstatement_rafa/data/reinstatement_annotation.csv", sep=""), dec=",", sep=";")
 
-head (data_reinst)
-head (reinst_annotation)
+# head (data_reinst)
+# head (reinst_annotation)
+
+color_v <- c("orange", "red", "lightblue", "blue")
 
 # Shaping data for PCA
 # I keep id and groups and
 # filter out all the columns that are not in the annotation tbl
 col <- as.character(reinst_annotation$Session)
+
+## FREE CHOICE ONLY
+## Filtering data to use only free choice and control animals
+# data_reinst <- data_reinst [ data_reinst$Group=="SC" | data_reinst$Group=="Cafeteria diet", ]
+## HIGH-FAT ONLY
+data_reinst <- data_reinst [ data_reinst$Group=="C1" | data_reinst$Group=="F1", ]
+color_v <- c("lightblue", "blue", "orange", "red")
+####
+
 data_reinst_filt <- subset (data_reinst, select=col)
 
 # data_reinst_filt <- cbind (data_reinst_means, subset (data_reinst, select=col))
@@ -59,7 +74,7 @@ data_reinst_means$group_lab  <- gsub ("SC", "Ctrl choc", data_reinst_means$group
 data_reinst_means$group_lab  <- gsub ("Cafeteria diet", "Choc", data_reinst_means$group_lab)
 data_reinst_means$group_lab  <- gsub ("C1", "Ctrl high fat", data_reinst_means$group_lab)
 
-cbind (data_reinst_means, ext_by_annotation)
+# cbind (data_reinst_means, ext_by_annotation)
 
 res = PCA(ext_by_annotation, scale.unit=TRUE)
 
@@ -80,7 +95,7 @@ pca2plot$group <- factor(pca2plot$group, levels=c("Ctrl choc", "Choc", "Ctrl hig
 title_p <- paste ("PCA annotated sessions reinstatement\n", sep="")
 pca_reinstatement.pc1.pc2  <- ggplot (pca2plot, aes(x=Dim.1, y=Dim.2, colour=group)) + 
                               geom_point (size = 3.5, show_guide = T) + 
-                              scale_color_manual(values=c("orange", "red", "lightblue", "blue")) +
+                              scale_color_manual(values=color_v) +
                               geom_text (aes(label=id), vjust=-0.5, hjust=1, size=4, show_guide = F)+
                               theme(legend.key=element_rect(fill=NA)) +
                               scale_x_continuous (limits=c(-4, 6), breaks=-4:6) + 
@@ -97,7 +112,7 @@ pca_reinstatement.pc1.pc2_aspect_ratio <- pca_reinstatement.pc1.pc2 + coord_fixe
 
 pca_reinstatement.pc1.pc2_aspect_ratio
 
-ggsave (pca_reinstatement_aspect_ratio, file=paste(home, dir_plots, 
+ggsave (pca_reinstatement.pc1.pc2_aspect_ratio, file=paste(home, dir_plots, 
                                                        "PCA_pc1_pc2_annotated_sessions.tiff", sep=""), width = 15, height = 10, dpi=dpi_q)
 
 #############
@@ -105,7 +120,7 @@ ggsave (pca_reinstatement_aspect_ratio, file=paste(home, dir_plots,
 title_p <- paste ("PCA annotated sessions reinstatement\n", sep="")
 pca_reinstatement.pc1.pc3  <- ggplot (pca2plot, aes(x=Dim.1, y=Dim.3, colour=group)) + 
   geom_point (size = 3.5, show_guide = T) + 
-  scale_color_manual(values=c("orange", "red", "lightblue", "blue")) +
+  scale_color_manual(values=color_v) +
   geom_text (aes(label=id), vjust=-0.5, hjust=1, size=4, show_guide = F)+
   theme(legend.key=element_rect(fill=NA)) +
   scale_x_continuous (limits=c(-4, 6), breaks=-4:6) + 
@@ -130,7 +145,7 @@ ggsave (pca_reinstatement.pc1.pc3_aspect_ratio, file=paste(home, dir_plots,
 title_p <- paste ("PCA annotated sessions reinstatement\n", sep="")
 pca_reinstatement.pc2.pc3  <- ggplot (pca2plot, aes(x=Dim.2, y=Dim.3, colour=group)) + 
   geom_point (size = 3.5, show_guide = T) + 
-  scale_color_manual(values=c("orange", "red", "lightblue", "blue")) +
+  scale_color_manual(values=color_v) +
   geom_text (aes(label=id), vjust=-0.5, hjust=1, size=4, show_guide = F)+
   theme(legend.key=element_rect(fill=NA)) +
   scale_x_continuous (limits=c(-4, 6), breaks=-4:6) + 
@@ -239,8 +254,8 @@ bars_plot_PC1 <- ggplot (data=df.bars_to_plot, aes(x=index, y=value)) +
   theme(axis.text.x=element_text(angle=45, vjust=1, hjust=1))
 bars_plot_PC1
 
-# ggsave (bars_plot_PC1, file=paste(home, dir_plots, "bars_PC1", ".tiff", sep=""),
-#         width = 15, height = 12, dpi=dpi_q)
+ggsave (bars_plot_PC1, file=paste(home, dir_plots, "bars_PC1", ".tiff", sep=""),
+        width = 15, height = 12, dpi=dpi_q)
 
 # PC2
 title_b <- paste ("Variable contribution to PC2\n", "Variance explained: ", var_PC2, "%\n", sep="")
@@ -259,8 +274,8 @@ bars_plot_PC2 <- ggplot (data=df.bars_to_plot_PC2, aes(x=index, y=value)) +
   theme (axis.text.x=element_text(angle=45, vjust=1, hjust=1))
 
 bars_plot_PC2
-# ggsave (bars_plot_PC2, file=paste(home, dir_plots, "bars_PC2", ".tiff", sep=""), 
-#         width = 15, height = 12, dpi=dpi_q)
+ggsave (bars_plot_PC2, file=paste(home, dir_plots, "bars_PC2", ".tiff",
+        sep=""), width = 15, height = 12, dpi=dpi_q)
 
 # PC3
 title_b <- paste ("Variable contribution to PC3\n", "Variance explained: ", var_PC3, "%\n", sep="")
@@ -282,8 +297,8 @@ bars_plot_PC3 <- ggplot (data=df.bars_to_plot_PC3, aes(x=index, y=value)) +
   theme (axis.text.x=element_text(angle=45, vjust=1, hjust=1))
 
 bars_plot_PC3
-# ggsave (bars_plot_PC3, file=paste(home, dir_plots, "bars_PC3", ".tiff", sep=""), 
-#         width = 15, height = 12, dpi=dpi_q)
+ggsave (bars_plot_PC3, file=paste(home, dir_plots, "bars_PC3", ".tiff", 
+        sep=""), width = 15, height = 12, dpi=dpi_q)
 
 #######################
 #######################
@@ -387,7 +402,7 @@ ggsave (p_circle_points_leg_coord_fixed, file=paste(home, dir_plots, "points_cir
         width = 15, height = 15, dpi=dpi_q)
 
 
-
+stop("Execution finished correctly")
 
 
 
