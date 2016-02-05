@@ -97,6 +97,9 @@ source ("/Users/jespinosa/git/phecomp/lib/R/plotParamPublication.R")
 # manual execution, uncomment
 # setwd("/Users/jespinosa/phecomp/20140807_pergola/bedtools_ex/starting_regions_file_vs_24h")
 
+#The bash script to generate the results is:
+# /Users/jespinosa/git/phecomp/lib/bash/bed_after_clean.sh
+
 load_tbl_measure <- function (pattern="30min_sum") {
   #print(files <- list.files(pattern=paste(pattern, ".bed$", sep="")))
   files <- list.files(pattern=paste(pattern, ".bed$", sep=""))
