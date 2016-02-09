@@ -112,8 +112,8 @@ pca_reinstatement.pc1.pc2_aspect_ratio <- pca_reinstatement.pc1.pc2 + coord_fixe
 
 pca_reinstatement.pc1.pc2_aspect_ratio
 
-ggsave (pca_reinstatement.pc1.pc2_aspect_ratio, file=paste(home, dir_plots, 
-                                                       "PCA_pc1_pc2_annotated_sessions.tiff", sep=""), width = 15, height = 10, dpi=dpi_q)
+# ggsave (pca_reinstatement.pc1.pc2_aspect_ratio, file=paste(home, dir_plots, 
+#                                                        "PCA_pc1_pc2_annotated_sessions.tiff", sep=""), width = 15, height = 10, dpi=dpi_q)
 
 #############
 # PC1 PC3
@@ -137,8 +137,8 @@ pca_reinstatement.pc1.pc3_aspect_ratio <- pca_reinstatement.pc1.pc3 + coord_fixe
 
 pca_reinstatement.pc1.pc3_aspect_ratio
 
-ggsave (pca_reinstatement.pc1.pc3_aspect_ratio, file=paste(home, dir_plots, 
-                                                   "PCA_pc1_pc3_annotated_sessions.tiff", sep=""), width = 15, height = 10, dpi=dpi_q)
+# ggsave (pca_reinstatement.pc1.pc3_aspect_ratio, file=paste(home, dir_plots, 
+#                                                    "PCA_pc1_pc3_annotated_sessions.tiff", sep=""), width = 15, height = 10, dpi=dpi_q)
 
 #############
 # PC2 PC3
@@ -162,8 +162,8 @@ pca_reinstatement.pc2.pc3_aspect_ratio <- pca_reinstatement.pc2.pc3 + coord_fixe
 
 pca_reinstatement.pc2.pc3_aspect_ratio
 
-ggsave (pca_reinstatement.pc2.pc3_aspect_ratio, file=paste(home, dir_plots, 
-                                                           "PCA_pc2_pc3_annotated_sessions.tiff", sep=""), width = 15, height = 10, dpi=dpi_q)
+# ggsave (pca_reinstatement.pc2.pc3_aspect_ratio, file=paste(home, dir_plots, 
+#                                                            "PCA_pc2_pc3_annotated_sessions.tiff", sep=""), width = 15, height = 10, dpi=dpi_q)
 
 
 
@@ -213,8 +213,8 @@ dailyInt_theme <- theme_update (axis.title.x = element_text (size=base_size * 2,
 p_circle_plot_coord_fixed <- p_circle_plot + coord_fixed()
 p_circle_plot_coord_fixed
 
-ggsave (p_circle_plot_coord_fixed, , file=paste(home, dir_plots, "circle_annotated_behavior", ".tiff", sep=""), 
-        width = 15, height = 15, dpi=dpi_q)
+# ggsave (p_circle_plot_coord_fixed, , file=paste(home, dir_plots, "circle_annotated_behavior", ".tiff", sep=""), 
+#         width = 15, height = 15, dpi=dpi_q)
 
 ####################################
 ## Same thing but without arrows
@@ -233,8 +233,8 @@ p_circle_points_leg <- p_circle_points + theme(legend.text = element_text(size =
 p_circle_points_leg_coord_fixed <-p_circle_points_leg + coord_fixed()
 p_circle_points_leg_coord_fixed
 
-ggsave (p_circle_points_leg_coord_fixed, file=paste(home, dir_plots, "points_circle_behavior",  ".tiff", sep=""),
-        width = 15, height = 15, dpi=dpi_q)
+# ggsave (p_circle_points_leg_coord_fixed, file=paste(home, dir_plots, "points_circle_behavior",  ".tiff", sep=""),
+#         width = 15, height = 15, dpi=dpi_q)
 
 ############
 ## BARPLOT
@@ -254,8 +254,8 @@ bars_plot_PC1 <- ggplot (data=df.bars_to_plot, aes(x=index, y=value)) +
   theme(axis.text.x=element_text(angle=45, vjust=1, hjust=1))
 bars_plot_PC1
 
-ggsave (bars_plot_PC1, file=paste(home, dir_plots, "bars_PC1", ".tiff", sep=""),
-        width = 15, height = 12, dpi=dpi_q)
+# ggsave (bars_plot_PC1, file=paste(home, dir_plots, "bars_PC1", ".tiff", sep=""),
+#         width = 15, height = 12, dpi=dpi_q)
 
 # PC2
 title_b <- paste ("Variable contribution to PC2\n", "Variance explained: ", var_PC2, "%\n", sep="")
@@ -274,8 +274,8 @@ bars_plot_PC2 <- ggplot (data=df.bars_to_plot_PC2, aes(x=index, y=value)) +
   theme (axis.text.x=element_text(angle=45, vjust=1, hjust=1))
 
 bars_plot_PC2
-ggsave (bars_plot_PC2, file=paste(home, dir_plots, "bars_PC2", ".tiff",
-        sep=""), width = 15, height = 12, dpi=dpi_q)
+# ggsave (bars_plot_PC2, file=paste(home, dir_plots, "bars_PC2", ".tiff",
+#         sep=""), width = 15, height = 12, dpi=dpi_q)
 
 # PC3
 title_b <- paste ("Variable contribution to PC3\n", "Variance explained: ", var_PC3, "%\n", sep="")
@@ -297,8 +297,8 @@ bars_plot_PC3 <- ggplot (data=df.bars_to_plot_PC3, aes(x=index, y=value)) +
   theme (axis.text.x=element_text(angle=45, vjust=1, hjust=1))
 
 bars_plot_PC3
-ggsave (bars_plot_PC3, file=paste(home, dir_plots, "bars_PC3", ".tiff", 
-        sep=""), width = 15, height = 12, dpi=dpi_q)
+# ggsave (bars_plot_PC3, file=paste(home, dir_plots, "bars_PC3", ".tiff", 
+#         sep=""), width = 15, height = 12, dpi=dpi_q)
 
 #######################
 #######################
@@ -307,7 +307,8 @@ ggsave (bars_plot_PC3, file=paste(home, dir_plots, "bars_PC3", ".tiff",
 #######################
 
 reinst_annotation_1_1 <- read.csv (paste (home, "/Dropbox (CRG)/2015_reinstatement_rafa/data/reinst_annotation_1to1.csv", sep=""), dec=",", sep=";")
-
+write.table(as.data.frame(t(reinst_annotation_1_1)), "/Users/jespinosa/Dropbox (Personal)/presentations_2016/20160210_GM_Mara/t_annot.csv",
+            sep=";", row.names=TRUE, col.names=FALSE)
 ext_by_annotation
 colnames(ext_by_annotation)
 
