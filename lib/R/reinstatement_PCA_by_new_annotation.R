@@ -19,7 +19,8 @@ home <- Sys.getenv("HOME")
 
 ## Dumping figures folder
 # dir_plots <- "/Dropbox (CRG)/2015_reinstatement_rafa/figures/annotated_session/HF/"
-dir_plots <- "/Dropbox (CRG)/2015_reinstatement_rafa/figures/annotated_session/all_animals/"
+# dir_plots <- "/Dropbox (CRG)/2015_reinstatement_rafa/figures/annotated_session/all_animals/"
+dir_plots <- "/Dropbox (CRG)/2015_reinstatement_rafa/figures/new_annotated_session/"
 
 # Loading functions:
 source (paste (home, "/git/mwm/lib/R/plot_param_public.R", sep=""))
@@ -33,18 +34,6 @@ reinst_annotation$N
 # head (data_reinst)
 # head (reinst_annotation)
 
-color_v <- c("orange", "red", "lightblue", "blue")
-
-# # Shaping data for PCA
-# # I keep id and groups and
-# # filter out all the columns that are not in the annotation tbl
-# col <- as.character(reinst_annotation$Session)
-# 
-# ## FREE CHOICE ONLY
-# ## Filtering data to use only free choice and control animals
-# # data_reinst <- data_reinst [ data_reinst$Group=="SC" | data_reinst$Group=="Cafeteria diet", ]
-# ## HIGH-FAT ONLY
-# # data_reinst <- data_reinst [ data_reinst$Group=="C1" | data_reinst$Group=="F1", ]
 
 color_v <- c("orange", "red", "lightblue", "blue")
 
@@ -52,22 +41,6 @@ color_v <- c("orange", "red", "lightblue", "blue")
 ## All columns but mouse id and group
 data_reinst_filt <- subset (data_reinst, select=-c(1,2))
 
-# data_reinst_filt <- cbind (data_reinst_means, subset (data_reinst, select=col))
-
-# # Mejor asi porque tengo la anotacion
-# ext_by_annotation_t <- ddply(reinst_annotation, c("Annotation"), function(x) { 
-#   rowMeans(subset(data_reinst_filt, select =as.character(x$Session)))
-# })
-# 
-# ext_by_annotation_t
-# 
-# # Drop first column with labels:
-# ext_by_annotation_t_no_lab <- ext_by_annotation_t [,-1]
-# ext_by_annotation <- as.data.frame(t(ext_by_annotation_t_no_lab), stringsAsFactors=FALSE)
-# class(ext_by_annotation[,1])
-# colnames(ext_by_annotation) <- ext_by_annotation_t$Annotation
-# 
-# # Adding a column with labels of the group as we want them in the plots
 data_reinst_means <- subset(data_reinst, select = c("subject"))
 
 data_reinst_means$group_lab  <- gsub ("F1", "High fat", data_reinst$Group)
@@ -110,7 +83,13 @@ pca_reinstatement.pc1.pc2  <- ggplot (pca2plot, aes(x=Dim.1, y=Dim.2, colour=gro
 pca_reinstatement.pc1.pc2
 
 # keeping aspect ratio
-pca_reinstatement.pc1.pc2_aspect_ratio <- pca_reinstatement.pc1.pc2 + coord_fixed()
+pca_reinstatement.pc1.pc2_aspect_ratio <- pca_reinstatement.pc1.pc2 + coord_fixed() + 
+                                          theme(plot.title = element_text(size=22)) + 
+                                          theme(axis.title.x = element_text(size =22)) +
+                                          theme(axis.title.y = element_text(size =22)) +
+                                          guides(color=guide_legend(guide_legend(title = "Group"))) +
+                                          theme (legend.text=element_text(size=18), legend.key = element_blank(), 
+                                                 legend.title=element_text(size=20))  
 
 pca_reinstatement.pc1.pc2_aspect_ratio
 
@@ -135,7 +114,13 @@ pca_reinstatement.pc1.pc3  <- ggplot (pca2plot, aes(x=Dim.1, y=Dim.3, colour=gro
 pca_reinstatement.pc1.pc3
 
 # keeping aspect ratio
-pca_reinstatement.pc1.pc3_aspect_ratio <- pca_reinstatement.pc1.pc3 + coord_fixed()
+pca_reinstatement.pc1.pc3_aspect_ratio <- pca_reinstatement.pc1.pc3 + coord_fixed() +
+                                          theme(plot.title = element_text(size=22)) + 
+                                          theme(axis.title.x = element_text(size =22)) +
+                                          theme(axis.title.y = element_text(size =22)) +
+                                          guides(color=guide_legend(guide_legend(title = "Group"))) +
+                                          theme (legend.text=element_text(size=18), legend.key = element_blank(), 
+                                                 legend.title=element_text(size=20))  
 
 pca_reinstatement.pc1.pc3_aspect_ratio
 
@@ -160,16 +145,20 @@ pca_reinstatement.pc2.pc3  <- ggplot (pca2plot, aes(x=Dim.2, y=Dim.3, colour=gro
 pca_reinstatement.pc2.pc3
 
 # keeping aspect ratio
-pca_reinstatement.pc2.pc3_aspect_ratio <- pca_reinstatement.pc2.pc3 + coord_fixed()
+pca_reinstatement.pc2.pc3_aspect_ratio <- pca_reinstatement.pc2.pc3 + coord_fixed() +
+                                          theme(plot.title = element_text(size=22)) + 
+                                          theme(axis.title.x = element_text(size =22)) +
+                                          theme(axis.title.y = element_text(size =22)) +
+                                          guides(color=guide_legend(guide_legend(title = "Group"))) +
+                                          theme (legend.text=element_text(size=18), legend.key = element_blank(), 
+                                                 legend.title=element_text(size=20))  
+
+
 
 pca_reinstatement.pc2.pc3_aspect_ratio
 
 # ggsave (pca_reinstatement.pc2.pc3_aspect_ratio, file=paste(home, dir_plots, 
 #                                                            "PCA_pc2_pc3_annotated_sessions.tiff", sep=""), width = 15, height = 10, dpi=dpi_q)
-
-
-reinst_annotation$Group_color
-data_reinst[,c(1,2)]
 
 ###############
 ### Circle Plot
@@ -194,8 +183,6 @@ neg_positions_plot <- neg_positions
 neg_positions_plot$Dim.1 <- neg_positions$Dim.1 + 0.1
 neg_positions_plot$Dim.2 <- neg_positions$Dim.2 + 0.05
 
-#========================================
-# Plotting the variables by experimental phase
 circle_plot$var <- rownames (circle_plot)
 
 ## Are all var in circle_plot equal to annotations in the table to set behavioral annotation
@@ -203,18 +190,34 @@ all.equal(circle_plot$var, as.vector(reinst_annotation$tbl_name))
 circle_plot$annot_gr <- reinst_annotation$Group_color
 
 p_circle_plot <- ggplot(circle_plot) + 
-  geom_segment (data=circle_plot, aes(x=0, y=0, xend=Dim.1, yend=Dim.2), 
-                arrow=arrow(length=unit(0.2,"cm")), alpha=1, size=1, colour="red") +
-  xlim (c(-1.2, 1.2)) + ylim (c(-1.2, 1.2)) +
-  geom_text (data=neg_positions_plot, aes (x=Dim.1, y=Dim.2, label=neg_labels, hjust=1.2), show.legend = FALSE, size=6.5) + 
-  geom_text (data=pos_positions_plot, aes (x=Dim.1, y=Dim.2, label=pos_labels, hjust=-0.3), show.legend = FALSE, size=6.5) +
-  geom_vline (xintercept = 0, linetype="dotted") +
-  geom_hline (yintercept=0, linetype="dotted") +
-  labs (title = "PCA of the variables\n", x = paste("\nPC1 (", var_PC1, "% of variance)", sep=""), 
-        y=paste("PC2 (", var_PC2, "% of variance)\n", sep = "")) +
-  geom_polygon (data = df.circle, aes(x, y), alpha=1, colour="black", fill=NA, size=1)
+                 geom_segment (data=circle_plot, aes(x=0, y=0, xend=Dim.1, yend=Dim.2), 
+                 arrow=arrow(length=unit(0.2,"cm")), alpha=1, size=1, colour="red") +
+                 xlim (c(-1.2, 1.2)) + ylim (c(-1.2, 1.2)) +
+                 geom_text (data=neg_positions_plot, aes (x=Dim.1, y=Dim.2, label=neg_labels, hjust=1.2), show.legend = FALSE, size=6.5) + 
+                 geom_text (data=pos_positions_plot, aes (x=Dim.1, y=Dim.2, label=pos_labels, hjust=-0.3), show.legend = FALSE, size=6.5) +
+                 geom_vline (xintercept = 0, linetype="dotted") +
+                 geom_hline (yintercept=0, linetype="dotted") +
+                 labs (title = "PCA of the variables\n", x = paste("\nPC1 (", var_PC1, "% of variance)", sep=""), 
+                       y=paste("PC2 (", var_PC2, "% of variance)\n", sep = "")) +
+                 geom_polygon (data = df.circle, aes(x, y), alpha=1, colour="black", fill=NA, size=1)
 
 p_circle_plot
+
+# base_size <- 12
+# p_circle_plot
+# 
+# dailyInt_theme <- theme_update (axis.title.x = element_text (size=base_size * 2, face="bold"),
+#                                 axis.title.y = element_text (size=base_size * 2, angle = 90, face="bold"),
+#                                 plot.title = element_text (size=base_size * 2, face="bold"))
+
+p_circle_plot_coord_fixed <- p_circle_plot + coord_fixed() + 
+  theme(plot.title = element_text(size=22)) + 
+  theme(axis.title.x = element_text(size =22)) +
+  theme(axis.title.y = element_text(size =22))
+p_circle_plot_coord_fixed
+
+# ggsave (p_circle_plot_coord_fixed, file=paste(home, dir_plots, "circle_annotated_behavior", ".tiff", sep=""), 
+#         width = 15, height = 15, dpi=dpi_q)
 
 # The palette with grey:
 cbPalette <- c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
@@ -225,30 +228,33 @@ cb_palette_adapt <- c("#999999", "#CC79A7", "#009E73", "#E69F00", "#0072B2", "#D
 ## Plotting by type of behavioral annotation
 p_circle_plot_by_gr <- ggplot(circle_plot) + 
                        geom_segment (data=circle_plot, aes(colour=annot_gr, x=0, y=0, xend=Dim.1, yend=Dim.2), 
-                                     arrow=arrow(length=unit(0.2,"cm")), alpha=1, size=1) +
-                       xlim (c(-1.2, 1.2)) + ylim (c(-1.2, 1.2)) +
+                                     arrow=arrow(length=unit(0.35,"cm")), alpha=1, size=2) +
+                       scale_x_continuous(limits=c(-1.3, 1.3), breaks=(c(-1,0,1))) +
+                       scale_y_continuous(limits=c(-1.3, 1.3), breaks=(c(-1,0,1))) +
+#                        xlim (c(-1.2, 1.2)) + ylim (c(-1.2, 1.2)) +
                        scale_color_manual(values = cb_palette_adapt) +
-                       geom_text (data=neg_positions_plot, aes (x=Dim.1, y=Dim.2, label=neg_labels, hjust=1.2), show.legend = FALSE, size=6.5) + 
-                       geom_text (data=pos_positions_plot, aes (x=Dim.1, y=Dim.2, label=pos_labels, hjust=-0.3), show.legend = FALSE, size=6.5) +
+                       geom_text (data=neg_positions_plot, aes (x=Dim.1, y=Dim.2, label=neg_labels, hjust=1.2), show.legend = FALSE, size=7.5) + 
+                       geom_text (data=pos_positions_plot, aes (x=Dim.1, y=Dim.2, label=pos_labels, hjust=-0.3), show.legend = FALSE, size=7.5) +
                        geom_vline (xintercept = 0, linetype="dotted") +
                        geom_hline (yintercept=0, linetype="dotted") +
                        labs (title = "PCA of the variables\n", x = paste("\nPC1 (", var_PC1, "% of variance)", sep=""), 
                              y=paste("PC2 (", var_PC2, "% of variance)\n", sep = "")) +
-                       geom_polygon (data = df.circle, aes(x, y), alpha=1, colour="black", fill=NA, size=1)
+                       geom_polygon (data = df.circle, aes(x, y), alpha=1, colour="black", fill=NA, size=1) +
+                       guides(color=guide_legend(guide_legend(title = "Annotation"))) +
+                       theme (legend.text=element_text(size=18), legend.key = element_blank(), 
+                              legend.title=element_text(size=20))                       
 
 p_circle_plot_by_gr
 
-base_size <- 10
-p_circle_plot
+p_circle_plot_by_gr_coord_fixed <- p_circle_plot_by_gr + coord_fixed() + 
+                                   guides(color=guide_legend(guide_legend(title = "Annotation"))) +
+                                   theme(legend.key = element_blank()) +
+                                   theme(plot.title = element_text(size=30)) + 
+                                   theme(axis.title.x = element_text(size=30)) +
+                                   theme(axis.title.y = element_text(size=30))
+p_circle_plot_by_gr_coord_fixed 
 
-dailyInt_theme <- theme_update (axis.title.x = element_text (size=base_size * 2, face="bold"),
-                                axis.title.y = element_text (size=base_size * 2, angle = 90, face="bold"),
-                                plot.title = element_text (size=base_size * 2, face="bold"))
-
-p_circle_plot_coord_fixed <- p_circle_plot + coord_fixed()
-p_circle_plot_coord_fixed
-
-# ggsave (p_circle_plot_coord_fixed, , file=paste(home, dir_plots, "circle_annotated_behavior", ".tiff", sep=""), 
+# ggsave (p_circle_plot_by_gr_coord_fixed, file=paste(home, dir_plots, "circle_annotated_beh_coloured_by_gr", ".tiff", sep=""), 
 #         width = 15, height = 15, dpi=dpi_q)
 
 ####################################
