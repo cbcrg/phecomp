@@ -20,16 +20,20 @@ home <- Sys.getenv("HOME")
 ## Dumping figures folder
 # dir_plots <- "/Dropbox (CRG)/2015_reinstatement_rafa/figures/annotated_session/HF/"
 # dir_plots <- "/Dropbox (CRG)/2015_reinstatement_rafa/figures/annotated_session/all_animals/"
-dir_plots <- "/Dropbox (CRG)/2015_reinstatement_rafa/figures/new_annotated_session/"
+# dir_plots <- "/Dropbox (CRG)/2015_reinstatement_rafa/figures/annotated_session_20160211/"
+dir_plots <- "/Dropbox (CRG)/2015_reinstatement_rafa/figures/annotated_session_20160217/"
 
 # Loading functions:
 source (paste (home, "/git/mwm/lib/R/plot_param_public.R", sep=""))
 
 # Parameter to set plot qualities
 dpi_q <- 50
+/Users/jespinosa/Dropbox (CRG)/2015_reinstatement_rafa/data/annot_descriptors_17_02_16.csv
+# data_reinst <- read.csv (paste (home, "/Dropbox (CRG)/2015_reinstatement_rafa/data/reinstatement_11_02_16.csv", sep=""), dec=",", sep=";")
+# reinst_annotation <- read.csv (paste (home, "/Dropbox (CRG)/2015_reinstatement_rafa/data/annot_descriptors_11_02_16.csv", sep=""), dec=",", sep=";")
+data_reinst <- read.csv (paste (home, "/Dropbox (CRG)/2015_reinstatement_rafa/data/reinstatement_17_02_16.csv", sep=""), dec=",", sep=";")
+reinst_annotation <- read.csv (paste (home, "/Dropbox (CRG)/2015_reinstatement_rafa/data/annot_descriptors_17_02_16.csv", sep=""), dec=",", sep=";")
 
-data_reinst <- read.csv (paste (home, "/Dropbox (CRG)/2015_reinstatement_rafa/data/reinstatement_11_02_16.csv", sep=""), dec=",", sep=";")
-reinst_annotation <- read.csv (paste (home, "/Dropbox (CRG)/2015_reinstatement_rafa/data/annot_descriptors_11_02_16.csv", sep=""), dec=",", sep=";")
 reinst_annotation$N
 # head (data_reinst)
 # head (reinst_annotation)
@@ -73,9 +77,11 @@ pca_reinstatement.pc1.pc2  <- ggplot (pca2plot, aes(x=Dim.1, y=Dim.2, colour=gro
   scale_color_manual(values=color_v) +
   geom_text (aes(label=id), vjust=-0.5, hjust=1, size=4, show.legend = F)+
   theme(legend.key=element_rect(fill=NA)) +
-  scale_x_continuous (limits=c(-4, 6), breaks=-4:6) + 
+  scale_x_continuous (limits=c(-4, 6.1), breaks=-4:6) + 
   scale_y_continuous (limits=c(-4, 4), breaks=-4:4) +
-  labs(title = title_p, x = paste("\nPC1 (", var_PC1, "% of variance)", sep=""), 
+#   labs(title = title_p, x = paste("\nPC1 (", var_PC1, "% of variance)", sep=""), 
+#        y=paste("PC2 (", var_PC2, "% of variance)\n", sep = "")) +
+  labs(x = paste("\nPC1 (", var_PC1, "% of variance)", sep=""), 
        y=paste("PC2 (", var_PC2, "% of variance)\n", sep = "")) +
   guides(colour = guide_legend(override.aes = list(size = 3)))+
   theme(legend.key=element_rect(fill=NA))
@@ -93,8 +99,8 @@ pca_reinstatement.pc1.pc2_aspect_ratio <- pca_reinstatement.pc1.pc2 + coord_fixe
 
 pca_reinstatement.pc1.pc2_aspect_ratio
 
-# ggsave (pca_reinstatement.pc1.pc2_aspect_ratio, file=paste(home, dir_plots, 
-#                                                        "PCA_pc1_pc2_annotated_sessions.tiff", sep=""), width = 15, height = 10, dpi=dpi_q)
+ggsave (pca_reinstatement.pc1.pc2_aspect_ratio, file=paste(home, dir_plots, 
+                                                       "PCA_pc1_pc2_annotated_sessions.tiff", sep=""), width = 15, height = 10, dpi=dpi_q)
 
 #############
 # PC1 PC3
@@ -104,9 +110,11 @@ pca_reinstatement.pc1.pc3  <- ggplot (pca2plot, aes(x=Dim.1, y=Dim.3, colour=gro
   scale_color_manual(values=color_v) +
   geom_text (aes(label=id), vjust=-0.5, hjust=1, size=4, show.legend = F)+
   theme(legend.key=element_rect(fill=NA)) +
-  scale_x_continuous (limits=c(-4, 6), breaks=-4:6) + 
+  scale_x_continuous (limits=c(-4, 6.1), breaks=-4:6) + 
   scale_y_continuous (limits=c(-4, 4), breaks=-4:4) +
-  labs(title = title_p, x = paste("\nPC1 (", var_PC1, "% of variance)", sep=""), 
+#   labs(title = title_p, x = paste("\nPC1 (", var_PC1, "% of variance)", sep=""), 
+#        y=paste("PC3 (", var_PC3, "% of variance)\n", sep = "")) +
+  labs(x = paste("\nPC1 (", var_PC1, "% of variance)", sep=""), 
        y=paste("PC3 (", var_PC3, "% of variance)\n", sep = "")) +
   guides(colour = guide_legend(override.aes = list(size = 3)))+
   theme(legend.key=element_rect(fill=NA))
@@ -124,8 +132,8 @@ pca_reinstatement.pc1.pc3_aspect_ratio <- pca_reinstatement.pc1.pc3 + coord_fixe
 
 pca_reinstatement.pc1.pc3_aspect_ratio
 
-# ggsave (pca_reinstatement.pc1.pc3_aspect_ratio, file=paste(home, dir_plots, 
-#                                                    "PCA_pc1_pc3_annotated_sessions.tiff", sep=""), width = 15, height = 10, dpi=dpi_q)
+ggsave (pca_reinstatement.pc1.pc3_aspect_ratio, file=paste(home, dir_plots, 
+                                                   "PCA_pc1_pc3_annotated_sessions.tiff", sep=""), width = 15, height = 10, dpi=dpi_q)
 
 #############
 # PC2 PC3
@@ -137,7 +145,9 @@ pca_reinstatement.pc2.pc3  <- ggplot (pca2plot, aes(x=Dim.2, y=Dim.3, colour=gro
   theme(legend.key=element_rect(fill=NA)) +
   scale_x_continuous (limits=c(-4, 6), breaks=-4:6) + 
   scale_y_continuous (limits=c(-4, 4), breaks=-4:4) +
-  labs(title = title_p, x = paste("\nPC2 (", var_PC2, "% of variance)", sep=""), 
+#   labs(title = title_p, x = paste("\nPC2 (", var_PC2, "% of variance)", sep=""), 
+#        y=paste("PC3 (", var_PC3, "% of variance)\n", sep = "")) +
+  labs(x = paste("\nPC2 (", var_PC2, "% of variance)", sep=""), 
        y=paste("PC3 (", var_PC3, "% of variance)\n", sep = "")) +
   guides(colour = guide_legend(override.aes = list(size = 3)))+
   theme(legend.key=element_rect(fill=NA))
@@ -157,8 +167,8 @@ pca_reinstatement.pc2.pc3_aspect_ratio <- pca_reinstatement.pc2.pc3 + coord_fixe
 
 pca_reinstatement.pc2.pc3_aspect_ratio
 
-# ggsave (pca_reinstatement.pc2.pc3_aspect_ratio, file=paste(home, dir_plots, 
-#                                                            "PCA_pc2_pc3_annotated_sessions.tiff", sep=""), width = 15, height = 10, dpi=dpi_q)
+ggsave (pca_reinstatement.pc2.pc3_aspect_ratio, file=paste(home, dir_plots, 
+                                                           "PCA_pc2_pc3_annotated_sessions.tiff", sep=""), width = 15, height = 10, dpi=dpi_q)
 
 ###############
 ### Circle Plot
@@ -216,8 +226,8 @@ p_circle_plot_coord_fixed <- p_circle_plot + coord_fixed() +
   theme(axis.title.y = element_text(size =22))
 p_circle_plot_coord_fixed
 
-# ggsave (p_circle_plot_coord_fixed, file=paste(home, dir_plots, "circle_annotated_behavior", ".tiff", sep=""), 
-#         width = 15, height = 15, dpi=dpi_q)
+ggsave (p_circle_plot_coord_fixed, file=paste(home, dir_plots, "circle_annotated_behavior", ".tiff", sep=""), 
+        width = 15, height = 15, dpi=dpi_q)
 
 # The palette with grey:
 cbPalette <- c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
@@ -254,8 +264,8 @@ p_circle_plot_by_gr_coord_fixed <- p_circle_plot_by_gr + coord_fixed() +
                                    theme(axis.title.y = element_text(size=30))
 p_circle_plot_by_gr_coord_fixed 
 
-# ggsave (p_circle_plot_by_gr_coord_fixed, file=paste(home, dir_plots, "circle_annotated_beh_coloured_by_gr", ".tiff", sep=""), 
-#         width = 15, height = 15, dpi=dpi_q)
+ggsave (p_circle_plot_by_gr_coord_fixed, file=paste(home, dir_plots, "circle_annotated_beh_coloured_by_gr", ".tiff", sep=""), 
+        width = 15, height = 15, dpi=dpi_q)
 
 ####################################
 ## Same thing but without arrows
