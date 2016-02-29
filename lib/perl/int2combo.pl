@@ -260,29 +260,30 @@ sub display_data
 
     if ($A->{output}!~/R/)
       {	
-	print $F "$HEADER";
-	foreach my $c (sort ({$a<=>$b}keys(%$d)))
-	  {
-	    foreach my $i (sort {$a<=>$b}keys (%{$d->{$c}}))
-	      {
-		print $F "#d;";
-		foreach my $k (sort (keys (%{$d->{$c}{$i}})))
+		print $F "$HEADER";
+		foreach my $c (sort ({$a<=>$b}keys(%$d)))
 		  {
-		    print $F "$k;$d->{$c}{$i}{$k};";
+		    foreach my $i (sort {$a<=>$b}keys (%{$d->{$c}}))
+		      {
+				print $F "#d;";
+					foreach my $k (sort (keys (%{$d->{$c}{$i}})))
+			  			{
+			    			print $F "$k;$d->{$c}{$i}{$k};";
+			  			}
+					
+					print $F "\n";
+		      }
 		  }
-		print $F "\n";
-	      }
-	  }
-	close ($F);
-      }
+		 close ($F);
+     }
     else
       {
-	&data2R_header($d);
-	&data2R_records($d);
+		&data2R_header($d);
+		&data2R_records($d);
 	
-	close ($F);
+		close ($F);
       }
-  }
+  	}
 
 sub parse_data
   {
