@@ -159,7 +159,7 @@ process int_to_pergola {
 //    set file('all_mice.chromsizes') into chromsizes
     
     """
-    pergola_rules.py -i $f_csv -o $correspondence_f -f bed -nh -s 'cage' 'start_time' 'end_time' 'nature' 'value' -e -d all
+    pergola_rules.py -i $f_csv -m $correspondence_f -f bed -nh -s 'cage' 'start_time' 'end_time' 'nature' 'value' -e -d all
     # tail -1 $f_csv | awk '{OFS="\t"; print "chr1", \$3-1335985200}' > all_mice.chromsizes
     """    
 } 

@@ -10,7 +10,7 @@
 //params.experiment = '20120502_FDF_CRG'
 //params.exp_date = '*'
 // ./nextflow main.nxf --exp_date '20120523*'
-//./nextflow int2hmm.nxf --window 'culo'
+//./nextflow int2hmm.nxf --window 'Value'
 
 // params.in = "$HOME/phecomp/nxf_test/short.int"
 params.in = "$HOME/phecomp/processedData/20120502_FDF_CRG/intFiles/20120502_FDF_CRG_hab_filt.int"
@@ -122,7 +122,7 @@ process int2binFile {
  input:
  file 'input' from intFiles
  
- // No tengo output ese es el problema debería dejar que se crearan y entonces recogerlos como se tenga que hacer
+ // No tengo output ese es el problema deberï¿½a dejar que se crearan y entonces recogerlos como se tenga que hacer
  output:
  file '*.hmm' into bin_fileAll 
  
@@ -281,7 +281,7 @@ resultDirDev.with {
 //  input:
 //  file 'inputDev' from intFilesDev
 //  
-//  // No tengo output ese es el problema debería dejar que se crearan y entonces recogerlos como se tenga que hacer
+//  // No tengo output ese es el problema deberï¿½a dejar que se crearan y entonces recogerlos como se tenga que hacer
 //  output:
 //  file '*.hmm' into bin_fileDevAll 
 //  
