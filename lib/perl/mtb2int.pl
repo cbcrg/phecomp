@@ -606,17 +606,42 @@ sub mtb2header
       {  
       	 #Does not work returns 0
          #$time=$header{$file}{"HEADER"}{'EHEADER'}{'StartStamp'}=str2time(&header2value("Date and time", \%header, $file));
-         
+         my $src_format;
+                  
          my $date_time = &header2value("Date and time", \%header, $file);
-         $date_time =~ s/\//-/g;
+         
+         # There are two types of data depending if mtb files are older than 2015: 17/09/2014 10:06:39
+         # or newer 9/15/2015 10:13:06 AM 
+         
+		 if ($date_time =~ m/^(\d+)\/(\d+)\/(\d+)*/g)
+		 	{
+		 		if ($3 <= 2014)          
+	         		{	         			
+	         			$src_format = DateTime::Format::Strptime->new(
+	   		    		pattern   => '%d-%m-%Y %H:%M:%S',
+	   		    		time_zone => 'local',
+	   		    		on_error  => 'croak',
+			 			); 
+	         		}
+	         	else 
+	         		{
+	         			$src_format = DateTime::Format::Strptime->new(
+	   		    		pattern   => '%m-%d-%Y %H:%M:%S',
+	   		    		time_zone => 'local',
+	   		    		on_error  => 'croak',
+			 			); 
+	         		}
+		 	}
+		 else
+		 	{
+		 		print STDERR "Date format from mtb not recognized\n";
+		 		die;
+		 	}
+
          # Declaration of time format, I substitute "/" by - because otherwise was not working"
-         # I maintain hyphens because otherwise was a problem with leading zeros         
-         my $src_format = DateTime::Format::Strptime->new(
-   		    pattern   => '%m-%d-%Y %H:%M:%S',
-   		    time_zone => 'local',
-   		    on_error  => 'croak',
-		 ); 
-		 
+         # I maintain hyphens because otherwise was a problem with leading zeros	
+         $date_time =~ s/\//-/g;
+                          
 		 my $dt = $src_format->parse_datetime($date_time);
 		 my $mtb_epoch_time = $dt->epoch;
 		 
