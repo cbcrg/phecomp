@@ -34,6 +34,8 @@
 use HTTP::Date; #CPAN str2time()=> time conversion function different time format --> machine time (seconds since EPOCH)
 use File::Compare; #File comparison
 use Data::Dumper;
+use DateTime;
+use DateTime::Format::Strptime;
 use strict;
 use FileHandle;
 
@@ -271,8 +273,6 @@ sub array2hash
 
     return $A;
   }
-
-#######end modification - 02/09/2010##############
 
 sub process_mbt
   {
@@ -604,10 +604,27 @@ sub mtb2header
       }
     else
       {  
-         $time=$header{$file}{"HEADER"}{'EHEADER'}{'StartStamp'}=str2time(&header2value("Date and time", \%header, $file));         
+      	 #Does not work returns 0
+         #$time=$header{$file}{"HEADER"}{'EHEADER'}{'StartStamp'}=str2time(&header2value("Date and time", \%header, $file));
+         
+         my $date_time = &header2value("Date and time", \%header, $file);
+         $date_time =~ s/\//-/g;
+         # Declaration of time format, I substitute "/" by - because otherwise was not working"
+         # I maintain hyphens because otherwise was a problem with leading zeros         
+         my $src_format = DateTime::Format::Strptime->new(
+   		    pattern   => '%m-%d-%Y %H:%M:%S',
+   		    time_zone => 'local',
+   		    on_error  => 'croak',
+		 ); 
+		 
+		 my $dt = $src_format->parse_datetime($date_time);
+		 my $mtb_epoch_time = $dt->epoch;
+		 
+		 $time = $header{$file}{"HEADER"}{'EHEADER'}{'StartStamp'} = $mtb_epoch_time;  
+		 
+		 print STDERR "Time in mtb file $date_time\tcorresponds to EPOCH******************** $mtb_epoch_time\n";
+		        
       }
-    
-    #print Dumper (%header);die;#del
       
     return %header;
   }
@@ -1217,7 +1234,8 @@ sub timeEvaluation
     
     foreach my $file (@$ary_files)
       {
-        $MTBTime = %dummyData->{$file}{"HEADER"}{'EHEADER'}{'StartStamp'};
+#        $MTBTime = %dummyData->{$file}{"HEADER"}{'EHEADER'}{'StartStamp'};
+        $MTBTime = $dummyData{$file}{"HEADER"}{'EHEADER'}{'StartStamp'};
         $MTBTimeString = time2str($MTBTime);
         $tacTime = exists ($H_times->{$file})? $H_times->{$file} : "NA";
         $timeDiff = $tacTime - $MTBTime;
