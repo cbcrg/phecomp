@@ -868,10 +868,11 @@ sub mtb2parse
 
 sub display_header 
   {
-    my ($hr)=shift;
+    my ($hr) = shift;
     my $f= shift;
     my %h = %$hr;
-
+ 	my $ncages = $h{$f}{'HEADER'}{'EHEADER'}{'Ncages'};
+ 	
     foreach my $k1 (keys (%{$h{$f}}))
       {
          if ($k1 eq "INTERVALS"){next;}
@@ -879,8 +880,17 @@ sub display_header
          foreach my $k2 (keys (%{$h{$f}{$k1}} ))
            {
              foreach my $k3 (keys (%{$h{$f}{$k1}{$k2}}))
-               {
-                  print "#h;$f;$k1;$k2;$k3;$h{$f}{$k1}{$k2}{$k3}\n";
+               {               	  
+               	  if ($k1 eq "[ANIMALS DATA]" && $switch_rename && $ncages == 6) 
+               	  	{               	 
+               	  		my $shifted_id = $k2+12;		
+               	  		print "#h;$f;$k1;$shifted_id;$k3;$h{$f}{$k1}{$k2}{$k3}\n";
+               	  	}
+               	  else
+               	  	{
+                  		print "#h;$f;$k1;$k2;$k3;$h{$f}{$k1}{$k2}{$k3}\n";
+               	  	}
+                  	
                }
            }
       }
