@@ -33,6 +33,7 @@
 ###                                   in the time interval between first interval and time          ###
 ###                                   specified by t                                                ###
 ### -iniFilter <>                  -> Filters out every interval tag with "iniFile"                 ###
+### -out shiftCages <n>            -> A numeric value to shift the annotation of cages              ###
 #######################################################################################################
 
 use HTTP::Date;
@@ -254,10 +255,10 @@ sub display_data
     #my $file=shift;
     my $file=$A->{outdata};
     my $F= new FileHandle;
-
+	
     if (!$file){open ($F, ">-");}
     else {open ($F, ">$file");}
-
+	
     if ($A->{output}!~/R/)
       {	
 		print $F "$HEADER";
@@ -268,7 +269,16 @@ sub display_data
 				print $F "#d;";
 					foreach my $k (sort (keys (%{$d->{$c}{$i}})))
 			  			{
-			    			print $F "$k;$d->{$c}{$i}{$k};";
+			  				
+			  				if ($k eq "CAGE" && $A->{shiftCages})
+			  					{
+			  						my $shift_cage = $d->{$c}{$i}{$k} + $A->{shiftCages};
+			  				 		print $F "$k;$shift_cage;"; 		    					
+			  					}
+			  				 else 
+			  				 	{	
+			  				 		print $F "$k;$d->{$c}{$i}{$k};";			  				 		
+			  				 	}
 			  			}
 					
 					print $F "\n";
@@ -4364,26 +4374,26 @@ sub data2R_records
 	{
 	  my $d = shift;
 	  foreach my $c (sort ({$a<=>$b}keys(%$d)))
-	  { 
-	    foreach my $i (sort {$a<=>$b}keys (%{$d->{$c}}))
-	      {
-		my $first=0;
-				foreach my $k (sort (keys (%{$d->{$c}{$i}})))
-		  {
-		    if ($first == 0) 
-		      {
-			print "$d->{$c}{$i}{$k}"; 
-			$first=1;
-		      }
-		    else 
-		      {
-			print "\t$d->{$c}{$i}{$k}";
-		      }		     
-		  }		
-		print "\n";
-	      }	    
-	  }
-	}
+	  	{ 
+	    	foreach my $i (sort {$a<=>$b}keys (%{$d->{$c}}))
+	      		{
+					my $first=0;
+					foreach my $k (sort (keys (%{$d->{$c}{$i}})))
+		  				{
+		    				if ($first == 0) 
+		      					{	 
+									print "$d->{$c}{$i}{$k}"; 
+									$first=1;
+		      					}
+		    				else 
+		      					{
+									print "\t$d->{$c}{$i}{$k}";
+		      					}		     
+		  				}		
+					print "\n";
+	      		}	    
+	  		}
+		}
 
 #################################################################
 #READ_MODEL
