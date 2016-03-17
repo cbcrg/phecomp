@@ -54,6 +54,7 @@ my $d={};
 my $M={};
 my $A={};
 my %WEIGHT;
+my %WEIGHT_FILE;
 my $file=shift (@ARGV);
 my $cl=join(" ", @ARGV);
 our $mailTime = time ();
@@ -118,7 +119,11 @@ sub run_instruction
     elsif ($c=~/^iniFileTag/)
     {
       $d = &tagIniFile ($d, $A);  
-    }      	   
+    }
+    elsif ($c=~/^weight/)
+    	{
+      		$d = &read_weight ($d, $A);  
+    	}        	   
              
 #    option to rename cage 6 from 13 to 18          
 #    elsif ($c=~/^rename/)
@@ -248,7 +253,35 @@ foreach my $diet (("sc_","cd_"))
       }
   }
 print "\n\n\n";
+sub read_weight
+	{
+##########
+    	my $d = shift;
+    	my $A = shift;
 
+    	my $file_w = $A->{'weight_f'};
+    	my $F=new FileHandle;
+    	print "=======$file_w";
+    	open($F, $file_w);
+    	
+    	while (<$F>)
+      	{
+    		my $line=$_;
+    		chomp $line;
+    		my @ary_line = split (";", $line);		
+#			print Dumper @ary_line;
+
+			my $mtb_file = $ary_line[0];
+			$ary_line[1] =~ /^Weight(\d+)/;			
+			my $cage = $1;
+			my $weight = $ary_line[2];
+			$WEIGHT_FILE{$ary_line[1]}{$cage}{$mtb_file} = $weight; 
+			
+      	}
+		  		       
+	print Dumper %WEIGHT_FILE;
+#########
+	}
 sub display_data
   {
     my $d=shift;
@@ -306,72 +339,78 @@ sub parse_data
     
     while (<$F>)
       {
-	my $line=$_;
-	$linen++;
+		my $line=$_;
+		$linen++;
 	
-	if ( $line=~/#d/)
-	  {
-	    my $L={};
-	    chomp $line;
-	    my @v=split (/;/,$line);
-	    shift @v; #get rid of the line header(i.e.#d) 
-	    while (@v)
-	      {
-		my $key=shift @v;
-		my $value= shift @v;
-		$L->{$key}=$value;
-		
-	      }
-	    $L->{linen}=$linen;
-	    $L->{period}="1";
-	    	    
-	    if ($L->{Duration}!=0)
-	      {
-	    	$L->{Velocity}=$L->{Value}/$L->{Duration};
-	      }
-	    else
-	      {
-	    	$L->{Velocity}=0; 
-	      }	   
-	    
-	    if ($L->{Type})
-	      {
-		my $c=$L->{CAGE};
-		my $ch=$L->{Channel};
-		my $t=$L->{StartT};
-		
-		foreach my $k (keys(%$L))
+		if ( $line=~/#d/)
 		  {
-		    $data->{$c}{$t}{$k}=$L->{$k};
+		    my $L={};
+		    chomp $line;
+		    my @v=split (/;/,$line);
+		    shift @v; #get rid of the line header(i.e.#d) 
+		    while (@v)
+		      {
+			my $key=shift @v;
+			my $value= shift @v;
+			$L->{$key}=$value;
+			
+		      }
+		    $L->{linen}=$linen;
+		    $L->{period}="1";
+		    	    
+		    if ($L->{Duration}!=0)
+		      {
+		    	$L->{Velocity}=$L->{Value}/$L->{Duration};
+		      }
+		    else
+		      {
+		    	$L->{Velocity}=0; 
+		      }	   
+		    
+		    if ($L->{Type})
+		      {
+			my $c=$L->{CAGE};
+			my $ch=$L->{Channel};
+			my $t=$L->{StartT};
+			
+			foreach my $k (keys(%$L))
+			  {
+			    $data->{$c}{$t}{$k}=$L->{$k};
+			  }
+		      }
 		  }
-	      }
-	  }
-	else
-	  {
-	    if ( $line=~/Weight/ && $line=~/ANIMALS DATA/)
-	      {
-		$line=~/.*;(\d+);Weight;([.\d]+)/;
-		my $c=$1;
-		my $w=$2;
-		if (!$WEIGHT{$c}{start})
-		  {$WEIGHT{$c}{start}=$w;}
-		else {$WEIGHT{$c}{end}=$w;}
-		$WEIGHT{$c}{max}=($WEIGHT{$c}{max}<$w)?$w:$WEIGHT{$c}{max};
-	      }
-	    $HEADER.=$line;
-	  }
+		else
+		  {
+		    if ( $line=~/Weight/ && $line=~/ANIMALS DATA/)
+		      {
+				$line=~/.*;(\d+);Weight;([.\d]+)/;
+				my $c=$1;
+				my $w=$2;
+				if (!$WEIGHT{$c}{start})
+				  {$WEIGHT{$c}{start}=$w;}
+				else {$WEIGHT{$c}{end}=$w;}
+				$WEIGHT{$c}{max}=($WEIGHT{$c}{max}<$w)?$w:$WEIGHT{$c}{max};
+#				$line=~/^#h;(.*);\[ANIMALS DATA\];(\d+);Weight;([.\d]+)/;#delete
+#				print "$1 $2 $3\n";
+		      }
+		    $HEADER.=$line;
+		  }
       }
     
     foreach my $c (keys (%WEIGHT))
       {
-	if ($WEIGHT{$c}{start}){	$WEIGHT{$c}{delta}=(($WEIGHT{$c}{end}-$WEIGHT{$c}{start})*100)/$WEIGHT{$c}{start};}
+		if ($WEIGHT{$c}{start}){	$WEIGHT{$c}{delta}=(($WEIGHT{$c}{end}-$WEIGHT{$c}{start})*100)/$WEIGHT{$c}{start};}
       }
     
     #reformat/annotate fields fields
     $data=&channel2correct_channel ($data);
            
     $data=&channel2Nature($data);
-         
+#    print $HEADER;
+#    print Dumper ($data);
+#    print Dumper (%WEIGHT);
+    
+#    die; #del 
     return $data;
   }
 
