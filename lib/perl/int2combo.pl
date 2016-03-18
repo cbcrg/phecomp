@@ -34,6 +34,8 @@
 ###                                   specified by t                                                ###
 ### -iniFilter <>                  -> Filters out every interval tag with "iniFile"                 ###
 ### -out shiftCages <n>            -> A numeric value to shift the annotation of cages              ###
+### -weight weight_f <file_name>   -> File to get weights from an external file                     ###
+### -energy 
 #######################################################################################################
 
 use HTTP::Date;
@@ -122,7 +124,8 @@ sub run_instruction
     }
     elsif ($c=~/^weight/)
     	{
-      		$d = &read_weight ($d, $A);  
+      		$d = &read_weight ($d, $A);
+      		$d = &get_energy_intake ($d, $A);
     	}        	   
              
 #    option to rename cage 6 from 13 to 18          
@@ -253,35 +256,7 @@ foreach my $diet (("sc_","cd_"))
       }
   }
 print "\n\n\n";
-sub read_weight
-	{
-##########
-    	my $d = shift;
-    	my $A = shift;
 
-    	my $file_w = $A->{'weight_f'};
-    	my $F=new FileHandle;
-    	print "=======$file_w";
-    	open($F, $file_w);
-    	
-    	while (<$F>)
-      	{
-    		my $line=$_;
-    		chomp $line;
-    		my @ary_line = split (";", $line);		
-#			print Dumper @ary_line;
-
-			my $mtb_file = $ary_line[0];
-			$ary_line[1] =~ /^Weight(\d+)/;			
-			my $cage = $1;
-			my $weight = $ary_line[2];
-			$WEIGHT_FILE{$ary_line[1]}{$cage}{$mtb_file} = $weight; 
-			
-      	}
-		  		       
-	print Dumper %WEIGHT_FILE;
-#########
-	}
 sub display_data
   {
     my $d=shift;
@@ -4823,6 +4798,82 @@ sub tagIniFile
     return ($d);     
   }	
 
+sub read_weight
+	{
+    	my $d = shift;
+    	my $A = shift;
+
+    	my $file_w = $A->{'weight_f'};
+    	my $F=new FileHandle;
+
+    	open($F, $file_w);
+    	
+    	while (<$F>)
+      		{
+	    		my $line=$_;
+	    		chomp $line;
+	    		my @ary_line = split (";", $line);		
+	
+				if ((scalar @ary_line) != 3) 
+					{
+						print STDERR "Incorrect file format for weight file\n";
+						die;
+					}
+					
+				my $mtb_file = $ary_line[0];
+				
+				$ary_line[1] =~ /^Weight(\d+)/;		
+				
+				my $cage = $1;
+				$cage = ($mtb_file =~ /c6/)? $cage+12 : $cage;
+
+				my $weight = $ary_line[2];							
+				$WEIGHT_FILE{$cage}{$mtb_file} = $weight;				
+	      	}
+		  		       
+#		print Dumper %WEIGHT_FILE;
+		return $d;
+	}
+
+# Energy for each type of food
+# food_sc ==> 3.87 Kcal/g ==> 16.20 KJ/g 
+# food_cd ==> 4.92 Kcal/g ==> 20.61 KJ/g
+# food_fat ==> 5.21 Kcal/g ==> 21.79 KJ/g  
+my $food_energy = {};
+
+# KJ energy / g food
+$food_energy->{'food_sc'} = 16.20;
+$food_energy->{'food_fat'} = 21.79;
+$food_energy->{'food_cd'} = 20.61;
+
+
+sub get_energy_intake
+	{
+		my $d = shift;
+    	my $A = shift;
+    	
+    	foreach my $c (sort ({$a<=>$b}keys (%$d)))
+      		{          
+        		foreach my $t (sort ({$a<=>$b}keys (%{$d->{$c}})))
+          			{
+          				my $nature = $d->{$c}{$t}{'Nature'};            			            		
+            			my $file = $d->{$c}{$t}{File};
+            			
+            			my $weight = $WEIGHT_FILE{$c}{$file};
+            			
+            			if ($nature eq 'water') 
+            				{
+            					$d->{$c}{$t}{'energy'} = 0;
+            				};
+    					
+    					# Energy in KJ/Kg
+    					$d->{$c}{$t}{'energy'} = $d->{$c}{$t}{'Value'} / $weight * 1000;    					
+          			}
+      		}
+      		
+    	return $d;
+	}
+	
 #Get the list of mtb files inside the intervals file
 sub retrieveFiles
   {
