@@ -35,7 +35,6 @@
 ### -iniFilter <>                  -> Filters out every interval tag with "iniFile"                 ###
 ### -out shiftCages <n>            -> A numeric value to shift the annotation of cages              ###
 ### -weight weight_f <file_name>   -> File to get weights from an external file                     ###
-### -energy 
 #######################################################################################################
 
 use HTTP::Date;
