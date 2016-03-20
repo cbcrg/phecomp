@@ -675,7 +675,8 @@ sub joinByTimeSep
     my $Hfirstlinen = {};    
     my $HfirstT = {};
     my $HfirstEndT = {};
-    my $Hvalue = {};                    
+    my $Hvalue = {};
+    my $Henergy = {};                    
     my $newD = {};
     my $index = 1;
     my $countTwo = 1;
@@ -705,6 +706,7 @@ sub joinByTimeSep
         		$HpEndT->{$ch} = -1;
 #        		$firstJoined->{$nature} = 0;
         		$Hvalue->{$nature} = 0;
+        		$Henergy->{$nature} = 0;
         	}
         	
         foreach my $t (sort ({$a<=>$b}keys (%{$d->{$c}})))
@@ -723,6 +725,7 @@ sub joinByTimeSep
                 $HfirstStartT->{$nature} = $d->{$c}{$t}{'StartT'};
                 $Hfirstlinen->{$nature} = $d->{$c}{$t}{'linen'};
                 $Hvalue->{$nature} = $Hvalue->{$nature} + $d->{$c}{$t}{'Value'};
+                $Henergy->{$nature} = $Henergy->{$nature} + $d->{$c}{$t}{'energy'};
                 $HfirstT->{$nature} = $t;
                 
                 $HpT->{$nature} = $t;                                          
@@ -740,6 +743,7 @@ sub joinByTimeSep
                 $HfirstStartT->{$nature} = $d->{$c}{$t}{'StartT'};
                 $Hfirstlinen->{$nature} = $d->{$c}{$t}{'linen'};
                 $Hvalue->{$nature} = $Hvalue->{$nature} + $d->{$c}{$t}{'Value'};
+                $Henergy->{$nature} = $Henergy->{$nature} + $d->{$c}{$t}{'energy'};
                 $HfirstT->{$nature} = $t;
                 
 #                $cOcurr->{$nature} = $c;                               
@@ -769,7 +773,7 @@ sub joinByTimeSep
                     $HpT->{$nature} = $t;
                     $HpEndT->{$nature} = $d->{$c}{$t}{EndT};
                     $Hvalue->{$nature} = $Hvalue->{$nature} + $d->{$c}{$t}{'Value'};
-                    
+                    $Henergy->{$nature} = $Henergy->{$nature} + $d->{$c}{$t}{'energy'};
 
                         
                         $HpEndT->{$nature} = $d->{$c}{$t}{EndT};
@@ -811,6 +815,7 @@ sub joinByTimeSep
                     $newD->{$c}{$fT}{'Duration'} = $HpEndT->{$nature} - $HfirstStartT->{$nature};
                     $newD->{$c}{$fT}{'SlotI'} = $d->{$c}{$t}{'SlotI'};
                     $newD->{$c}{$fT}{'Value'} = $Hvalue->{$nature} + $d->{$c}{$HpEndT->{$nature}}{'Value'};
+                    $newD->{$c}{$fT}{'energy'} = $Henergy->{$nature} + $d->{$c}{$HpEndT->{$nature}}{'energy'};                  
                     $newD->{$c}{$fT}{'Nature'} = $d->{$c}{$t}{'Nature'};
                     $newD->{$c}{$fT}{'period'} = $d->{$c}{$t}{'period'};
                     $newD->{$c}{$fT}{'linen'} = $Hfirstlinen ->{$nature};
@@ -831,7 +836,8 @@ sub joinByTimeSep
                     $HfirstStartL->{$nature} = $d->{$c}{$t}{'StartL'};
                     $HfirstStartT->{$nature} = $d->{$c}{$t}{'StartT'};
                     $Hfirstlinen->{$nature} = $d->{$c}{$t}{'linen'};
-                    $Hvalue->{$nature} = $d->{$c}{$t}{'Value'};                     
+                    $Hvalue->{$nature} = $d->{$c}{$t}{'Value'};
+                    $Henergy->{$nature} = $d->{$c}{$t}{'energy'};                                       
                     $HfirstT->{$nature} = $t;
                     
                     $HpEndT->{$nature} = $d->{$c}{$t}{EndT};
@@ -4365,22 +4371,23 @@ sub sec2time
 
 sub data2R_header
       {
-	my $d = shift;
-	foreach my $c (sort ({$a<=>$b}keys(%$d)))
-	  { 
-	    foreach my $i (sort {$a<=>$b}keys (%{$d->{$c}}))
-	      {
-		my $first=0;
-		
-		foreach my $k (sort (keys (%{$d->{$c}{$i}})))
-		  {
-		    if ($first == 0) {print "$k"; $first=1;}
-		    else {print "\t$k";}		     
-		  }		
-		print "\n";
-		last;
-	      }last;	    
-	  }	
+		my $d = shift;
+		foreach my $c (sort ({$a<=>$b}keys(%$d)))
+	  		{ 		  			
+	    		foreach my $i (sort {$a<=>$b}keys (%{$d->{$c}}))
+	      			{
+						my $first=0;
+						
+						foreach my $k (sort (keys (%{$d->{$c}{$i}})))
+		  					{
+		    					if ($first == 0) {print "$k"; $first=1;}
+		    					else {print STDERR "$i----$k\n";
+		    						print "\t$k";}		     
+		  					}		
+						print "\n";
+						last;
+	      			}last;	    
+	  		}	
       }
 
 sub data2R_records
