@@ -712,7 +712,6 @@ sub joinByTimeSep
         foreach my $t (sort ({$a<=>$b}keys (%{$d->{$c}})))
           {                                    
           	$nature = $d->{$c}{$t}{$dispenserOpt};           
-            print STDERR "$nature\n";            
             
             #First occurrence 
             if ($HfirstCage->{$nature} == 1)
@@ -815,9 +814,7 @@ sub joinByTimeSep
                     $newD->{$c}{$fT}{'Duration'} = $HpEndT->{$nature} - $HfirstStartT->{$nature};
                     $newD->{$c}{$fT}{'SlotI'} = $d->{$c}{$t}{'SlotI'};
                     $newD->{$c}{$fT}{'Value'} = $Hvalue->{$nature} + $d->{$c}{$HpEndT->{$nature}}{'Value'};
-                    $newD->{$c}{$fT}{'energy'} = $Henergy->{$nature} + $d->{$c}{$HpEndT->{$nature}}{'energy'}; 
-                    my $test =  $Henergy->{$nature} + $d->{$c}{$HpEndT->{$nature}}{'energy'};
-                    print STDERR "=====$test\n";                  
+                    $newD->{$c}{$fT}{'energy'} = $Henergy->{$nature} + $d->{$c}{$HpEndT->{$nature}}{'energy'};                                            
                     $newD->{$c}{$fT}{'Nature'} = $d->{$c}{$t}{'Nature'};
                     $newD->{$c}{$fT}{'period'} = $d->{$c}{$t}{'period'};
                     $newD->{$c}{$fT}{'linen'} = $Hfirstlinen ->{$nature};
