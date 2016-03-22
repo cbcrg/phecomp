@@ -712,7 +712,7 @@ sub joinByTimeSep
         foreach my $t (sort ({$a<=>$b}keys (%{$d->{$c}})))
           {                                    
           	$nature = $d->{$c}{$t}{$dispenserOpt};           
-#            print STDERR "$nature\n";            
+            print STDERR "$nature\n";            
             
             #First occurrence 
             if ($HfirstCage->{$nature} == 1)
@@ -815,7 +815,9 @@ sub joinByTimeSep
                     $newD->{$c}{$fT}{'Duration'} = $HpEndT->{$nature} - $HfirstStartT->{$nature};
                     $newD->{$c}{$fT}{'SlotI'} = $d->{$c}{$t}{'SlotI'};
                     $newD->{$c}{$fT}{'Value'} = $Hvalue->{$nature} + $d->{$c}{$HpEndT->{$nature}}{'Value'};
-                    $newD->{$c}{$fT}{'energy'} = $Henergy->{$nature} + $d->{$c}{$HpEndT->{$nature}}{'energy'};                  
+                    $newD->{$c}{$fT}{'energy'} = $Henergy->{$nature} + $d->{$c}{$HpEndT->{$nature}}{'energy'}; 
+                    my $test =  $Henergy->{$nature} + $d->{$c}{$HpEndT->{$nature}}{'energy'};
+                    print STDERR "=====$test\n";                  
                     $newD->{$c}{$fT}{'Nature'} = $d->{$c}{$t}{'Nature'};
                     $newD->{$c}{$fT}{'period'} = $d->{$c}{$t}{'period'};
                     $newD->{$c}{$fT}{'linen'} = $Hfirstlinen ->{$nature};
@@ -837,7 +839,7 @@ sub joinByTimeSep
                     $HfirstStartT->{$nature} = $d->{$c}{$t}{'StartT'};
                     $Hfirstlinen->{$nature} = $d->{$c}{$t}{'linen'};
                     $Hvalue->{$nature} = $d->{$c}{$t}{'Value'};
-                    $Henergy->{$nature} = $d->{$c}{$t}{'energy'};                                       
+                    $Henergy->{$nature} = $d->{$c}{$t}{'energy'};                                                        
                     $HfirstT->{$nature} = $t;
                     
                     $HpEndT->{$nature} = $d->{$c}{$t}{EndT};
@@ -933,7 +935,9 @@ sub channel2Nature
 			$Name=lc ($Name);
 			$Name=~s/\s//g;
 			
-			if ((length ($Name)) == 4 && ($Name =~/(w)(w)(s)(s)/ || $Name =~/(w)(w)(c)(s)/ || $Name=~/(w)(w)(s)(c)/ || $Name=~/(w)(w)(c)(s)/ || $Name=~/(w)(w)(f)(f)/ || $Name=~/(w)(w)(h)(h)/))
+			if ((length ($Name)) == 4 && ($Name =~/(w)(w)(s)(s)/ || $Name =~/(w)(w)(c)(s)/ || $Name=~/(w)(w)(s)(c)/ ||
+			 							  $Name=~/(w)(w)(c)(s)/ || $Name=~/(w)(w)(f)(f)/ || $Name=~/(w)(w)(h)(h)/) || 
+			 							  $Name=~/(w)(w)(f)(s)/ || $Name=~/(w)(w)(s)(f)/)
 			  {
 			    
 		      	if ($i==1) 
@@ -4381,8 +4385,7 @@ sub data2R_header
 						foreach my $k (sort (keys (%{$d->{$c}{$i}})))
 		  					{
 		    					if ($first == 0) {print "$k"; $first=1;}
-		    					else {print STDERR "$i----$k\n";
-		    						print "\t$k";}		     
+		    					else {print "\t$k";}		     
 		  					}		
 						print "\n";
 						last;
@@ -4737,7 +4740,7 @@ sub anot2nature
                     };
                       
                   ($annot eq "f" || $annot eq "h") && do 
-                    { 
+                    {                      
                       return ("food_fat"); #Original before fusedSCforFDF heatMap
                       #return ("food"); #fusedSCforFDF heatMap                                              
                       last SWITCH;
@@ -4866,7 +4869,7 @@ sub get_energy_intake
             			my $file = $d->{$c}{$t}{File};
             			
             			my $weight = $WEIGHT_FILE{$c}{$file};
-            			
+            			if ($weight == 0) { print STDERR "File $file cage $c has not its corresponding weight\n"; die;} 
             			if ($nature eq 'water') 
             				{
             					$d->{$c}{$t}{'energy'} = 0;
