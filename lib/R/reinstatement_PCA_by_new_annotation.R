@@ -28,7 +28,8 @@ source (paste (home, "/git/mwm/lib/R/plot_param_public.R", sep=""))
 
 # Parameter to set plot qualities
 dpi_q <- 50
-/Users/jespinosa/Dropbox (CRG)/2015_reinstatement_rafa/data/annot_descriptors_17_02_16.csv
+img_format = ".tiff"
+
 # data_reinst <- read.csv (paste (home, "/Dropbox (CRG)/2015_reinstatement_rafa/data/reinstatement_11_02_16.csv", sep=""), dec=",", sep=";")
 # reinst_annotation <- read.csv (paste (home, "/Dropbox (CRG)/2015_reinstatement_rafa/data/annot_descriptors_11_02_16.csv", sep=""), dec=",", sep=";")
 data_reinst <- read.csv (paste (home, "/Dropbox (CRG)/2015_reinstatement_rafa/data/reinstatement_17_02_16.csv", sep=""), dec=",", sep=";")
@@ -99,8 +100,8 @@ pca_reinstatement.pc1.pc2_aspect_ratio <- pca_reinstatement.pc1.pc2 + coord_fixe
 
 pca_reinstatement.pc1.pc2_aspect_ratio
 
-ggsave (pca_reinstatement.pc1.pc2_aspect_ratio, file=paste(home, dir_plots, 
-                                                       "PCA_pc1_pc2_annotated_sessions.tiff", sep=""), width = 15, height = 10, dpi=dpi_q)
+# ggsave (pca_reinstatement.pc1.pc2_aspect_ratio, file=paste(home, dir_plots, 
+#                                                        "PCA_pc1_pc2_annotated_sessions.tiff", sep=""), width = 15, height = 10, dpi=dpi_q)
 
 #############
 # PC1 PC3
@@ -132,8 +133,8 @@ pca_reinstatement.pc1.pc3_aspect_ratio <- pca_reinstatement.pc1.pc3 + coord_fixe
 
 pca_reinstatement.pc1.pc3_aspect_ratio
 
-ggsave (pca_reinstatement.pc1.pc3_aspect_ratio, file=paste(home, dir_plots, 
-                                                   "PCA_pc1_pc3_annotated_sessions.tiff", sep=""), width = 15, height = 10, dpi=dpi_q)
+# ggsave (pca_reinstatement.pc1.pc3_aspect_ratio, file=paste(home, dir_plots, 
+#                                                    "PCA_pc1_pc3_annotated_sessions.tiff", sep=""), width = 15, height = 10, dpi=dpi_q)
 
 #############
 # PC2 PC3
@@ -167,8 +168,8 @@ pca_reinstatement.pc2.pc3_aspect_ratio <- pca_reinstatement.pc2.pc3 + coord_fixe
 
 pca_reinstatement.pc2.pc3_aspect_ratio
 
-ggsave (pca_reinstatement.pc2.pc3_aspect_ratio, file=paste(home, dir_plots, 
-                                                           "PCA_pc2_pc3_annotated_sessions.tiff", sep=""), width = 15, height = 10, dpi=dpi_q)
+# ggsave (pca_reinstatement.pc2.pc3_aspect_ratio, file=paste(home, dir_plots, 
+#                                                            "PCA_pc2_pc3_annotated_sessions.tiff", sep=""), width = 15, height = 10, dpi=dpi_q)
 
 ###############
 ### Circle Plot
@@ -226,8 +227,8 @@ p_circle_plot_coord_fixed <- p_circle_plot + coord_fixed() +
   theme(axis.title.y = element_text(size =22))
 p_circle_plot_coord_fixed
 
-ggsave (p_circle_plot_coord_fixed, file=paste(home, dir_plots, "circle_annotated_behavior", ".tiff", sep=""), 
-        width = 15, height = 15, dpi=dpi_q)
+# ggsave (p_circle_plot_coord_fixed, file=paste(home, dir_plots, "circle_annotated_behavior", img_format, sep=""), 
+#         width = 15, height = 15, dpi=dpi_q)
 
 # The palette with grey:
 cbPalette <- c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
@@ -264,14 +265,18 @@ p_circle_plot_by_gr_coord_fixed <- p_circle_plot_by_gr + coord_fixed() +
                                    theme(axis.title.y = element_text(size=30))
 p_circle_plot_by_gr_coord_fixed 
 
-ggsave (p_circle_plot_by_gr_coord_fixed, file=paste(home, dir_plots, "circle_annotated_beh_coloured_by_gr", ".tiff", sep=""), 
-        width = 15, height = 15, dpi=dpi_q)
+# ggsave (p_circle_plot_by_gr_coord_fixed, file=paste(home, dir_plots, "circle_annotated_beh_coloured_by_gr", img_format, sep=""), 
+#         width = 15, height = 15, dpi=dpi_q)
 
 ####################################
 ## Same thing but without arrows
+# aes(colour=annot_gr,
 p_circle_points <- ggplot(circle_plot) + 
-  geom_text (aes(x=Dim.1, y=Dim.2,label=labels_v), show.legend = FALSE, size=7, vjust=-0.4) +
-  geom_point(aes(x=Dim.1, y=Dim.2), size=3) +
+  geom_text (aes(colour=annot_gr, x=Dim.1, y=Dim.2,label=labels_v), show.legend = FALSE, size=7, fontface="bold", vjust=-0.4) +
+#   geom_label (aes(fill=annot_gr, x=Dim.1, y=Dim.2,label=labels_v), colour="white",show.legend = FALSE, size=7, fontface="bold", vjust=-0.4) +
+  scale_fill_manual(values = cb_palette_adapt) +
+  geom_point(aes(colour=annot_gr, x=Dim.1, y=Dim.2), size=3) +
+  scale_color_manual(values = cb_palette_adapt) +
   xlim (c(-1.2, 1.2)) + ylim (c(-1.2, 1.2)) + 
   labs (title = "Sessions loadings\n") +
   labs (x = paste("\nPC1 (", var_PC1, "% of variance)", sep=""), 
@@ -284,7 +289,9 @@ p_circle_points_leg <- p_circle_points + theme(legend.text = element_text(size =
 p_circle_points_leg_coord_fixed <-p_circle_points_leg + coord_fixed()
 p_circle_points_leg_coord_fixed
 
-# ggsave (p_circle_points_leg_coord_fixed, file=paste(home, dir_plots, "points_circle_behavior",  ".tiff", sep=""),
+# ggsave (p_circle_points_leg_coord_fixed, file=paste(home, dir_plots, "points_circle_behavior_text",  img_format, sep=""),
+#         width = 15, height = 15, dpi=dpi_q)
+# ggsave (p_circle_points_leg_coord_fixed, file=paste(home, dir_plots, "points_circle_behavior_labels",  img_format, sep=""),
 #         width = 15, height = 15, dpi=dpi_q)
 
 ############
@@ -299,13 +306,14 @@ df.bars_to_plot$index <- factor(df.bars_to_plot$index, levels = df.bars_to_plot$
 title_b <- paste ("Variable contribution to PC1\n", "Variance explained: ", var_PC1, "%\n", sep="")
 
 bars_plot_PC1 <- ggplot (data=df.bars_to_plot, aes(x=index, y=value)) + 
-  ylim (c(0, 18)) +
+#   ylim (c(0, 12)) +
+  scale_y_continuous (limits=c(0, 14), breaks=seq(0, 14, by=2)) + 
   geom_bar (stat="identity", fill="gray", width=0.8) + 
   labs (title = title_b, x = "", y="Contribution in %\n") +
   theme(axis.text.x=element_text(angle=45, vjust=1, hjust=1))
 bars_plot_PC1
 
-# ggsave (bars_plot_PC1, file=paste(home, dir_plots, "bars_PC1", ".tiff", sep=""),
+# ggsave (bars_plot_PC1, file=paste(home, dir_plots, "bars_PC1", img_format, sep=""),
 #         width = 15, height = 12, dpi=dpi_q)
 
 # PC2
@@ -319,13 +327,14 @@ df.bars_to_plot_PC2$index
 df.bars_to_plot_PC2$index <- factor(df.bars_to_plot_PC2$index, levels = df.bars_to_plot_PC2$index[order(df.bars_to_plot_PC2$value, decreasing=TRUE)])
 
 bars_plot_PC2 <- ggplot (data=df.bars_to_plot_PC2, aes(x=index, y=value)) + 
-  ylim (c(0, 30)) +
+#   ylim (c(0, 12)) +
+  scale_y_continuous (limits=c(0, 14), breaks=seq(0, 14, by=2)) + 
   geom_bar (stat="identity", fill="gray", width=0.8) + 
   labs (title = title_b, x = "", y="Contribution in %\n") +
   theme (axis.text.x=element_text(angle=45, vjust=1, hjust=1))
 
 bars_plot_PC2
-# ggsave (bars_plot_PC2, file=paste(home, dir_plots, "bars_PC2", ".tiff",
+# ggsave (bars_plot_PC2, file=paste(home, dir_plots, "bars_PC2", img_format,
 #         sep=""), width = 15, height = 12, dpi=dpi_q)
 
 # PC3
@@ -344,11 +353,12 @@ var_PC3
 
 bars_plot_PC3 <- ggplot (data=df.bars_to_plot_PC3, aes(x=index, y=value)) + 
   geom_bar (stat="identity", fill="gray", width=0.8) + 
+  scale_y_continuous (limits=c(0, 14), breaks=seq(0, 14, by=2)) + 
   labs (title = title_b, x = "", y="Contribution in %\n") +
   theme (axis.text.x=element_text(angle=45, vjust=1, hjust=1))
 
 bars_plot_PC3
-# ggsave (bars_plot_PC3, file=paste(home, dir_plots, "bars_PC3", ".tiff", 
+# ggsave (bars_plot_PC3, file=paste(home, dir_plots, "bars_PC3", img_format, 
 #         sep=""), width = 15, height = 12, dpi=dpi_q)
 
 #######################
@@ -431,8 +441,8 @@ dailyInt_theme <- theme_update (axis.title.x = element_text (size=base_size * 2,
 p_circle_plot_coord_fixed <- p_circle_plot + coord_fixed()
 p_circle_plot_coord_fixed
 
-ggsave (p_circle_plot_coord_fixed, , file=paste(home, dir_plots, "circle_annotated_sessions", ".tiff", sep=""), 
-        width = 15, height = 15, dpi=dpi_q)
+# ggsave (p_circle_plot_coord_fixed, , file=paste(home, dir_plots, "circle_annotated_sessions", img_format, sep=""), 
+#         width = 15, height = 15, dpi=dpi_q)
 
 ####################################
 ## Same thing but without arrows
@@ -450,8 +460,8 @@ p_circle_points <- ggplot(circle_plot) +
 p_circle_points_leg <- p_circle_points + theme(legend.text = element_text(size = 20))
 p_circle_points_leg_coord_fixed <-p_circle_points_leg + coord_fixed()
 p_circle_points_leg_coord_fixed 
-ggsave (p_circle_points_leg_coord_fixed, file=paste(home, dir_plots, "points_circle_session",  ".tiff", sep=""),
-        width = 15, height = 15, dpi=dpi_q)
+# ggsave (p_circle_points_leg_coord_fixed, file=paste(home, dir_plots, "points_circle_session",  img_format, sep=""),
+#         width = 15, height = 15, dpi=dpi_q)
 
 
 stop("Execution finished correctly")
