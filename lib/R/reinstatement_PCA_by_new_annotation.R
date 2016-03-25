@@ -35,10 +35,9 @@ img_format = ".tiff"
 data_reinst <- read.csv (paste (home, "/Dropbox (CRG)/2015_reinstatement_rafa/data/reinstatement_17_02_16.csv", sep=""), dec=",", sep=";")
 reinst_annotation <- read.csv (paste (home, "/Dropbox (CRG)/2015_reinstatement_rafa/data/annot_descriptors_17_02_16.csv", sep=""), dec=",", sep=";")
 
-reinst_annotation$N
+reinst_annotation$tbl_name
 # head (data_reinst)
 # head (reinst_annotation)
-
 
 color_v <- c("orange", "red", "lightblue", "blue")
 
@@ -98,10 +97,81 @@ pca_reinstatement.pc1.pc2_aspect_ratio <- pca_reinstatement.pc1.pc2 + coord_fixe
                                           theme (legend.text=element_text(size=18), legend.key = element_blank(), 
                                                  legend.title=element_text(size=20))  
 
-pca_reinstatement.pc1.pc2_aspect_ratio
+## Plot showing the percentage of variance explained by each principal component
+eigenvalues <- res$eig
+head(eigenvalues[, 1:2])
+barplot(eigenvalues[, 2], names.arg=1:nrow(eigenvalues), 
+        main = "Variances",
+        xlab = "Principal Components",
+        ylab = "Percentage of variances",
+        col ="steelblue")
+# Add connected line segments to the plot
+lines(x = 1:nrow(eigenvalues), eigenvalues[, 2], 
+      type="b", pch=19, col = "red")
 
+#############################
+## matrix PCA
+#############################
+require(GGally)
+data(tips, package="reshape")
+tips
+ggpairs(data=tips, # data.frame with variables
+        columns=1:3, # columns to plot, default to all.
+        title="tips data", # title of the plot
+        colour = "sex") # aesthetics, ggplot2 style
+## GGally example
 # ggsave (pca_reinstatement.pc1.pc2_aspect_ratio, file=paste(home, dir_plots, 
 #                                                        "PCA_pc1_pc2_annotated_sessions.tiff", sep=""), width = 15, height = 10, dpi=dpi_q)
+require(GGally)
+
+# http://ggobi.github.io/ggally/gh-pages/ggpairs.html
+pca2plot_labPC <- pca2plot
+colnames(pca2plot_labPC) <- c("PC1", "PC2", "PC3", "PC4", "PC5", "id", "group")
+pm_empty = ggpairs(#data=tips,
+             data = pca2plot_labPC,
+             columns=1:3, 
+#              upper = list(continuous = "density"),
+             upper = "blank",
+             lower = "blank",
+             diag = "blank",
+#              lower = list(combo = "facetdensity"),
+             title="tips data",
+             colour = "sex")
+pm_empty
+
+
+PC1_lab <- ggplot(mtcars, aes(x = wt, y = mpg)) + 
+  scale_x_continuous (limits=c(0, 4)) + 
+  scale_y_continuous (limits=c(0, 4)) +
+  geom_blank() +
+  theme(axis.title = element_blank()) + 
+  theme(axis.text = element_blank()) +
+  annotate("text", label = paste("PC1 (",var_PC1, "%)", sep=""), x = 2, y = 2, size = 8, colour = "black") 
+PC2_lab <- ggplot(mtcars, aes(x = wt, y = mpg)) + 
+  scale_x_continuous (limits=c(0, 4)) + 
+  scale_y_continuous (limits=c(0, 4)) +
+  geom_blank() +
+  theme(axis.title = element_blank()) + 
+  theme(axis.text = element_blank()) +
+  annotate("text", label = paste("PC2 (",var_PC2, "%)", sep=""), x = 2, y = 2, size = 8, colour = "black") 
+PC3_lab <- ggplot(mtcars, aes(x = wt, y = mpg)) + 
+  scale_x_continuous (limits=c(0, 4)) + 
+  scale_y_continuous (limits=c(0, 4)) +
+  geom_blank() +
+  theme(axis.title = element_blank()) + 
+  theme(axis.text = element_blank()) +
+  annotate("text", label = paste("PC3 (",var_PC3, "%)", sep=""), x = 2, y = 2, size = 8, colour = "black") 
+
+
+pm <- putPlot(pm_empty, pca_reinstatement.pc1.pc2_aspect_ratio, 2, 1)
+pm <- putPlot(pm, pca_reinstatement.pc1.pc3_aspect_ratio, 3, 1)
+pm <- putPlot(pm, pca_reinstatement.pc2.pc3_aspect_ratio, 3, 2)
+pm <- putPlot(pm, PC1_lab, 1, 1)
+pm <- putPlot(pm, PC2_lab, 2, 2)
+pm <- putPlot(pm, PC3_lab, 3, 3)
+pm
+pm <- putPlot(pm,p_circle_plot_coord_fixed, 1, 2)
+pm
 
 #############
 # PC1 PC3
