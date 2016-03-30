@@ -124,7 +124,9 @@ ggpairs(data=tips, # data.frame with variables
 #                                                        "PCA_pc1_pc2_annotated_sessions.tiff", sep=""), width = 15, height = 10, dpi=dpi_q)
 require(GGally)
 
+# Sources
 # http://ggobi.github.io/ggally/gh-pages/ggpairs.html
+# http://www.r-bloggers.com/plot-matrix-with-the-r-package-ggally/
 pca2plot_labPC <- pca2plot
 colnames(pca2plot_labPC) <- c("PC1", "PC2", "PC3", "PC4", "PC5", "id", "group")
 pm_empty = ggpairs(#data=tips,
