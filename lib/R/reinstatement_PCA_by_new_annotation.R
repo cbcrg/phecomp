@@ -37,7 +37,7 @@ reinst_annotation <- read.csv (paste (home, "/Dropbox (CRG)/2015_reinstatement_r
 
 reinst_annotation$tbl_name
 # head (data_reinst)
-# head (reinst_annotation)
+#head (reinst_annotation)
 
 color_v <- c("orange", "red", "lightblue", "blue")
 
@@ -127,6 +127,7 @@ require(GGally)
 # Sources
 # http://ggobi.github.io/ggally/gh-pages/ggpairs.html
 # http://www.r-bloggers.com/plot-matrix-with-the-r-package-ggally/
+# https://tgmstat.wordpress.com/2013/11/13/plot-matrix-with-the-r-package-ggally/
 pca2plot_labPC <- pca2plot
 colnames(pca2plot_labPC) <- c("PC1", "PC2", "PC3", "PC4", "PC5", "id", "group")
 pm_empty = ggpairs(#data=tips,
@@ -335,7 +336,7 @@ p_circle_plot_by_gr_coord_fixed <- p_circle_plot_by_gr + coord_fixed() +
                                    theme(plot.title = element_text(size=30)) + 
                                    theme(axis.title.x = element_text(size=30)) +
                                    theme(axis.title.y = element_text(size=30))
-p_circle_plot_by_gr_coord_fixed 
+p_circle_plot_by_gr_coord_fixed
 
 # ggsave (p_circle_plot_by_gr_coord_fixed, file=paste(home, dir_plots, "circle_annotated_beh_coloured_by_gr", img_format, sep=""), 
 #         width = 15, height = 15, dpi=dpi_q)
@@ -344,8 +345,8 @@ p_circle_plot_by_gr_coord_fixed
 ## Same thing but without arrows
 # aes(colour=annot_gr,
 p_circle_points <- ggplot(circle_plot) + 
-  geom_text (aes(colour=annot_gr, x=Dim.1, y=Dim.2,label=labels_v), show.legend = FALSE, size=7, fontface="bold", vjust=-0.4) +
-#   geom_label (aes(fill=annot_gr, x=Dim.1, y=Dim.2,label=labels_v), colour="white",show.legend = FALSE, size=7, fontface="bold", vjust=-0.4) +
+#   geom_text (aes(colour=annot_gr, x=Dim.1, y=Dim.2,label=labels_v), show.legend = FALSE, size=7, fontface="bold", vjust=-0.4) +
+  geom_label (aes(fill=annot_gr, x=Dim.1, y=Dim.2,label=labels_v), colour="white",show.legend = FALSE, size=7, fontface="bold", vjust=-0.4) +
   scale_fill_manual(values = cb_palette_adapt) +
   geom_point(aes(colour=annot_gr, x=Dim.1, y=Dim.2), size=3) +
   scale_color_manual(values = cb_palette_adapt) +
