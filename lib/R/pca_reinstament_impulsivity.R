@@ -3,8 +3,8 @@
 #############################################################################
 ### PCA reinstatement experiment from Rafael's lab                        ###
 ### inactive presses during time out                                      ### 
-###                                                                       ###
-###                                                                       ###
+### This version was done when all the variables were not annotated and   ###
+### it is the first version that includes impulsivity/compulsivity        ###
 #############################################################################
 
 #####################
@@ -120,8 +120,8 @@ pca_reinstatement_aspect_ratio <- pca_reinstatement + coord_fixed()
 
 pca_reinstatement_aspect_ratio
 
-ggsave (pca_reinstatement_aspect_ratio, , file=paste(home, "/old_data/figures/", 
-        "PCA_",  "impulsivity", ".tiff", sep=""), width = 15, height = 10, dpi=dpi_q)
+# ggsave (pca_reinstatement_aspect_ratio, , file=paste(home, "/old_data/figures/", 
+#         "PCA_",  "impulsivity", ".tiff", sep=""), width = 15, height = 10, dpi=dpi_q)
 
 ###############
 ### Circle Plot
@@ -148,8 +148,8 @@ p_circle_plot <- ggplot(circle_plot) +
   geom_segment (data=circle_plot, aes(x=0, y=0, xend=Dim.1, yend=Dim.2), arrow=arrow(length=unit(0.2,"cm")), alpha=1, size=1, color="red") +
   xlim (c(-1.2, 1.2)) + ylim (c(-1.2, 1.2)) +
   #                  geom_text (data=circle_plot, aes (x=Dim.1, y=Dim.2, label=labels_v, hjust=1.2), show_guide = FALSE, size=5) + 
-  geom_text (data=neg_positions, aes (x=Dim.1, y=Dim.2, label=neg_labels, hjust=1.2), show_guide = FALSE, size=5) + 
-  geom_text (data=pos_positions, aes (x=Dim.1, y=Dim.2, label=pos_labels, hjust=-0.3), show_guide = FALSE, size=5) +
+  geom_text (data=neg_positions, aes (x=Dim.1, y=Dim.2, label=neg_labels, hjust=1.2), show.legend = FALSE, size=5) + 
+  geom_text (data=pos_positions, aes (x=Dim.1, y=Dim.2, label=pos_labels, hjust=-0.3), show.legend = FALSE, size=5) +
   geom_vline (xintercept = 0, linetype="dotted") +
   geom_hline (yintercept=0, linetype="dotted") +
   labs (title = "PCA of the variables\n", x = paste("\nPC1 (", var_PC1, "% of variance)", sep=""), 
