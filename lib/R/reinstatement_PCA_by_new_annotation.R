@@ -97,85 +97,6 @@ pca_reinstatement.pc1.pc2_aspect_ratio <- pca_reinstatement.pc1.pc2 + coord_fixe
                                           theme (legend.text=element_text(size=18), legend.key = element_blank(), 
                                                  legend.title=element_text(size=20))  
 
-## Plot showing the percentage of variance explained by each principal component
-eigenvalues <- res$eig
-head(eigenvalues[, 1:2])
-barplot(eigenvalues[, 2], names.arg=1:nrow(eigenvalues), 
-        main = "Variances",
-        xlab = "Principal Components",
-        ylab = "Percentage of variances",
-        col ="steelblue")
-# Add connected line segments to the plot
-lines(x = 1:nrow(eigenvalues), eigenvalues[, 2], 
-      type="b", pch=19, col = "red")
-
-#############################
-## matrix PCA
-#############################
-require(GGally)
-data(tips, package="reshape")
-tips
-ggpairs(data=tips, # data.frame with variables
-        columns=1:3, # columns to plot, default to all.
-        title="tips data", # title of the plot
-        colour = "sex") # aesthetics, ggplot2 style
-## GGally example
-# ggsave (pca_reinstatement.pc1.pc2_aspect_ratio, file=paste(home, dir_plots, 
-#                                                        "PCA_pc1_pc2_annotated_sessions.tiff", sep=""), width = 15, height = 10, dpi=dpi_q)
-require(GGally)
-
-# Sources
-# http://ggobi.github.io/ggally/gh-pages/ggpairs.html
-# http://www.r-bloggers.com/plot-matrix-with-the-r-package-ggally/
-# https://tgmstat.wordpress.com/2013/11/13/plot-matrix-with-the-r-package-ggally/
-pca2plot_labPC <- pca2plot
-colnames(pca2plot_labPC) <- c("PC1", "PC2", "PC3", "PC4", "PC5", "id", "group")
-pm_empty = ggpairs(#data=tips,
-             data = pca2plot_labPC,
-             columns=1:3, 
-#              upper = list(continuous = "density"),
-             upper = "blank",
-             lower = "blank",
-             diag = "blank",
-#              lower = list(combo = "facetdensity"),
-             title="tips data",
-             colour = "sex")
-pm_empty
-
-
-PC1_lab <- ggplot(mtcars, aes(x = wt, y = mpg)) + 
-  scale_x_continuous (limits=c(0, 4)) + 
-  scale_y_continuous (limits=c(0, 4)) +
-  geom_blank() +
-  theme(axis.title = element_blank()) + 
-  theme(axis.text = element_blank()) +
-  annotate("text", label = paste("PC1 (",var_PC1, "%)", sep=""), x = 2, y = 2, size = 8, colour = "black") 
-PC2_lab <- ggplot(mtcars, aes(x = wt, y = mpg)) + 
-  scale_x_continuous (limits=c(0, 4)) + 
-  scale_y_continuous (limits=c(0, 4)) +
-  geom_blank() +
-  theme(axis.title = element_blank()) + 
-  theme(axis.text = element_blank()) +
-  annotate("text", label = paste("PC2 (",var_PC2, "%)", sep=""), x = 2, y = 2, size = 8, colour = "black") 
-PC3_lab <- ggplot(mtcars, aes(x = wt, y = mpg)) + 
-  scale_x_continuous (limits=c(0, 4)) + 
-  scale_y_continuous (limits=c(0, 4)) +
-  geom_blank() +
-  theme(axis.title = element_blank()) + 
-  theme(axis.text = element_blank()) +
-  annotate("text", label = paste("PC3 (",var_PC3, "%)", sep=""), x = 2, y = 2, size = 8, colour = "black") 
-
-
-pm <- putPlot(pm_empty, pca_reinstatement.pc1.pc2_aspect_ratio, 2, 1)
-pm <- putPlot(pm, pca_reinstatement.pc1.pc3_aspect_ratio, 3, 1)
-pm <- putPlot(pm, pca_reinstatement.pc2.pc3_aspect_ratio, 3, 2)
-pm <- putPlot(pm, PC1_lab, 1, 1)
-pm <- putPlot(pm, PC2_lab, 2, 2)
-pm <- putPlot(pm, PC3_lab, 3, 3)
-pm
-pm <- putPlot(pm,p_circle_plot_coord_fixed, 1, 2)
-pm
-
 #############
 # PC1 PC3
 title_p <- paste ("PCA annotated sessions reinstatement\n", sep="")
@@ -369,6 +290,21 @@ p_circle_points_leg_coord_fixed
 
 ############
 ## BARPLOT
+
+###########
+## Barplot showing the contribution of all principal components
+## Plot showing the percentage of variance explained by each principal component
+eigenvalues <- res$eig
+head(eigenvalues[, 1:2])
+barplot(eigenvalues[, 2], names.arg=1:nrow(eigenvalues), 
+        main = "Variances",
+        xlab = "Principal Components",
+        ylab = "Percentage of variances",
+        col ="steelblue")
+# Add connected line segments to the plot
+lines(x = 1:nrow(eigenvalues), eigenvalues[, 2], 
+      type="b", pch=19, col = "red")
+
 df.bars <- cbind (as.numeric(sort(res$var$coord[,1]^2/sum(res$var$coord[,1]^2)*100,decreasing=TRUE)), names(res$var$coord[,1])[order(res$var$coord[,1]^2,decreasing=TRUE)])
 df.bars_to_plot <- as.data.frame(df.bars)
 df.bars_to_plot$index <- as.factor (df.bars_to_plot$V2)
@@ -536,9 +472,131 @@ p_circle_points_leg_coord_fixed
 # ggsave (p_circle_points_leg_coord_fixed, file=paste(home, dir_plots, "points_circle_session",  img_format, sep=""),
 #         width = 15, height = 15, dpi=dpi_q)
 
+#############################
+## matrix PCA
+#############################
+# Sources
+# http://ggobi.github.io/ggally/gh-pages/ggpairs.html
+# http://www.r-bloggers.com/plot-matrix-with-the-r-package-ggally/
+# https://tgmstat.wordpress.com/2013/11/13/plot-matrix-with-the-r-package-ggally/
+
+require(GGally)
+data(tips, package="reshape")
+tips
+ggpairs(data=tips, # data.frame with variables
+        columns=1:3, # columns to plot, default to all.
+        title="tips data", # title of the plot
+        colour = "sex") # aesthetics, ggplot2 style
+## GGally example
+# ggsave (pca_reinstatement.pc1.pc2_aspect_ratio, file=paste(home, dir_plots, 
+#                                                        "PCA_pc1_pc2_annotated_sessions.tiff", sep=""), width = 15, height = 10, dpi=dpi_q)
+
+pca2plot_labPC <- pca2plot
+colnames(pca2plot_labPC) <- c("PC1", "PC2", "PC3", "PC4", "PC5", "id", "group")
+pm_empty = ggpairs(#data=tips,
+  data = pca2plot_labPC,
+  columns=1:3, 
+  #              upper = list(continuous = "density"),
+  upper = "blank",
+  lower = "blank",
+  diag = "blank",
+  #              lower = list(combo = "facetdensity"),
+  title="tips data",
+  colour = "sex")
+pm_empty
+
+PC1_lab <- ggplot(mtcars, aes(x = wt, y = mpg)) + 
+  scale_x_continuous (limits=c(0, 4)) + 
+  scale_y_continuous (limits=c(0, 4)) +
+  geom_blank() +
+  theme(axis.title = element_blank()) + 
+  theme(axis.text = element_blank()) +
+  annotate("text", label = paste("PC1 (",var_PC1, "%)", sep=""), x = 2, y = 2, size = 8, colour = "black") 
+PC2_lab <- ggplot(mtcars, aes(x = wt, y = mpg)) + 
+  scale_x_continuous (limits=c(0, 4)) + 
+  scale_y_continuous (limits=c(0, 4)) +
+  geom_blank() +
+  theme(axis.title = element_blank()) + 
+  theme(axis.text = element_blank()) +
+  annotate("text", label = paste("PC2 (",var_PC2, "%)", sep=""), x = 2, y = 2, size = 8, colour = "black") 
+PC3_lab <- ggplot(mtcars, aes(x = wt, y = mpg)) + 
+  scale_x_continuous (limits=c(0, 4)) + 
+  scale_y_continuous (limits=c(0, 4)) +
+  geom_blank() +
+  theme(axis.title = element_blank()) + 
+  theme(axis.text = element_blank()) +
+  annotate("text", label = paste("PC3 (",var_PC3, "%)", sep=""), x = 2, y = 2, size = 8, colour = "black") 
+
+pm <- putPlot(pm_empty, pca_reinstatement.pc1.pc2_aspect_ratio, 2, 1)
+pm <- putPlot(pm, pca_reinstatement.pc1.pc3_aspect_ratio, 3, 1)
+pm <- putPlot(pm, pca_reinstatement.pc2.pc3_aspect_ratio, 3, 2)
+pm <- putPlot(pm, PC1_lab, 1, 1)
+pm <- putPlot(pm, PC2_lab, 2, 2)
+pm <- putPlot(pm, PC3_lab, 3, 3)
+# pm
+
+####################################
+## Same thing but without arrows
+# aes(colour=annot_gr,
+p_circle_points_PC2_PC1 <- ggplot(circle_plot) + 
+  #   geom_text (aes(colour=annot_gr, x=Dim.1, y=Dim.2,label=labels_v), show.legend = FALSE, size=7, fontface="bold", vjust=-0.4) +
+#   geom_label (aes(fill=annot_gr, x=Dim.2, y=Dim.1,label=labels_v), colour="white",show.legend = FALSE, size=7, fontface="bold", vjust=-0.4) +
+  scale_fill_manual(values = cb_palette_adapt) +
+  geom_point(aes(colour=annot_gr, x=Dim.2, y=Dim.1), size=3) +
+  scale_color_manual(values = cb_palette_adapt) +
+  xlim (c(-1.2, 1.2)) + ylim (c(-1.2, 1.2)) + 
+  labs (title = "Sessions loadings\n") +
+  labs (x = paste("\nPC2 (", var_PC2, "% of variance)", sep=""), 
+        y=paste("PC1 (", var_PC1, "% of ddvariance)\n", sep = "")) +
+  geom_vline(xintercept = 0, linetype = "longdash") +
+  geom_hline(yintercept = 0, linetype = "longdash") +
+  theme (legend.key = element_blank(), legend.key.height = unit (1.5, "line"), legend.title=element_blank()) 
+
+p_circle_points_PC2_PC1_leg <- p_circle_points_PC2_PC1 + theme(legend.text = element_text(size = 20))
+p_circle_points_PC2_PC1_leg_coord_fixed <-p_circle_points_PC2_PC1_leg + coord_fixed()
+
+p_circle_points_PC3_PC1 <- ggplot(circle_plot) + 
+  #   geom_text (aes(colour=annot_gr, x=Dim.1, y=Dim.2,label=labels_v), show.legend = FALSE, size=7, fontface="bold", vjust=-0.4) +
+#   geom_label (aes(fill=annot_gr, x=Dim.3, y=Dim.1,label=labels_v), colour="white",show.legend = FALSE, size=7, fontface="bold", vjust=-0.4) +
+  scale_fill_manual(values = cb_palette_adapt) +
+  geom_point(aes(colour=annot_gr, x=Dim.3, y=Dim.1), size=3) +
+  scale_color_manual(values = cb_palette_adapt) +
+  xlim (c(-1.2, 1.2)) + ylim (c(-1.2, 1.2)) + 
+  labs (title = "Sessions loadings\n") +
+  labs (x = paste("\nPC3 (", var_PC3, "% of variance)", sep=""), 
+        y=paste("PC1 (", var_PC1, "% of ddvariance)\n", sep = "")) +
+  geom_vline(xintercept = 0, linetype = "longdash") +
+  geom_hline(yintercept = 0, linetype = "longdash") +
+  theme (legend.key = element_blank(), legend.key.height = unit (1.5, "line"), legend.title=element_blank()) 
+
+p_circle_points_PC3_PC1_leg <- p_circle_points_PC3_PC1 + theme(legend.text = element_text(size = 20))
+p_circle_points_PC3_PC1_leg_coord_fixed <-p_circle_points_PC3_PC1_leg + coord_fixed()
+p_circle_points_PC3_PC1_leg_coord_fixed
+
+p_circle_points_PC3_PC2 <- ggplot(circle_plot) + 
+  #   geom_text (aes(colour=annot_gr, x=Dim.1, y=Dim.2,label=labels_v), show.legend = FALSE, size=7, fontface="bold", vjust=-0.4) +
+  #   geom_label (aes(fill=annot_gr, x=Dim.3, y=Dim.1,label=labels_v), colour="white",show.legend = FALSE, size=7, fontface="bold", vjust=-0.4) +
+  scale_fill_manual(values = cb_palette_adapt) +
+  geom_point(aes(colour=annot_gr, x=Dim.3, y=Dim.2), size=3) +
+  scale_color_manual(values = cb_palette_adapt) +
+  xlim (c(-1.2, 1.2)) + ylim (c(-1.2, 1.2)) + 
+  labs (title = "Sessions loadings\n") +
+  labs (x = paste("\nPC3 (", var_PC3, "% of variance)", sep=""), 
+        y=paste("PC2 (", var_PC2, "% of ddvariance)\n", sep = "")) +
+  geom_vline(xintercept = 0, linetype = "longdash") +
+  geom_hline(yintercept = 0, linetype = "longdash") +
+  theme (legend.key = element_blank(), legend.key.height = unit (1.5, "line"), legend.title=element_blank()) 
+
+p_circle_points_PC3_PC2_leg <- p_circle_points_PC3_PC2 + theme(legend.text = element_text(size = 20))
+p_circle_points_PC3_PC2_leg_coord_fixed <-p_circle_points_PC3_PC2_leg + coord_fixed()
+p_circle_points_PC3_PC2_leg_coord_fixed
+
+pm <- putPlot(pm, p_circle_points_PC2_PC1_leg_coord_fixed, 1, 2)
+pm <- putPlot(pm, p_circle_points_PC3_PC1_leg_coord_fixed, 1, 3)
+pm <- putPlot(pm, p_circle_points_PC3_PC2_leg_coord_fixed, 2, 3)
+pm
 
 stop("Execution finished correctly")
-
 
 
 ##############
