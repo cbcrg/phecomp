@@ -43,7 +43,22 @@ color_v <- c("orange", "red", "lightblue", "blue")
 
 ####
 ## All columns but mouse id and group
+# data_reinst_filt <- subset (data_reinst, select=-c(1,2))
+## Mara proposed to separate the data by the different experimental phases
 data_reinst_filt <- subset (data_reinst, select=-c(1,2))
+
+# deprivation
+dep <- c("Learning_AUC", "Learning_delta", "Learning_discrim", "Impulsivity_dep", "Imp_comp_dep", "Compulsivity_dep", "Acquisition_day")
+# ad_libitum
+ad_lib <- c("Primary_Reinf", "Habituation_Primary_Reinf", "Prim_R_discrim", "Impulsivity_adlib", "Imp_comp_adlib", "Compulsivity_adlib")
+# progressive ratio
+PR <- c("PR2_break_point")
+# extinction operant conditioning
+ext <- c("Ext_Learning_AUC", "Ext_Learning_delta", "Ext_Inflex", "Extinction_day")
+# relapse
+relapse <- c("Relapse_Fold_Change", "Relapse_Inflex")
+
+# data_reinst_filt <- subset (data_reinst, select=c(dep))
 
 data_reinst_means <- subset(data_reinst, select = c("subject"))
 
@@ -96,6 +111,9 @@ pca_reinstatement.pc1.pc2_aspect_ratio <- pca_reinstatement.pc1.pc2 + coord_fixe
                                           guides(color=guide_legend(guide_legend(title = "Group"))) +
                                           theme (legend.text=element_text(size=18), legend.key = element_blank(), 
                                                  legend.title=element_text(size=20))  
+
+ggsave (pca_reinstatement.pc1.pc2_aspect_ratio, file=paste(home, dir_plots, 
+                                                    "PCA_pc1_pc2_annotated_sessions.tiff", sep=""), width = 15, height = 10, dpi=dpi_q)
 
 #############
 # PC1 PC3

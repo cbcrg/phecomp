@@ -49,30 +49,46 @@ color_v <- c("orange", "red", "lightblue", "blue")
 data_reinst_filt <- subset (data_reinst, select=-c(1,2))
 
 # deprivation
-dep <- c("Learning_AUC", "Learning_delta", "Learning_discrim", "Impulsivity_dep", "Imp_comp_dep", "Compulsivity_dep", "Acquisition_day")
-tag <- "deprivation"
+# filter_phases <- c("Learning_AUC", "Learning_delta", "Learning_discrim", "Impulsivity_dep", "Imp_comp_dep", "Compulsivity_dep", 
+#                      "Acquisition_day")
+# tag <- "deprivation"
+# bar_ylim <- 45
+
+# deprivation + PR
+# filter_phases <- c("Learning_AUC", "Learning_delta", "Learning_discrim", "Impulsivity_dep", "Imp_comp_dep", "Compulsivity_dep", 
+#                    "Acquisition_day", "PR2_break_point")
+# tag <- "deprivation_PR"
+# bar_ylim <- 45
 
 ## ad_libitum
-# ad_lib <- c("Primary_Reinf", "Habituation_Primary_Reinf", "Prim_R_discrim", "Impulsivity_adlib", "Imp_comp_adlib", "Compulsivity_adlib")
+# filter_phases <- c("Primary_Reinf", "Habituation_Primary_Reinf", "Prim_R_discrim", "Impulsivity_adlib", "Imp_comp_adlib", "Compulsivity_adlib")
 # tag <- "ad_lib"
-# 
+# bar_ylim <- 50
+
 # ## progressive ratio
-# PR <- c("PR2_break_point")
+# filter_phases <- c("PR2_break_point")
 # tag <- "PR"
 # 
 # ## extinction operant conditioning
-# ext <- c("Ext_Learning_AUC", "Ext_Learning_delta", "Ext_Inflex", "Extinction_day")
+# filter_phases <- c("Ext_Learning_AUC", "Ext_Learning_delta", "Ext_Inflex", "Extinction_day")
 # tag <- "ext"
+# bar_ylim <- 75
 # 
 # ## relapse
-# relapse <- c("Relapse_Fold_Change", "Relapse_Inflex")
+# filter_phases <- c("Relapse_Fold_Change", "Relapse_Inflex")
 # tag <- "relapse"
+
+# ## extinction operant conditioning
+filter_phases <- c( "Ext_Learning_AUC", "Ext_Learning_delta", "Ext_Inflex", "Extinction_day", "Relapse_Fold_Change", "Relapse_Inflex")
+tag <- "ext_relapse"
+bar_ylim <- 45
 
 ## Filtering by session
 ## matrix
-data_reinst_filt <- subset (data_reinst, select=c(dep))
+data_reinst_filt <- subset (data_reinst, select=c(filter_phases))
+
 #annotations
-reinst_annotation <- reinst_annotation[reinst_annotation$tbl_name %in% dep, ]
+reinst_annotation <- reinst_annotation[reinst_annotation$tbl_name %in% filter_phases, ]
 
 data_reinst_means <- subset(data_reinst, select = c("subject"))
 
@@ -345,9 +361,10 @@ title_b <- paste ("Variable contribution to PC1\n", "Variance explained: ", var_
 
 bars_plot_PC1 <- ggplot (data=df.bars_to_plot, aes(x=index, y=value)) + 
   #   ylim (c(0, 12)) +
-  scale_y_continuous (limits=c(0, 45), breaks=seq(0, 45, by=5)) +   
+  scale_y_continuous (limits=c(0, bar_ylim), breaks=seq(0, bar_ylim, by=5)) +   
   geom_bar (stat="identity", fill="gray", width=0.8) + 
   geom_text(aes(y=0, label=index), hjust=-0.1, color="black", angle = 90, size=5) +
+  annotate("text", label = paste("PC1 (",var_PC1, "%)", sep=""), x = 3, y = 2 * bar_ylim/3, size = 6, colour = "black") +
   labs (title = title_b, x = "", y="Contribution in %\n") +
 #   theme(axis.text.x=element_text(angle=45, vjust=1, hjust=1)) 
   theme (axis.text.x=element_blank())
@@ -368,10 +385,11 @@ df.bars_to_plot_PC2$index <- factor(df.bars_to_plot_PC2$index, levels = df.bars_
 
 bars_plot_PC2 <- ggplot (data=df.bars_to_plot_PC2, aes(x=index, y=value)) + 
   #   ylim (c(0, 12)) +
-  scale_y_continuous (limits=c(0, 45), breaks=seq(0, 45, by=5)) +  
+  scale_y_continuous (limits=c(0, bar_ylim), breaks=seq(0, bar_ylim, by=5)) +  
   geom_bar (stat="identity", fill="gray", width=0.8) + 
   geom_text(aes(y=0, label=index), hjust=-0.1, color="black", angle = 90, size=5) +
   labs (title = title_b, x = "", y="Contribution in %\n") +
+  annotate("text", label = paste("PC2 (",var_PC2, "%)", sep=""), x = 3, y = 2 * bar_ylim/3, size = 6, colour = "black") +
 #   theme (axis.text.x=element_text(angle=45, vjust=1, hjust=1))
   theme (axis.text.x=element_blank())
 
@@ -396,8 +414,9 @@ var_PC3
 bars_plot_PC3 <- ggplot (data=df.bars_to_plot_PC3, aes(x=index, y=value)) + 
   geom_bar (stat="identity", fill="gray", width=0.8) + 
   geom_text(aes(y=0, label=index), hjust=-0.1, color="black", angle = 90, size=5) +
-  scale_y_continuous (limits=c(0, 45), breaks=seq(0, 45, by=5)) + 
+  scale_y_continuous (limits=c(0, bar_ylim), breaks=seq(0, bar_ylim, by=5)) + 
   labs (title = title_b, x = "", y="Contribution in %\n") +
+  annotate("text", label = paste("PC3 (",var_PC3, "%)", sep=""), x = 3, y = 2 * bar_ylim/3, size = 6, colour = "black") + 
 #   theme (axis.text.x=element_text(angle=45, vjust=1, hjust=1)) +
   theme (axis.text.x=element_blank())
 
@@ -516,7 +535,7 @@ bars_plot_PC3
 # https://tgmstat.wordpress.com/2013/11/13/plot-matrix-with-the-r-package-ggally/
 
 require(GGally)
-data(tips, package="reshape")
+# data(tips, package="reshape")
 # tips
 # ggpairs(data=tips, # data.frame with variables
 #         columns=1:3, # columns to plot, default to all.
@@ -597,7 +616,7 @@ p_circle_points_PC2_PC1_leg_coord_fixed <-p_circle_points_PC2_PC1_leg + coord_fi
 
 p_circle_points_PC3_PC1 <- ggplot(circle_plot) + 
   #   geom_text (aes(colour=annot_gr, x=Dim.1, y=Dim.2,label=labels_v), show.legend = FALSE, size=7, fontface="bold", vjust=-0.4) +
-  geom_text (aes(colour=annot_gr, x=Dim.1, y=Dim.2, label=labels_v), show.legend = FALSE, size=5, fontface="bold", vjust=-0.4) +
+  geom_text (aes(colour=annot_gr, x=Dim.3, y=Dim.1, label=labels_v), show.legend = FALSE, size=5, fontface="bold", vjust=-0.4) +
   #   geom_label (aes(fill=annot_gr, x=Dim.3, y=Dim.1,label=labels_v), colour="white",show.legend = FALSE, size=7, fontface="bold", vjust=-0.4) +
   scale_fill_manual(values = cb_palette_adapt) +
   geom_point(aes(colour=annot_gr, x=Dim.3, y=Dim.1), size=3) +
@@ -636,8 +655,6 @@ pm <- putPlot(pm, p_circle_points_PC2_PC1_leg_coord_fixed, 1, 2)
 pm <- putPlot(pm, p_circle_points_PC3_PC1_leg_coord_fixed, 1, 3)
 pm <- putPlot(pm, p_circle_points_PC3_PC2_leg_coord_fixed, 2, 3)
 pm
-
-# ggsave (pm, file=paste(home, dir_plots, "matrix_pca.tiff", sep=""), width = 15, height = 10, dpi=dpi_q)
 
 tiff(file=paste(home, dir_plots, "matrix_pca_", tag,  ".tiff", sep=""), height = 800, width = 1200)
 print(pm)
