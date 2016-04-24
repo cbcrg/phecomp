@@ -21,7 +21,8 @@ home <- Sys.getenv("HOME")
 # dir_plots <- "/Dropbox (CRG)/2015_reinstatement_rafa/figures/annotated_session/HF/"
 # dir_plots <- "/Dropbox (CRG)/2015_reinstatement_rafa/figures/annotated_session/all_animals/"
 # dir_plots <- "/Dropbox (CRG)/2015_reinstatement_rafa/figures/annotated_session_20160211/"
-dir_plots <- "/Dropbox (CRG)/2015_reinstatement_rafa/figures/annotated_session_20160217/"
+# dir_plots <- "/Dropbox (CRG)/2015_reinstatement_rafa/figures/annotated_session_20160217/"
+dir_plots <- "/Dropbox (CRG)/2015_reinstatement_rafa/figures/annotated_session_20160406/"
 
 # Loading functions:
 source (paste (home, "/git/mwm/lib/R/plot_param_public.R", sep=""))
@@ -32,8 +33,11 @@ img_format = ".tiff"
 
 # data_reinst <- read.csv (paste (home, "/Dropbox (CRG)/2015_reinstatement_rafa/data/reinstatement_11_02_16.csv", sep=""), dec=",", sep=";")
 # reinst_annotation <- read.csv (paste (home, "/Dropbox (CRG)/2015_reinstatement_rafa/data/annot_descriptors_11_02_16.csv", sep=""), dec=",", sep=";")
-data_reinst <- read.csv (paste (home, "/Dropbox (CRG)/2015_reinstatement_rafa/data/reinstatement_17_02_16.csv", sep=""), dec=",", sep=";")
-reinst_annotation <- read.csv (paste (home, "/Dropbox (CRG)/2015_reinstatement_rafa/data/annot_descriptors_17_02_16.csv", sep=""), dec=",", sep=";")
+# data_reinst <- read.csv (paste (home, "/Dropbox (CRG)/2015_reinstatement_rafa/data/reinstatement_17_02_16.csv", sep=""), dec=",", sep=";")
+# reinst_annotation <- read.csv (paste (home, "/Dropbox (CRG)/2015_reinstatement_rafa/data/annot_descriptors_17_02_16.csv", sep=""), dec=",", sep=";")
+
+data_reinst <- read.csv (paste (home, "/Dropbox (CRG)/2015_reinstatement_rafa/data/reinstatement_06_04_16.csv", sep=""), dec=",", sep=";")
+reinst_annotation <- read.csv (paste (home, "/Dropbox (CRG)/2015_reinstatement_rafa/data/annot_descriptors_06_04_16.csv", sep=""), dec=",", sep=";")
 
 reinst_annotation$tbl_name
 # head (data_reinst)
@@ -84,6 +88,9 @@ pca2plot$group <- factor(pca2plot$group, levels=c("Ctrl choc", "Choc", "Ctrl hig
                          labels=c("Ctrl choc", "Choc", "Ctrl high fat", "High fat"))
 color_v
 
+x_lim <- ceiling(min(pca2plot$Dim.1))
+x_max_1 <-max(pca2plot$Dim.1)
+
 #############
 # PC1 PC2
 title_p <- paste ("PCA annotated sessions reinstatement\n", sep="")
@@ -92,8 +99,8 @@ pca_reinstatement.pc1.pc2  <- ggplot (pca2plot, aes(x=Dim.1, y=Dim.2, colour=gro
   scale_color_manual(values=color_v) +
   geom_text (aes(label=id), vjust=-0.5, hjust=1, size=4, show.legend = F)+
   theme(legend.key=element_rect(fill=NA)) +
-  scale_x_continuous (limits=c(-4, 6.1), breaks=-4:6) + 
-  scale_y_continuous (limits=c(-4, 4), breaks=-4:4) +
+  scale_x_continuous (limits=c(floor(min(pca2plot$Dim.1)), ceiling(max(pca2plot$Dim.1))), breaks=floor(min(pca2plot$Dim.1)):ceiling(max(pca2plot$Dim.1))) + 
+  scale_y_continuous (limits=c(floor(min(pca2plot$Dim.2)), ceiling(max(pca2plot$Dim.2))), breaks=floor(min(pca2plot$Dim.2)):ceiling(max(pca2plot$Dim.2))) +
 #   labs(title = title_p, x = paste("\nPC1 (", var_PC1, "% of variance)", sep=""), 
 #        y=paste("PC2 (", var_PC2, "% of variance)\n", sep = "")) +
   labs(x = paste("\nPC1 (", var_PC1, "% of variance)", sep=""), 
@@ -112,8 +119,8 @@ pca_reinstatement.pc1.pc2_aspect_ratio <- pca_reinstatement.pc1.pc2 + coord_fixe
                                           theme (legend.text=element_text(size=18), legend.key = element_blank(), 
                                                  legend.title=element_text(size=20))  
 
-ggsave (pca_reinstatement.pc1.pc2_aspect_ratio, file=paste(home, dir_plots, 
-                                                    "PCA_pc1_pc2_annotated_sessions.tiff", sep=""), width = 15, height = 10, dpi=dpi_q)
+# ggsave (pca_reinstatement.pc1.pc2_aspect_ratio, file=paste(home, dir_plots, 
+#                                                     "PCA_pc1_pc2_annotated_sessions.tiff", sep=""), width = 15, height = 10, dpi=dpi_q)
 
 #############
 # PC1 PC3
@@ -123,8 +130,9 @@ pca_reinstatement.pc1.pc3  <- ggplot (pca2plot, aes(x=Dim.1, y=Dim.3, colour=gro
   scale_color_manual(values=color_v) +
   geom_text (aes(label=id), vjust=-0.5, hjust=1, size=4, show.legend = F)+
   theme(legend.key=element_rect(fill=NA)) +
-  scale_x_continuous (limits=c(-4, 6.1), breaks=-4:6) + 
-  scale_y_continuous (limits=c(-4, 4), breaks=-4:4) +
+#   scale_x_continuous (limits=c(-4, 6.1), breaks=-4:6) +
+  scale_x_continuous (limits=c(floor(min(pca2plot$Dim.1)), ceiling(max(pca2plot$Dim.1))), breaks=floor(min(pca2plot$Dim.1)):ceiling(max(pca2plot$Dim.1))) +
+  scale_y_continuous (limits=c(floor(min(pca2plot$Dim.3)), ceiling(max(pca2plot$Dim.3))), breaks=floor(min(pca2plot$Dim.3)):ceiling(max(pca2plot$Dim.3))) + 
 #   labs(title = title_p, x = paste("\nPC1 (", var_PC1, "% of variance)", sep=""), 
 #        y=paste("PC3 (", var_PC3, "% of variance)\n", sep = "")) +
   labs(x = paste("\nPC1 (", var_PC1, "% of variance)", sep=""), 
@@ -156,8 +164,8 @@ pca_reinstatement.pc2.pc3  <- ggplot (pca2plot, aes(x=Dim.2, y=Dim.3, colour=gro
   scale_color_manual(values=color_v) +
   geom_text (aes(label=id), vjust=-0.5, hjust=1, size=4, show.legend = F)+
   theme(legend.key=element_rect(fill=NA)) +
-  scale_x_continuous (limits=c(-4, 6), breaks=-4:6) + 
-  scale_y_continuous (limits=c(-4, 4), breaks=-4:4) +
+  scale_x_continuous (limits=c(floor(min(pca2plot$Dim.2)), ceiling(max(pca2plot$Dim.2))), breaks=floor(min(pca2plot$Dim.2)):ceiling(max(pca2plot$Dim.2))) +
+  scale_y_continuous (limits=c(floor(min(pca2plot$Dim.3)), ceiling(max(pca2plot$Dim.3))), breaks=floor(min(pca2plot$Dim.3)):ceiling(max(pca2plot$Dim.3))) + 
 #   labs(title = title_p, x = paste("\nPC2 (", var_PC2, "% of variance)", sep=""), 
 #        y=paste("PC3 (", var_PC3, "% of variance)\n", sep = "")) +
   labs(x = paste("\nPC2 (", var_PC2, "% of variance)", sep=""), 
@@ -239,15 +247,16 @@ p_circle_plot_coord_fixed <- p_circle_plot + coord_fixed() +
   theme(axis.title.y = element_text(size =22))
 p_circle_plot_coord_fixed
 
-# ggsave (p_circle_plot_coord_fixed, file=paste(home, dir_plots, "circle_annotated_behavior", img_format, sep=""), 
-#         width = 15, height = 15, dpi=dpi_q)
+ggsave (p_circle_plot_coord_fixed, file=paste(home, dir_plots, "circle_annotated_behavior", img_format, sep=""), 
+        width = 15, height = 15, dpi=dpi_q)
 
 # The palette with grey:
 cbPalette <- c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
 cbbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
 # Adapted
 cb_palette_adapt <- c("#999999", "#CC79A7", "#009E73", "#E69F00", "#0072B2", "#D55E00")
-               
+length(circle_plot$Dim.1)
+
 ## Plotting by type of behavioral annotation
 p_circle_plot_by_gr <- ggplot(circle_plot) + 
                        geom_segment (data=circle_plot, aes(colour=annot_gr, x=0, y=0, xend=Dim.1, yend=Dim.2), 
@@ -284,8 +293,8 @@ p_circle_plot_by_gr_coord_fixed
 ## Same thing but without arrows
 # aes(colour=annot_gr,
 p_circle_points <- ggplot(circle_plot) + 
-#   geom_text (aes(colour=annot_gr, x=Dim.1, y=Dim.2,label=labels_v), show.legend = FALSE, size=7, fontface="bold", vjust=-0.4) +
-  geom_label (aes(fill=annot_gr, x=Dim.1, y=Dim.2,label=labels_v), colour="white",show.legend = FALSE, size=7, fontface="bold", vjust=-0.4) +
+  geom_text (aes(colour=annot_gr, x=Dim.1, y=Dim.2,label=labels_v), show.legend = FALSE, size=7, fontface="bold", vjust=-0.4) +
+#   geom_label (aes(fill=annot_gr, x=Dim.1, y=Dim.2,label=labels_v), colour="white",show.legend = FALSE, size=7, fontface="bold", vjust=-0.4) +
   scale_fill_manual(values = cb_palette_adapt) +
   geom_point(aes(colour=annot_gr, x=Dim.1, y=Dim.2), size=3) +
   scale_color_manual(values = cb_palette_adapt) +
@@ -334,7 +343,8 @@ title_b <- paste ("Variable contribution to PC1\n", "Variance explained: ", var_
 
 bars_plot_PC1 <- ggplot (data=df.bars_to_plot, aes(x=index, y=value)) + 
 #   ylim (c(0, 12)) +
-  scale_y_continuous (limits=c(0, 14), breaks=seq(0, 14, by=2)) + 
+#   scale_y_continuous (limits=c(0, 14), breaks=seq(0, 14, by=2)) + 
+  scale_y_continuous (limits=c(0, 18), breaks=seq(0, 18, by=2)) +
   geom_bar (stat="identity", fill="gray", width=0.8) + 
   labs (title = title_b, x = "", y="Contribution in %\n") +
   theme(axis.text.x=element_text(angle=45, vjust=1, hjust=1))
@@ -355,7 +365,8 @@ df.bars_to_plot_PC2$index <- factor(df.bars_to_plot_PC2$index, levels = df.bars_
 
 bars_plot_PC2 <- ggplot (data=df.bars_to_plot_PC2, aes(x=index, y=value)) + 
 #   ylim (c(0, 12)) +
-  scale_y_continuous (limits=c(0, 14), breaks=seq(0, 14, by=2)) + 
+#   scale_y_continuous (limits=c(0, 14), breaks=seq(0, 14, by=2)) + 
+  scale_y_continuous (limits=c(0, 18), breaks=seq(0, 18, by=2)) + 
   geom_bar (stat="identity", fill="gray", width=0.8) + 
   labs (title = title_b, x = "", y="Contribution in %\n") +
   theme (axis.text.x=element_text(angle=45, vjust=1, hjust=1))
@@ -380,7 +391,8 @@ var_PC3
 
 bars_plot_PC3 <- ggplot (data=df.bars_to_plot_PC3, aes(x=index, y=value)) + 
   geom_bar (stat="identity", fill="gray", width=0.8) + 
-  scale_y_continuous (limits=c(0, 14), breaks=seq(0, 14, by=2)) + 
+#   scale_y_continuous (limits=c(0, 14), breaks=seq(0, 14, by=2)) +
+  scale_y_continuous (limits=c(0, 18), breaks=seq(0, 18, by=2)) +
   labs (title = title_b, x = "", y="Contribution in %\n") +
   theme (axis.text.x=element_text(angle=45, vjust=1, hjust=1))
 
@@ -503,7 +515,7 @@ data(tips, package="reshape")
 tips
 ggpairs(data=tips, # data.frame with variables
         columns=1:3, # columns to plot, default to all.
-        title="tips data", # title of the plot
+        title="", # title of the plot
         colour = "sex") # aesthetics, ggplot2 style
 ## GGally example
 # ggsave (pca_reinstatement.pc1.pc2_aspect_ratio, file=paste(home, dir_plots, 
@@ -613,7 +625,7 @@ pm <- putPlot(pm, p_circle_points_PC2_PC1_leg_coord_fixed, 1, 2)
 pm <- putPlot(pm, p_circle_points_PC3_PC1_leg_coord_fixed, 1, 3)
 pm <- putPlot(pm, p_circle_points_PC3_PC2_leg_coord_fixed, 2, 3)
 pm
-
+                                                                                                                  
 stop("Execution finished correctly")
 
 
