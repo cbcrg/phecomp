@@ -48,19 +48,7 @@ color_v <- c("orange", "red", "lightblue", "blue")
 ####
 ## All columns but mouse id and group
 # data_reinst_filt <- subset (data_reinst, select=-c(1,2))
-## Mara proposed to separate the data by the different experimental phases
 data_reinst_filt <- subset (data_reinst, select=-c(1,2))
-
-# deprivation
-dep <- c("Learning_AUC", "Learning_delta", "Learning_discrim", "Impulsivity_dep", "Imp_comp_dep", "Compulsivity_dep", "Acquisition_day")
-# ad_libitum
-ad_lib <- c("Primary_Reinf", "Habituation_Primary_Reinf", "Prim_R_discrim", "Impulsivity_adlib", "Imp_comp_adlib", "Compulsivity_adlib")
-# progressive ratio
-PR <- c("PR2_break_point")
-# extinction operant conditioning
-ext <- c("Ext_Learning_AUC", "Ext_Learning_delta", "Ext_Inflex", "Extinction_day")
-# relapse
-relapse <- c("Relapse_Fold_Change", "Relapse_Inflex")
 
 # data_reinst_filt <- subset (data_reinst, select=c(dep))
 
@@ -153,8 +141,8 @@ pca_reinstatement.pc1.pc3_aspect_ratio <- pca_reinstatement.pc1.pc3 + coord_fixe
 
 pca_reinstatement.pc1.pc3_aspect_ratio
 
-# ggsave (pca_reinstatement.pc1.pc3_aspect_ratio, file=paste(home, dir_plots, 
-#                                                    "PCA_pc1_pc3_annotated_sessions.tiff", sep=""), width = 15, height = 10, dpi=dpi_q)
+ggsave (pca_reinstatement.pc1.pc3_aspect_ratio, file=paste(home, dir_plots, 
+                                                   "PCA_pc1_pc3_annotated_sessions.tiff", sep=""), width = 15, height = 10, dpi=dpi_q)
 
 #############
 # PC2 PC3
@@ -321,6 +309,7 @@ p_circle_points_leg_coord_fixed
 ###########
 ## Barplot showing the contribution of all principal components
 ## Plot showing the percentage of variance explained by each principal component
+bar_ylim <- 30
 eigenvalues <- res$eig
 head(eigenvalues[, 1:2])
 barplot(eigenvalues[, 2], names.arg=1:nrow(eigenvalues), 
@@ -353,6 +342,17 @@ bars_plot_PC1
 # ggsave (bars_plot_PC1, file=paste(home, dir_plots, "bars_PC1", img_format, sep=""),
 #         width = 15, height = 12, dpi=dpi_q)
 
+bars_plot_PC1 <- ggplot (data=df.bars_to_plot, aes(x=index, y=value)) + 
+  #   ylim (c(0, 12)) +
+  scale_y_continuous (limits=c(0, bar_ylim), breaks=seq(0, bar_ylim, by=5)) +   
+  geom_bar (stat="identity", fill="gray", width=0.8) + 
+  geom_text(aes(y=0, label=index), hjust=-0.1, color="black", angle = 90, size=5) +  
+  annotate("text", label = paste("PC1 (",var_PC1, "%)", sep=""), x = 5, y = 4 * bar_ylim/3, size = 6, colour = "black") +
+  labs (title = title_b, x = "", y="Contribution in %\n") +
+  #   theme(axis.text.x=element_text(angle=45, vjust=1, hjust=1)) 
+  theme (axis.text.x=element_blank())    
+bars_plot_PC1
+
 # PC2
 title_b <- paste ("Variable contribution to PC2\n", "Variance explained: ", var_PC2, "%\n", sep="")
 df.bars_PC2 <- cbind (as.numeric(sort(res$var$coord[,2]^2/sum(res$var$coord[,2]^2)*100,decreasing=TRUE)), names(res$var$coord[,2])[order(res$var$coord[,2]^2,decreasing=TRUE)])
@@ -374,6 +374,17 @@ bars_plot_PC2 <- ggplot (data=df.bars_to_plot_PC2, aes(x=index, y=value)) +
 bars_plot_PC2
 # ggsave (bars_plot_PC2, file=paste(home, dir_plots, "bars_PC2", img_format,
 #         sep=""), width = 15, height = 12, dpi=dpi_q)
+
+bars_plot_PC2 <- ggplot (data=df.bars_to_plot_PC2, aes(x=index, y=value)) + 
+  #   ylim (c(0, 12)) +
+  scale_y_continuous (limits=c(0, bar_ylim), breaks=seq(0, bar_ylim, by=5)) +   
+  geom_bar (stat="identity", fill="gray", width=0.8) + 
+  geom_text(aes(y=0, label=index), hjust=-0.1, color="black", angle = 90, size=5) +  
+  annotate("text", label = paste("PC2 (",var_PC2, "%)", sep=""), x = 5, y = 4 * bar_ylim/3, size = 6, colour = "black") +
+  labs (title = title_b, x = "", y="Contribution in %\n") +
+  #   theme(axis.text.x=element_text(angle=45, vjust=1, hjust=1)) 
+  theme (axis.text.x=element_blank())    
+bars_plot_PC2
 
 # PC3
 title_b <- paste ("Variable contribution to PC3\n", "Variance explained: ", var_PC3, "%\n", sep="")
@@ -399,6 +410,17 @@ bars_plot_PC3 <- ggplot (data=df.bars_to_plot_PC3, aes(x=index, y=value)) +
 bars_plot_PC3
 # ggsave (bars_plot_PC3, file=paste(home, dir_plots, "bars_PC3", img_format, 
 #         sep=""), width = 15, height = 12, dpi=dpi_q)
+
+bars_plot_PC3 <- ggplot (data=df.bars_to_plot_PC3, aes(x=index, y=value)) + 
+  #   ylim (c(0, 12)) +
+  scale_y_continuous (limits=c(0, bar_ylim), breaks=seq(0, bar_ylim, by=5)) +   
+  geom_bar (stat="identity", fill="gray", width=0.8) + 
+  geom_text(aes(y=0, label=index), hjust=-0.1, color="black", angle = 90, size=5) +  
+  annotate("text", label = paste("PC3 (",var_PC3, "%)", sep=""), x = 5, y = 4 * bar_ylim/3, size = 6, colour = "black") +
+  labs (title = title_b, x = "", y="Contribution in %\n") +
+  #   theme(axis.text.x=element_text(angle=45, vjust=1, hjust=1)) 
+  theme (axis.text.x=element_blank())    
+bars_plot_PC3
 
 #######################
 #######################
@@ -560,9 +582,14 @@ PC3_lab <- ggplot(mtcars, aes(x = wt, y = mpg)) +
 pm <- putPlot(pm_empty, pca_reinstatement.pc1.pc2_aspect_ratio, 2, 1)
 pm <- putPlot(pm, pca_reinstatement.pc1.pc3_aspect_ratio, 3, 1)
 pm <- putPlot(pm, pca_reinstatement.pc2.pc3_aspect_ratio, 3, 2)
-pm <- putPlot(pm, PC1_lab, 1, 1)
-pm <- putPlot(pm, PC2_lab, 2, 2)
-pm <- putPlot(pm, PC3_lab, 3, 3)
+
+pm <- putPlot(pm, bars_plot_PC1, 1,1)
+pm <- putPlot(pm, bars_plot_PC2, 2,2)
+pm <- putPlot(pm, bars_plot_PC3, 3,3)
+
+# pm <- putPlot(pm, PC1_lab, 1, 1)
+# pm <- putPlot(pm, PC2_lab, 2, 2)
+# pm <- putPlot(pm, PC3_lab, 3, 3)
 # pm
 
 ####################################
@@ -625,7 +652,11 @@ pm <- putPlot(pm, p_circle_points_PC2_PC1_leg_coord_fixed, 1, 2)
 pm <- putPlot(pm, p_circle_points_PC3_PC1_leg_coord_fixed, 1, 3)
 pm <- putPlot(pm, p_circle_points_PC3_PC2_leg_coord_fixed, 2, 3)
 pm
-                                                                                                                  
+
+tiff(file=paste(home, dir_plots, "matrix_pca", ".tiff", sep=""), height = 800, width = 1200)
+print(pm)
+dev.off()
+
 stop("Execution finished correctly")
 
 

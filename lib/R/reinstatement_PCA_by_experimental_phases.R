@@ -21,7 +21,7 @@ home <- Sys.getenv("HOME")
 # dir_plots <- "/Dropbox (CRG)/2015_reinstatement_rafa/figures/annotated_session/HF/"
 # dir_plots <- "/Dropbox (CRG)/2015_reinstatement_rafa/figures/annotated_session/all_animals/"
 # dir_plots <- "/Dropbox (CRG)/2015_reinstatement_rafa/figures/annotated_session_20160211/"
-dir_plots <- "/Dropbox (CRG)/2015_reinstatement_rafa/figures/annotated_session_20160217/"
+# dir_plots <- "/Dropbox (CRG)/2015_reinstatement_rafa/figures/annotated_session_20160217/"
 dir_plots <- "/Dropbox (CRG)/2015_reinstatement_rafa/figures/dividedPhases_20160330/"
 
 # Loading functions:
@@ -33,8 +33,11 @@ img_format = ".tiff"
 
 # data_reinst <- read.csv (paste (home, "/Dropbox (CRG)/2015_reinstatement_rafa/data/reinstatement_11_02_16.csv", sep=""), dec=",", sep=";")
 # reinst_annotation <- read.csv (paste (home, "/Dropbox (CRG)/2015_reinstatement_rafa/data/annot_descriptors_11_02_16.csv", sep=""), dec=",", sep=";")
-data_reinst <- read.csv (paste (home, "/Dropbox (CRG)/2015_reinstatement_rafa/data/reinstatement_17_02_16.csv", sep=""), dec=",", sep=";")
-reinst_annotation <- read.csv (paste (home, "/Dropbox (CRG)/2015_reinstatement_rafa/data/annot_descriptors_17_02_16.csv", sep=""), dec=",", sep=";")
+# data_reinst <- read.csv (paste (home, "/Dropbox (CRG)/2015_reinstatement_rafa/data/reinstatement_17_02_16.csv", sep=""), dec=",", sep=";")
+# reinst_annotation <- read.csv (paste (home, "/Dropbox (CRG)/2015_reinstatement_rafa/data/annot_descriptors_17_02_16.csv", sep=""), dec=",", sep=";")
+data_reinst <- read.csv (paste (home, "/Dropbox (CRG)/2015_reinstatement_rafa/data/reinstatement_06_04_16.csv", sep=""), dec=",", sep=";")
+reinst_annotation <- read.csv (paste (home, "/Dropbox (CRG)/2015_reinstatement_rafa/data/annot_descriptors_06_04_16.csv", sep=""), dec=",", sep=";")
+
 
 reinst_annotation$tbl_name
 # head (data_reinst)
@@ -49,19 +52,26 @@ color_v <- c("orange", "red", "lightblue", "blue")
 data_reinst_filt <- subset (data_reinst, select=-c(1,2))
 
 # deprivation
+## filter_phases <- c("Learning_AUC", "Learning_delta", "Learning_discrim", "Impulsivity_dep", "Imp_comp_dep", "Compulsivity_dep", 
+##                      "Acquisition_day")
 # filter_phases <- c("Learning_AUC", "Learning_delta", "Learning_discrim", "Impulsivity_dep", "Imp_comp_dep", "Compulsivity_dep", 
-#                      "Acquisition_day")
+#                    "Acquisition_day", "Learning_Inactive")
+
 # tag <- "deprivation"
-# bar_ylim <- 45
+# bar_ylim <- 55
 
 # deprivation + PR
 # filter_phases <- c("Learning_AUC", "Learning_delta", "Learning_discrim", "Impulsivity_dep", "Imp_comp_dep", "Compulsivity_dep", 
 #                    "Acquisition_day", "PR2_break_point")
-# tag <- "deprivation_PR"
-# bar_ylim <- 45
+filter_phases <- c("Learning_AUC", "Learning_delta", "Learning_discrim", "Impulsivity_dep", "Imp_comp_dep", "Compulsivity_dep", 
+                   "Acquisition_day", "Learning_Inactive", "PR2_break_point")
+tag <- "deprivation_PR"
+bar_ylim <- 45
 
 ## ad_libitum
-# filter_phases <- c("Primary_Reinf", "Habituation_Primary_Reinf", "Prim_R_discrim", "Impulsivity_adlib", "Imp_comp_adlib", "Compulsivity_adlib")
+## filter_phases <- c("Primary_Reinf", "Habituation_Primary_Reinf", "Prim_R_discrim", "Impulsivity_adlib", "Imp_comp_adlib", "Compulsivity_adlib")
+# filter_phases <- c("Primary_Reinf", "Habituation_Primary_Reinf", "Prim_R_discrim", "Impulsivity_adlib", "Imp_comp_adlib", "Compulsivity_adlib", "Prim_R_Inactive")
+
 # tag <- "ad_lib"
 # bar_ylim <- 50
 
@@ -70,7 +80,8 @@ data_reinst_filt <- subset (data_reinst, select=-c(1,2))
 # tag <- "PR"
 # 
 # ## extinction operant conditioning
-# filter_phases <- c("Ext_Learning_AUC", "Ext_Learning_delta", "Ext_Inflex", "Extinction_day")
+## filter_phases <- c("Ext_Learning_AUC", "Ext_Learning_delta", "Ext_Inflex", "Extinction_day")
+# filter_phases <- c("Ext_Learning_AUC", "Ext_Learning_delta", "Ext_Inflex", "Extinction_day", "Ext_Inflex_Inactive")
 # tag <- "ext"
 # bar_ylim <- 75
 # 
@@ -78,10 +89,13 @@ data_reinst_filt <- subset (data_reinst, select=-c(1,2))
 # filter_phases <- c("Relapse_Fold_Change", "Relapse_Inflex")
 # tag <- "relapse"
 
-# ## extinction operant conditioning
-filter_phases <- c( "Ext_Learning_AUC", "Ext_Learning_delta", "Ext_Inflex", "Extinction_day", "Relapse_Fold_Change", "Relapse_Inflex")
-tag <- "ext_relapse"
-bar_ylim <- 45
+# ## extinction operant conditioning with relapse
+## filter_phases <- c("Ext_Learning_AUC", "Ext_Learning_delta", "Ext_Inflex", "Extinction_day", "Relapse_Fold_Change", "Relapse_Inflex")
+# filter_phases <- c("Ext_Learning_AUC", "Ext_Learning_delta", "Ext_Inflex", "Extinction_day", "Ext_Inflex_Inactive", 
+#                    "Relapse_Fold_Change", "Relapse_Inflex")
+# 
+# tag <- "ext_relapse"
+# bar_ylim <- 45
 
 ## Filtering by session
 ## matrix
@@ -142,8 +156,8 @@ pca_reinstatement.pc1.pc2_aspect_ratio <- pca_reinstatement.pc1.pc2 + coord_fixe
   theme (legend.text=element_text(size=18), legend.key = element_blank(), 
          legend.title=element_text(size=20))  
 
-# ggsave (pca_reinstatement.pc1.pc2_aspect_ratio, file=paste(home, dir_plots, 
-#                                                            "PCA_pc1_pc2_annotated_sessions _", tag, ".tiff", sep=""), width = 15, height = 10, dpi=dpi_q)
+ggsave (pca_reinstatement.pc1.pc2_aspect_ratio, file=paste(home, dir_plots, 
+                                                           "PCA_pc1_pc2_annotated_sessions_", tag, ".tiff", sep=""), width = 15, height = 10, dpi=dpi_q)
 
 #############
 # PC1 PC3
@@ -175,8 +189,8 @@ pca_reinstatement.pc1.pc3_aspect_ratio <- pca_reinstatement.pc1.pc3 + coord_fixe
 
 pca_reinstatement.pc1.pc3_aspect_ratio
 
-# ggsave (pca_reinstatement.pc1.pc3_aspect_ratio, file=paste(home, dir_plots, 
-#                                                    "PCA_pc1_pc3_annotated_sessions_", tag, ".tiff", sep=""), width = 15, height = 10, dpi=dpi_q)
+ggsave (pca_reinstatement.pc1.pc3_aspect_ratio, file=paste(home, dir_plots, 
+                                                   "PCA_pc1_pc3_annotated_sessions_", tag, ".tiff", sep=""), width = 15, height = 10, dpi=dpi_q)
 
 #############
 # PC2 PC3
@@ -208,8 +222,8 @@ pca_reinstatement.pc2.pc3_aspect_ratio <- pca_reinstatement.pc2.pc3 + coord_fixe
 
 pca_reinstatement.pc2.pc3_aspect_ratio
 
-# ggsave (pca_reinstatement.pc2.pc3_aspect_ratio, file=paste(home, dir_plots, 
-#                                                            "PCA_pc2_pc3_annotated_sessions_", tag, ".tiff", sep=""), width = 15, height = 10, dpi=dpi_q)
+ggsave (pca_reinstatement.pc2.pc3_aspect_ratio, file=paste(home, dir_plots, 
+                                                           "PCA_pc2_pc3_annotated_sessions_", tag, ".tiff", sep=""), width = 15, height = 10, dpi=dpi_q)
 
 ###############
 ### Circle Plot
@@ -245,6 +259,7 @@ p_circle_plot <- ggplot(circle_plot) +
   geom_segment (data=circle_plot, aes(x=0, y=0, xend=Dim.1, yend=Dim.2), 
                 arrow=arrow(length=unit(0.2,"cm")), alpha=1, size=1, colour="red") +
   xlim (c(-1.2, 1.2)) + ylim (c(-1.2, 1.2)) +
+  ## extinction has only positive values on PC1 Comment
   geom_text (data=neg_positions_plot, aes (x=Dim.1, y=Dim.2, label=neg_labels, hjust=1.2), show.legend = FALSE, size=6.5) + 
   geom_text (data=pos_positions_plot, aes (x=Dim.1, y=Dim.2, label=pos_labels, hjust=-0.3), show.legend = FALSE, size=6.5) +
   geom_vline (xintercept = 0, linetype="dotted") +
@@ -285,6 +300,7 @@ p_circle_plot_by_gr <- ggplot(circle_plot) +
   scale_y_continuous(limits=c(-1.3, 1.3), breaks=(c(-1,0,1))) +
   #                        xlim (c(-1.2, 1.2)) + ylim (c(-1.2, 1.2)) +
   scale_color_manual(values = cb_palette_adapt) +
+  ## extinction has only positive values on PC1 Comment
   geom_text (data=neg_positions_plot, aes (x=Dim.1, y=Dim.2, label=neg_labels, hjust=1.2), show.legend = FALSE, size=7.5) + 
   geom_text (data=pos_positions_plot, aes (x=Dim.1, y=Dim.2, label=pos_labels, hjust=-0.3), show.legend = FALSE, size=7.5) +
   geom_vline (xintercept = 0, linetype="dotted") +
@@ -306,15 +322,15 @@ p_circle_plot_by_gr_coord_fixed <- p_circle_plot_by_gr + coord_fixed() +
   theme(axis.title.y = element_text(size=30))
 p_circle_plot_by_gr_coord_fixed
 
-# ggsave (p_circle_plot_by_gr_coord_fixed, file=paste(home, dir_plots, "circle_annotated_beh_coloured_by_gr_", tag, img_format, sep=""), 
-#         width = 15, height = 15, dpi=dpi_q)
+ggsave (p_circle_plot_by_gr_coord_fixed, file=paste(home, dir_plots, "circle_annotated_beh_coloured_by_gr_", tag, img_format, sep=""), 
+        width = 15, height = 15, dpi=dpi_q)
 
 ####################################
 ## Same thing but without arrows
 # aes(colour=annot_gr,
 p_circle_points <- ggplot(circle_plot) + 
-  #   geom_text (aes(colour=annot_gr, x=Dim.1, y=Dim.2,label=labels_v), show.legend = FALSE, size=7, fontface="bold", vjust=-0.4) +
-  geom_label (aes(fill=annot_gr, x=Dim.1, y=Dim.2,label=labels_v), colour="white",show.legend = FALSE, size=7, fontface="bold", vjust=-0.4) +
+    geom_text (aes(colour=annot_gr, x=Dim.1, y=Dim.2,label=labels_v), show.legend = FALSE, size=7, fontface="bold", vjust=-0.4) +
+#   geom_label (aes(fill=annot_gr, x=Dim.1, y=Dim.2,label=labels_v), colour="white",show.legend = FALSE, size=7, fontface="bold", vjust=-0.4) +
   scale_fill_manual(values = cb_palette_adapt) +
   geom_point(aes(colour=annot_gr, x=Dim.1, y=Dim.2), size=3) +
   scale_color_manual(values = cb_palette_adapt) +
@@ -330,8 +346,8 @@ p_circle_points_leg <- p_circle_points + theme(legend.text = element_text(size =
 p_circle_points_leg_coord_fixed <-p_circle_points_leg + coord_fixed()
 p_circle_points_leg_coord_fixed
 
-# ggsave (p_circle_points_leg_coord_fixed, file=paste(home, dir_plots, "points_circle_behavior_labels_", tag, img_format, sep=""),
-#         width = 15, height = 15, dpi=dpi_q)
+ggsave (p_circle_points_leg_coord_fixed, file=paste(home, dir_plots, "points_circle_behavior_labels_", tag, img_format, sep=""),
+        width = 15, height = 15, dpi=dpi_q)
 
 ############
 ## BARPLOT
@@ -370,8 +386,8 @@ bars_plot_PC1 <- ggplot (data=df.bars_to_plot, aes(x=index, y=value)) +
   theme (axis.text.x=element_blank())
 bars_plot_PC1
 
-# ggsave (bars_plot_PC1, file=paste(home, dir_plots, "bars_PC1", tag, img_format, sep=""),
-#         width = 15, height = 12, dpi=dpi_q)
+ggsave (bars_plot_PC1, file=paste(home, dir_plots, "bars_PC1", tag, img_format, sep=""),
+        width = 15, height = 12, dpi=dpi_q)
 
 # PC2
 title_b <- paste ("Variable contribution to PC2\n", "Variance explained: ", var_PC2, "%\n", sep="")
@@ -394,8 +410,8 @@ bars_plot_PC2 <- ggplot (data=df.bars_to_plot_PC2, aes(x=index, y=value)) +
   theme (axis.text.x=element_blank())
 
 bars_plot_PC2
-# ggsave (bars_plot_PC2, file=paste(home, dir_plots, "bars_PC2_", tag, img_format,
-#         sep=""), width = 15, height = 12, dpi=dpi_q)
+ggsave (bars_plot_PC2, file=paste(home, dir_plots, "bars_PC2_", tag, img_format,
+        sep=""), width = 15, height = 12, dpi=dpi_q)
 
 # PC3
 title_b <- paste ("Variable contribution to PC3\n", "Variance explained: ", var_PC3, "%\n", sep="")
@@ -421,8 +437,8 @@ bars_plot_PC3 <- ggplot (data=df.bars_to_plot_PC3, aes(x=index, y=value)) +
   theme (axis.text.x=element_blank())
 
 bars_plot_PC3
-# ggsave (bars_plot_PC3, file=paste(home, dir_plots, "bars_PC3_", tag, img_format,
-#         sep=""), width = 15, height = 12, dpi=dpi_q)
+ggsave (bars_plot_PC3, file=paste(home, dir_plots, "bars_PC3_", tag, img_format,
+        sep=""), width = 15, height = 12, dpi=dpi_q)
 
 # #######################
 # #######################
