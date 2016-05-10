@@ -161,8 +161,8 @@ pca_reinstatement.pc1.pc3_aspect_ratio <- pca_reinstatement.pc1.pc3 + coord_fixe
 
 pca_reinstatement.pc1.pc3_aspect_ratio
 
-ggsave (pca_reinstatement.pc1.pc3_aspect_ratio, file=paste(home, dir_plots, 
-                                                   "PCA_pc1_pc3_annotated_sessions.tiff", sep=""), width = 15, height = 10, dpi=dpi_q)
+# ggsave (pca_reinstatement.pc1.pc3_aspect_ratio, file=paste(home, dir_plots, 
+#                                                    "PCA_pc1_pc3_annotated_sessions.tiff", sep=""), width = 15, height = 10, dpi=dpi_q)
 
 #############
 # PC2 PC3
@@ -255,8 +255,8 @@ p_circle_plot_coord_fixed <- p_circle_plot + coord_fixed() +
   theme(axis.title.y = element_text(size =22))
 p_circle_plot_coord_fixed
 
-ggsave (p_circle_plot_coord_fixed, file=paste(home, dir_plots, "circle_annotated_behavior", img_format, sep=""), 
-        width = 15, height = 15, dpi=dpi_q)
+# ggsave (p_circle_plot_coord_fixed, file=paste(home, dir_plots, "circle_annotated_behavior", img_format, sep=""), 
+#         width = 15, height = 15, dpi=dpi_q)
 
 # The palette with grey:
 cbPalette <- c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
@@ -616,7 +616,7 @@ pm <- putPlot(pm, bars_plot_PC3, 3,3)
 ## Same thing but without arrows
 # aes(colour=annot_gr,
 p_circle_points_PC2_PC1 <- ggplot(circle_plot) + 
-  #   geom_text (aes(colour=annot_gr, x=Dim.1, y=Dim.2,label=labels_v), show.legend = FALSE, size=7, fontface="bold", vjust=-0.4) +
+    geom_text (aes(colour=annot_gr, x=Dim.2, y=Dim.1,label=labels_v), show.legend = FALSE, size=3, fontface="bold", vjust=-0.4) +
 #   geom_label (aes(fill=annot_gr, x=Dim.2, y=Dim.1,label=labels_v), colour="white",show.legend = FALSE, size=7, fontface="bold", vjust=-0.4) +
   scale_fill_manual(values = cb_palette_adapt) +
   geom_point(aes(colour=annot_gr, x=Dim.2, y=Dim.1), size=3) +
@@ -633,7 +633,7 @@ p_circle_points_PC2_PC1_leg <- p_circle_points_PC2_PC1 + theme(legend.text = ele
 p_circle_points_PC2_PC1_leg_coord_fixed <-p_circle_points_PC2_PC1_leg + coord_fixed()
 
 p_circle_points_PC3_PC1 <- ggplot(circle_plot) + 
-  #   geom_text (aes(colour=annot_gr, x=Dim.1, y=Dim.2,label=labels_v), show.legend = FALSE, size=7, fontface="bold", vjust=-0.4) +
+    geom_text (aes(colour=annot_gr, x=Dim.3, y=Dim.1,label=labels_v), show.legend = FALSE, size=3, fontface="bold", vjust=-0.4) +
 #   geom_label (aes(fill=annot_gr, x=Dim.3, y=Dim.1,label=labels_v), colour="white",show.legend = FALSE, size=7, fontface="bold", vjust=-0.4) +
   scale_fill_manual(values = cb_palette_adapt) +
   geom_point(aes(colour=annot_gr, x=Dim.3, y=Dim.1), size=3) +
@@ -651,8 +651,8 @@ p_circle_points_PC3_PC1_leg_coord_fixed <-p_circle_points_PC3_PC1_leg + coord_fi
 p_circle_points_PC3_PC1_leg_coord_fixed
 
 p_circle_points_PC3_PC2 <- ggplot(circle_plot) + 
-  #   geom_text (aes(colour=annot_gr, x=Dim.1, y=Dim.2,label=labels_v), show.legend = FALSE, size=7, fontface="bold", vjust=-0.4) +
-  #   geom_label (aes(fill=annot_gr, x=Dim.3, y=Dim.1,label=labels_v), colour="white",show.legend = FALSE, size=7, fontface="bold", vjust=-0.4) +
+    geom_text (aes(colour=annot_gr, x=Dim.3, y=Dim.2,label=labels_v), show.legend = FALSE, size=3, fontface="bold", vjust=-0.4) +
+  #   geom_label (aes(fill=annot_gr, x=Dim.3, y=Dim.2,label=labels_v), colour="white",show.legend = FALSE, size=7, fontface="bold", vjust=-0.4) +
   scale_fill_manual(values = cb_palette_adapt) +
   geom_point(aes(colour=annot_gr, x=Dim.3, y=Dim.2), size=3) +
   scale_color_manual(values = cb_palette_adapt) +
