@@ -13,6 +13,7 @@ library (plyr)
 library(FactoMineR)
 library(ggplot2)
 library(Hmisc) # arrow function
+library("cowplot")
 
 ##Getting HOME directory 
 home <- Sys.getenv("HOME")
@@ -38,27 +39,42 @@ color_v <- c("orange", "red", "lightblue", "blue")
 # data_reinst_filt <- subset (data_reinst, select=-c(1,2))
 ## Mara proposed to separate the data by the different experimental phases
 data_reinst_filt <- subset (data_reinst, select=-c(1,2))
+tag_file <- "all_var"
+# Color for all variables, I want to mantain always the same colors for the variables
+# The palette with grey:
+cbPalette <- c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+cbbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+# Adapted
+cb_palette_adapt <- c("#999999", "#CC79A7", "#009E73", "#E69F00", "#0072B2", "#D55E00")
+
 
 # deprivation
 # dep <- c("Learning_AUC", "Learning_delta", "Learning_discrim", "Impulsivity_dep", "Imp_comp_dep", "Compulsivity_dep", "Acquisition_day")
-dep <- c("Learning_AUC", "Learning_delta", "Learning_discrim", "Impulsivity_dep", "Imp_comp_dep", "Compulsivity_dep", "Acquisition_day", "Learning_Inactive")
+# dep <- c("Learning_AUC", "Learning_delta", "Learning_discrim", "Impulsivity_dep", "Imp_comp_dep", "Compulsivity_dep", "Acquisition_day", "Learning_Inactive")
+# tag_file = "_acq_operant_cond"
+# cb_palette_adapt <- c("#999999", "#009E73", "#E69F00", "#0072B2", "#D55E00", "#CC79A7")
 
 # ad_libitum
-# ad_lib <- c("Primary_Reinf", "Habituation_Primary_Reinf", "Prim_R_discrim", "Impulsivity_adlib", "Imp_comp_adlib", "Compulsivity_adlib")
 ad_lib <- c("Primary_Reinf", "Habituation_Primary_Reinf", "Prim_R_discrim", "Impulsivity_adlib", "Imp_comp_adlib", "Compulsivity_adlib", "Prim_R_Inactive")
+tag_file = "_maint_operant_cond"
+cb_palette_adapt <- c("#999999", "#009E73", "#0072B2", "#E69F00", "#D55E00", "#CC79A7")
 
 # progressive ratio
-PR <- c("PR2_break_point")
-# extinction operant conditioning
+# PR <- c("PR2_break_point")
+# tag_file <- "_progressive_ratio"
 
-# ext <- c("Ext_Learning_AUC", "Ext_Learning_delta", "Ext_Inflex", "Extinction_day")
-ext <- c("Ext_Learning_AUC", "Ext_Learning_delta", "Ext_Inflex", "Extinction_day", "Ext_Inflex_Inactive")
+# Extinction operant conditioning
+# ext <- c("Ext_Learning_AUC", "Ext_Learning_delta", "Ext_Inflex", "Extinction_day", "Ext_Inflex_Inactive")
+# tag_file <- "_ext_operant_cond"
 
 # relapse
-# relapse <- c("Relapse_Fold_Change", "Relapse_Inflex")
-relapse <- c("Relapse_Fold_Change", "Relapse_Inflex", "Relapse_Inactive_Inflex")
+# relapse <- c("Relapse_Fold_Change", "Relapse_Inflex", "Relapse_Inactive_Inflex")
+# tag_file <- "_cue_reinst"
 
-# data_reinst_filt <- subset (data_reinst, select=c(dep))
+# Filtering by session
+filter_v <- dep
+
+data_reinst_filt <- subset (data_reinst, select=c(filter_v))
 
 data_reinst_means <- subset(data_reinst, select = c("subject"))
 
@@ -99,9 +115,11 @@ x_lim <- ceiling(min(pca2plot$Dim.1))
 x_max_1 <-max(pca2plot$Dim.1)
 
 # Font sizes
-size_text_circle <- 6.5
+# size_text_circle <- 6.5
+size_text_circle <- 5.5
+
 title_PCA_individuals <- "\nMice PCA by annotated variables\n" #"Distribution of mice by sessions PCA\n"
-title_var_loadings =  "Variable loadings\n" #"PCA of the variables\n"\ #"Sessions loadings"
+title_var_loadings =  "\nVariable loadings\n" #"PCA of the variables\n"\ #"Sessions loadings"
 
 #############
 # PC1 PC2
@@ -270,13 +288,6 @@ p_circle_plot_coord_fixed
 # ggsave (p_circle_plot_coord_fixed, file=paste(home, dir_plots, "circle_annotated_behavior", img_format, sep=""), 
 #         width = 15, height = 15, dpi=dpi_q)
 
-# The palette with grey:
-cbPalette <- c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
-cbbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
-# Adapted
-cb_palette_adapt <- c("#999999", "#CC79A7", "#009E73", "#E69F00", "#0072B2", "#D55E00")
-length(circle_plot$Dim.1)
-
 ## Plotting by type of behavioral annotation
 circle_plot_annotation_merged$Annotation
 p_circle_plot_by_gr <- ggplot(circle_plot_annotation_merged) + 
@@ -329,9 +340,9 @@ p_circle_points <- ggplot(circle_plot_annotation_merged,) +
         y=paste("PC2 (", var_PC2, "% of variance)\n", sep = "")) +
   geom_vline(xintercept = 0, linetype = "longdash") +
   geom_hline(yintercept = 0, linetype = "longdash") +
-  theme (legend.key = element_blank(), legend.key.height = unit (1.5, "line"), legend.title=element_blank()) +
+  theme (legend.key = element_blank(), legend.key.height = unit (0.8, "line"), legend.title=element_blank()) +
   guides (colour = guide_legend (override.aes = list(size = 3)))
-
+  
 # p_circle_points_leg <- p_circle_points + theme(legend.text = element_text(size = 20))
 
 p_circle_points_coord_fixed <-p_circle_points + coord_fixed()
@@ -626,9 +637,10 @@ pca_reinstatement.pc1.pc2_leg_in <- pca_reinstatement.pc1.pc2 +
 pca_reinstatement.pc1.pc2_leg_in 
 
 p_circle_points_leg_coord_fixed_leg_in <-  p_circle_points_coord_fixed +
-                                       theme(legend.title=element_blank()) +                                     
-#                                        theme(legend.text = element_text(size = 11)) +
-                                       theme(legend.position = c(1.05, 0.25))
+                                       theme(legend.title=element_blank(),                                    
+                                             legend.position = c(1.05, 0.185)) 
+
+
 p_circle_points_leg_coord_fixed_leg_in
 
 title_PC1_bar_plot = "\nVariable contribution to PC1"
@@ -667,8 +679,8 @@ panel_pca_reins
 # if i save it manually
 # size 1100, 700
 img_format=".tiff"
-
-# ggsave (panel_pca_reins, file=paste(home, dir_plots, "panel_PCA_reinst", img_format, sep=""), 
-#         dpi=dpi_q, width=14, height=11)
+dpi_q = 300
+ggsave (panel_pca_reins, file=paste(home, dir_plots, "panel_PCA_reinst", tag_file, img_format, sep=""), 
+        dpi=dpi_q, width=16, height=12)
 
 # stop("Execution finished correctly")
