@@ -22,7 +22,8 @@ home <- Sys.getenv("HOME")
 # dir_plots <- "/Dropbox (CRG)/2015_reinstatement_rafa/figures/annotated_session/all_animals/"
 # dir_plots <- "/Dropbox (CRG)/2015_reinstatement_rafa/figures/annotated_session_20160211/"
 # dir_plots <- "/Dropbox (CRG)/2015_reinstatement_rafa/figures/annotated_session_20160217/"
-dir_plots <- "/Dropbox (CRG)/2015_reinstatement_rafa/figures/annotated_session_20160406/"
+# dir_plots <- "/Dropbox (CRG)/2015_reinstatement_rafa/figures/annotated_session_20160406/"
+dir_plots <- "/Dropbox (CRG)/2015_reinstatement_rafa/figures/annotated_session_20160518/"
 
 # Loading functions:
 source (paste (home, "/git/mwm/lib/R/plot_param_public.R", sep=""))
@@ -38,8 +39,9 @@ img_format = ".tiff"
 
 data_reinst <- read.csv (paste (home, "/Dropbox (CRG)/2015_reinstatement_rafa/data/reinstatement_06_04_16.csv", sep=""), dec=",", sep=";")
 reinst_annotation <- read.csv (paste (home, "/Dropbox (CRG)/2015_reinstatement_rafa/data/annot_descriptors_06_04_16.csv", sep=""), dec=",", sep=";")
-
+# reinst_annotation <- read.csv (paste (home, "/Dropbox (CRG)/2015_reinstatement_rafa/data/annot_descriptors_18_05_16.csv", sep=""), dec=",", sep=";")
 reinst_annotation$tbl_name
+
 # head (data_reinst)
 #head (reinst_annotation)
 
@@ -449,8 +451,8 @@ bars_plot_PC3
 #######################
 
 reinst_annotation_1_1 <- read.csv (paste (home, "/Dropbox (CRG)/2015_reinstatement_rafa/data/reinst_annotation_1to1.csv", sep=""), dec=",", sep=";")
-write.table(as.data.frame(t(reinst_annotation_1_1)), "/Users/jespinosa/Dropbox (Personal)/presentations_2016/20160210_GM_Mara/t_annot.csv",
-            sep=";", row.names=TRUE, col.names=FALSE)
+# write.table(as.data.frame(t(reinst_annotation_1_1)), "/Users/jespinosa/Dropbox (Personal)/presentations_2016/20160210_GM_Mara/t_annot.csv",
+#             sep=";", row.names=TRUE, col.names=FALSE)
 ext_by_annotation
 colnames(ext_by_annotation)
 
@@ -673,9 +675,9 @@ pm <- putPlot(pm, p_circle_points_PC3_PC1_leg_coord_fixed, 1, 3)
 pm <- putPlot(pm, p_circle_points_PC3_PC2_leg_coord_fixed, 2, 3)
 pm
 
-tiff(file=paste(home, dir_plots, "matrix_pca", ".tiff", sep=""), height = 800, width = 1200)
-print(pm)
-dev.off()
+# tiff(file=paste(home, dir_plots, "matrix_pca", ".tiff", sep=""), height = 800, width = 1200)
+# print(pm)
+# dev.off()
 
 stop("Execution finished correctly")
 
