@@ -19,7 +19,8 @@ library("cowplot")
 home <- Sys.getenv("HOME")
 
 ## Dumping figures folder
-dir_plots <- "/Dropbox (CRG)/2015_reinstatement_rafa/figures/annotated_session_20160518/"
+# dir_plots <- "/Dropbox (CRG)/2015_reinstatement_rafa/figures/annotated_session_20160518/"
+dir_plots <- "/Dropbox (CRG)/2015_reinstatement_rafa/figures/annotated_session_20160525/"
 
 # Loading functions:
 source (paste (home, "/git/phecomp/lib/R/plot_param_public_reinst.R", sep=""))
@@ -50,30 +51,41 @@ cb_palette_adapt <- c("#999999", "#CC79A7", "#009E73", "#E69F00", "#0072B2", "#D
 
 # deprivation
 # dep <- c("Learning_AUC", "Learning_delta", "Learning_discrim", "Impulsivity_dep", "Imp_comp_dep", "Compulsivity_dep", "Acquisition_day")
-# dep <- c("Learning_AUC", "Learning_delta", "Learning_discrim", "Impulsivity_dep", "Imp_comp_dep", "Compulsivity_dep", "Acquisition_day", "Learning_Inactive")
+dep <- c("Learning_AUC", "Learning_delta", "Learning_discrim", "Impulsivity_dep", "Imp_comp_dep", "Compulsivity_dep", "Acquisition_day", "Learning_Inactive")
 # tag_file = "_acq_operant_cond"
 # cb_palette_adapt <- c("#999999", "#009E73", "#E69F00", "#0072B2", "#D55E00", "#CC79A7")
+# filter_v <- dep
 
 # ad_libitum
 ad_lib <- c("Primary_Reinf", "Habituation_Primary_Reinf", "Prim_R_discrim", "Impulsivity_adlib", "Imp_comp_adlib", "Compulsivity_adlib", "Prim_R_Inactive")
 tag_file = "_maint_operant_cond"
 cb_palette_adapt <- c("#999999", "#009E73", "#0072B2", "#E69F00", "#D55E00", "#CC79A7")
+filter_v <- ad_lib
 
 # progressive ratio
 # PR <- c("PR2_break_point")
 # tag_file <- "_progressive_ratio"
+# filter_v <- PR
 
 # Extinction operant conditioning
-# ext <- c("Ext_Learning_AUC", "Ext_Learning_delta", "Ext_Inflex", "Extinction_day", "Ext_Inflex_Inactive")
-# tag_file <- "_ext_operant_cond"
+ext <- c("Ext_Learning_AUC", "Ext_Learning_delta", "Ext_Inflex", "Extinction_day", "Ext_Inflex_Inactive")
+tag_file <- "_extinction"
+cb_palette_adapt <- c("#CC79A7", "#009E73", "#E69F00", "#0072B2", "#D55E00","#999999")
+filter_v <- ext
 
 # relapse
-# relapse <- c("Relapse_Fold_Change", "Relapse_Inflex", "Relapse_Inactive_Inflex")
-# tag_file <- "_cue_reinst"
+relapse <- c("Relapse_Fold_Change", "Relapse_Inflex", "Relapse_Inactive_Inflex")
+tag_file <- "_cue_reinst"
+cb_palette_adapt <- c("#CC79A7","#D55E00", "#009E73", "#E69F00", "#0072B2", "#999999")
+filter_v <- relapse
+
+# deprivation + ad libitum
+dep_ad_lib <- c(dep, ad_lib)
+tag_file = "_whole_operant_cond"
+cb_palette_adapt <- c("#999999", "#009E73", "#0072B2","#E69F00", "#0072B2", "#D55E00", "#CC79A7")
+filter_v <- dep_ad_lib
 
 # Filtering by session
-filter_v <- dep
-
 data_reinst_filt <- subset (data_reinst, select=c(filter_v))
 
 data_reinst_means <- subset(data_reinst, select = c("subject"))
@@ -119,7 +131,7 @@ x_max_1 <-max(pca2plot$Dim.1)
 size_text_circle <- 5.5
 
 title_PCA_individuals <- "\nMice PCA by annotated variables\n" #"Distribution of mice by sessions PCA\n"
-title_var_loadings =  "\nVariable loadings\n" #"PCA of the variables\n"\ #"Sessions loadings"
+title_var_loadings =  "\nVariables factor map\n" #"PCA of the variables\n"\ #"Sessions loadings"
 
 #############
 # PC1 PC2
@@ -318,7 +330,6 @@ p_circle_plot_by_gr_coord_fixed <- p_circle_plot_by_gr + coord_fixed() + theme(l
 #   guides(color=guide_legend(guide_legend(title = "Annotation"))) +
 #   theme(legend.key = element_blank()) +
 #   theme(plot.title = element_text(size=30)) + 
-#   theme(axis.title.x = element_text(size=30)) +
 #   theme(axis.title.y = element_text(size=30))
 p_circle_plot_by_gr_coord_fixed
 
@@ -514,49 +525,50 @@ require(GGally)
 # # ggsave (pca_reinstatement.pc1.pc2_aspect_ratio, file=paste(home, dir_plots, 
 # #                                                        "PCA_pc1_pc2_annotated_sessions.tiff", sep=""), width = 15, height = 10, dpi=dpi_q)
 
-pca2plot_labPC <- pca2plot
-colnames(pca2plot_labPC) <- c("PC1", "PC2", "PC3", "PC4", "PC5", "id", "group")
-pm_empty = ggpairs(#data=tips,
-  data = pca2plot_labPC,
-  columns=1:3, 
-  #              upper = list(continuous = "density"),
-  upper = "blank",
-  lower = "blank",
-  diag = "blank",
-  #              lower = list(combo = "facetdensity"),
-  title="",
-  colour = "sex")
-pm_empty
-
-PC1_lab <- ggplot(mtcars, aes(x = wt, y = mpg)) + 
-  scale_x_continuous (limits=c(0, 4)) + 
-  scale_y_continuous (limits=c(0, 4)) +
-  geom_blank() +
-  theme(axis.title = element_blank()) + 
-  theme(axis.text = element_blank()) +
-  annotate("text", label = paste("PC1 (",var_PC1, "%)", sep=""), x = 2, y = 2, size = 8, colour = "black") 
-PC2_lab <- ggplot(mtcars, aes(x = wt, y = mpg)) + 
-  scale_x_continuous (limits=c(0, 4)) + 
-  scale_y_continuous (limits=c(0, 4)) +
-  geom_blank() +
-  theme(axis.title = element_blank()) + 
-  theme(axis.text = element_blank()) +
-  annotate("text", label = paste("PC2 (",var_PC2, "%)", sep=""), x = 2, y = 2, size = 8, colour = "black") 
-PC3_lab <- ggplot(mtcars, aes(x = wt, y = mpg)) + 
-  scale_x_continuous (limits=c(0, 4)) + 
-  scale_y_continuous (limits=c(0, 4)) +
-  geom_blank() +
-  theme(axis.title = element_blank()) + 
-  theme(axis.text = element_blank()) +
-  annotate("text", label = paste("PC3 (",var_PC3, "%)", sep=""), x = 2, y = 2, size = 8, colour = "black") 
-
-pm <- putPlot(pm_empty, pca_reinstatement.pc1.pc2_aspect_ratio, 2, 1)
-pm <- putPlot(pm, pca_reinstatement.pc1.pc3_aspect_ratio, 3, 1)
-pm <- putPlot(pm, pca_reinstatement.pc2.pc3_aspect_ratio, 3, 2)
-
-pm <- putPlot(pm, bars_plot_PC1, 1,1)
-pm <- putPlot(pm, bars_plot_PC2, 2,2)
-pm <- putPlot(pm, bars_plot_PC3, 3,3)
+#### Matrix PLOT uncomment
+# pca2plot_labPC <- pca2plot
+# colnames(pca2plot_labPC) <- c("PC1", "PC2", "PC3", "PC4", "PC5", "id", "group")
+# pm_empty = ggpairs(#data=tips,
+#   data = pca2plot_labPC,
+#   columns=1:3, 
+#   #              upper = list(continuous = "density"),
+#   upper = "blank",
+#   lower = "blank",
+#   diag = "blank",
+#   #              lower = list(combo = "facetdensity"),
+#   title="",
+#   colour = "sex")
+# pm_empty
+# 
+# PC1_lab <- ggplot(mtcars, aes(x = wt, y = mpg)) + 
+#   scale_x_continuous (limits=c(0, 4)) + 
+#   scale_y_continuous (limits=c(0, 4)) +
+#   geom_blank() +
+#   theme(axis.title = element_blank()) + 
+#   theme(axis.text = element_blank()) +
+#   annotate("text", label = paste("PC1 (",var_PC1, "%)", sep=""), x = 2, y = 2, size = 8, colour = "black") 
+# PC2_lab <- ggplot(mtcars, aes(x = wt, y = mpg)) + 
+#   scale_x_continuous (limits=c(0, 4)) + 
+#   scale_y_continuous (limits=c(0, 4)) +
+#   geom_blank() +
+#   theme(axis.title = element_blank()) + 
+#   theme(axis.text = element_blank()) +
+#   annotate("text", label = paste("PC2 (",var_PC2, "%)", sep=""), x = 2, y = 2, size = 8, colour = "black") 
+# PC3_lab <- ggplot(mtcars, aes(x = wt, y = mpg)) + 
+#   scale_x_continuous (limits=c(0, 4)) + 
+#   scale_y_continuous (limits=c(0, 4)) +
+#   geom_blank() +
+#   theme(axis.title = element_blank()) + 
+#   theme(axis.text = element_blank()) +
+#   annotate("text", label = paste("PC3 (",var_PC3, "%)", sep=""), x = 2, y = 2, size = 8, colour = "black") 
+# 
+# pm <- putPlot(pm_empty, pca_reinstatement.pc1.pc2_aspect_ratio, 2, 1)
+# pm <- putPlot(pm, pca_reinstatement.pc1.pc3_aspect_ratio, 3, 1)
+# pm <- putPlot(pm, pca_reinstatement.pc2.pc3_aspect_ratio, 3, 2)
+# 
+# pm <- putPlot(pm, bars_plot_PC1, 1,1)
+# pm <- putPlot(pm, bars_plot_PC2, 2,2)
+# pm <- putPlot(pm, bars_plot_PC3, 3,3)
 
 
 ####################################
@@ -614,10 +626,11 @@ p_circle_points_PC3_PC2_leg <- p_circle_points_PC3_PC2 + theme(legend.text = ele
 p_circle_points_PC3_PC2_leg_coord_fixed <-p_circle_points_PC3_PC2_leg + coord_fixed()
 p_circle_points_PC3_PC2_leg_coord_fixed
 
-pm <- putPlot(pm, p_circle_points_PC2_PC1_leg_coord_fixed, 1, 2)
-pm <- putPlot(pm, p_circle_points_PC3_PC1_leg_coord_fixed, 1, 3)
-pm <- putPlot(pm, p_circle_points_PC3_PC2_leg_coord_fixed, 2, 3)
-pm
+# pm <- putPlot(pm, p_circle_points_PC2_PC1_leg_coord_fixed, 1, 2)
+# pm <- putPlot(pm, p_circle_points_PC3_PC1_leg_coord_fixed, 1, 3)
+# pm <- putPlot(pm, p_circle_points_PC3_PC2_leg_coord_fixed, 2, 3)
+# pm
+#### Matrix PLOT uncomment
 
 # tiff(file=paste(home, dir_plots, "matrix_pca", ".tiff", sep=""), height = 800, width = 1200)
 # print(pm)
@@ -659,7 +672,7 @@ title_PC2_bar_plot = "\nVariable contribution to PC2"
 
 bars_plot_PC2_panel <- ggplot (data=df.bars_to_plot_PC2, aes(x=Variable, y=value)) + 
   scale_y_continuous (limits=c(0, bar_ylim), breaks=seq(0, bar_ylim, by=5)) +   
-  geom_bar (stat="identity", fill="gray", width=0.8) + 
+  geom_bar (stat="identity", fill="gray", width=0.8) +
   geom_text(aes(y=0, label=Variable), hjust=-0.1, color="black", angle = 90, size=size_text_circle) +  
   annotate("text", label = paste("PC2 (",var_PC2, "%)", sep=""), x = 5, y = 4 * bar_ylim/3, size = 6, colour = "black") +
   labs (title = title_PC2_bar_plot, x = "", y="Contribution in %\n") +
