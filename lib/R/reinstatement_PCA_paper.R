@@ -674,7 +674,7 @@ bars_plot_PC2_panel <- ggplot (data=df.bars_to_plot_PC2, aes(x=Variable, y=value
   scale_y_continuous (limits=c(0, bar_ylim), breaks=seq(0, bar_ylim, by=5)) +   
   geom_bar (stat="identity", fill="gray", width=0.8) +
   geom_text(aes(y=0, label=Variable), hjust=-0.1, color="black", angle = 90, size=size_text_circle) +  
-  annotate("text", label = paste("PC2 (",var_PC2, "%)", sep=""), x = 5, y = 4 * bar_ylim/3, size = 6, colour = "black") +
+  annotate("text", label = paste("PC2 (", var_PC2, "%)", sep=""), x = 5, y = 4 * bar_ylim/3, size = 6, colour = "black") +
   labs (title = title_PC2_bar_plot, x = "", y="Contribution in %\n") +
   theme (axis.text.x=element_blank())    
 
