@@ -1,10 +1,10 @@
 ############################################################
 ### Jose A Espinosa. CSN/CB-CRG Group. Dec 2015          ###
 ############################################################
-### ###
-###                                              ###
+### HMM with R for quantitative values                   ###
+### development script                                   ###
 ############################################################
-###             ###
+###                                                      ###
 ############################################################
 ## I can do the same thing, just get the trajectory from the 
 ## bed file and fit the model
