@@ -934,7 +934,8 @@ sub channel2Nature
 			
 			if ((length ($Name)) == 4 && ($Name =~/(w)(w)(s)(s)/ || $Name =~/(w)(w)(c)(s)/ || $Name=~/(w)(w)(s)(c)/ ||
 			 							  $Name=~/(w)(w)(c)(s)/ || $Name=~/(w)(w)(f)(f)/ || $Name=~/(w)(w)(h)(h)/) || 
-			 							  $Name=~/(w)(w)(f)(s)/ || $Name=~/(w)(w)(s)(f)/)
+			 							  $Name=~/(w)(w)(f)(s)/ || $Name=~/(a)(w)(s)(c)/ || $Name=~/(w)(a)(s)(c)/ || 
+			 							  $Name=~/(a)(w)(c)(s)/ || $Name=~/(w)(a)(c)(s)/)
 			  {
 			    
 		      	if ($i==1) 
@@ -4727,10 +4728,17 @@ sub anot2nature
                       return ("water");
                       last SWITCH;
                     };
-                    
+                  
+                  ($annot eq "a") && do 
+                    { 
+                      return ("saccharin");
+                      last SWITCH;
+                    };
+                                     
                   ($annot eq "s") && do 
                     { 
-                      return ("food_sc"); #Original before fusedSCforFDF heatMap
+#                      return ("food_sc"); #Original before fusedSCforFDF heatMap
+                      return ("food_fat");
                       #return ("food"); #fusedSCforFDF heatMap
                                                 
                       last SWITCH;
