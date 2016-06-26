@@ -34,8 +34,8 @@
 use HTTP::Date; #CPAN str2time()=> time conversion function different time format --> machine time (seconds since EPOCH)
 use File::Compare; #File comparison
 use Data::Dumper;
-use DateTime;
-use DateTime::Format::Strptime;
+#use DateTime;
+#use DateTime::Format::Strptime;
 use strict;
 use FileHandle;
 
