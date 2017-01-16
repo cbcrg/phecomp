@@ -236,12 +236,21 @@ df.anova <- within(df.anova, {
 })
 
 df.anova
+head(df.anova)
+# demo1.aov <- aov(value ~ group * time + Error(id), data = df.anova)
+demo1.aov <- aov(V5 ~ gr_dayphase * phase + Error(id), data = df.anova)
 
-demo1.aov <- aov(value ~ group * time + Error(id), data = df.anova)
+summary(demo1.aov)
+
 # demo1.aov <- aov(pulse ~ group * time + Error(id), data = demo1)
 # I set the interaction to perform the ttest
 df.anova$interaction <- paste(df.anova$group, df.anova$time, sep="_")
 pairwise.t.test(df.anova$value, df.anova$interaction, , p.adj="hochberg", paired=F)
+
+# POST-hoc test
+# for group
+with (df.anova, pairwise.t.test (V5, group,  p.adjust.method="bonf"))
+
 ############################
 # Original developing of the script
 setwd("/Users/jespinosa/phecomp/20140807_pergola/bedtools_ex/intermeal_duration/data")

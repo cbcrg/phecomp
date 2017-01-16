@@ -197,6 +197,7 @@ tbl_stat_mean$std.error <- tbl_stat_mean$V9 [,2]
 # Reordering colors for showing dark periods as dark colors
 col_redish <- colorRampPalette(RColorBrewer::brewer.pal(4,"Reds"))(10)
 col_greenish <- colorRampPalette(RColorBrewer::brewer.pal(4,"Greens"))(10)
+col_blueish <- colorRampPalette(RColorBrewer::brewer.pal(4,"Blues"))(10)
 cols <- c(col_greenish[c(4,7,10)], col_redish[c(4,7,10)])
 
 # Get title and file name according with stat
@@ -395,9 +396,10 @@ ggplot(data=tbl_mean_group_day, aes(x=time, y=mean, fill=group)) +
        theme (legend.key = element_rect(colour = "black"))
 
 # path2plot <- "/Users/jespinosa/phecomp/20140807_pergola/20150411_validationPaper/20151103_result/"
-path2plot <- "/Users/jespinosa/dropboxTCoffee_new/Dropbox/jespinosa/2013phecomp2shareFinal/drafts_paper/figures_20151110/figS2/"
+# path2plot <- "/Users/jespinosa/dropboxTCoffee_new/Dropbox/jespinosa/2013phecomp2shareFinal/drafts_paper/figures_20151110/figS2/"
 # ggsave(file=paste(path2plot, "Clean_dietXtimeGreenRed_noDodge",".pdf", sep=""), width=16, height=8)
 # ggsave(file=paste(path2plot, "Clean_dietXtimeGreenRed_noDodge",".tiff", sep=""), width=16, height=8, dpi=400)
+
 
 ### PLOT with the bars grouped by diet
 ggplot(data=tbl_mean_group_day, aes(x=group_time, y=mean, fill=group_time)) + 
@@ -419,27 +421,49 @@ ggplot(data=tbl_mean_group_day, aes(x=group_time, y=mean, fill=group_time)) +
 # ggsave(file=paste(path2plot, "Clean_timeGreenRed_DietDodge",".pdf", sep=""), width=16, height=8)
 # ggsave(file=paste(path2plot, "Clean_timeGreenRed_DietDodge",".tiff", sep=""), width=16, height=8, dpi=400)
 
+cols <- c(col_redish[c(4,7,10)], col_blueish[c(4,7,10)])
+title_plot = paste (title_beg[1], "during first 30 min after cleaning,\n24h before and 24h after", sep="")
 
 ### PLOT with the bars grouped by diet
-ggplot(data=tbl_mean_group_day, aes(x=group, y=mean, fill=group_time)) + 
-  geom_bar(stat="identity", position=position_dodge(), show_guide = T) +
+## gray cols
+
+# ggplot(data=tbl_mean_group_day, aes(x=group, y=mean, fill=group_time)) + 
+ggplot(data=tbl_mean_group_day, aes(x=group, y=mean, fill=time)) +
+  geom_bar(stat="identity", position=position_dodge(), show.legend = T) +
   #        geom_errorbar(aes(ymin=mean-std.error, ymax=mean+std.error),
   geom_errorbar(aes(ymin=mean-std.error, ymax=mean+std.error),
                 width=.2,                    # Width of the error bars 
                 position=position_dodge(.9)) +
-    scale_x_discrete (labels = c("Ctrl", "HF")) +
-  scale_y_continuous(limits=c(0, max(tbl_mean_group_day$mean, na.rm=TRUE) + max(tbl_mean_group_day$std.error, na.rm=TRUE))) +                
+  scale_x_discrete (labels = c("Ctrl", "HF")) +
+#   scale_y_continuous(limits=c(0, max(tbl_mean_group_day$mean, na.rm=TRUE) + max(tbl_mean_group_day$std.error, na.rm=TRUE))) +
+  scale_y_continuous(limits=c(0, 0.63)) +
   labs (title = title_plot) +  
-  labs (x = "\nDiet and time respect\ncleaning starvation", y=y_lab, fill = NULL) +
+  labs (x = "\nDiet and time respect cleaning starvation", y=y_lab, fill = NULL) +
   
-  scale_fill_manual(values=cols, labels=c("Ctrl 24h before", "Ctrl after cleaning", "Ctrl 24h after", 
-                                          "HF 24h before", "HF after cleaning", "HF 24h after")) + 
+#   scale_fill_manual(values=cols, labels=c("Ctrl 24h before", "Ctrl after cleaning", "Ctrl 24h after", 
+#                                           "HF 24h before", "HF after cleaning", "HF 24h after")) + 
+  scale_fill_grey(labels=c("24h before", "After cleaning", "24h after")) + 
+#   scale_fill_grey(start = 0, end = .9)) +
   theme(plot.title = element_text(size=20)) + 
   theme(axis.title.x = element_text(size = 20)) +
-  theme(axis.title.y = element_text(size = 20))
+  theme(axis.title.y = element_text(size = 20)) +
+  theme(legend.text=element_text(size=17)) +
+  annotate("text", x=2, y=0.57,label="***", size=10) +
+  annotate("text", x=2, y=0.615,label="###", size=6) +
+  theme(axis.line.x = element_line(colour = "black")) + 
+  theme(axis.line.y = element_line(colour = "black"))
 
+
+# path2plot <- "/Users/jespinosa/Dropbox (CRG)/thesis_presentation/figures/obesity_paper/"
+path2plot <- "/Users/jespinosa/Dropbox (CRG)/2013phecomp2shareFinal/drafts_paper/figures_20151110/figS3/"
 # ggsave(file=paste(path2plot, "Clean_timeGreenRed_TimeDodge",".pdf", sep=""), width=16, height=8)
 # ggsave(file=paste(path2plot, "Clean_timeGreenRed_TimeDodge",".tiff", sep=""), , width=16, height=8, dpi=400)
+ggsave(file=paste(path2plot, "peaks_clean",".tiff", sep=""), width=16, height=8, dpi=300)
+
+## Results
+# Two-way repeated-measures ANOVA revealed a significant effect
+# of diet (F(1,15) = 91.25; P < 0.001, Fig. S2B), time (F(2,30) = 62.512; P < 0.001, Fig. S2B)
+# and interaction of diet and time
 
 ################################
 ###########################
