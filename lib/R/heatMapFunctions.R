@@ -166,7 +166,7 @@ heatMapPlotter <- function (table, main="", weekNotation=F, legPos="right", mode
           legend.text = element_text (size = base_size * 1.2),      
           legend.title = element_text (size = base_size *1.2, face = "bold"),      
           #legend.hjust = element_text (hjust=c(0, 0.5, 1)),
-          legend.text = element_text (hjust=c(0, 0.5, 1)),
+#           legend.text = element_text (hjust=c(0, 0.5, 1)),
           plot.title = element_text (size=base_size * 1.5, face="bold"),
           #axis.text.y = element_text (size = base_size * 1.4,hjust = 0, colour = "grey50", face = "bold"))
           axis.text.y = element_text (size = base_size * 1.4,hjust = 0, face = "bold", colour = "black"))                          
@@ -280,7 +280,7 @@ heatMapPlotterHab <- function (table, main="", weekNotation=F, legPos="right", m
           #axis.text.y = element_text (size = base_size * 1.2,hjust = 0, colour = "grey50"))
           legend.text = element_text (size=base_size * 1.2),      
           legend.title = element_text (size = base_size *1.2, face = "bold"),      
-          legend.text = element_text (hjust=c(0, 0.5, 1)),
+#           legend.text = element_text (hjust=c(0, 0.5, 1)),
           plot.title = element_text (size=base_size * 1.5, face="bold"),
           #axis.text.y = element_text (size = base_size * 1.4,hjust = 0, colour = "grey50", face = "bold"))
           axis.text.y = element_text (size = base_size * 1.4,hjust = 0, face = "bold", colour = "black"))                          
