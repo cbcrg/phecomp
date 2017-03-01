@@ -104,8 +104,10 @@ df.meanCase.m.Dev$period
 tail(df.meanCase.m.Dev)
 
 #Forced diet heat map
+df.meanCase.m$stars <- ""
+
 # setwd("/Users/jespinosa/dropboxTCoffee/Dropbox/jespinosa/2013phecomp2shareFinal/drafts_paper/figures/fig3ANDfigS1Dev/20150109_includingInterMealInterv")
-# heatMapPlotter (df.meanCase.m, main="Fold Change Force diet vs Control",  weekNotation=T)
+heatMapPlotter (df.meanCase.m, main="Fold Change Force diet vs Control",  weekNotation=T)
 
 ##############
 # Significance
@@ -162,7 +164,7 @@ tail (df.meanCase.m.Dev)
 head (df.sigResults.Dev)
 
 heatMapPlotter (df.meanCase.m.Dev, main="\n",  weekNotation="N", legPos="right", xlab="\n", ylab="\n")
-ggsave (file=paste(home, "/dropboxTCoffee_new/Dropbox/jespinosa/2013phecomp2shareFinal/drafts_paper/figures_20151110/fig3/", "fig3.tiff", sep=""), 
+ggsave (file=paste(home, "/Dropbox (CRG)/2013phecomp2shareFinal/drafts_paper/figures_20151110/fig3/", "fig3.tiff", sep=""), 
         width=5.5, height=4.5, dpi=400)
 
 ###### HABITUATION PHASE
