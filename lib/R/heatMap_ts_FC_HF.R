@@ -50,21 +50,52 @@ head (df.weekStats)
 caseGroupLabel <- "ts65dn"  # CASE    == ts65dn
 controlGroupLabel <- "wt"   # CONTROL == wt 
 
-nAnimals <- 18 + 36
+first_animal_id <- 37  
+last_animal_id <- 36 + 18
+# nAnimals <- 18 + 36
+nAnimals <- last_animal_id - first_animal_id + 1
+
 #Label by experimental group (control, free choice, force diet...)
-cage <- c (1 : nAnimals)
+# cage <- c (1 : nAnimals)
+cage <- c (first_animal_id : last_animal_id)
+
 group <- c (rep (controlGroupLabel, nAnimals/2), rep (caseGroupLabel, nAnimals/2))
 df.miceGroup <- data.frame (cage, group)
-df.miceGroup$group [c(37, 39, 41, 43, 45, 47, 49, 51, 53)] <- controlGroupLabel
+# df.miceGroup$group [c(37, 39, 41, 43, 45, 47, 49, 51, 53)] <- controlGroupLabel
+df.miceGroup$group [df.miceGroup$cage %in% c(37, 39, 41, 43, 45, 47, 49, 51, 53)] <- controlGroupLabel
 
 ### 10 (46) deleted because the channel was firing
 # df.miceGroup$group [c(38, 40, 42, 44, 46, 48, 50, 52, 54)] <- caseGroupLabel
-df.miceGroup$group [c(38, 40, 42, 44, 48, 50, 52, 54)] <- caseGroupLabel
+# df.miceGroup$group [c(38, 40, 42, 44, 48, 50, 52, 54)] <- caseGroupLabel
+df.miceGroup$group [df.miceGroup$cage %in% c(38, 40, 42, 44, 48, 50, 52, 54)] <- caseGroupLabel
 
 ## Joining labels
 ## removing animals 10 (46) trisomic (case)
 df.weekStats <- subset (df.weekStats, cage!=46)
 df.weekStats <- merge (df.weekStats, df.miceGroup, by.x= "cage", by.y = "cage")
+
+## last week of animal 54 has no data ##ojo
+
+## Avg intake week 5
+period4_ts64_fat <-subset (df.weekStats, period==5 & group=="ts65dn" & channel =="food_fat")
+mean(period5_ts64_fat$Avg_Intake)
+
+period4_ts64_sc <- subset (df.weekStats, period==5 & group=="ts65dn" & channel =="food_sc")
+mean(period5_ts64_sc$Avg_Intake)
+
+subset (df.meanControl, period==5)
+
+## Avg intermeal duration week 7
+period7_ts64_water_2 <-subset (df.weekStats, period==7 & group=="ts65dn" & channel =="water_2")
+mean(period7_ts64_water_2$Avg_Intermeal_Duration)
+
+# period7_ts64_water_1 <- subset (df.weekStats, period==7 & group=="ts65dn" & channel =="water_1" & cage !="44")
+period7_ts64_water_1 <- subset (df.weekStats, period==7 & group=="ts65dn" & channel =="water_1")
+mean(period7_ts64_water_1$Avg_Intermeal_Duration)
+
+subset (df.meanControl, period==7)
+foldchange(mean(period7_ts64_water_2$Avg_Intermeal_Duration), mean(period7_ts64_water_1$Avg_Intermeal_Duration))
+
 # head (df.weekStats)
 # tail (df.weekStats,100)
 # df.weekStats$channel
@@ -76,6 +107,11 @@ df.meanControl <- with (df.weekStats [which (df.weekStats$group == controlGroupL
 head (df.meanControl$channel)
 ## CASE ts65dn
 df.meanCase <- with (df.weekStats [which (df.weekStats$group == caseGroupLabel),] , aggregate (cbind (Number, Avg_Duration, Avg_Intake, Rate, Avg_Intermeal_Duration), list(channel=channel, group=group, period=period), mean))
+
+subset (df.meanCase, period==5 & group=="ts65dn" & channel =="food_sc")
+subset (df.meanCase, period==5 & group=="ts65dn" & channel =="food_fat")
+
+foldchange(0.185, 0.1328571)
 
 ## ojo filtro por water_1 en el grupo SC y por water_2 en el grupo HF, asi se comparan a la vez que los
 ## tipo de comida
@@ -101,6 +137,13 @@ length (df.meanControl.FAT.m$channel)
 ## Comparing each of the diets within each of the genotypes
 df.meanControl.FAT.m$foldChange <- foldchange (df.meanControl.FAT.m$value, df.meanControl.SC.m$value)
 df.meanCase.FAT.m$foldChange <- foldchange (df.meanCase.FAT.m$value, df.meanCase.SC.m$value)
+
+# delete
+subset(df.meanCase.FAT.m, variable=="Avg_Intake" & period == 5)
+subset(df.meanCase.SC.m, variable=="Avg_Intake" & period == 5)
+
+
+
 
 #Removing underscores from labels for the plotting
 df.meanControl.FAT.m$variable <-  gsub ("_", " ", df.meanControl.FAT.m$variable, ignore.case = TRUE)
@@ -136,6 +179,11 @@ df.meanCase.FAT.m <- df.meanCase.FAT.m [with (df.meanCase.FAT.m, order (period, 
 
 df.meanControl.FAT.m$stars <- ""
 df.meanCase.FAT.m$stars <- ""
+
+# delete
+subset(df.meanCase.FAT.m, variable=="Avg Intake")
+subset(df.meanCase.FAT.m, variable=="Avg Intake" & period == 5)
+subset(df.meanCase.SC.m, variable=="Avg Intake" & period == 4)
 
 heatMapPlotter (df.meanCase.FAT.m, main="         ts65dn high-fat food vs sc\n",   weekNotation = "N", legPos="right", xlab="\n", ylab="\n")
 
@@ -403,5 +451,5 @@ df.meanControl.FAT.m$period <-df.meanControl.FAT.m$period +1
 
 heatMapPlotter (df.meanControl.FAT.m, main="                   WT high-fat food vs sc\n",   weekNotation = 'N', legPos="right", xlab="\n", ylab="\n")
 
-# ggsave (file=paste(home, "/2017_phecomp_marta/heatmaps/", "wt_freeChoice_HFvsSC.tiff", sep=""), 
-#         width=7, height=4.5, dpi=300)
+ggsave (file=paste(home, "/2017_phecomp_marta/heatmaps/", "wt_freeChoice_HFvsSC.tiff", sep=""), 
+        width=7, height=4.5, dpi=300)
