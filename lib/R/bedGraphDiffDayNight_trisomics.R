@@ -35,13 +35,24 @@ path2Tbls <- paste (home, "/2017_phecomp_marta/GB_indidividual_files", sep = "")
 label_ctrl_wt <- "control_wt"
 label_ctrl_wt <- "wt control"
 
+#########################
+### CONTROL DIET ONLY SC
+
 ## Wt control, only sc channel
 pattern_food_sc_control_wt_1 <- "tr_[1,3,9]_dt_food_sc\\.bedGraph"
 tbl_control_wt_1 <- readGBTbl (path2Tbl=path2Tbls, pattern_food_sc_control_wt_1, label=label_ctrl_wt, ws=1800)
-pattern_food_sc_control_wt_2 <- "tr_[15,23,27,29,31]_dt_food_sc\\.bedGraph"
+
+pattern_food_sc_control_wt_2 <- "tr_[1][5]_dt_food_sc\\.bedGraph"
 tbl_control_wt_2 <- readGBTbl (path2Tbl=path2Tbls, pattern_food_sc_control_wt_2, label=label_ctrl_wt, ws=1800)
-tbl_control_wt <- rbind (tbl_control_wt_1, tbl_control_wt_2)
-head (tbl_control_wt)
+
+pattern_food_sc_control_wt_3 <- "tr_[2][3,7,9]_dt_food_sc\\.bedGraph"
+tbl_control_wt_3 <- readGBTbl (path2Tbl=path2Tbls, pattern_food_sc_control_wt_3, label=label_ctrl_wt, ws=1800)
+
+pattern_food_sc_control_wt_4 <- "tr_[3][1]_dt_food_sc\\.bedGraph"
+tbl_control_wt_4 <- readGBTbl (path2Tbl=path2Tbls, pattern_food_sc_control_wt_4, label=label_ctrl_wt, ws=1800)
+
+tbl_control_wt <- rbind (tbl_control_wt_1, tbl_control_wt_2, tbl_control_wt_3, tbl_control_wt_4)
+tail (tbl_control_wt)
 
 tbl_control_wt$genotype <- "wt"
 tbl_control_wt$diet <- "SC"
@@ -53,84 +64,247 @@ label_ctrl_ts <- "ts control"
 
 pattern_food_sc_control_ts_1 <- "tr_[6]_dt_food_sc\\.bedGraph"
 tbl_control_ts_1 <- readGBTbl (path2Tbl=path2Tbls, pattern_food_sc_control_ts_1, label=label_ctrl_ts, ws=1800)
-pattern_food_sc_control_ts_2 <- "tr_[12,14,16,20,24,36]_dt_food_sc\\.bedGraph"
+
+pattern_food_sc_control_ts_2 <- "tr_[1][2,4,6]_dt_food_sc\\.bedGraph"
 tbl_control_ts_2 <- readGBTbl (path2Tbl=path2Tbls, pattern_food_sc_control_ts_2, label=label_ctrl_ts, ws=1800)
-tbl_control_ts <- rbind (tbl_control_ts_1, tbl_control_ts_2)
+
+pattern_food_sc_control_ts_3 <- "tr_[2][0,4]_dt_food_sc\\.bedGraph"
+tbl_control_ts_3 <- readGBTbl (path2Tbl=path2Tbls, pattern_food_sc_control_ts_3, label=label_ctrl_ts, ws=1800)
+
+pattern_food_sc_control_ts_4 <- "tr_[3][6]_dt_food_sc\\.bedGraph"
+tbl_control_ts_4 <- readGBTbl (path2Tbl=path2Tbls, pattern_food_sc_control_ts_4, label=label_ctrl_ts, ws=1800)
+
+tbl_control_ts <- rbind (tbl_control_ts_1, tbl_control_ts_2, tbl_control_ts_3, tbl_control_ts_4)
 head (tbl_control_ts)
 
 tbl_control_ts$genotype <- "trisomic"
 tbl_control_ts$diet <- "SC"
-mean_ts_ctrl.byWeek <- with (tbl_control_ts, aggregate (cbind (value), list (phase=phase, group=group, week=week, genotype=genotype, diet=diet), FUN=function (x) c (mean=mean(x), std.error=std.error(x))))
+# mean_ts_ctrl.byWeek <- with (tbl_control_ts, aggregate (cbind (value), list (phase=phase, group=group, week=week, genotype=genotype, diet=diet), FUN=function (x) c (mean=mean(x), std.error=std.error(x))))
 
+#########################
+### FREE CHOICE SC + CM
 ## wt free choice SC channel
 label_FC_sc_wt <- "FC_wt_sc"
 label_FC_sc_wt <- "wt FC SC"
 
 pattern_FC_sc_wt_1 <- "tr_[5,7]_dt_food_sc\\.bedGraph"
 tbl_FC_sc_wt_1 <- readGBTbl (path2Tbl=path2Tbls, pattern_FC_sc_wt_1, label=label_FC_sc_wt, ws=1800)
-pattern_FC_sc_wt_2 <- "tr_[11,13,17,19,21,33,35]_dt_food_sc\\.bedGraph"
+
+pattern_FC_sc_wt_2 <- "tr_[1][1,3,7,9]_dt_food_sc\\.bedGraph"
 tbl_FC_sc_wt_2 <- readGBTbl (path2Tbl=path2Tbls, pattern_FC_sc_wt_2, label=label_FC_sc_wt, ws=1800)
-tbl_FC_sc_wt <- rbind (tbl_FC_sc_wt_1, tbl_FC_sc_wt_2)
+
+pattern_FC_sc_wt_3 <- "tr_[2][1]_dt_food_sc\\.bedGraph"
+tbl_FC_sc_wt_3 <- readGBTbl (path2Tbl=path2Tbls, pattern_FC_sc_wt_3, label=label_FC_sc_wt, ws=1800)
+
+pattern_FC_sc_wt_4 <- "tr_[3][3,5]_dt_food_sc\\.bedGraph"
+tbl_FC_sc_wt_4 <- readGBTbl (path2Tbl=path2Tbls, pattern_FC_sc_wt_4, label=label_FC_sc_wt, ws=1800)
+
+tbl_FC_sc_wt <- rbind (tbl_FC_sc_wt_1, tbl_FC_sc_wt_2, tbl_FC_sc_wt_3, tbl_FC_sc_wt_4)
 head (tbl_FC_sc_wt)
 
 tbl_FC_sc_wt$genotype <- "wt"
 tbl_FC_sc_wt$diet <- "SC+CM"
-mean_wt_FC_sc.byWeek <- with (tbl_FC_sc_wt, aggregate (cbind (value), list (phase=phase, group=group, week=week, genotype=genotype, diet=diet), FUN=function (x) c (mean=mean(x), std.error=std.error(x))))
+# mean_wt_FC_sc.byWeek <- with (tbl_FC_sc_wt, aggregate (cbind (value), list (phase=phase, group=group, week=week, genotype=genotype, diet=diet), FUN=function (x) c (mean=mean(x), std.error=std.error(x))))
 
 ## wt free choice CD channel
 label_FC_cd_wt <- "FC_wt_cd"
-label_FC_cd_wt <- "wt FC CD"
+label_FC_cd_wt <- "wt FC CM"
 
 pattern_FC_cd_wt_1 <- "tr_[5,7]_dt_food_cd\\.bedGraph"
 tbl_FC_cd_wt_1 <- readGBTbl (path2Tbl=path2Tbls, pattern_FC_cd_wt_1, label=label_FC_cd_wt, ws=1800)
-pattern_FC_cd_wt_2 <- "tr_[11,13,17,19,21,33,35]_dt_food_cd\\.bedGraph"
+
+pattern_FC_cd_wt_2 <- "tr_[1][1,3,7,9]_dt_food_cd\\.bedGraph"
 tbl_FC_cd_wt_2 <- readGBTbl (path2Tbl=path2Tbls, pattern_FC_cd_wt_2, label=label_FC_cd_wt, ws=1800)
-tbl_FC_cd_wt <- rbind (tbl_FC_cd_wt_1, tbl_FC_cd_wt_2)
+
+pattern_FC_cd_wt_3 <- "tr_[2][1]_dt_food_cd\\.bedGraph"
+tbl_FC_cd_wt_3 <- readGBTbl (path2Tbl=path2Tbls, pattern_FC_cd_wt_3, label=label_FC_cd_wt, ws=1800)
+
+pattern_FC_cd_wt_4 <- "tr_[3][3,5]_dt_food_cd\\.bedGraph"
+tbl_FC_cd_wt_4 <- readGBTbl (path2Tbl=path2Tbls, pattern_FC_cd_wt_4, label=label_FC_cd_wt, ws=1800)
+
+tbl_FC_cd_wt <- rbind (tbl_FC_cd_wt_1, tbl_FC_cd_wt_2, tbl_FC_cd_wt_3, tbl_FC_cd_wt_4)
 head (tbl_FC_cd_wt)
 
 tbl_FC_cd_wt$genotype <- "wt"
 tbl_FC_cd_wt$diet <- "SC+CM"
-mean_wt_FC_cd.byWeek <- with (tbl_FC_cd_wt, aggregate (cbind (value), list (phase=phase, group=group, week=week, genotype=genotype, diet=diet), FUN=function (x) c (mean=mean(x), std.error=std.error(x))))
+# mean_wt_FC_cd.byWeek <- with (tbl_FC_cd_wt, aggregate (cbind (value), list (phase=phase, group=group, week=week, genotype=genotype, diet=diet), FUN=function (x) c (mean=mean(x), std.error=std.error(x))))
 
 ## ts free choice SC channel
 label_FC_sc_ts <- "FC_ts_sc"
 label_FC_sc_ts <- "ts FC SC"
 
-pattern_FC_sc_ts_1 <- "tr_[2,4,8]_dt_food_sc\\.bedGraph"
+## deleting cage 4 because cd channel has very high values
+# pattern_FC_sc_ts_1 <- "tr_[2,4,8]_dt_food_sc\\.bedGraph"
+pattern_FC_sc_ts_1 <- "tr_[2,8]_dt_food_sc\\.bedGraph"
 tbl_FC_sc_ts_1 <- readGBTbl (path2Tbl=path2Tbls, pattern_FC_sc_ts_1, label=label_FC_sc_ts, ws=1800)
-pattern_FC_sc_ts_2 <- "tr_[10,18,22,26,30,32,34]_dt_food_sc\\.bedGraph"
+
+pattern_FC_sc_ts_2 <- "tr_[1][0,8]_dt_food_sc\\.bedGraph" 
 tbl_FC_sc_ts_2 <- readGBTbl (path2Tbl=path2Tbls, pattern_FC_sc_ts_2, label=label_FC_sc_ts, ws=1800)
-tbl_FC_sc_ts <- rbind (tbl_FC_sc_ts_1, tbl_FC_sc_ts_2)
+
+pattern_FC_sc_ts_3 <- "tr_[2][2,6]_dt_food_sc\\.bedGraph" 
+tbl_FC_sc_ts_3 <- readGBTbl (path2Tbl=path2Tbls, pattern_FC_sc_ts_3, label=label_FC_sc_ts, ws=1800)
+
+pattern_FC_sc_ts_4 <- "tr_[3][0,2,4]_dt_food_sc\\.bedGraph" 
+tbl_FC_sc_ts_4 <- readGBTbl (path2Tbl=path2Tbls, pattern_FC_sc_ts_4, label=label_FC_sc_ts, ws=1800)
+
+tbl_FC_sc_ts <- rbind (tbl_FC_sc_ts_1, tbl_FC_sc_ts_2, tbl_FC_sc_ts_3, tbl_FC_sc_ts_4)
 tbl_FC_sc_ts <- subset (tbl_FC_sc_ts, Filename!="tr_4_dt_food_sc.bedGraph")
 head (tbl_FC_sc_ts)
+
 tbl_FC_sc_ts$genotype <- "trisomic"
 tbl_FC_sc_ts$diet <- "SC+CM"
-mean_ts_FC_sc.byWeek <- with (tbl_FC_sc_ts, aggregate (cbind (value), list (phase=phase, group=group, week=week, genotype=genotype, diet=diet), FUN=function (x) c (mean=mean(x), std.error=std.error(x))))
+
+# mean_ts_FC_sc.byWeek <- with (tbl_FC_sc_ts, aggregate (cbind (value), list (phase=phase, group=group, week=week, genotype=genotype, diet=diet), FUN=function (x) c (mean=mean(x), std.error=std.error(x))))
 
 ## ts free choice choc channel
 label_FC_cd_ts <- "FC_ts_cd"
-label_FC_cd_ts <- "ts FC CD"
+label_FC_cd_ts <- "ts FC CM"
 
-pattern_FC_cd_ts_1 <- "tr_[2,4,8]_dt_food_cd\\.bedGraph"
+## deleting cage 4 because cd channel has very high values
+# pattern_FC_cd_ts_1 <- "tr_[2,4,8]_dt_food_cd\\.bedGraph"
+pattern_FC_cd_ts_1 <- "tr_[2,8]_dt_food_cd\\.bedGraph"
 tbl_FC_cd_ts_1 <- readGBTbl (path2Tbl=path2Tbls, pattern_FC_cd_ts_1, label=label_FC_cd_ts, ws=1800)
-pattern_FC_cd_ts_2 <- "tr_[10,18,22,26,30,32,34]_dt_food_cd\\.bedGraph"
+
+pattern_FC_cd_ts_2 <- "tr_[1][0,8]_dt_food_cd\\.bedGraph"
 tbl_FC_cd_ts_2 <- readGBTbl (path2Tbl=path2Tbls, pattern_FC_cd_ts_2, label=label_FC_cd_ts, ws=1800)
-tbl_FC_cd_ts <- rbind (tbl_FC_cd_ts_1, tbl_FC_cd_ts_2)
-head (tbl_FC_cd_ts)
+
+pattern_FC_cd_ts_3 <- "tr_[2][2,6]_dt_food_cd\\.bedGraph"
+tbl_FC_cd_ts_3 <- readGBTbl (path2Tbl=path2Tbls, pattern_FC_cd_ts_3, label=label_FC_cd_ts, ws=1800)
+
+pattern_FC_cd_ts_4 <- "tr_[3][0,2,4]_dt_food_cd\\.bedGraph"
+tbl_FC_cd_ts_4 <- readGBTbl (path2Tbl=path2Tbls, pattern_FC_cd_ts_4, label=label_FC_cd_ts, ws=1800)
+
+
+tbl_FC_cd_ts <- rbind (tbl_FC_cd_ts_1, tbl_FC_cd_ts_2, tbl_FC_cd_ts_3, tbl_FC_cd_ts_4)
+head (tbl_FC_cd_ts_2)
 tbl_FC_cd_ts$genotype <- "trisomic"
 tbl_FC_cd_ts$diet <- "SC+CM"
 
 # subset (tbl_FC_cd_ts, week==3 & value > 0.2 & phase=="day") 
+## I have to delete also the sc channel of this guy 
+## I deleted it above, by no including it
 tbl_FC_cd_ts <- subset (tbl_FC_cd_ts, Filename!="tr_4_dt_food_cd.bedGraph")
-mean_ts_FC_cd.byWeek <- with (tbl_FC_cd_ts, aggregate (cbind (value), list (phase=phase, group=group, week=week, genotype=genotype, diet=diet), FUN=function (x) c (mean=mean(x), std.error=std.error(x))))
+# mean_ts_FC_cd.byWeek <- with (tbl_FC_cd_ts, aggregate (cbind (value), list (phase=phase, group=group, week=week, genotype=genotype, diet=diet), FUN=function (x) c (mean=mean(x), std.error=std.error(x))))
 
-# Join the three tables 
-meanAll.byWeek <- rbind (mean_wt_ctrl.byWeek, mean_ts_ctrl.byWeek, mean_wt_FC_sc.byWeek, mean_wt_FC_cd.byWeek,
-                         mean_ts_FC_sc.byWeek, mean_ts_FC_cd.byWeek)
+###########################
+### FREE CHOICE SC + HF
+## wt free choice SC channel
+label_FC_HF_sc_wt <- "FC_HF_wt_sc"
+label_FC_HF_sc_wt <- "wt FC HF SC"
+
+pattern_FC_HF_sc_wt_1 <- "tr_[3][7,9]_dt_food_sc\\.bedGraph"
+# 7,39,41,43,45,47,49,51,53]_dt_food_sc\\.bedGraph"
+tbl_FC_HF_sc_wt_1 <- readGBTbl (path2Tbl=path2Tbls, pattern_FC_HF_sc_wt_1, label=label_FC_HF_sc_wt, ws=1800)
+
+pattern_FC_HF_sc_wt_2 <- "tr_[4][1,3,5,7,9]_dt_food_sc\\.bedGraph"
+tbl_FC_HF_sc_wt_2 <- readGBTbl (path2Tbl=path2Tbls, pattern_FC_HF_sc_wt_2, label=label_FC_HF_sc_wt, ws=1800)
+
+pattern_FC_HF_sc_wt_3 <- "tr_[5][1,3]_dt_food_sc\\.bedGraph"
+tbl_FC_HF_sc_wt_3 <- readGBTbl (path2Tbl=path2Tbls, pattern_FC_HF_sc_wt_3, label=label_FC_HF_sc_wt, ws=1800)
+
+tbl_FC_HF_sc_wt <- rbind (tbl_FC_HF_sc_wt_1, tbl_FC_HF_sc_wt_2, tbl_FC_HF_sc_wt_3)
+head (tbl_FC_HF_sc_wt)
+tail (tbl_FC_HF_sc_wt)
+
+tbl_FC_HF_sc_wt$genotype <- "wt"
+tbl_FC_HF_sc_wt$diet <- "SC+HF"
+# mean_wt_FC_HF_sc.byWeek <- with (tbl_FC_HF_sc_wt, aggregate (cbind (value), list (phase=phase, group=group, week=week, genotype=genotype, diet=diet), FUN=function (x) c (mean=mean(x), std.error=std.error(x))))
+
+## wt free choice HF channel
+label_FC_HF_hf_wt <- "FC_HF_wt_hf"
+label_FC_HF_hf_wt <- "wt FC HF HF"
+
+pattern_FC_HF_hf_wt_1 <- "tr_[3][7,9]_dt_food_fat\\.bedGraph"
+tbl_FC_HF_hf_wt_1 <- readGBTbl (path2Tbl=path2Tbls, pattern_FC_HF_hf_wt_1, label=label_FC_HF_hf_wt, ws=1800)
+
+pattern_FC_HF_hf_wt_2 <- "tr_[4][1,3,5,7,9]_dt_food_fat\\.bedGraph"
+tbl_FC_HF_hf_wt_2 <- readGBTbl (path2Tbl=path2Tbls, pattern_FC_HF_hf_wt_2, label=label_FC_HF_hf_wt, ws=1800)
+
+pattern_FC_HF_hf_wt_3 <- "tr_[5][1,3]_dt_food_fat\\.bedGraph"
+tbl_FC_HF_hf_wt_3 <- readGBTbl (path2Tbl=path2Tbls, pattern_FC_HF_hf_wt_3, label=label_FC_HF_hf_wt, ws=1800)
+
+tbl_FC_HF_hf_wt <- rbind (tbl_FC_HF_hf_wt_1, tbl_FC_HF_hf_wt_2, tbl_FC_HF_hf_wt_3)
+head (tbl_FC_HF_hf_wt)
+
+tbl_FC_HF_hf_wt$genotype <- "wt"
+tbl_FC_HF_hf_wt$diet <- "SC+HF"
+
+## HF night have a peak at week 3
+# tbl_FC_HF_hf_wt[tbl_FC_HF_hf_wt$week == 3 & tbl_FC_HF_hf_wt$value > 3,]
+# tbl_FC_HF_hf_wt <- subset (tbl_FC_HF_hf_wt, !(grepl("tr_41_", Filename)))
+## Several cages having high values
+
+# mean_wt_FC_HF_hf.byWeek <- with (tbl_FC_HF_hf_wt, aggregate (cbind (value), list (phase=phase, group=group, week=week, genotype=genotype, diet=diet), FUN=function (x) c (mean=mean(x), std.error=std.error(x))))
+
+## ts free choice HF SC channel
+label_FC_HF_sc_ts <- "FC_HF_ts_SC"
+label_FC_HF_sc_ts <- "ts FC HF SC"
+
+pattern_FC_HF_sc_ts_1 <- "tr_[4][0,2,4,6,8]_dt_food_sc\\.bedGraph"
+tbl_FC_HF_sc_ts_1 <- readGBTbl (path2Tbl=path2Tbls, pattern_FC_HF_sc_ts_1, label=label_FC_HF_sc_ts, ws=1800)
+
+pattern_FC_HF_sc_ts_2 <- "tr_[5][0,2,4]_dt_food_sc\\.bedGraph"
+tbl_FC_HF_sc_ts_2 <- readGBTbl (path2Tbl=path2Tbls, pattern_FC_HF_sc_ts_2, label=label_FC_HF_sc_ts, ws=1800)
+
+tbl_FC_HF_sc_ts <- rbind (tbl_FC_HF_sc_ts_1, tbl_FC_HF_sc_ts_2)
+head (tbl_FC_HF_sc_ts)
+
+tbl_FC_HF_sc_ts$genotype <- "trisomic"
+tbl_FC_HF_sc_ts$diet <- "SC+HF"
+# mean_ts_FC_HF_sc.byWeek <- with (tbl_FC_HF_sc_ts, aggregate (cbind (value), list (phase=phase, group=group, week=week, genotype=genotype, diet=diet), FUN=function (x) c (mean=mean(x), std.error=std.error(x))))
+## week 5 ts FC HF SC day high values
+##tr_40_dt_food_sc.bedGraph chr1  3000600 3002400 12.1000000 night    
+##tr_40_dt_food_sc.bedGraph chr1  3022200 3024000 13.9009585 night 
+
+## ESTE OK 
+# tbl_FC_HF_sc_ts[tbl_FC_HF_sc_ts$week == 5 & tbl_FC_HF_sc_ts$value > 2,]
+# tbl_FC_HF_sc_ts <- subset (tbl_FC_HF_sc_ts, !(grepl("tr_42_", Filename)))
+
+## ts free choice HF channel
+label_FC_HF_hf_ts <- "FC_HF_ts_hf"
+label_FC_HF_hf_ts <- "ts FC HF HF"
+
+pattern_FC_HF_hf_ts_1 <- "tr_[4][0,2,4,6,8]_dt_food_fat\\.bedGraph"
+tbl_FC_HF_hf_ts_1 <- readGBTbl (path2Tbl=path2Tbls, pattern_FC_HF_hf_ts_1, label=label_FC_HF_hf_ts, ws=1800)
+
+pattern_FC_HF_hf_ts_2 <- "tr_[5][0,2,4]_dt_food_fat\\.bedGraph"
+tbl_FC_HF_hf_ts_2 <- readGBTbl (path2Tbl=path2Tbls, pattern_FC_HF_hf_ts_2, label=label_FC_HF_hf_ts, ws=1800)
+
+tbl_FC_HF_hf_ts <- rbind (tbl_FC_HF_hf_ts_1, tbl_FC_HF_hf_ts_2)
+head (tbl_FC_HF_hf_ts)
+
+tbl_FC_HF_hf_ts$genotype <- "trisomic"
+tbl_FC_HF_hf_ts$diet <- "SC+HF"
+head(tbl_FC_HF_hf_ts,48)
+
+### the problem is in a wt animal
+# tbl_FC_HF_hf_ts <- subset (tbl_FC_HF_hf_ts, !(grepl("tr_42_", Filename)))
+# tbl_FC_HF_hf_ts[tbl_FC_HF_hf_ts$week == 3 & tbl_FC_HF_hf_ts$value > 1,]
+### This file has very high values during week three both in day and night 
+## I don't read the cage 42
+# tr_42_dt_food_fat.bedGraph
+
+## tambien podria primero juntar todo y calcular la media solo una vez
+# tbl_before_mean <- rbind(tbl_FC_HF_hf_ts, tbl_FC_HF_sc_ts)
+# mean_two_gr <- with (tbl_before_mean, aggregate (cbind (value), list (phase=phase, group=group, week=week, genotype=genotype, diet=diet), FUN=function (x) c (mean=mean(x), std.error=std.error(x))))
+# mean_two_gr
+
+# mean_ts_FC_HF_hf.byWeek <- with (tbl_FC_HF_hf_ts, aggregate (cbind (value), list (phase=phase, group=group, week=week, genotype=genotype, diet=diet), FUN=function (x) c (mean=mean(x), std.error=std.error(x))))
+
+## Join the tables 
+# meanAll.byWeek <- rbind (mean_wt_ctrl.byWeek, mean_ts_ctrl.byWeek, mean_wt_FC_sc.byWeek, mean_wt_FC_cd.byWeek,
+#                          mean_ts_FC_sc.byWeek, mean_ts_FC_cd.byWeek, 
+#                          mean_wt_FC_HF_sc.byWeek,mean_wt_FC_HF_hf.byWeek,
+#                          mean_ts_FC_HF_sc.byWeek, mean_ts_FC_HF_hf.byWeek)
+
+tbl_all <- rbind(tbl_control_wt, tbl_control_ts, tbl_FC_sc_wt, tbl_FC_cd_wt, tbl_FC_sc_ts, tbl_FC_cd_ts, tbl_FC_HF_sc_wt,
+                 tbl_FC_HF_hf_wt, tbl_FC_HF_sc_ts, tbl_FC_HF_hf_ts)
+
+meanAll.byWeek <- with (tbl_all, aggregate (cbind (value), list (phase=phase, group=group, week=week, genotype=genotype, diet=diet), FUN=function (x) c (mean=mean(x), std.error=std.error(x))))
+
 
 meanAll.byWeek$mean <- meanAll.byWeek$value [,1]
 meanAll.byWeek$std.error <- meanAll.byWeek$value [,2]
-
 
 ## Plotting all
 str (meanAll.byWeek)
@@ -150,15 +324,23 @@ cb_palette <- c("#999999", "#E69F00", "#56B4E9",
                 "#009E73", "#F0E442", "#0072B2", 
                 "#D55E00", "#CC79A7", "#000000", 
                 "#00009B", "lightgreen", "darkred")
-colors <- cb_palette
+colors <- rep(cb_palette,4)
 
 meanAll.byWeek_dev$groupPhase <- factor(meanAll.byWeek_dev$groupPhase, levels = c("wt control day", "wt control night", 
                                                                                   "wt FC SC day", "wt FC SC night",
-                                                                                  "wt FC CD day", "wt FC CD night",
+                                                                                  "wt FC CM day", "wt FC CM night",
                                                                                   "ts control day", "ts control night",
                                                                                   "ts FC SC day", "ts FC SC night",
-                                                                                  "ts FC CD day","ts FC CD night"))
+                                                                                  "ts FC CM day","ts FC CM night",
+                                                                                  # repeat last four colors
+                                                                                  "wt FC HF SC day", "wt FC HF SC night",
+                                                                                  "wt FC HF HF day", "wt FC HF HF night",
+                                                                                  "ts FC HF SC day", "ts FC HF SC night",
+                                                                                  "ts FC HF HF day", "ts FC HF HF night"
+                                                                                  ))
 meanAll.byWeek_dev$genotype <- factor(meanAll.byWeek_dev$genotype, levels=c("wt", "trisomic"))
+tail(meanAll.byWeek_dev)
+meanAll.byWeek_dev [meanAll.byWeek_dev$week==3 && meanAll.byWeek_dev$groupPhase == "ts FC HF HF night", ]
 
 # gAllByWeek <- ggplot (meanAll.byWeek_dev, aes(x = week, y = mean, colour = groupPhase)) +
 gAllByWeek <- ggplot (meanAll.byWeek_dev, aes(x = week, y = mean, colour = groupPhase)) + 
@@ -192,8 +374,9 @@ gAllByWeek_grid <- gAllByWeek + facet_grid(genotype ~ .)
 
 cb_palette <- c("#999999", "#E69F00", "#56B4E9",
                 "#009E73", "#F0E442", "#0072B2")
-colors <- rep(c("#999999", "#E69F00", "#56B4E9",
-                "#009E73", "#F0E442", "#0072B2"), 2) 
+colors <- c(rep(c("#999999", "#E69F00", "#56B4E9",
+                "#009E73", "#F0E442", "#0072B2"), 2), 
+            rep(c("#56B4E9", "#009E73", "#F0E442", "#0072B2"), 2))
 
 gAllByWeek <- gAllByWeek  + scale_colour_manual (#name="conditions",
     name="",
@@ -205,6 +388,6 @@ gAllByWeek_grid <- gAllByWeek + facet_grid(genotype ~ diet)
 gAllByWeek_grid
 
 # ggsave (gAllByWeek_grid, file=paste(home, "/2017_phecomp_marta/figures/", "circadian_day_night_ts_by_genotype.png", sep=""))
-ggsave (gAllByWeek_grid, file=paste(home, "/2017_phecomp_marta/figures/", "circadian_day_night_ts_by_genotype.tiff", sep=""), 
-        width=12, height=7, dpi=400)
+# ggsave (gAllByWeek_grid, file=paste(home, "/2017_phecomp_marta/figures/", "circadian_day_night_ts_by_genotype.tiff", sep=""), 
+#         width=12, height=7, dpi=400)
 
