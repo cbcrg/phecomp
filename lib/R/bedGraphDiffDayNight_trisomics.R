@@ -300,12 +300,46 @@ head(tbl_FC_HF_hf_ts,48)
 tbl_all <- rbind(tbl_control_wt, tbl_control_ts, tbl_FC_sc_wt, tbl_FC_cd_wt, tbl_FC_sc_ts, tbl_FC_cd_ts, tbl_FC_HF_sc_wt,
                  tbl_FC_HF_hf_wt, tbl_FC_HF_sc_ts, tbl_FC_HF_hf_ts)
 
+## Filter by z-score
+# tbl_all$z <- ave(tbl_all$value, tbl_all$group, FUN=scale)
+## scale --> returns z score
+# tbl_all_value_byZscore <- tbl_all %>%
+#     group_by(group) %>%
+#     mutate(
+# #         z = scale(value)        
+#           value_byZscore = ifelse(abs(scale(value)) > 3, mean(value), value) 
+#     )
+# 
+# length(tbl_all[,1])
+# 
+# tbl_all$value_byZscore <- as.vector(tbl_all_value_byZscore$value_byZscore)
+# 
+# length(tbl_all [tbl_all$value_byZscore != tbl_all$value, 1]) # 3195 deleted values
+# 
+# ## Delete the values bigger than 6 zscores is equal to substitute by the mean of the rest of the values
+# tbl_all <- tbl_all [tbl_all$value_byZscore == tbl_all$value,]
+# 
+# 
+# # impute.mean <- function(x) replace(x, is.na(x), mean(x, na.rm = TRUE))
+# 
+# # tbl_all %>%
+# #     group_by(group) %>%
+# #     mutate(
+# #         value = impute.mean(value),         
+# #     )
+
+## approach taking into account the overall z score
+tbl_all$zscore <- abs(scale(tbl_all$value))
+length(tbl_all [tbl_all$zscore > 3 ,1]) # 1927 values deleted
+tbl_all <- tbl_all [tbl_all$zscore < 3 ,]
+
 meanAll.byWeek <- with (tbl_all, aggregate (cbind (value), list (phase=phase, group=group, week=week, genotype=genotype, diet=diet), FUN=function (x) c (mean=mean(x), std.error=std.error(x))))
+# meanAnimalByWeekHF <- with (tblHF , aggregate (cbind (value), list (week=week, group=group, phase=phase, animal=Filename), FUN=function (x) c (mean=mean(x), std.error=std.error(x))))
 
 
 meanAll.byWeek$mean <- meanAll.byWeek$value [,1]
 meanAll.byWeek$std.error <- meanAll.byWeek$value [,2]
-
+head(meanAll.byWeek)
 ## Plotting all
 str (meanAll.byWeek)
 # Weeks should be numeric to plot lines
@@ -390,4 +424,101 @@ gAllByWeek_grid
 # ggsave (gAllByWeek_grid, file=paste(home, "/2017_phecomp_marta/figures/", "circadian_day_night_ts_by_genotype.png", sep=""))
 # ggsave (gAllByWeek_grid, file=paste(home, "/2017_phecomp_marta/figures/", "circadian_day_night_ts_by_genotype.tiff", sep=""), 
 #         width=12, height=7, dpi=400)
+
+########################################
+########################################
+## new version of the plot with shapes and less colors
+vector_gr = c("wt control day", "wt control night", 
+           "wt FC SC day", "wt FC SC night",
+           "wt FC CM day", "wt FC CM night",
+           "ts control day", "ts control night",
+           "ts FC SC day", "ts FC SC night",
+           "ts FC CM day","ts FC CM night",
+           # repeat last four colors
+           "wt FC HF SC day", "wt FC HF SC night",
+           "wt FC HF HF day", "wt FC HF HF night",
+           "ts FC HF SC day", "ts FC HF SC night",
+           "ts FC HF HF day", "ts FC HF HF night")
+
+colors <- c(rep(c("#999999", "#E69F00", "#56B4E9",
+                  "#009E73", "#F0E442", "#0072B2"), 2), 
+            rep(c("#56B4E9", "#009E73", "#F0E442", "#0072B2"), 2))
+colors <- c(rep("#E69F00", 4),  rep("#999999", 2), 
+            rep("#E69F00", 4), rep("#999999", 2), 
+            rep("#E69F00", 2), rep("#0072B2",2),
+            rep("#E69F00", 2), rep("#0072B2",2))
+
+gAllByWeek <- gAllByWeek  + scale_colour_manual (#name="conditions",
+    name="",
+    values = colors) + # , labels=labs_plot) + 
+    theme (legend.key.height = unit (2, "line")) + #distance between lines in legend 
+    theme(plot.title = element_text(hjust = 0.5))
+
+gAllByWeek_grid <- gAllByWeek + facet_grid(genotype ~ diet)
+
+gAllByWeek_grid_simple <- gAllByWeek + 
+                          geom_point (aes(shape=groupPhase), fill="white",  size=4) +
+                          scale_shape_manual(values= rep(c(17, 15),10)) +
+                          facet_grid(genotype ~ diet)
+
+df_legend <- data.frame(c(0,1,2), c(2,4,8), c("SC","CM", "HF"))
+colnames(df_legend) <- c("x", "y", "names")
+df_legend$names <- factor(df_legend$names, levels = c("SC","CM", "HF"))
+    
+    
+df_legend_shape <- data.frame(c(0,1), c(2,4), c("Day","Night"))
+colnames(df_legend_shape) <- c("x", "y", "names_phase")
+
+## Plot for extracting legend
+gr_legend_p <- ggplot() + geom_point(data=df_legend, aes(x=x, y=y, colour = names), shape=15, size=5) +
+    geom_point(data=df_legend_shape, aes(x=x, y=y, shape=names_phase), size=5) +
+    scale_colour_manual (values=c("#E69F00","#999999","#0072B2")) + guides(color=guide_legend(title=NULL)) + 
+    scale_shape_manual(values= c(17, 15)) +  guides(color=guide_legend(title=NULL)) +
+    theme(legend.title=element_blank()) +
+    theme(legend.position="bottom", legend.justification=c(1, 0)) +
+    geom_blank()
+
+## Extract legend
+g_legend <- function(a.gplot){ 
+    tmp <- ggplot_gtable(ggplot_build(a.gplot)) 
+    leg <- which(sapply(tmp$grobs, function(x) x$name) == "guide-box") 
+    legend <- tmp$grobs[[leg]] 
+    return(legend)} 
+
+legend_simple <- g_legend(gr_legend_p )
+
+png(paste(home, "/2017_phecomp_marta/figures/", "circadian_day_night_ts_by_genotype_simple.png", sep=""), width=1000, height=800 )
+grid.newpage()
+
+# grid.draw(legend_simple)
+
+g <- grid.arrange(arrangeGrob(gAllByWeek_grid_simple + theme(legend.position="none"), nrow=1),
+                  legend_simple, nrow=2,heights=c(10, 1))
+dev.off()
+
+########################
+### Statistical analysis
+head(tbl_all, 20)
+meanAnimalByWeek_ts <- with (tbl_all , aggregate (cbind (value), list (week=week, group=group, phase=phase, animal=Filename), FUN=function (x) c (mean=mean(x), std.error=std.error(x))))
+
+meanAnimalByWeekHF <- with (tblHF , aggregate (cbind (value), list (week=week, group=group, phase=phase, animal=Filename), FUN=function (x) c (mean=mean(x), std.error=std.error(x))))
+
+head (meanAnimalByWeekHF,20)
+head (meanAnimalByWeek_ts, 20)
+unique(tbl_all$group)
+
+meanAnimalByWeek_ts$mean <- meanAnimalByWeek_ts$value [,1]
+meanAnimalByWeek_ts$std.error <- meanAnimalByWeek_ts$value [,2]
+
+####@@@@@
+## http://stackoverflow.com/questions/5694664/repeated-measures-within-subjects-anova-in-r
+
+meanAnimalByWeek_ts$groupAndPhase <- paste (meanAnimalByWeek_ts$group, meanAnimalByWeek_ts$phase, sep="")  
+meanAnimalByWeek_ts$groupAndPhase <- as.factor (meanAnimalByWeek_ts$groupAndPhase)
+meanAnimalByWeek_ts$week <- as.factor (meanAnimalByWeek_ts$week)
+meanAnimalByWeek_ts$animal <- as.factor (meanAnimalByWeek_ts$animal)
+
+aov.weekIntakes = aov (mean ~ groupAndPhase * week + Error (animal), data=meanAnimalByWeek_ts)
+summary (aov.weekIntakes)
+
 
