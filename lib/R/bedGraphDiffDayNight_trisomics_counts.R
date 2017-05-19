@@ -31,8 +31,8 @@ source ("/Users/jespinosa/git/phecomp/lib/R/f_readGBFiles.R")
 source ("/Users/jespinosa/git/phecomp/lib/R/plotParamPublication.R")
 
 #Path to folder with intervals files for each cage
-path2Tbls <- paste (home, "/2017_phecomp_marta/GB_indidividual_files", sep = "")
-# path2Tbls <- paste (home, "/2017_phecomp_marta/GB_individual_files_counts", sep = "")
+# path2Tbls <- paste (home, "/2017_phecomp_marta/GB_indidividual_files", sep = "")
+path2Tbls <- paste (home, "/2017_phecomp_marta/GB_individual_files_counts", sep = "")
 
 ## En lugar de hacer bedGraph hacer bedtools makewindows. 
 ## https://www.biostars.org/p/49163/
@@ -181,7 +181,6 @@ tbl_FC_cd_ts_3 <- readGBTbl (path2Tbl=path2Tbls, pattern_FC_cd_ts_3, label=label
 pattern_FC_cd_ts_4 <- "tr_[3][0,2,4]_dt_food_cd\\.bedGraph"
 tbl_FC_cd_ts_4 <- readGBTbl (path2Tbl=path2Tbls, pattern_FC_cd_ts_4, label=label_FC_cd_ts, ws=1800)
 
-
 tbl_FC_cd_ts <- rbind (tbl_FC_cd_ts_1, tbl_FC_cd_ts_2, tbl_FC_cd_ts_3, tbl_FC_cd_ts_4)
 head (tbl_FC_cd_ts_2)
 tbl_FC_cd_ts$genotype <- "trisomic"
@@ -304,52 +303,52 @@ head(tbl_FC_HF_hf_ts,48)
 #                          mean_wt_FC_HF_sc.byWeek,mean_wt_FC_HF_hf.byWeek,
 #                          mean_ts_FC_HF_sc.byWeek, mean_ts_FC_HF_hf.byWeek)
 
-tbl_all <- rbind(tbl_control_wt, tbl_control_ts, tbl_FC_sc_wt, tbl_FC_cd_wt, tbl_FC_sc_ts, tbl_FC_cd_ts, tbl_FC_HF_sc_wt,
-                 tbl_FC_HF_hf_wt, tbl_FC_HF_sc_ts, tbl_FC_HF_hf_ts)
 
+tbl_all <- rbind(tbl_control_wt, tbl_control_ts, 
+                 tbl_FC_sc_wt, tbl_FC_cd_wt, tbl_FC_sc_ts, tbl_FC_cd_ts, 
+                 tbl_FC_HF_sc_wt, tbl_FC_HF_hf_wt, tbl_FC_HF_sc_ts, tbl_FC_HF_hf_ts)
+
+## Delete week 8 of the rest of groups because in HF grous only seven weeks were recorded
+tbl_all <- rbind (subset (tbl_all, diet != "SC+HF"), subset (tbl_all, diet == "SC+HF" & week < 8))
+
+#####################
+#####################
 ## Filter by z-score
-# tbl_all$z <- ave(tbl_all$value, tbl_all$group, FUN=scale)
-## scale --> returns z score
-# tbl_all_value_byZscore <- tbl_all %>%
-#     group_by(group) %>%
-#     mutate(
-# #         z = scale(value)        
-#           value_byZscore = ifelse(abs(scale(value)) > 3, mean(value), value) 
-#     )
+## for each group
+# library (dplyr)
 # 
-# length(tbl_all[,1])
+# head (tbl_all)
+# z_scale <- function (x) {(x - mean(x)) / sd(x)}
 # 
-# tbl_all$value_byZscore <- as.vector(tbl_all_value_byZscore$value_byZscore)
+# scaled_data <- 
+#   tbl_all %>%
+#   group_by(group) %>%
+#   mutate(zscore = z_scale(value))
 # 
-# length(tbl_all [tbl_all$value_byZscore != tbl_all$value, 1]) # 3195 deleted values
+# scaled_data <- as.data.frame(scaled_data)
 # 
-# ## Delete the values bigger than 6 zscores is equal to substitute by the mean of the rest of the values
-# tbl_all <- tbl_all [tbl_all$value_byZscore == tbl_all$value,]
-# 
-# 
-# # impute.mean <- function(x) replace(x, is.na(x), mean(x, na.rm = TRUE))
-# 
-# # tbl_all %>%
-# #     group_by(group) %>%
-# #     mutate(
-# #         value = impute.mean(value),         
-# #     )
+# tail(scaled_data)
+# head(scaled_data)
+# tbl_all <- scaled_data
+# tbl_all <- tbl_all [tbl_all$zscore < 3 ,]
 
+#####################
+#####################
 ## approach taking into account the overall z score
-tbl_all$zscore <- abs(scale(tbl_all$value))
-length(tbl_all [tbl_all$zscore > 3 ,1]) # 1927 values deleted
-tbl_all <- tbl_all [tbl_all$zscore < 3 ,]
+# tbl_all$zscore <- abs(scale(tbl_all$value))
+# length(tbl_all [tbl_all$zscore > 3 ,1]) # 1927 values deleted
+# tbl_all <- tbl_all [tbl_all$zscore < 3 ,]
 
 meanAll.byWeek <- with (tbl_all, aggregate (cbind (value), list (phase=phase, group=group, week=week, genotype=genotype, diet=diet), FUN=function (x) c (mean=mean(x), std.error=std.error(x))))
 # meanAnimalByWeekHF <- with (tblHF , aggregate (cbind (value), list (week=week, group=group, phase=phase, animal=Filename), FUN=function (x) c (mean=mean(x), std.error=std.error(x))))
-
 
 meanAll.byWeek$mean <- meanAll.byWeek$value [,1]
 meanAll.byWeek$std.error <- meanAll.byWeek$value [,2]
 head(meanAll.byWeek)
 ## Plotting all
-str (meanAll.byWeek)
-# Weeks should be numeric to plot lines
+# str (meanAll.byWeek)
+
+## Weeks should be numeric to plot lines
 meanAll.byWeek$week <- as.numeric (meanAll.byWeek$week)
 
 meanAll.byWeek$mean - meanAll.byWeek$std.error
@@ -357,9 +356,11 @@ meanAll.byWeek$groupPhase <- paste (meanAll.byWeek$group, meanAll.byWeek$phase)
 meanAll.byWeek$ymax <- meanAll.byWeek$mean + meanAll.byWeek$std.error
 meanAll.byWeek$ymin <- meanAll.byWeek$mean - meanAll.byWeek$std.error
 
-unique(meanAll.byWeek$week)
-# I filter last week of the development nto complete 
-meanAll.byWeek_dev <- meanAll.byWeek [ meanAll.byWeek$week < 9, ]
+# unique(meanAll.byWeek$week)
+
+## I filter last week of the development nto complete 
+# meanAll.byWeek_dev <- meanAll.byWeek [ meanAll.byWeek$week < 9, ]
+meanAll.byWeek_dev <- meanAll.byWeek [ meanAll.byWeek$week < 8, ] # high-fat has not 8 weeks
 pd <- position_dodge(.1)
 cb_palette <- c("#999999", "#E69F00", "#56B4E9",
                 "#009E73", "#F0E442", "#0072B2", 
@@ -378,7 +379,7 @@ meanAll.byWeek_dev$groupPhase <- factor(meanAll.byWeek_dev$groupPhase, levels = 
                                                                                   "wt FC HF HF day", "wt FC HF HF night",
                                                                                   "ts FC HF SC day", "ts FC HF SC night",
                                                                                   "ts FC HF HF day", "ts FC HF HF night"
-                                                                                  ))
+))
 meanAll.byWeek_dev$genotype <- factor(meanAll.byWeek_dev$genotype, levels=c("wt", "trisomic"))
 tail(meanAll.byWeek_dev)
 meanAll.byWeek_dev [meanAll.byWeek_dev$week==3 && meanAll.byWeek_dev$groupPhase == "ts FC HF HF night", ]
@@ -386,8 +387,8 @@ meanAll.byWeek_dev [meanAll.byWeek_dev$week==3 && meanAll.byWeek_dev$groupPhase 
 # gAllByWeek <- ggplot (meanAll.byWeek_dev, aes(x = week, y = mean, colour = groupPhase)) +
 gAllByWeek <- ggplot (meanAll.byWeek_dev, aes(x = week, y = mean, colour = groupPhase)) + 
     scale_x_continuous (breaks=c(1:10)) + 
-    labs (title = "Average intake during\n30 min periods\n") +  
-    labs (x = "\nDevelopment Weeks", y = "g/30 min\n", fill = NULL) + 
+    labs (title = "Number of meals during\n30 min periods\n") +  
+    labs (x = "\nDevelopment Weeks", y = "Number of meals/30 min\n", fill = NULL) + 
     geom_errorbar (aes (ymin=ymin, ymax=ymax), colour = "black", width=.1) +
     geom_line (size=1)  + 
     geom_point () #+
@@ -416,7 +417,7 @@ gAllByWeek_grid <- gAllByWeek + facet_grid(genotype ~ .)
 cb_palette <- c("#999999", "#E69F00", "#56B4E9",
                 "#009E73", "#F0E442", "#0072B2")
 colors <- c(rep(c("#999999", "#E69F00", "#56B4E9",
-                "#009E73", "#F0E442", "#0072B2"), 2), 
+                  "#009E73", "#F0E442", "#0072B2"), 2), 
             rep(c("#56B4E9", "#009E73", "#F0E442", "#0072B2"), 2))
 
 gAllByWeek <- gAllByWeek  + scale_colour_manual (#name="conditions",
@@ -436,16 +437,16 @@ gAllByWeek_grid
 ########################################
 ## new version of the plot with shapes and less colors
 vector_gr = c("wt control day", "wt control night", 
-           "wt FC SC day", "wt FC SC night",
-           "wt FC CM day", "wt FC CM night",
-           "ts control day", "ts control night",
-           "ts FC SC day", "ts FC SC night",
-           "ts FC CM day","ts FC CM night",
-           # repeat last four colors
-           "wt FC HF SC day", "wt FC HF SC night",
-           "wt FC HF HF day", "wt FC HF HF night",
-           "ts FC HF SC day", "ts FC HF SC night",
-           "ts FC HF HF day", "ts FC HF HF night")
+              "wt FC SC day", "wt FC SC night",
+              "wt FC CM day", "wt FC CM night",
+              "ts control day", "ts control night",
+              "ts FC SC day", "ts FC SC night",
+              "ts FC CM day","ts FC CM night",
+              # repeat last four colors
+              "wt FC HF SC day", "wt FC HF SC night",
+              "wt FC HF HF day", "wt FC HF HF night",
+              "ts FC HF SC day", "ts FC HF SC night",
+              "ts FC HF HF day", "ts FC HF HF night")
 
 colors <- c(rep(c("#999999", "#E69F00", "#56B4E9",
                   "#009E73", "#F0E442", "#0072B2"), 2), 
@@ -464,15 +465,17 @@ gAllByWeek <- gAllByWeek  + scale_colour_manual (#name="conditions",
 gAllByWeek_grid <- gAllByWeek + facet_grid(genotype ~ diet)
 
 gAllByWeek_grid_simple <- gAllByWeek + 
-                          geom_point (aes(shape=groupPhase), fill="white",  size=4) +
-                          scale_shape_manual(values= rep(c(17, 15),10)) +
-                          facet_grid(genotype ~ diet)
+    geom_point (aes(shape=groupPhase), fill="white",  size=4) +
+    scale_shape_manual(values= rep(c(17, 15),10)) +
+    facet_grid(genotype ~ diet) +
+    theme_update(strip.text.x = element_text (size=base_size * 1.3, face="bold")) +
+    theme(plot.title = element_text(hjust = 0.5))
+
 
 df_legend <- data.frame(c(0,1,2), c(2,4,8), c("SC","CM", "HF"))
 colnames(df_legend) <- c("x", "y", "names")
 df_legend$names <- factor(df_legend$names, levels = c("SC","CM", "HF"))
-    
-    
+
 df_legend_shape <- data.frame(c(0,1), c(2,4), c("Day","Night"))
 colnames(df_legend_shape) <- c("x", "y", "names_phase")
 
@@ -483,8 +486,8 @@ gr_legend_p <- ggplot() + geom_point(data=df_legend, aes(x=x, y=y, colour = name
     scale_shape_manual(values= c(17, 15)) +  guides(color=guide_legend(title=NULL)) +
     theme(legend.title=element_blank()) +
     theme(legend.position="bottom", legend.justification=c(1, 0)) +
-    geom_blank() + guides(colour = guide_legend(order = 1), 
-                          shape = guide_legend(order = 2))
+    geom_blank()
+
 ## Extract legend
 g_legend <- function(a.gplot){ 
     tmp <- ggplot_gtable(ggplot_build(a.gplot)) 
@@ -492,27 +495,29 @@ g_legend <- function(a.gplot){
     legend <- tmp$grobs[[leg]] 
     return(legend)} 
 
-legend_simple <- g_legend(gr_legend_p )
+legend_simple <- g_legend(gr_legend_p)
 
-png(paste(home, "/2017_phecomp_marta/figures/", "circadian_day_night_ts_by_genotype_simple.png", sep=""), width=1000, height=800 )
+png(paste(home, "/2017_phecomp_marta/figures/", "circadian_day_night_ts_by_genotype_counts_no_filtered.png", sep=""), width=1000, height=800 )
+# png(paste(home, "/2017_phecomp_marta/figures/", "circadian_day_night_ts_by_genotype_counts_zscore_filt_by_group.png", sep=""), width=1000, height=800 )
+# png(paste(home, "/2017_phecomp_marta/figures/", "circadian_day_night_ts_by_genotype_counts_overall_zscore_filt.png", sep=""), width=1000, height=800 )
+
 grid.newpage()
-
 # grid.draw(legend_simple)
-
 g <- grid.arrange(arrangeGrob(gAllByWeek_grid_simple + theme(legend.position="none"), nrow=1),
                   legend_simple, nrow=2,heights=c(10, 1))
+
 dev.off()
 
 ########################
 ### Statistical analysis
-head(tbl_all, 20)
+# head(tbl_all, 20)
 meanAnimalByWeek_ts <- with (tbl_all , aggregate (cbind (value), list (week=week, group=group, phase=phase, animal=Filename), FUN=function (x) c (mean=mean(x), std.error=std.error(x))))
 
 meanAnimalByWeekHF <- with (tblHF , aggregate (cbind (value), list (week=week, group=group, phase=phase, animal=Filename), FUN=function (x) c (mean=mean(x), std.error=std.error(x))))
 
-head (meanAnimalByWeekHF,20)
-head (meanAnimalByWeek_ts, 20)
-unique(tbl_all$group)
+# head (meanAnimalByWeekHF,20)
+# head (meanAnimalByWeek_ts, 20)
+# unique(tbl_all$group)
 
 meanAnimalByWeek_ts$mean <- meanAnimalByWeek_ts$value [,1]
 meanAnimalByWeek_ts$std.error <- meanAnimalByWeek_ts$value [,2]
@@ -528,4 +533,62 @@ meanAnimalByWeek_ts$animal <- as.factor (meanAnimalByWeek_ts$animal)
 aov.weekIntakes = aov (mean ~ groupAndPhase * week + Error (animal), data=meanAnimalByWeek_ts)
 summary (aov.weekIntakes)
 
+#### 
+########################
+########################
+### tbl for statistics
+### Writting data for spss
+tbl_all_stats <- tbl_all
+tbl_all_stats$mouse <- as.numeric (gsub("_dt_food_fat","", gsub ("_dt_food_cd","" , (gsub (".bedGraph" , "", gsub ("_dt_food_sc", "", gsub("tr_", "", tbl_all_stats$Filename)))))))
+
+# tbl_stats <- data.frame()
+# mouse <- as.numeric (gsub ("_dt_food_cd","" , (gsub (".bedGraph" , "", gsub ("_dt_food_sc", "", gsub("tr_", "", tbl_all$Filename))))))
+# mouse <- as.numeric (gsub ("_dt_food_cd","" , (gsub (".bedGraph" , "", gsub ("_dt_food_sc", "", gsub("tr_", "", tbl_all$Filename))))))
+# group <- tbl_all$genotype
+# mean <- tbl_all$mean
+# phase <- tbl_all$phase
+# 
+# tbl_all2stats <- tbl_all
+
+head(tbl_all_stats)
+# stats_mean <- with (tbl_all_stats, aggregate (cbind (value), list (group=group, phase=phase, week=week, genotype=genotype, diet=diet, mouse=mouse), FUN=function (x) c (mean=mean(x))))
+stats_mean <- with (tbl_all_stats, aggregate (cbind (value), list (group=group, phase=phase, week=week, mouse=mouse), FUN=function (x) c (mean=mean(x))))
+stats_mean <- stats_mean [ stats_mean$week < 8, ]
+
+library("reshape2")
+library(xlsx)
+
+# stats_mean_export <- dcast (stats_mean, mouse + group + diet ~ phase + week, value.var="value")
+stats_mean_export <- dcast (stats_mean, mouse + group ~ phase + week, value.var="value")
+head(stats_mean_export)
+write.xlsx(stats_mean_export, "/Users/jespinosa/sharedWin/2017_trisomics_spps_analysis/stats_mean_export_trisomics.xlsx", row.names =FALSE) 
+
+library(foreign)
+
+## http://stackoverflow.com/questions/25420570/how-to-export-a-dataset-to-spss
+write.foreign(as.data.frame(stats_mean_export), "/Users/jespinosa/sharedWin/2017_trisomics_spps_analysis/stats_mean_export_trisomics.txt", "/Users/jespinosa/sharedWin/2017_trisomics_spps_analysis/stats_mean_export_trisomics.sps",   package="SPSS") 
+
+## TO PERFORM THE ANOVA ON R USE BEDGRAPHDIFFDAYNIGHT_DYRK_COUNTS AS TEMPLATE
+stats_mean$phase_week <- paste(stats_mean$phase, stats_mean$week, sep="_")
+head(stats_mean)
+
+################
+################
+# POST-hoc test
+# for group
+head (stats_mean)
+stats_mean$group_phase <- paste(stats_mean$group, stats_mean$phase, sep="&")
+unique(stats_mean$group_phase)
+
+with (stats_mean, pairwise.t.test (value, group_phase,  p.adjust.method="bonf"))
+# with (meanAnimalByWeekAnova, pairwise.t.test (mean, week ,  p.adjust.method="bonf"))
+
+postHoc_group_phase <- as.data.frame(pairwise.t.test (stats_mean$value, stats_mean$group_phase,  p.adjust.method="bonf")$p.value)
+
+write.xlsx(postHoc_group_phase, 
+           "/Users/jespinosa/2017_phecomp_marta/results/anova_group_phase/posthoc_bonferroni_sign_ONLY_trisomics.xlsx", 
+           row.names =TRUE) 
+
+## Check bonferroni
+with (stats_mean, aggregate (cbind (value), list (group_phase=group_phase), FUN=function (x) c (mean=mean(x))))
 

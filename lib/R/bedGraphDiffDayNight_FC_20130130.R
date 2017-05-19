@@ -234,10 +234,10 @@ gAllByWeek_blackWhite
 setwd("/Users/jespinosa/dropboxTCoffee_new/Dropbox/jespinosa/2013phecomp2shareFinal/20150902_espinosa_EuNeuroPsycho")
 # ggsave (gAllByWeek_blackWhite, file=paste(home, "/dropboxTCoffee_new/Dropbox/jespinosa/2013phecomp2shareFinal/20150902_espinosa_EuNeuroPsycho/", "figS3B.tiff", sep=""), 
 #           width=12, height=7, dpi=400)
-ggsave (gAllByWeek_blackWhite, file=paste(home, "/dropboxTCoffee_new/Dropbox/jespinosa/2013phecomp2shareFinal/drafts_paper/figures_20151110/figS4/", "figS4.tiff", sep=""), 
-        width=12, height=7, dpi=400)
-ggsave (gAllByWeek_blackWhite, file=paste(home, "/dropboxTCoffee_new/Dropbox/jespinosa/2013phecomp2shareFinal/drafts_paper/figures_20151110/figS4/", "figS4.pdf", sep=""), 
-        width=12, height=7)
+# ggsave (gAllByWeek_blackWhite, file=paste(home, "/dropboxTCoffee_new/Dropbox/jespinosa/2013phecomp2shareFinal/drafts_paper/figures_20151110/figS4/", "figS4.tiff", sep=""), 
+#         width=12, height=7, dpi=400)
+# ggsave (gAllByWeek_blackWhite, file=paste(home, "/dropboxTCoffee_new/Dropbox/jespinosa/2013phecomp2shareFinal/drafts_paper/figures_20151110/figS4/", "figS4.pdf", sep=""), 
+#         width=12, height=7)
 
 
 
