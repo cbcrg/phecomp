@@ -208,9 +208,10 @@ gAllByWeek_grid_simple <- gAllByWeek +
   geom_point (aes(shape=groupPhase), fill="white",  size=4) +
   scale_shape_manual(values= rep(c(17, 15),10)) +
   #     facet_grid(genotype ~ diet) + ylim(c(0,1))
-  facet_grid(diet ~ genotype) + ylim(c(0, 1)) +
+  facet_grid(diet ~ genotype, switch = "y") + ylim(c(0, 1)) +
   theme_update(strip.text.x = element_text (size=base_size * 1.3, face="bold")) +
-  theme(plot.title = element_text(hjust = 0.5))
+  theme(plot.title = element_text(hjust = 0.5), strip.text.y = element_text(angle = 270),
+      panel.spacing.x = unit(4, "lines"), plot.margin = unit(c(0,4,0,0), "line"))
 
 df_legend <- data.frame(c(0,1), c(2,4), c("SC","CM"))
 colnames(df_legend) <- c("x", "y", "names")
@@ -238,8 +239,9 @@ g_legend <- function(a.gplot){
 
 legend_simple <- g_legend(gr_legend_p)
 
-png(paste(home, "/2017_phecomp_marta/figures/", "circadian_day_night_trisomics_and_dyrk_by_genotype_simple_counts_no_filtered.png", sep=""), width=1000, height=400 )
+# png(paste(home, "/2017_phecomp_marta/figures/", "circadian_day_night_trisomics_and_dyrk_by_genotype_simple_counts_no_filtered.png", sep=""), width=1000, height=400 )
 # png(paste(home, "/2017_phecomp_marta/figures/", "circadian_day_night_trisomics_and_dyrk_by_genotype_simple_counts_zscore.png", sep=""), width=1000, height=400 )
+png(paste(home, "/2017_phecomp_marta/figures/", "circadian_day_night_trisomics_and_dyrk_by_genotype_simple_counts_no_filtered_space.png", sep=""), width=1200, height=400 )
 
 grid.newpage()
 # grid.draw(legend_simple)
@@ -247,8 +249,6 @@ g <- grid.arrange(arrangeGrob(gAllByWeek_grid_simple + theme(legend.position="no
                   legend_simple, nrow=2,heights=c(10, 1))
 
 dev.off()
-
-
 
 ########################
 ########################

@@ -462,15 +462,17 @@ gAllByWeek <- gAllByWeek  + scale_colour_manual (#name="conditions",
     theme (legend.key.height = unit (2, "line")) + #distance between lines in legend 
     theme(plot.title = element_text(hjust = 0.5))
 
-gAllByWeek_grid <- gAllByWeek + facet_grid(genotype ~ diet)
+# gAllByWeek_grid <- gAllByWeek + facet_grid(genotype ~ diet, margins = TRUE)
+# gAllByWeek_grid <- gAllByWeek + facet_grid(genotype ~ diet, switch = "both")
+gAllByWeek_grid <- gAllByWeek + facet_grid(genotype ~ diet, switch = "y")
 
 gAllByWeek_grid_simple <- gAllByWeek + 
     geom_point (aes(shape=groupPhase), fill="white",  size=4) +
     scale_shape_manual(values= rep(c(17, 15),10)) +
-    facet_grid(genotype ~ diet) +
+    facet_grid(genotype ~ diet, switch = "y") +
     theme_update(strip.text.x = element_text (size=base_size * 1.3, face="bold")) +
-    theme(plot.title = element_text(hjust = 0.5))
-
+    theme(plot.title = element_text(hjust = 0.5), strip.text.y = element_text(angle = 270),
+          panel.spacing.x = unit(4, "lines"), plot.margin = unit(c(0,4,0,0), "line"))
 
 df_legend <- data.frame(c(0,1,2), c(2,4,8), c("SC","CM", "HF"))
 colnames(df_legend) <- c("x", "y", "names")
@@ -497,9 +499,10 @@ g_legend <- function(a.gplot){
 
 legend_simple <- g_legend(gr_legend_p)
 
-png(paste(home, "/2017_phecomp_marta/figures/", "circadian_day_night_ts_by_genotype_counts_no_filtered.png", sep=""), width=1000, height=800 )
+# png(paste(home, "/2017_phecomp_marta/figures/", "circadian_day_night_ts_by_genotype_counts_no_filtered.png", sep=""), width=1000, height=800 )
 # png(paste(home, "/2017_phecomp_marta/figures/", "circadian_day_night_ts_by_genotype_counts_zscore_filt_by_group.png", sep=""), width=1000, height=800 )
 # png(paste(home, "/2017_phecomp_marta/figures/", "circadian_day_night_ts_by_genotype_counts_overall_zscore_filt.png", sep=""), width=1000, height=800 )
+png(paste(home, "/2017_phecomp_marta/figures/", "circadian_day_night_ts_by_genotype_counts_no_filtered_space.png", sep=""), width=1200, height=800 )
 
 grid.newpage()
 # grid.draw(legend_simple)
