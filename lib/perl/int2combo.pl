@@ -1070,6 +1070,7 @@ sub tag
     my $A=shift;
     
     my $field=$A->{field};
+    if ($field eq "value") {$field="Value"}
     my $min=$A->{min}; 
         
     if ($min =~ /^m(\d+)/) 
@@ -1091,7 +1092,7 @@ sub tag
 	  {
 	    my $mark=0;
 	    my $v=$d->{$c}{$t}{$field};
-	    
+	    print STDERR "\nFitered field  $field ------------- $v dd\n";
 	    if (defined ($d->{$c}{$t}{$field})){$defined++;}
 	    
 	    if (defined ($A->{contains}) && $v=~$contains){$mark=1;}
@@ -2194,7 +2195,7 @@ sub data2display_period_stat
 			               printf "%6.2f\t",$S->{$c}{$ch}{$f};
 			               
 			               #Before calculating the mean is assessed whether total channel value is negative			             
-			               if ($f eq "value" && $S->{$c}{$ch}{$f} < 0)
+			               if ($f eq "Value" && $S->{$c}{$ch}{$f} < 0)
 		              	   	{		     		              		         	
 		              			$mailData.="############################################CAGE: $c\tPERIOD: $A->{period}\tCHANNEL:$ch\tVALUE:$S->{$c}{$ch}{$f}\n";		              					              					              				             
 		              		}
