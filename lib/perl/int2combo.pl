@@ -1092,7 +1092,7 @@ sub tag
 	  {
 	    my $mark=0;
 	    my $v=$d->{$c}{$t}{$field};
-	    print STDERR "\nFitered field  $field ------------- $v dd\n";
+
 	    if (defined ($d->{$c}{$t}{$field})){$defined++;}
 	    
 	    if (defined ($A->{contains}) && $v=~$contains){$mark=1;}
