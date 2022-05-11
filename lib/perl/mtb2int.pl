@@ -337,7 +337,7 @@ sub mtb2intervals
             $H = ($ncages == 6 ? $h->{file6} : $h->{file12});
           }     
           
-        $shift_cage->{$f} = (($switch_rename) && $ncages == 6 ? 12 : 0); 
+        $shift_cage->{$f} = (($switch_rename) && $ncages <= 6 ? 12 : 0); 
               
         my $LineN;
         my %rv;
