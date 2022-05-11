@@ -933,38 +933,41 @@ sub channel2Nature
 			$Name=~s/\s//g;
 			
 			if ((length ($Name)) == 4 && ($Name =~/(w)(w)(s)(s)/ || $Name =~/(w)(w)(c)(s)/ || $Name=~/(w)(w)(s)(c)/ ||
-			 							  $Name=~/(w)(w)(c)(s)/ || $Name=~/(w)(w)(f)(f)/ || $Name=~/(w)(w)(h)(h)/) || 
-			 							  $Name=~/(w)(w)(f)(s)/ || $Name=~/(w)(w)(s)(f)/ || $Name=~/(a)(w)(s)(c)/ || $Name=~/(w)(a)(s)(c)/ || 
-			 							  $Name=~/(a)(w)(c)(s)/ || $Name=~/(w)(a)(c)(s)/)
-			  {
-			    
-		      	if ($i==1) 
-		      		{
-		      			$Nature.=&anot2nature ($1);		      					      		
-		      			($diffCh)? $Nature.="_$i" : $Nature=$Nature;#many times we have water in both channels, separate them into water_1 and water_2		      			
-		      		}
-		      		
-		      	elsif ($i==2) 
-		      		{
-		      			$Nature.=&anot2nature ($2);
-#		      			$Nature.="_$i";#many times we have water in both channels, separate them into water_1 and water_2		      
-                        ($diffCh)? $Nature.="_$i" : $Nature=$Nature;#many times we have water in both channels, separate them into water_1 and water_2	
-		      		}
-		      		
-		      	elsif ($i==3) 
-		      		{
-		      			$Nature.=&anot2nature ($3);#		      			
-		      			($3 eq $4 && $diffCh)? $Nature.="_$i" : $Nature=$Nature;		      			
-		      		}
-		      		
-	      		elsif ($i==4) 
-	      			{
-	      				$Nature.=&anot2nature ($4);	      				
-                        ($4 eq $3 && $diffCh)? $Nature.="_$i" : $Nature=$Nature;	      				
-	      			}		
+        $Name=~/(w)(w)(c)(s)/ || $Name=~/(w)(w)(f)(f)/ || $Name=~/(w)(w)(h)(h)/) || 
+        $Name=~/(w)(w)(f)(s)/ || $Name=~/(w)(w)(s)(f)/ || $Name=~/(a)(w)(s)(c)/ || $Name=~/(w)(a)(s)(c)/ || 
+        $Name=~/(a)(w)(c)(s)/ || $Name=~/(w)(a)(c)(s)/ || 
+        $Name=~/(x)(w)(c)(s)/ || $Name=~/(w)(x)(c)(s)/ || $Name=~/(x)(w)(s)(c)/ || $Name=~/(w)(x)(s)(c)/ || 
+        $Name=~/(x)(w)(s)(s)/ || $Name=~/(w)(x)(s)(s)/ ||
+        $Name=~/(x)(w)(f)(s)/ || $Name=~/(w)(x)(f)(s)/ || $Name=~/(x)(w)(s)(f)/ || $Name=~/(w)(x)(s)(f)/ ||
+        $Name=~/(x)(w)(f)(f)/ || $Name=~/(w)(x)(f)(f)/ )   {
+          
+          if ($i==1) 
+            {
+              $Nature.=&anot2nature ($1);		      					      		
+              ($diffCh)? $Nature.="_$i" : $Nature=$Nature;#many times we have water in both channels, separate them into water_1 and water_2		      			
+            }
+            
+          elsif ($i==2) 
+            {
+              $Nature.=&anot2nature ($2);
+  #		      			$Nature.="_$i";#many times we have water in both channels, separate them into water_1 and water_2		      
+                      ($diffCh)? $Nature.="_$i" : $Nature=$Nature;#many times we have water in both channels, separate them into water_1 and water_2	
+            }
+            
+          elsif ($i==3) 
+            {
+              $Nature.=&anot2nature ($3);#		      			
+              ($3 eq $4 && $diffCh)? $Nature.="_$i" : $Nature=$Nature;		      			
+            }
+            
+          elsif ($i==4) 
+            {
+              $Nature.=&anot2nature ($4);	      				
+                      ($4 eq $3 && $diffCh)? $Nature.="_$i" : $Nature=$Nature;	      				
+            }		
 				
 				#print STDERR "$Nature\n";
-			  }
+			}
 			
 			elsif ($Caption=~/Food/ && $diffCh)
 			 {
@@ -4722,46 +4725,52 @@ sub anot2nature
 		
 		
 		SWITCH: 
-                {
-                  ($annot eq "w") && do 
-                    { 
-                      return ("water");
-                      last SWITCH;
-                    };
-                  
-                  ($annot eq "a") && do 
-                    { 
-                      return ("saccharin");
-                      last SWITCH;
-                    };
-                                     
-                  ($annot eq "s") && do 
-                    { 
-                      return ("food_sc"); #Original before fusedSCforFDF heatMap
-                      #return ("food"); #fusedSCforFDF heatMap
-                                                
-                      last SWITCH;
-                    };
-                      
-                  ($annot eq "f" || $annot eq "h") && do 
-                    {                      
-                      return ("food_fat"); #Original before fusedSCforFDF heatMap
-                      #return ("food"); #fusedSCforFDF heatMap                                              
-                      last SWITCH;
-                    };
-                    
-                  ($annot eq "c") && do 
-                    { 
-                      return ("food_cd");#Original before fusedSCforFDF heatMap #temporary hack for nicotine data
-                      # return ("food_fat");#temporary hack for nicotine data
-                      #return ("food");#fusedSCforFDF heatMap                           
-                      last SWITCH;
-                    };  
-                }
-         
-         print STDERR "FATAL ERROR: ANNOTATION PROVIDED $annot DOES NOT CORRESPOND WITH ANY OF THE VALID ANNOTATIONS\n";
-         print STDERR "             ASK FOR THE INCLUSSION OF THIS ANNOTATION\n";
-         die;
+      {
+        ($annot eq "w") && do 
+          { 
+            return ("water");
+            last SWITCH;
+          };
+        
+        ($annot eq "a") && do 
+          { 
+            return ("saccharin");
+            last SWITCH;
+          };
+        
+        ($annot eq "x") && do 
+          { 
+            return ("none");
+            last SWITCH;
+          };            
+                        
+        ($annot eq "s") && do 
+          { 
+            return ("food_sc"); #Original before fusedSCforFDF heatMap
+            #return ("food"); #fusedSCforFDF heatMap
+                                      
+            last SWITCH;
+          };
+            
+        ($annot eq "f" || $annot eq "h") && do 
+          {                      
+            return ("food_fat"); #Original before fusedSCforFDF heatMap
+            #return ("food"); #fusedSCforFDF heatMap                                              
+            last SWITCH;
+          };
+          
+        ($annot eq "c") && do 
+          { 
+            return ("food_cd");#Original before fusedSCforFDF heatMap #temporary hack for nicotine data
+            # return ("food_fat");#temporary hack for nicotine data
+            #return ("food");#fusedSCforFDF heatMap                           
+            last SWITCH;
+          };  
+      }
+
+      print STDERR "FATAL ERROR: ANNOTATION PROVIDED $annot DOES NOT CORRESPOND WITH ANY OF THE VALID ANNOTATIONS\n";
+      print STDERR "             ASK FOR THE INCLUSSION OF THIS ANNOTATION\n";
+      die;
 		
 	}
   
